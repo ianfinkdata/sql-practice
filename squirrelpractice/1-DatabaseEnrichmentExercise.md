@@ -1,6 +1,6 @@
 # Scenario
 
-Practice DDL and DML while building out the practice database.  Start here if you have nothing. 
+Practice DDL and DML while building out the practice database.  Start here if you do not have a database to use. 
 
 ## Steps
 1. Run the CREATE TABLE and INSERT INTO queries from the included .sql file
