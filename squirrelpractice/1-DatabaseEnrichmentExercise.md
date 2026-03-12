@@ -11,11 +11,11 @@ Practice DDL and DML while building out the practice database.  Start here if yo
 
 Here's the table output for tables and columns in my practice database: 
 
-TABLE_NAME 	 | COLUMN_NAME | DATA_TYPE
-sp_customers |	id		   | int
-sp_customers |	j		   | json
-sp_sales	 |	id		   | int
-sp_sales	 |	d		   | date
+TABLE_NAME 	 | COLUMN_NAME | DATA_TYPE  
+sp_customers |	id		   | int  
+sp_customers |	j		   | json  
+sp_sales	 |	id		   | int  
+sp_sales	 |	d		   | date  
 sp_sales_rep |	id	       | int
 
 I want to first rename the existing columns into more friendly names.  Then I want to add new columns and insert data into those new columns.  I will let you decide the specifics.  I also want to call out that the j, json column on sp_customers is there to stage up json arrays that I would have to use JSON_EXTRACT for.  Come up with some other name that represents an actual json array column I might expect to find on a customers table.   I want you to build out a practice training scenario that gives me the requirements without revealing the answer.  I will come back to this chat with the queries that I wrote as well as the output for assessment. 
