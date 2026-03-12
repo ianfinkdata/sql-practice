@@ -71,7 +71,7 @@ SELECT * FROM sp_sales;
 SELECT * from sp_sales_rep;
 SELECT * FROM sp_customers;
 
--- Great task to work WITH AI
+-- Great task to work through WITH AI
 UPDATE sp_sales SET 
  customer_id = CASE WHEN sale_id < 5 THEN sale_id ELSE 5 END,
  rep_id = CASE WHEN sale_id < 5 THEN 1 ELSE 2 END

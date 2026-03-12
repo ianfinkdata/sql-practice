@@ -28,6 +28,6 @@ sp_sales	 |	id		  | int
 sp_sales	 |	d		  | date
 sp_sales_rep |	id	      | int
 
-See DONE-1-DatabaseEnrichment for my solution and work.
+See DONE-1-DatabaseEnrichment for how I got there.  It's very much "pieces on the floor."
 
 */
