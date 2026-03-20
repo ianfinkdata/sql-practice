@@ -1,6 +1,13 @@
-# Basics
+# Squirrel Practice
+This repository is designed to practice skills with SQL and AI prompting.  
+I used A [Gemini notebook](https://notebooklm.google.com/notebook/50320d73-64bf-4398-875c-70507b57fcb8)   
+and a persistent [Gemini chat](https://gemini.google.com/share/0c6cb552711c) to build this from scratch, starting with a mock database in MySQL.
 
-## Statement vs Execution Order
+
+## 1 Basics
+Start here for the crashiest of crash courses.  
+
+### Statement vs Execution Order
 
 ```
 // Statement Order
@@ -24,9 +31,7 @@ LIMIT
 ;
 ```
 
-# 1 - Basics
-
-## Choose the data (select, from)  
+### Choose the data (select, from)  
 
 SELECT
 FROM  
@@ -37,7 +42,7 @@ FROM customers
 
 ```
 
-## Sort the data (order by) and Filter the data (where, limit)  
+### Sort the data (order by) and Filter the data (where, limit)  
 
 WHERE
 ORDER BY
@@ -52,9 +57,9 @@ LIMIT 10;
 
 ```
 
-## Join the data to other tables
+### Join the data to other tables
 
-### Common Joins   
+#### Common Joins   
 INNER JOIN  
     Only related rows are returned
 ``` 
@@ -75,10 +80,10 @@ LEFT JOIN
     LEFT JOIN Customers as c on o.customer_id = c.id
 
 ```
-## Less Common
+#### Less Common Joins
 
 RIGHT JOIN  
-    The reverse of left join; right rows > matching left  
+    The reverse of left join; right rows > matching left. "It depends" when you would use a right join.  
     
 FULL JOIN (FULL OUTER)  
     Combines all rows from specified tables, regardless of matched or not
@@ -88,22 +93,22 @@ FULL JOIN (FULL OUTER)
 ANTI-JOINS
     Return rows where there is not a match.
 
-# 2 Advanced Analysis
+## 2 Advanced Analysis
 
-## WINDOW FUNCTIONS
+### WINDOW FUNCTIONS
 
 A calculation across a set of rows related to the current row, without aggregating all rows. 
 Keep the row level of detail but still calculate; context around indiv rows compared to rest of its group and rows surrounding it
 
 [7 Window Functions MASTERED in 17 Minutes](https://youtu.be/vlltZIgn284?si=HysVbqW_sBysYJSm)
 
-### Three Pieces
+#### Three Pieces
 1. Calculation OVER (two optional)
 2. Partition By (do I need to group?)
 3. Order By (does order matter ?)
 
 
-### ROW_NUMBER (rank function)
+#### ROW_NUMBER (rank function)
 ```
 SELECT * , 
 // Ties don't matter
@@ -111,7 +116,7 @@ ROW_NUMBER() OVER(ORDER BY sale_date)
 FROM Sales
 ```
 
-### RANK (rank function)
+#### RANK (rank function)
 ```
 // Ties Matter, numbers are skipped (e.g. 1,1,3,4)
 SELECT * , 
@@ -119,7 +124,7 @@ RANK() OVER(ORDER BY sale_date)
 FROM Sales
 
 ```
-### DENSE_RANK (rank function)
+#### DENSE_RANK (rank function)
 ```
 // Ties Matter, numbers are not skipped  (e.g. 1,1,2,3)
 SELECT * , 
@@ -127,7 +132,7 @@ DENSE_RANK() OVER(ORDER BY sale_date)
 FROM Sales
 ```
 
-### SUM
+#### SUM
 
 ```
 // Running Total (revenue/goals over time)
@@ -136,7 +141,7 @@ FROM Sales
 ;
 ```
 
-### AVERAGE
+#### AVERAGE
 
 ```
 // Running Average (average sale over time)
@@ -144,7 +149,7 @@ SELECT * , AVG(sales_amount) OVER(order by sale_date) as running_avg
 FROM Sales
 ;
 ```
-### LEAD
+#### LEAD
 ```
 WITH daily AS (
 SELECT sale_date , 
@@ -158,7 +163,7 @@ ORDER BY 1
 ;
 ```
 
-### LAG
+#### LAG
 
 ```
 WITH daily AS (
@@ -173,7 +178,7 @@ ORDER BY 1
 ;
 ```
 
-## CTEs
+### CTEs
 
 Common Table Expressions  
 [What are CTEs in SQL in 13 Minutes](https://www.youtube.com/watchv=XUxBKO25ZyA)
@@ -182,7 +187,7 @@ Temporary result set DEFINE > NAME > REUSE
 query optimization, readability, specific logic in one query
 90% of queries use them, biggest ROI  
 
-### 3 use cases  
+#### 3 use cases  
 1. readable code 
 2. nest aggregate logic
 3. combine result sets
@@ -247,21 +252,21 @@ GROUP BY item
 ```
 
 
-## SUBQUERIES
+### SUBQUERIES
 
 Enable complex filtering and calculations based on the results of another query
 Retrieve specific rows or values that would be difficult to achieve using just joins
 Flexible and can be used with various SQL Commands
 Performance limitations within more complex scenarios suce has heavily nested or correlated subqueries
 
-### Nested 
+#### Nested 
 Executes once before the outer query
 Independent of the outer query
 Usually more efficient for large datasets
 
 e.g. WHERE col IN (SELECT col from table 2)
 
-### Correlated
+#### Correlated
 Executes for each row of the outer query
 Dependent on values from the outer query
 can be slower since it runs multiple times
@@ -273,7 +278,7 @@ e.g. WHERE col > (SELECT AVG(col) FROM Table2
 
 In the SELECT, FROM and WHERE
 
-### SELECT
+#### SELECT
 
 // Used in place of window funtions
 
@@ -295,7 +300,7 @@ ORDER BY 1,2
 
 ```
 
-### FROM
+#### FROM
 
 Not really recommended; subqueries are slow; CTEs accomplish the same thing faster and are easier to follow
 
@@ -307,7 +312,7 @@ FROM EmployeeSalary) a
 
 ```
 
-### WHERE
+#### WHERE
 
 SELECT EmployeeId, JobTitle, Salary
 FROM EmployeeSalary
@@ -319,7 +324,7 @@ WHERE EmployeeID in (
     )      
 
 
-## DATE
+### DATE
 
 GETDATE(), CURRENT_TIMESTAMP() = current datetime
 SYSDATETIME() = current datetime w/ higher precision
@@ -335,9 +340,9 @@ DATENAME(datepart, date)
 DATEADD(datepart, number, date)
 DATEDIFF(datepart,startdate,enddate)
 
-# 3 Data Engineer
+## 3 Data Engineer
 
-## STRINGS
+### STRINGS
 
 TRIM
 REPLACE
