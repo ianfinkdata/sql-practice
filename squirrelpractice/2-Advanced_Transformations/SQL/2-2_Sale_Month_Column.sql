@@ -1,8 +1,8 @@
-use squirrelpractice;
-
-WITH cust_email AS (
+WITH customer AS (
     SELECT 
-    c.customer_id, 
+    c.customer_id,
+    c.region,
+    c.customer_name as name,
     j.email_address
     FROM sp_customers as c
     CROSS JOIN JSON_TABLE(
@@ -17,10 +17,12 @@ WHERE j.contact_type = 'email'
 
  select 
  s.sale_id, 
- s.customer_id, 
- cust_email.email_address as customer_email,
+ s.customer_id,
+ customer.name,
+ customer.region,
+ customer.email_address as customer_email,
  s.rep_id, 
  s.sale_amount,
  s.sale_date - interval(day(s.sale_date) - 1) day as sale_month
  from sp_sales as s
- left join cust_email on s.customer_id = cust_email.customer_id;
+ left join customer on s.customer_id = customer.customer_id;

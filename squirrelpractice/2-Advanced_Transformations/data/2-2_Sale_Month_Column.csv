@@ -1,8 +1,8 @@
-sale_id,customer_id,customer_email,rep_id,sale_amount,sale_month
-1,1,customer1@abc.com,1,3034.06,2026-01-01
-2,2,customer2@bbbb.com,1,2011.38,2026-01-01
-3,3,customer3@ccc.com,1,2454.74,2026-01-01
-4,4,customer4@ddd.com,1,1739.54,2026-01-01
-5,5,customer5@eee.com,2,2833.48,2026-01-01
-6,5,customer5@eee.com,2,4448.76,2026-01-01
-7,5,customer5@eee.com,2,3243.39,2026-01-01
+sale_id,customer_id,name,region,customer_email,rep_id,sale_amount,sale_month
+1,1,"ABC Company",Midwest,customer1@abc.com,1,3034.06,2026-01-01
+2,2,"Before-for Consulting",Midwest,customer2@bbbb.com,1,2011.38,2026-01-01
+3,3,"Creative Concept Consulting",Midwest,customer3@ccc.com,1,2454.74,2026-01-01
+4,4,"Demolition Dave's Depot",Midwest,customer4@ddd.com,1,1739.54,2026-01-01
+5,5,"Eagle Evangelists",Midwest,customer5@eee.com,2,2833.48,2026-01-01
+6,5,"Eagle Evangelists",Midwest,customer5@eee.com,2,4448.76,2026-01-01
+7,5,"Eagle Evangelists",Midwest,customer5@eee.com,2,3243.39,2026-01-01
