@@ -1,3 +1,5 @@
+create or replace view gold_rep_performance as
+
 with monthlysummary as (
 select 
 rep_name, 
