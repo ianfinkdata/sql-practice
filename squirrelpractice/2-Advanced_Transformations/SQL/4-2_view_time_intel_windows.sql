@@ -8,7 +8,7 @@ You must accomplish both the prior-month retrieval and the YTD running total usi
 Self-joins for the purpose of time comparison are strictly prohibited.
 
 */
-
+CREATE OR REPLACE VIEW time_intel_windows AS
 with currentmonth AS (
 
 select 
@@ -23,12 +23,7 @@ select *,
 LAG(current_month_sales, 1,0) OVER(ORDER BY sale_month) as previous_month_sales,
 -- IFNULL( LAG(current_month_sales, 1,0) OVER(ORDER BY sale_month),0) as prev_month_sales_ifnull,
 -- COALESCE(LAG(current_month_sales, 1,0) OVER(ORDER BY sale_month),0) as prev_month_sales_coalesce
-SUM(current_month_sales) OVER( PARTITION BY YEAR(sale_month)) as ytd_sales
+SUM(current_month_sales) OVER( PARTITION BY YEAR(sale_month) order by sale_month) as ytd_sales
 from currentmonth;
 
-
--- updated a sales order to last year to test the partition on year.
-UPDATE sp_sales
-SET sale_date = '2025-12-30'
-WHERE sale_id = 1;
-
+select * from time_intel_windows;
