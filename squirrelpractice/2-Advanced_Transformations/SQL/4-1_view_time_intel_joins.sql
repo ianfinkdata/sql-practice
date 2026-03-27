@@ -20,7 +20,7 @@ sale_date - interval(day(sale_date) - 1) day as sale_month,
 SUM(sale_amount) as sale_amount 
 from sp_sales 
 group by sale_month
-order by sale_month -- s.sale_date - interval(day(s.sale_date) - 1) day as sale_month,
+
 )
 
 select 
