@@ -1,14 +1,19 @@
 /* 
-The Final Boss: Tier 3 (The Sliding Frame Approach)
-You are cleared to move on to the final challenge of this exercise.
+The Final Boss (Tier 3): The Calendar Table Edition
+Let's pivot the final challenge to incorporate your existing architecture.
 
 Target View Name: vw_time_intel_rolling
-Business Requirement: Create a view that breaks down performance geographically. For every month and for every region, display the current month's total revenue and a Rolling 3-Month Average Revenue (which should calculate the average of the current month and the two strictly preceding months for that specific region).
+
+Business Requirement: Create a view that breaks down performance geographically. 
+For every month and for every region: 
+	display the current month's total revenue
+    a Rolling 3-Month Average Revenue (which should calculate the average of the current month and the two strictly preceding months for that specific region).
 
 Technical Constraints:
-You must use advanced window framing clauses (e.g., ROWS BETWEEN ...) to isolate the 3-month window.
-The rolling average must respect the regional partitions (the Midwest average should not be skewed by another region's data).
-Remember, you'll need to join your fact table (sp_sales) to the dimension table (sp_customers) to get the region attribute before you aggregate!
+
+The Join: You must join your Bronze sales data to your common_db.calendar table (or whatever it is named) to group the data by month, rather than calculating the month inline.
+The Window: You must use advanced window framing clauses (e.g., ROWS BETWEEN...) to isolate the 3-month window.
+The Partition: The rolling average must respect the regional partitions (the Midwest average should not be skewed by another region's data).
 
 */
 with currentmonth AS (
