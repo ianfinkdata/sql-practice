@@ -1,14 +1,16 @@
 /* 
-Tier 2: The Analytical Approach
-Target View Name: vw_time_intel_windows
-Business Requirement: Create a view that returns a continuous monthly summary of the entire company's sales. 
-For every month, show the current month's total revenue, the previous month's total revenue, and a Year-to-Date (YTD) cumulative total that resets every January 1st.
+The Final Boss: Tier 3 (The Sliding Frame Approach)
+You are cleared to move on to the final challenge of this exercise.
+
+Target View Name: vw_time_intel_rolling
+Business Requirement: Create a view that breaks down performance geographically. For every month and for every region, display the current month's total revenue and a Rolling 3-Month Average Revenue (which should calculate the average of the current month and the two strictly preceding months for that specific region).
+
 Technical Constraints:
-You must accomplish both the prior-month retrieval and the YTD running total using Window Functions.
-Self-joins for the purpose of time comparison are strictly prohibited.
+You must use advanced window framing clauses (e.g., ROWS BETWEEN ...) to isolate the 3-month window.
+The rolling average must respect the regional partitions (the Midwest average should not be skewed by another region's data).
+Remember, you'll need to join your fact table (sp_sales) to the dimension table (sp_customers) to get the region attribute before you aggregate!
 
 */
-CREATE OR REPLACE VIEW time_intel_windows AS
 with currentmonth AS (
 
 select 
