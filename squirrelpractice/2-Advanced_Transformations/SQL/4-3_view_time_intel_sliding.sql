@@ -22,27 +22,17 @@ select * from common_db.dim_date as cal
 
 rolling3monthavg AS (
 
-select 
-sale_date - interval(day(sale_date) - 1) day as sale_month,
-SUM(sale_amount) as current_month_sales
-from sp_sales 
-
-group by sale_month
+select
+s.sale_date,
+d.date as calendar_sale_date,
+d.week_start_date, 
+-- sale_date - interval(day(sale_date) - 1) day as sale_month,
+SUM(s.sale_amount) as current_period_sales
+from sp_sales as s
+join dimcalendar as d on d.date = s.sale_date
+group by d.date
 
 )
 
-select * from rolling3monthavg;
-
--- 1. Rename 'FullDate' to 'Date' and add the new columns
-ALTER TABLE common_db.dim_date 
-    CHANGE COLUMN FullDate Date DATE, 
-    ADD COLUMN week_start_date DATE AFTER Date, 
-    ADD COLUMN iso_week_start_date DATE AFTER week_start_date;
-
--- 2. Update the 'week_start_date' (Assuming Sunday as the start of the week)
-UPDATE common_db.dim_date
-SET week_start_date = DATE_ADD(Date, INTERVAL(1 - DAYOFWEEK(Date)) DAY);
-
--- 3. Update the 'iso_week_start_date' (ISO weeks always start on Monday)
-UPDATE common_db.dim_date
-SET iso_week_start_date = DATE_SUB(Date, INTERVAL WEEKDAY(Date) DAY);
+select * from rolling3monthavg WHERE Date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 2 MONTH, '%Y-%m-01')
+  AND Date <= LAST_DAY(CURRENT_DATE);
