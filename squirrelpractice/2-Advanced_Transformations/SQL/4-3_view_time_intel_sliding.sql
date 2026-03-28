@@ -16,21 +16,33 @@ The Window: You must use advanced window framing clauses (e.g., ROWS BETWEEN...)
 The Partition: The rolling average must respect the regional partitions (the Midwest average should not be skewed by another region's data).
 
 */
-with currentmonth AS (
+with dimcalendar as ( 
+select * from common_db.dim_date as cal
+),
+
+rolling3monthavg AS (
 
 select 
 sale_date - interval(day(sale_date) - 1) day as sale_month,
 SUM(sale_amount) as current_month_sales
 from sp_sales 
+
 group by sale_month
 
 )
-select *, 
--- optional parameter default value 
-LAG(current_month_sales, 1,0) OVER(ORDER BY sale_month) as previous_month_sales,
--- IFNULL( LAG(current_month_sales, 1,0) OVER(ORDER BY sale_month),0) as prev_month_sales_ifnull,
--- COALESCE(LAG(current_month_sales, 1,0) OVER(ORDER BY sale_month),0) as prev_month_sales_coalesce
-SUM(current_month_sales) OVER( PARTITION BY YEAR(sale_month) order by sale_month) as ytd_sales
-from currentmonth;
 
-select * from time_intel_windows;
+select * from rolling3monthavg;
+
+-- 1. Rename 'FullDate' to 'Date' and add the new columns
+ALTER TABLE common_db.dim_date 
+    CHANGE COLUMN FullDate Date DATE, 
+    ADD COLUMN week_start_date DATE AFTER Date, 
+    ADD COLUMN iso_week_start_date DATE AFTER week_start_date;
+
+-- 2. Update the 'week_start_date' (Assuming Sunday as the start of the week)
+UPDATE common_db.dim_date
+SET week_start_date = DATE_ADD(Date, INTERVAL(1 - DAYOFWEEK(Date)) DAY);
+
+-- 3. Update the 'iso_week_start_date' (ISO weeks always start on Monday)
+UPDATE common_db.dim_date
+SET iso_week_start_date = DATE_SUB(Date, INTERVAL WEEKDAY(Date) DAY);
