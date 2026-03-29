@@ -20,19 +20,32 @@ with dimcalendar as (
 select * from common_db.dim_date as cal
 ),
 
-rolling3monthavg AS (
+rolling3montsales AS (
 
 select
-s.sale_date,
 d.date as calendar_sale_date,
 d.week_start_date, 
+d.month_start_date,
 -- sale_date - interval(day(sale_date) - 1) day as sale_month,
-SUM(s.sale_amount) as current_period_sales
-from sp_sales as s
-join dimcalendar as d on d.date = s.sale_date
-group by d.date
-
+coalesce(SUM(s.sale_amount),0) as current_period_sales
+from dimcalendar as d
+left join sp_sales as s on d.date = s.sale_date
+where d.month_start_date BETWEEN date_add(current_date, interval -3 month) and current_date
+group by calendar_sale_date, week_start_date, month_start_date
 )
 
-select * from rolling3monthavg WHERE Date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 2 MONTH, '%Y-%m-01')
-  AND Date <= LAST_DAY(CURRENT_DATE);
+select * from rolling3monthavg;
+-- select * from dimcalendar;
+
+select * from sp_sales; 
+
+select * from sp_sales_rep;
+
+select * from sp_customers;
+
+ALTER TABLE common_db.dim_date 
+    DROP COLUMN year_month_date;
+
+
+
+
