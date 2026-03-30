@@ -8,9 +8,9 @@ from datetime import datetime, timedelta
 fake = Faker()
 
 # 2. Load our existing Bronze tables into Pandas DataFrames
-df_customers = pd.read_csv('../sp_customers.csv')
-df_sales = pd.read_csv('../sp_sales.csv')
-df_reps = pd.read_csv('../sp_sales_rep.csv')
+df_customers = pd.read_csv(r"C:\Users\ianfi\OneDrive\Documents\GitHub\sql-practice\python\sp_customers.csv")
+df_sales = pd.read_csv(r"C:\Users\ianfi\OneDrive\Documents\GitHub\sql-practice\python\sp_sales.csv")
+df_reps = pd.read_csv(r"C:\Users\ianfi\OneDrive\Documents\GitHub\sql-practice\python\sp_sales_rep.csv")
 
 # --- ADD THESE TWO LINES TO FIX THE ERROR ---
 # Force the ID columns to be numeric so we can do math on them
