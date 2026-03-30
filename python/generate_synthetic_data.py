@@ -69,4 +69,31 @@ all_customer_ids = df_customers['customer_id'].tolist()
 all_rep_ids = df_reps['rep_id'].tolist()
 
 start_date = datetime(2025, 1, 1)
-end_date = datetime(2026,
+end_date = datetime(2026, 3, 31)
+days_between = (end_date - start_date).days
+
+for i in range(500): # Generate 500 new sales
+    random_days = random.randrange(days_between)
+    sale_date = start_date + timedelta(days=random_days)
+    
+    new_sales.append({
+        'sale_id': start_sale_id + i,
+        'sale_date': sale_date.strftime('%Y-%m-%d'),
+        'customer_id': random.choice(all_customer_ids),
+        'rep_id': random.choice(all_rep_ids),
+        'sale_amount': round(random.uniform(500.00, 15000.00), 2)
+    })
+
+df_new_sales = pd.DataFrame(new_sales)
+df_sales = pd.concat([df_sales, df_new_sales], ignore_index=True)
+
+
+# ==========================================
+# PART C: EXPORT ENRICHED DATA
+# ==========================================
+# Save the files directly back into the python folder
+df_customers.to_csv(r"C:\Users\ianfi\OneDrive\Documents\GitHub\sql-practice\python\sp_customers_enriched.csv", index=False)
+df_sales.to_csv(r"C:\Users\ianfi\OneDrive\Documents\GitHub\sql-practice\python\sp_sales_enriched.csv", index=False)
+
+print(f"Success! Added 50 new customers and 500 new sales.")
+print("Saved as 'sp_customers_enriched.csv' and 'sp_sales_enriched.csv' in your python folder!")
