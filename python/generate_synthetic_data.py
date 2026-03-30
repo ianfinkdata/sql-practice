@@ -8,10 +8,15 @@ from datetime import datetime, timedelta
 fake = Faker()
 
 # 2. Load our existing Bronze tables into Pandas DataFrames
-# (Make sure your CSV files are in the same folder as this script)
-df_customers = pd.read_csv('sp_customers.csv')
-df_sales = pd.read_csv('sp_sales.csv')
-df_reps = pd.read_csv('sp_sales_rep.csv')
+df_customers = pd.read_csv('../sp_customers.csv')
+df_sales = pd.read_csv('../sp_sales.csv')
+df_reps = pd.read_csv('../sp_sales_rep.csv')
+
+# --- ADD THESE TWO LINES TO FIX THE ERROR ---
+# Force the ID columns to be numeric so we can do math on them
+df_customers['customer_id'] = pd.to_numeric(df_customers['customer_id'])
+df_sales['sale_id'] = pd.to_numeric(df_sales['sale_id'])
+# ------------------------------------------
 
 print("Existing data loaded successfully!")
 
