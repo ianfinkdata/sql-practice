@@ -16,6 +16,7 @@ The Window: You must use advanced window framing clauses (e.g., ROWS BETWEEN...)
 The Partition: The rolling average must respect the regional partitions (the Midwest average should not be skewed by another region's data).
 
 */
+create or replace view time_intel_sliding as 
 with dimcalendar as ( 
 select distinct month_start_date from common_db.dim_date as cal
 ),
@@ -42,7 +43,7 @@ coalesce(sum(s.sale_amount),0) as current_period_sales,
 avg(coalesce(sum(s.sale_amount),0)) over(
 	partition by mr.region 
     order by mr.month_start_date
-    rows between 3 preceding and current row
+    rows between 2 preceding and current row
     ) as rolling_avg_sales
 from monthlyregions as mr
 left join squirrelpractice.sp_customers as c
@@ -60,16 +61,4 @@ order by
     mr.month_start_date
 
 ;
-
-select 
-d.month_start_date, 
-c.region,
-coalesce(sum(s.sale_amount),0) as monthly_sales  
-from sp_sales as s
-left join sp_customers as c on s.customer_id = c.customer_id
-left join common_db.dim_date as d on s.sale_date = d.date
-group by 
-month_start_date,
-region
-;
-
+select * from time_intel_sliding;
