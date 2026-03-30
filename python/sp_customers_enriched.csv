@@ -1,0 +1,63 @@
+customer_id,contact_details,customer_name,region
+1,,ABC Company,Midwest
+2,,Before-for Consulting,Midwest
+3,,Creative Concept Consulting,Midwest
+4,,Demolition Dave's Depot,Midwest
+5,,Eagle Evangelists,Midwest
+6,,Fink About It Consulting,Midwest
+7,,Grand Consulting,Midwest
+8,,Generated Corp 1,West
+9,,Generated Corp 2,Northeast
+10,,Generated Corp 3,West
+11,,Generated Corp 4,West
+12,,Generated Corp 5,Midwest
+13,,Vazquez-Lamb,Midwest
+14,,King-Mason,Midwest
+15,,"Garrett, Stevens and Velazquez",West
+16,,"Henderson, Walker and Turner",Northeast
+17,,Oneill Inc,West
+18,,Harper Inc,Northeast
+19,,Jones Ltd,Northeast
+20,,Murray and Sons,West
+21,,"Henson, Bailey and Williams",South
+22,,"Watts, Hess and Rios",South
+23,,"Roberts, Miles and Williams",Midwest
+24,,King and Sons,Midwest
+25,,Clements PLC,South
+26,,Jones PLC,West
+27,,"Bullock, Ray and Carpenter",Northeast
+28,,Hines-Ramirez,Midwest
+29,,Martinez-Salazar,South
+30,,Boyd-Burns,Midwest
+31,,Williams-Ho,Midwest
+32,,Cummings PLC,Northeast
+33,,"Henderson, Rodriguez and Rubio",Midwest
+34,,"Norris, Summers and Smith",West
+35,,"Navarro, Collins and Walker",West
+36,,Khan PLC,Northeast
+37,,"Graves, Rodriguez and Morales",Northeast
+38,,"Lin, Gutierrez and Sanchez",South
+39,,Vasquez Ltd,Northeast
+40,,Rosales Ltd,Northeast
+41,,"Johnson, Payne and Gilmore",West
+42,,Smith LLC,Midwest
+43,,Parker PLC,Midwest
+44,,Walsh-Shields,West
+45,,Elliott-Hobbs,Midwest
+46,,Harris Inc,West
+47,,Martin-Newman,West
+48,,Smith Group,South
+49,,"Carter, Brown and Jones",Northeast
+50,,Martinez PLC,Northeast
+51,,"Smith, Bryan and Gutierrez",Midwest
+52,,Rangel and Sons,Midwest
+53,,Pugh and Sons,Northeast
+54,,"Williams, Smith and White",South
+55,,"Daniel, Odonnell and Good",Midwest
+56,,Hernandez-Rogers,South
+57,,"Patel, Johnson and Fisher",Midwest
+58,,Meadows-Washington,Northeast
+59,,Schwartz Group,Northeast
+60,,Baldwin-Franklin,South
+61,,Russo Ltd,West
+62,,Harris Inc,Northeast
