@@ -17,35 +17,59 @@ The Partition: The rolling average must respect the regional partitions (the Mid
 
 */
 with dimcalendar as ( 
-select * from common_db.dim_date as cal
+select distinct month_start_date from common_db.dim_date as cal
 ),
 
-rolling3montsales AS (
+regions as (
+select distinct region
+from squirrelpractice.sp_customers
+where region is not null
+),
 
-select
-d.date as calendar_sale_date,
-d.week_start_date, 
+-- cross join to ensure every region has a row for every month even when there are no sales
+monthlyregions as (
+select 
 d.month_start_date,
--- sale_date - interval(day(sale_date) - 1) day as sale_month,
-coalesce(SUM(s.sale_amount),0) as current_period_sales
+r.region
 from dimcalendar as d
-left join sp_sales as s on d.date = s.sale_date
-where d.month_start_date BETWEEN date_add(current_date, interval -3 month) and current_date
-group by calendar_sale_date, week_start_date, month_start_date
+cross join regions as r
 )
 
-select * from rolling3monthavg;
--- select * from dimcalendar;
+select 
+mr.month_start_date,
+mr.region,
+coalesce(sum(s.sale_amount),0) as current_period_sales,
+avg(coalesce(sum(s.sale_amount),0)) over(
+	partition by mr.region 
+    order by mr.month_start_date
+    rows between 3 preceding and current row
+    ) as rolling_avg_sales
+from monthlyregions as mr
+left join squirrelpractice.sp_customers as c
+	on mr.region = c.region
+left join squirrelpractice.sp_sales as s
+	on c.customer_id = s.customer_id
+    and s.sale_date >= mr.month_start_date
+    and s.sale_date < DATE_ADD(mr.month_start_date, interval 1 month)
+where month_start_date BETWEEN date_add(current_date, interval -4 month) and current_date    
+group by 
+	mr.month_start_date,
+    mr.region
+order by
+	mr.region,
+    mr.month_start_date
 
-select * from sp_sales; 
+;
 
-select * from sp_sales_rep;
-
-select * from sp_customers;
-
-ALTER TABLE common_db.dim_date 
-    DROP COLUMN year_month_date;
-
-
-
+select 
+d.month_start_date, 
+c.region,
+coalesce(sum(s.sale_amount),0) as monthly_sales  
+from sp_sales as s
+left join sp_customers as c on s.customer_id = c.customer_id
+left join common_db.dim_date as d on s.sale_date = d.date
+group by 
+month_start_date,
+region
+;
 
