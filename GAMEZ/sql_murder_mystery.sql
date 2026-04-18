@@ -14,12 +14,12 @@ person as per
 
 */
 
-select *, 'csr' as table_alias from crime_scene_report as csr;
-select *, 'dl' as table_alias from drivers_license as dl;
-select *, 'fb' as table_alias from facebook_event_checkin as fb;
-select *, 'inv' as table_alias from interview as inv;
-select *, 'gfn_member' as table_alias from get_fit_now_member as gfn_member;
-select *, 'gfn_check_in' as table_alias from get_fit_now_check_in as gfn_check_in;
-select *, 'sol' as table_alias from solution as sol;
-select *, 'inc' as table_alias from income as inc;
-select *, 'per' as table_alias from person as per;
+with csr as (
+select * from crime_scene_report 
+where type = 'murder'
+and city like 'SQL%'
+and date = 20180115
+)
+
+select * from csr
+;
