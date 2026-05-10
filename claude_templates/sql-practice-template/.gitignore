@@ -1,0 +1,31 @@
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+
+# MySQL Workbench
+*.mwb.bak
+
+# Exported data (keep only reference CSVs committed intentionally)
+# To track a CSV, use: git add -f data/my_file.csv
+*.csv
+!**/data/*.csv
+
+# Credentials — never commit these
+*.env
+.env
+*.cnf
+my.cnf
+credentials.json
+
+# Logs and temp
+*.log
+*.tmp
