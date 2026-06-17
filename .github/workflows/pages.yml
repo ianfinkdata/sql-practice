@@ -1,0 +1,46 @@
+name: Deploy SQL Trainer Pages
+
+# Publishes the static GitHub Pages site in sql-trainer/docs/.
+# One-time setup: in the repo, go to Settings → Pages → Build and deployment
+# → Source, and choose "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "sql-trainer/docs/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; cancel in-progress runs for the same ref.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # If you split sql-trainer/ into its own repo, change this to "docs".
+          path: sql-trainer/docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

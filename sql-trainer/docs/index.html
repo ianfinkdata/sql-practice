@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQL Trainer — from your first SELECT to warehouse-scale design</title>
+  <meta name="description" content="A complete, self-paced SQL curriculum from beginner to master, paired with a Dialect Decoder that translates cleanly between Oracle, Databricks, MySQL, and Postgres." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <nav class="top">
+    <div class="wrap">
+      <span class="brand">🐿️ SQL Trainer</span>
+      <span class="links">
+        <a href="#curriculum">Curriculum</a>
+        <a href="#decoder">Dialect Decoder</a>
+        <a href="#philosophy">Philosophy</a>
+        <a href="#start">Get started</a>
+        <a href="https://github.com/ianfinkdata/sql-practice">GitHub</a>
+      </span>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <span class="badge">MVP · Beginner → Master</span>
+      <h1>Learn SQL like someone's<br />sitting right next to you.</h1>
+      <p class="tagline">
+        A complete, self-paced curriculum from your very first <code>SELECT</code>
+        to designing warehouse-scale data models — paired with a Dialect Decoder
+        that translates cleanly between Oracle, Databricks, MySQL, and Postgres.
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href="#start">Start learning</a>
+        <a class="btn ghost" href="#decoder">Explore the Decoder</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- PHILOSOPHY -->
+  <section id="philosophy">
+    <div class="wrap">
+      <div class="callout">
+        <h2>Understanding first, typing second</h2>
+        <p class="lead" style="margin-bottom:0">
+          Most people don't get stuck on the syntax of SQL — they get stuck on
+          the <em>idea</em>. So SQL Trainer explains every concept in plain
+          English first, and only reaches for code when you're actually ready to
+          write it. A patient mentor named <strong>Sage</strong> guides the way,
+          meeting you exactly at your level.
+        </p>
+        <blockquote>
+          "Meet the learner where they are, keep it simple, and only reach for
+          code when the moment actually calls for it."
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- CURRICULUM -->
+  <section id="curriculum">
+    <div class="wrap">
+      <h2>The curriculum — five tiers</h2>
+      <p class="lead">
+        Roughly 40 modules, each built the same way: <strong>the idea</strong> in
+        plain English, <strong>why it matters</strong>, <strong>see it</strong>
+        (only when a snippet helps), <strong>watch out</strong> for the common
+        traps, and <strong>practice</strong>. Start anywhere you're ready.
+      </p>
+
+      <div class="tiers">
+        <div class="tier">
+          <span class="num">Tier 1 · Beginner</span>
+          <h3>Asking questions</h3>
+          <p>Get answers out of a single table.</p>
+          <ul>
+            <li>The relational model</li>
+            <li>SELECT &amp; FROM</li>
+            <li>WHERE — filtering</li>
+            <li>ORDER BY &amp; LIMIT</li>
+            <li>DISTINCT &amp; expressions</li>
+            <li>Operators &amp; logic</li>
+          </ul>
+        </div>
+
+        <div class="tier">
+          <span class="num">Tier 2 · Intermediate</span>
+          <h3>Combining &amp; summarizing</h3>
+          <p>Work across rows and tables.</p>
+          <ul>
+            <li>Aggregate functions</li>
+            <li>GROUP BY &amp; HAVING</li>
+            <li>JOINs (all kinds)</li>
+            <li>Set operations</li>
+            <li>Subqueries</li>
+            <li>CASE &amp; NULL logic</li>
+          </ul>
+        </div>
+
+        <div class="tier">
+          <span class="num">Tier 3 · Advanced</span>
+          <h3>Analytics</h3>
+          <p>Answer questions a single GROUP BY can't.</p>
+          <ul>
+            <li>Window functions</li>
+            <li>Ranking &amp; running totals</li>
+            <li>LEAD / LAG &amp; frames</li>
+            <li>CTEs &amp; recursion</li>
+            <li>Date/time intelligence</li>
+            <li>Pivoting &amp; regex</li>
+          </ul>
+        </div>
+
+        <div class="tier">
+          <span class="num">Tier 4 · Expert</span>
+          <h3>Building &amp; tuning</h3>
+          <p>Stop just querying — start building.</p>
+          <ul>
+            <li>DDL &amp; constraints</li>
+            <li>DML &amp; MERGE / upsert</li>
+            <li>Transactions &amp; isolation</li>
+            <li>Views &amp; indexes</li>
+            <li>Reading query plans</li>
+            <li>Procedures &amp; JSON</li>
+          </ul>
+        </div>
+
+        <div class="tier">
+          <span class="num">Tier 5 · Master</span>
+          <h3>Design &amp; architecture</h3>
+          <p>Think in systems.</p>
+          <ul>
+            <li>Data modeling &amp; normalization</li>
+            <li>Dimensional modeling</li>
+            <li>Slowly changing dimensions</li>
+            <li>Medallion architecture</li>
+            <li>Partitioning &amp; tuning at scale</li>
+            <li>Anti-patterns &amp; capstones</li>
+          </ul>
+        </div>
+
+        <div class="tier" style="display:grid;place-content:center;text-align:center;border-style:dashed;">
+          <div>
+            <h3 style="margin:0 0 8px">📚 Read the full curriculum</h3>
+            <p style="margin:0 0 16px">All modules live in the repo.</p>
+            <a class="btn ghost" href="https://github.com/ianfinkdata/sql-practice/tree/main/sql-trainer/curriculum">Open curriculum →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIALECT DECODER -->
+  <section id="decoder">
+    <div class="wrap">
+      <h2>The Dialect Decoder</h2>
+      <p class="lead">
+        SQL is a family of closely related languages, not one language — like
+        British vs American English. The Decoder gives you the exact phrasing for
+        <strong>your</strong> database and the equivalent in the others, so a
+        tutorial written for a different system never stops you cold.
+      </p>
+
+      <div class="dialects">
+        <div class="dialect oracle">
+          <h3>🟥 Oracle SQL</h3>
+          <p>Enterprise OLTP workhorse. Deep PL/SQL, sequences, <code>MERGE</code>, <code>DUAL</code>.</p>
+        </div>
+        <div class="dialect databricks">
+          <h3>🧱 Databricks SQL</h3>
+          <p>Lakehouse / Spark SQL for analytics. Delta, <code>QUALIFY</code>, semi-structured.</p>
+        </div>
+        <div class="dialect mysql">
+          <h3>🐬 MySQL</h3>
+          <p>The popular open-source OLTP database. <code>AUTO_INCREMENT</code>, backticks.</p>
+        </div>
+        <div class="dialect postgres">
+          <h3>🐘 PostgreSQL</h3>
+          <p>Standards-leaning and feature-rich. <code>::</code> casts, <code>jsonb</code>, <code>ON CONFLICT</code>.</p>
+        </div>
+      </div>
+
+      <p class="lead">A taste of the translation matrix:</p>
+      <div class="compare">
+        <table>
+          <thead>
+            <tr><th>Task</th><th>Oracle</th><th>Databricks</th><th>MySQL</th><th>Postgres</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Limit to 10 rows</td>
+              <td><code>FETCH FIRST 10 ROWS ONLY</code></td>
+              <td><code>LIMIT 10</code></td>
+              <td><code>LIMIT 10</code></td>
+              <td><code>LIMIT 10</code></td>
+            </tr>
+            <tr>
+              <td>Null fallback</td>
+              <td><code>NVL(x, 0)</code></td>
+              <td><code>coalesce(x, 0)</code></td>
+              <td><code>IFNULL(x, 0)</code></td>
+              <td><code>COALESCE(x, 0)</code></td>
+            </tr>
+            <tr>
+              <td>Concatenate</td>
+              <td><code>a || b</code></td>
+              <td><code>concat(a, b)</code></td>
+              <td><code>CONCAT(a, b)</code></td>
+              <td><code>a || b</code></td>
+            </tr>
+            <tr>
+              <td>Truncate to month</td>
+              <td><code>TRUNC(d, 'MM')</code></td>
+              <td><code>date_trunc('month', d)</code></td>
+              <td><code>DATE_FORMAT(d,'%Y-%m-01')</code></td>
+              <td><code>date_trunc('month', d)</code></td>
+            </tr>
+            <tr>
+              <td>Upsert</td>
+              <td><code>MERGE</code></td>
+              <td><code>MERGE INTO</code></td>
+              <td><code>ON DUPLICATE KEY UPDATE</code></td>
+              <td><code>ON CONFLICT DO UPDATE</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:22px">
+        <a class="btn ghost" href="https://github.com/ianfinkdata/sql-practice/blob/main/sql-trainer/dialect-decoder/reference-matrix.md">See the full matrix →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- GET STARTED -->
+  <section id="start">
+    <div class="wrap">
+      <h2>Get started</h2>
+      <p class="lead">Three ways in, depending on how you like to learn.</p>
+      <div class="steps">
+        <div class="step">
+          <div>
+            <h4>Learning on your own</h4>
+            <p>
+              Open <a href="https://github.com/ianfinkdata/sql-practice/tree/main/sql-trainer/curriculum/00-orientation">Tier 0 — Orientation</a>
+              and work tier by tier. Keep the Dialect Decoder open in another tab
+              for your database. Practice prompts wait at the end of every module.
+            </p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h4>Learning with an AI assistant</h4>
+            <p>
+              Point your assistant at <code>persona_instructions.md</code>. It
+              adopts <strong>Sage</strong>, a mentor who keeps things simple and
+              only shows code when you need it. Then just say where you are —
+              "I've never written SQL" or "I know joins but not window functions."
+            </p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h4>Want the web version you're reading now</h4>
+            <p>
+              This site is generated from the <code>docs/</code> folder. Enable
+              GitHub Pages on the repo (Settings → Pages → deploy from the
+              <code>docs/</code> folder) and share the link. Full steps are in
+              <a href="https://github.com/ianfinkdata/sql-practice/blob/main/sql-trainer/docs/INSTRUCTIONS.md">INSTRUCTIONS.md</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <p>
+        SQL Trainer · an open learning MVP ·
+        <a href="https://github.com/ianfinkdata/sql-practice/tree/main/sql-trainer">source on GitHub</a>
+      </p>
+      <p style="font-size:0.82rem;opacity:0.7">Understanding first, typing second.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
