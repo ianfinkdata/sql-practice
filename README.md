@@ -1,4 +1,12 @@
 # Squirrel Practice
+
+> **🆕 SQL Trainer (MVP) lives in [`sql-trainer/`](sql-trainer/).**
+> A complete, self-contained SQL learning product: a beginner→master
+> curriculum, a Dialect Decoder (Oracle · Databricks · MySQL · Postgres), a
+> persona guide, hands-on exercises, and a GitHub Pages site. It's built to be
+> split off into its own repository cleanly — see
+> [`sql-trainer/docs/INSTRUCTIONS.md`](sql-trainer/docs/INSTRUCTIONS.md).
+
 This repository is designed to practice skills with SQL and AI prompting.  
 I used A [Gemini notebook](https://notebooklm.google.com/notebook/50320d73-64bf-4398-875c-70507b57fcb8)   
 and a persistent [Gemini chat](https://gemini.google.com/share/0c6cb552711c) to build this from scratch, starting with a mock database in MySQL.
