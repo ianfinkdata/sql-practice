@@ -17,7 +17,7 @@ code when you're ready to write it.
 |------|------------|-------|
 | 📚 **Curriculum** | Five tiers, beginner → master, ~40 modules | [`curriculum/`](curriculum/) |
 | 🔄 **Dialect Decoder** | Side-by-side translations across 4 SQL dialects | [`dialect-decoder/`](dialect-decoder/) |
-| 🧑‍🏫 **Persona Guide** | How the trainer ("Sage") talks to you | [`persona_instructions.md`](persona_instructions.md) |
+| 🧑‍🏫 **Persona Guide** | How the trainer ("SQRL") talks to you | [`persona_instructions.md`](persona_instructions.md) |
 | 🌐 **Web version** | Browsable GitHub Pages site | [`docs/`](docs/) |
 | 🏋️ **Exercises** | Hands-on practice prompts per tier | [`exercises/`](exercises/) |
 
@@ -66,7 +66,7 @@ See [`dialect-decoder/README.md`](dialect-decoder/README.md) and the
 
 ### If you're learning with an AI assistant
 Point the assistant at [`persona_instructions.md`](persona_instructions.md).
-It will adopt **Sage**, a mentor who keeps things simple and only shows code
+It will adopt **SQRL**, a mentor who keeps things simple and only shows code
 when you need it. Then just say where you are: *"I've never written SQL"* or
 *"I know joins but not window functions."*
 

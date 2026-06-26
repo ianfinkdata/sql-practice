@@ -1,6 +1,6 @@
 # Tier 4 — Expert: Building and Tuning
 
-Welcome back. It's Sage again.
+Welcome back. It's SQRL again.
 
 Until now you've been a *reader* of databases — asking well-crafted questions and getting answers. This tier flips the table. You'll stop just querying and start **building and tuning**: designing the tables themselves, changing data safely, protecting it with transactions, and making queries fast. This is where you go from someone who *uses* a database to someone who can *shape* one.
 
