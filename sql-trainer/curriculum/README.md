@@ -93,7 +93,7 @@ you need the exact spelling for your database, jump to the
 
 ## A reminder about code
 
-If you're following along with the **Sage** persona (see
+If you're following along with the **SQRL** persona (see
 [`persona_instructions.md`](../persona_instructions.md)), notice that the goal
 is always *understanding first*. The code blocks in these modules are there for
 when you're ready to type — not as the explanation itself. Read the words, then

@@ -1,6 +1,6 @@
 # Tier 1 — Beginner: Asking a Single Table for Answers
 
-Welcome. I'm Sage, and I'll be your guide through this tier.
+Welcome. I'm SQRL, and I'll be your guide through this tier.
 
 We're going to start right at the beginning, no experience assumed. By the end of this tier you'll be able to get answers out of a single table — choosing what to look at, filtering down to the rows that matter, sorting them, and shaping the results into something readable. Every concept gets explained in plain English first, with a real-world analogy, *before* any code shows up. Take it one module at a time, and try the practice prompts as you go — that's where it really sticks.
 
