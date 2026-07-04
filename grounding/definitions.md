@@ -1,9 +1,9 @@
 # Definitions Registry — Oakhaven Medallion Project
 
 **STATUS: APPROVED v1.0 (2026-07-04) — approval artifact: merged PR #52.**
-All DEFs are usable by all tasks. Open items: DEF-012 and DEF-013 mapping tables are
-populated from TASK-02's value census and land as a diff for Ian's approval before
-TASK-03 (silver) uses them.
+All DEFs are usable by all tasks. No open items: DEF-012/013 mapping tables were
+finalized from the shipped B03 census and approved by Ian 2026-07-04 (v1.1);
+DEF-019 added same day from the TASK-02 finding.
 One entry per metric or business concept. Agents may READ this file; only Ian edits it
 (agents propose diffs). Increment the DEF number; bump version on any change.
 
@@ -153,24 +153,44 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** Silver adds `is_delivery_pending` = (raw = 'PENDING'). Verification: parsed NULLs must equal raw NULL + 'PENDING' counts exactly.
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-012: State normalization rule  (v1.0 — mapping table pending TASK-02 census)
+## DEF-012: State normalization rule  (v1.1)
 - **Plain definition:** Map full state names and period-abbreviations ('Washington', 'Wash.') to 2-letter codes; already-2-letter values pass through uppercased.
-- **Canonical SQL:** *finalized after TASK-02's census of `SELECT DISTINCT state` — the discovered variants become an explicit CASE mapping here (diff → Ian approval).* Interim shape:
+- **Canonical SQL:**
   ```sql
-  CASE WHEN CHAR_LENGTH(TRIM(state)) = 2 THEN UPPER(TRIM(state))
-       ELSE /* explicit variant → code mapping, no fuzzy matching */ END
+  CASE
+    WHEN CHAR_LENGTH(TRIM(state)) = 2               THEN UPPER(TRIM(state))
+    WHEN TRIM(state) IN ('Washington', 'Wash.')     THEN 'WA'
+    WHEN TRIM(state) IN ('Oregon',     'Ore.')      THEN 'OR'
+    WHEN TRIM(state) IN ('Idaho',      'Ida.')      THEN 'ID'
+    WHEN TRIM(state) IN ('Montana',    'Mont.')     THEN 'MT'
+    WHEN TRIM(state) IN ('California', 'Calif.')    THEN 'CA'
+    ELSE NULL
+  END
   ```
 - **Applies to:** customers.state
 - **Owner:** Ian
-- **Caveats:** Post-clean invariant: every silver state is exactly 2 uppercase letters; unmapped variants → NULL + verification failure, never a guess.
-- **Changelog:** v0.1 2026-07-04
+- **Caveats:** Mapping covers all 15 raw values in the shipped B03 census (medallion/bronze/EXPECTED_OUTPUTS.md). Silver verification asserts post-clean distinct = {CA, ID, MT, OR, WA} and ZERO NULLs — every bronze value maps. The IN() comparisons run under the schema's case-insensitive collation (deliberate tolerance); ELSE NULL stays as the unmapped-value tripwire (RULE-007).
+- **Changelog:** v1.1 2026-07-04 — mapping table finalized from B03 census, approved by Ian · v0.1 2026-07-04
 
-## DEF-013: Payment method normalization  (v1.0 — mapping table pending TASK-02 census)
-- **Plain definition:** Collapse ≥8 spellings (Visa/VISA/visa, 'Master Card'/MC, AMEX, cash/CASH, GIFT…) into canonical set {visa, mastercard, amex, cash, gift} (final set confirmed by TASK-02 census).
-- **Canonical SQL:** explicit CASE over `UPPER(TRIM(method))` values discovered in TASK-02; no LIKE/fuzzy matching. Mapping table lands here as a diff for approval.
+## DEF-013: Payment method normalization  (v1.1)
+- **Plain definition:** Collapse the 10 raw spellings into canonical set {visa, mastercard, amex, cash, gift} (lowercase for storage; reports may Title-Case at render time).
+- **Canonical SQL:**
+  ```sql
+  CASE UPPER(TRIM(method))
+    WHEN 'VISA'        THEN 'visa'
+    WHEN 'MASTERCARD'  THEN 'mastercard'
+    WHEN 'MASTER CARD' THEN 'mastercard'
+    WHEN 'MC'          THEN 'mastercard'
+    WHEN 'AMEX'        THEN 'amex'
+    WHEN 'CASH'        THEN 'cash'
+    WHEN 'GIFT'        THEN 'gift'
+    ELSE NULL
+  END
+  ```
 - **Applies to:** payments.method (CONTRACT D12)
 - **Owner:** Ian
-- **Changelog:** v0.1 2026-07-04
+- **Caveats:** Covers all 10 raw values in the shipped B03 census. Mapped totals — visa 27,162 · mastercard 19,068 · cash 11,203 · amex 6,143 · gift 3,087 — sum to 66,663 = the full payments row count, so silver verification asserts ZERO NULLs. 'MC' → mastercard confirmed by Ian. ELSE NULL stays as the unmapped-value tripwire (RULE-007).
+- **Changelog:** v1.1 2026-07-04 — mapping table finalized from B03 census, approved by Ian · v0.1 2026-07-04
 
 ## DEF-014: Customer near-dupe resolution  (v1.0)
 - **Plain definition:** customer_ids 11851–12000 are known fuzzy copies of 150 originals (CONTRACT D7). Each maps to a canonical_customer_id; silver flags, gold collapses.
