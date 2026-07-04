@@ -230,3 +230,19 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Owner:** Ian
 - **Caveats:** NULL while pending. Ship-to-deliver lag alternative uses shipped_ts; marts state which anchor they use.
 - **Changelog:** v0.1 2026-07-04
+
+## DEF-019: Inventory transfer pairing  (v1.0)
+- **Plain definition:** A transfer_out row and its receiving transfer_in row are the same physical transfer, linked by an identical `reference` token (`TR-######`).
+- **Canonical SQL (orphan transfer_out probe):**
+  ```sql
+  SELECT COUNT(*) FROM oakhaven.inventory_movements tout
+  WHERE tout.movement_type = 'transfer_out'
+    AND NOT EXISTS (SELECT 1 FROM oakhaven.inventory_movements tin
+                    WHERE tin.movement_type = 'transfer_in'
+                      AND tin.reference = tout.reference)
+  ```
+- **Source:** oakhaven.inventory_movements.reference
+- **Grain:** per transfer pair
+- **Owner:** Ian
+- **Caveats:** Empirically discovered (TASK-02), then adversarially verified (validator): all 3,600 transfer_out references are unique TR tokens (0 NULL, 0 reuse); matched pairs always share product_id and never share store_id. Two discoverable populations, both features per RULE-008: 54 orphan transfer_outs (contract's stated ~1.5%) and 38 reverse-orphan transfer_ins (16 NULL-reference + 22 well-formed-but-unmatched) — the latter is NOT contract-documented; gold inventory reconciliation must expect both.
+- **Changelog:** v1.0 2026-07-04 — created from TASK-02 finding; approved by Ian in-session ("apply corrections") with the reverse-orphan population documented as a discoverable

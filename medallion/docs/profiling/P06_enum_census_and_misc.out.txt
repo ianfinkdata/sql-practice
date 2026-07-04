@@ -1,0 +1,120 @@
+marker
+--orders.status census--
+status	c
+cancelled	1689
+completed	55917
+pending	11
+refunded	2383
+marker
+--orders.channel census--
+channel	c
+STORE	32819
+WEB	27181
+marker
+--payments.status census--
+status	c
+captured	60615
+failed	3665
+refunded	2383
+marker
+--inventory_movements.movement_type census--
+movement_type	c
+adjustment	5400
+receipt	19800
+sale	57600
+transfer_in	3600
+transfer_out	3600
+marker
+--order window--
+MIN(order_ts)	MAX(order_ts)
+2019-01-01 08:48:34	2026-06-30 21:34:10
+marker
+--calendar window--
+MIN(date)	MAX(date)
+2019-01-01	2031-12-31
+marker
+--payments card_last4 / method-status crosscheck--
+method	null_card4	has_card4
+AMEX	0	6143
+CASH	11203	0
+GIFT	3087	0
+Master Card	0	2237
+Mastercard	0	15317
+MC	0	1514
+Visa	0	27162
+marker
+--payments example rows--
+payment_id	order_id	method	amount	status	card_last4
+1	100001	Mastercard	23.19	captured	4540
+2	100002	Visa	614.36	captured	5507
+3	100003	CASH	3849.49	captured	NULL
+4	100004	VISA	4937.73	captured	9499
+5	100005	CASH	283.82	captured	NULL
+marker
+--returns condition_code census--
+condition_code	c
+A	2053
+B	1241
+C	743
+LIKE NEW	496
+used	477
+marker
+--shipments ship_cost zero census--
+COUNT(*)
+294
+shipment_id	order_id	carrier	ship_cost
+130	100265	OnTrac	0.00
+137	100277	FEDEX	0.00
+154	100308	UPS	0.00
+marker
+--promotions description NULL census--
+null_ct	total
+7	70
+promo_id	promo_code	discount_pct	description
+1	PROMO-001	15.0	NULL
+2	PROMO-002	20.0	Save 20% on select tents and shelters -- no code stacking.
+3	PROMO-003	5.0	NULL
+marker
+--promotions promo_code lowercase census--
+COUNT(*)
+3
+marker
+--stores square_feet NULL (WEB) census--
+store_id	store_code	city	state	square_feet
+1	SEA-PIKE	Seattle	WA	7652
+2	SEA-BAL	Seattle	WA	11730
+3	TAC-01	Tacoma	WA	6330
+4	BEL-01	Bellevue	WA	10757
+5	SPO-01	Spokane	WA	8747
+6	PDX-PRL	Portland	OR	3555
+7	PDX-HAW	Portland	OR	13468
+8	EUG-01	Eugene	OR	8470
+9	BOI-01	Boise	ID	7943
+10	MSO-01	Missoula	MT	6403
+11	BZN-01	Bozeman	MT	8283
+12	BEN-01	Bend	OR	9116
+13	WEB	Online	WA	NULL
+marker
+--product_categories parent census--
+total	root_ct
+24	8
+marker
+--DEF-002 revenue backbone example: order true total for one order--
+order_id	order_true_total
+100001	23.19
+marker
+--DEF-001 revenue backbone example: single line net revenue--
+order_item_id	order_id	product_id	quantity	unit_price	line_discount_pct	line_net_revenue
+1	100001	10192	1	23.19	0.0	23.19
+marker
+--gross revenue total (DEF-004 scope) sanity number--
+gross_revenue
+83160177.98
+marker
+--FK orphan spot-check: order_items.order_id all resolve--
+COUNT(*)
+0
+marker
+--FK orphan spot-check: returns.order_item_id all resolve--
+COUNT(*)
+0

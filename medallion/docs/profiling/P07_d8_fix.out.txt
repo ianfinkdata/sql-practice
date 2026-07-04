@@ -1,0 +1,4 @@
+marker
+--D8 order_total_text mutually exclusive census--
+dollar_with_comma	dollar_no_comma	no_dollar_sign	has_leading_space	total
+29095	29152	1753	1161	60000

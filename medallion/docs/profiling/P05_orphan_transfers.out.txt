@@ -1,0 +1,23 @@
+marker
+--transfer_out / transfer_in totals--
+movement_type	c
+transfer_in	3600
+transfer_out	3600
+marker
+--transfer_out rows with NULL reference--
+COUNT(*)
+0
+marker
+--orphan transfer_out count (reference has no matching transfer_in)--
+COUNT(*)
+54
+marker
+--orphan transfer_out pct of all transfer_out--
+orphan_pct
+1.50
+marker
+--example orphan transfer_out rows--
+movement_id	product_id	store_id	movement_ts	reference	quantity
+729	10156	13	2019-02-24 14:16:24	TR-744560	-5
+3525	10817	4	2019-07-13 20:54:00	TR-408457	-4
+4172	10806	2	2019-08-07 11:46:30	TR-995731	-24

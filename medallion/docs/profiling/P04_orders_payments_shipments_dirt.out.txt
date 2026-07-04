@@ -1,0 +1,149 @@
+marker
+--D8 order_total_text format census--
+dollar_comma_fmt	dollar_nocomma_fmt	no_dollar_fmt	leading_space_fmt
+55525	28613	821	1161
+order_id	order_total_text
+100003	$3,849.49
+order_id	order_total_text
+100004	4,937.73
+100011	296.00
+order_id	CONCAT('[',order_total_text,']')
+100146	[ $3,626.05]
+100158	[ $3,210.40]
+marker
+--D9 order_notes non-NULL census--
+non_null_ct	total
+12040	60000
+order_id	order_notes
+100003	n/a
+100016	N/A
+100027	MIGRATED 2021
+100031	left VM
+100033	N/A
+marker
+--D10 delivered_date_raw format census--
+iso_fmt	us_slash_fmt	mon_d_yyyy_fmt	pending_ct	null_ct
+16196	9112	1471	1165	1840
+shipment_id	delivered_date_raw
+3	2019-01-07
+shipment_id	delivered_date_raw
+1	01/12/2019
+shipment_id	delivered_date_raw
+2	Jan 15, 2019
+shipment_id	delivered_date_raw
+37	PENDING
+marker
+--D11 carrier casing census--
+carrier	c
+FEDEX	289
+FedEx	8304
+fedex	316
+ONTRAC	284
+OnTrac	2882
+UPS	9865
+ups	271
+USPS	6997
+Usps	275
+usps 	301
+marker
+--D12 payments.method spelling census--
+method	c
+AMEX	6143
+CASH	2297
+cash	8906
+GIFT	3087
+Master Card	2237
+Mastercard	15317
+MC	1514
+VISA	3005
+Visa	22628
+visa	1529
+marker
+--D17 order_items unit_price penny census--
+COUNT(*)
+297
+order_item_id	order_id	product_id	unit_price
+1830	100707	10315	0.01
+1867	100721	10725	0.01
+1977	100759	10269	0.01
+marker
+--D22 returns.reason census--
+null_ct	total
+279	5010
+reason	c
+defective	195
+TOO SMALL	189
+duplicate order	185
+arrived damaged	185
+MISSING PARTS	184
+Doesn't fit	184
+DEFECTIVE 	183
+Didn't like the color	183
+missing parts	183
+seam ripped	182
+Too small	182
+too small	181
+Ordered wrong size	181
+Leaks	180
+Broken zipper	177
+marker
+--D23 inventory_movements.reference census--
+migration_ct	null_ct	total
+2654	22660	90000
+movement_id	reference
+10	MIGRATION
+42	MIGRATION
+reference
+-
+???
+ADJ-10000
+ADJ-10087
+ADJ-10115
+ADJ-10147
+ADJ-10181
+ADJ-10203
+ADJ-10300
+ADJ-10302
+ADJ-10310
+ADJ-10321
+ADJ-10323
+ADJ-10360
+ADJ-10371
+marker
+--D25 shipments.tracking_number duplicate census--
+COUNT(*)
+149
+tracking_number	c
+022658810797	2
+069964797114	2
+099644546057	2
+marker
+--D24 orders before signup_date (planted anomaly) census--
+COUNT(*)
+24217
+order_id	order_ts	customer_id	signup_date
+100001	2019-01-01 08:48:34	6005	2022-08-29
+100002	2019-01-01 17:38:17	1574	2022-07-30
+100003	2019-01-01 11:41:05	1750	2025-09-27
+marker
+--movements before product intro_date (planted anomaly) census--
+COUNT(*)
+31093
+movement_id	movement_ts	product_id	intro_date
+1	2019-01-01 06:40:25	10120	2019-10-14
+2	2019-01-01 06:48:56	10634	2021-08-08
+3	2019-01-01 07:35:09	10361	2021-07-27
+marker
+--orphan transfer_out (planted anomaly) census--
+transfer_out_total
+3600
+transfer_in_total
+3600
+marker
+--penny-price line pct check vs order_items total--
+total_lines
+156190
+marker
+--below-cost list price pct check vs products total--
+total_products
+850

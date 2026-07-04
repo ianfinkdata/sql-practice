@@ -1,0 +1,129 @@
+marker
+--D1 email NULL--
+COUNT(*)
+240
+marker
+--D1 email N/A or none--
+COUNT(*)
+180
+marker
+--D1 email example N/A--
+customer_id	email
+36	none
+121	N/A
+125	N/A
+marker
+--D1 email UPPERCASE count--
+COUNT(*)
+11760
+marker
+--D1 email UPPERCASE example--
+customer_id	email
+1	daniel.pollard18@gmail.com
+2	alexandra.fischer56@yahoo.com
+3	billy.ellis62@gmail.com
+marker
+--D1 email trailing space count--
+COUNT(*)
+240
+marker
+--D1 email trailing space example--
+customer_id	CONCAT('[',email,']')
+58	[ann.henderson@gmail.com ]
+119	[cheryl.mcclain78@aol.com ]
+123	[kimberly.oliver@outlook.com ]
+marker
+--D2 phone format census--
+paren_fmt	dash_fmt	dot_fmt	plus1_fmt	na_txt	null_ct
+7137	2400	1226	642	118	477
+marker
+--D2 phone examples one per format--
+customer_id	phone
+2	(415) 555-2895
+customer_id	phone
+31	406-555-2707
+customer_id	phone
+1	206.555.9858
+customer_id	phone
+5	+1 509 555 9747
+customer_id	phone
+195	N/A
+marker
+--D3 state full name / abbrev-period census--
+state	COUNT(*)
+Washington	514
+Oregon	289
+Wash.	252
+California	202
+Ore.	146
+Calif.	102
+Idaho	99
+Montana	96
+Ida.	56
+Mont.	44
+marker
+--D4 city dirt census--
+leading_trailing_space	allcaps	lowercase
+240	12000	12000
+marker
+--D4 city examples--
+customer_id	CONCAT('[',city,']')
+20	[Gresham ]
+31	[ Billings]
+customer_id	city
+1	Kirkland
+2	Sacramento
+customer_id	city
+1	Kirkland
+2	Sacramento
+marker
+--D5 birth_date census--
+null_ct	sentinel_ct	future_ct	age_gt_95
+600	60	24	36
+marker
+--D5 examples--
+customer_id	birth_date
+277	1900-01-01
+748	1900-01-01
+customer_id	birth_date
+120	2030-03-13
+308	2027-07-21
+customer_id	birth_date	age
+1094	1930-04-17	96
+1186	1926-06-17	100
+marker
+--D6 loyalty_tier casing census--
+loyalty_tier	COUNT(*)
+Basic	7112
+Silver	2515
+Gold	1448
+Platinum	615
+basic 	184
+silver 	68
+gold 	43
+Platinum 	15
+marker
+--D7 near-dupe range census--
+COUNT(*)
+150
+marker
+--D7 example dupe pair--
+customer_id	first_name	last_name	phone
+11851	R.	HERRING	(530) 555-2591
+11852	J.	Cordova	(406) 555-9318
+marker
+--marketing_opt_in flag census--
+marketing_opt_in	COUNT(*)
+Y	3715
+N	2926
+1	1567
+TRUE	1446
+FALSE	1177
+0	1169
+marker
+--postal_code 4-digit census--
+COUNT(*)
+240
+customer_id	postal_code
+7	7414
+54	8151

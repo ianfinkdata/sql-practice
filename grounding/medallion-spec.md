@@ -77,7 +77,8 @@ Every `.sql` file header:
 -- TASK-<id> · <file> · <date>
 -- PURPOSE: <one line>
 -- GROUNDING: DEF-nnn, DEF-nnn
--- RUN: & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" --defaults-extra-file="C:\Users\ianfi\.my.cnf" --batch --table oakhaven < <file>
+-- RUN: Get-Content <file> -Raw | & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" --defaults-extra-file="C:\Users\ianfi\.my.cnf" --batch oakhaven
+-- (PowerShell has no "<" input redirection — always the Get-Content pipe form; add --table for human-readable grids)
 ```
 
 ## Reproducibility (the "exact same outputs" law)

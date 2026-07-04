@@ -13,3 +13,5 @@ Agents scan THIS file first, then load only the entries they need.
 | IDX-008 | MySQL Setup | Windows connection command, file-based execution, output capture, snapshot refresh | infra | process/mysql-setup.md |
 | IDX-009 | Task Briefs | TASK-20260704-01…05: documentation, bronze pack, silver, gold, reports | process | process/briefs/ |
 | IDX-010 | Lessons | Seeded reproducibility + environment rules; retro-maintained | grounding | grounding/lessons.md |
+| IDX-011 | Bronze Data Dictionary | All 14 tables documented with live profiles, D1–D25 evidence, planted anomalies; SHIPPED 2026-07-04 | deliverable | medallion/docs/DATA_DICTIONARY.md |
+| IDX-012 | Bronze Baseline Pack | B01–B06 + captured outputs; gross revenue 83,160,177.98; DEF-016 reconciles 0 mismatches; SHIPPED 2026-07-04 — reconciliation targets for silver/gold | deliverable | medallion/bronze/ |

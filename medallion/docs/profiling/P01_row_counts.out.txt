@@ -1,0 +1,15 @@
+tbl	rows_
+calendar	4748
+customers	12000
+employees	240
+inventory_movements	90000
+order_items	156190
+orders	60000
+payments	66663
+product_categories	24
+products	850
+promotions	70
+returns	5010
+shipments	29784
+stores	13
+suppliers	45

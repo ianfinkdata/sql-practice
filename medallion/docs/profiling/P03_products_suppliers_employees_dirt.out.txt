@@ -1,0 +1,192 @@
+marker
+--D13 weight_kg NULL/-999 census--
+null_ct	sentinel_ct
+51	9
+product_id	sku	weight_kg
+10023	OAK-PAD-7369	-999.00
+10150	OAK-WAT-5703	-999.00
+10271	OAK-WAT-7311	-999.00
+marker
+--D14 discontinued_flag distinct census--
+discontinued_flag	COUNT(*)
+N	460
+Y	130
+0	85
+1	70
+yes	60
+no 	45
+marker
+--D15 product_name dirt census (binary-safe)--
+double_space	trailing_space	allcaps
+26	17	9
+product_id	CONCAT('[',product_name,']')
+10097	[Alpine  Synthetic Crew Top]
+10136	[Meridian  Ascender XT]
+product_id	product_name
+10007	CASCADE 3-PERSON DOME TENT
+10061	TORRENT DOUBLE SLEEPING BAG XT
+marker
+--D16 list_price below unit_cost census--
+COUNT(*)
+17
+product_id	sku	unit_cost	list_price
+10035	OAK-TRA-6249	66.70	52.99
+10112	OAK-CAM-8833	188.02	149.99
+10156	OAK-CAM-4481	46.66	36.99
+marker
+--sku format census--
+oak_fmt	legacy_fmt
+765	85
+product_id	sku
+10015	SKU819998
+10031	SKU141697
+marker
+--color casing census--
+COUNT(DISTINCT color)
+12
+color	c
+Black	50
+black	1
+BLUE	1
+Blue	46
+blue	4
+BURGUNDY	1
+Burgundy	52
+burgundy	1
+CHARCOAL	2
+Charcoal	58
+marker
+--D20 suppliers.country coding census--
+country	COUNT(*)
+USA	10
+US	7
+Canada	6
+United States	6
+China	5
+Vietnam	4
+Taiwan	3
+Italy	2
+Germany	2
+marker
+--D21 suppliers.lead_time_days sentinel census--
+COUNT(*)
+2
+supplier_id	supplier_name	lead_time_days
+12	Silvertip Trading Co.	-999
+16	Basecamp Manufacturing.	-999
+marker
+--suppliers.active_flag census--
+active_flag	COUNT(*)
+Y	18
+1	8
+N	7
+yes	5
+0	4
+no	3
+marker
+--suppliers phone/email dirt example--
+supplier_id	supplier_name	phone	contact_email
+1	Cascade Supply Co.	(664) 555-9122	info@cascadesupplyco.com
+2	Summit Outfitting	+1 405 555 0493	info@summitoutfitting.com
+3	Rainier Textiles	(942) 555-1887	sales@rainiertextiles.com
+4	Timberline Gear Co.	283.555.4405	sales@timberlinegearco.com
+5	Alpine Equipment	(311) 555-3402	orders@alpineequipment.com
+marker
+--suppliers near-dup name pair--
+supplier_id	supplier_name
+5	Alpine Equipment
+8	Basecamp Manufacturing
+16	Basecamp Manufacturing.
+37	Bearpaw Textiles
+11	Blue Ridge Outdoor Supply
+1	Cascade Supply Co.
+42	Cirrus Manufacturing
+31	Clearwater Trading Co.
+34	Copper Basin Outfitting
+28	Duskwatch Supply Co.
+10	Evergreen Equipment
+29	Falcon Ridge Textiles
+32	Fjordland Outfitting
+38	Foxglove Equipment
+7	Glacier Supply Co.
+13	Granite Peak Outdoor Supply
+27	Highline Outfitting
+43	Hollowpine Gear Co.
+24	Ironwood Supply Co.
+41	Juniper Flats Supply Co.
+15	Kestrel Industries
+18	Larchwood Supply Co.
+36	Longtrail Equipment
+30	Mossback Equipment
+9	Northslope Outdoor Supply
+40	Obsidian Supply Co.
+17	Osprey Bay Supply Co.
+6	Pacific Crest Textiles
+3	Rainier Textiles
+20	Redcedar Manufacturing
+26	Riverbend Supply Co.
+33	Sagebrush Gear Co.
+44	Saltmarsh Outdoor Supply
+12	Silvertip Trading Co.
+21	Skyline Industries
+25	Snowfield Equipment
+19	Stonefield Supply Co.
+2	Summit Outfitting
+39	Tamarack Gear Co.
+4	Timberline Gear Co.
+22	Trailforge Outfitting
+35	Whitecap Supply Co.
+45	Windrose Outfitting
+23	Windward Manufacturing
+14	Wolf Creek Supply Co.
+marker
+--D18 employees.hourly_wage outlier census--
+COUNT(*)
+3
+employee_id	job_title	hourly_wage
+220	Assistant Manager	2591.00
+268	Web Support	2103.00
+276	Sales Associate	1833.00
+marker
+--D19 employees.job_title casing census--
+job_title	c
+Assistant Manager	27
+assistant manager	1
+Assistant Manager 	1
+BUYER	1
+Buyer	20
+Buyer 	1
+CASHIER	1
+Cashier	54
+cashier	2
+Cashier 	1
+SALES ASSOCIATE	2
+Sales Associate	82
+sales associate	1
+Sales Associate 	1
+Store Manager	12
+store manager	1
+WAREHOUSE LEAD	1
+Warehouse Lead	20
+Web Support	11
+marker
+--employees rehired census (same person two ids)--
+first_name	last_name	c
+Brent	Brooks	2
+Catherine	Armstrong	2
+Jeremy	Roach	2
+Jesus	Allen	2
+Justin	Ross	2
+Wayne	Yang	2
+marker
+--employees termination_date census--
+terminated_ct	total
+60	240
+marker
+--employees work_email dirt example--
+employee_id	first_name	last_name	work_email
+100	Mark	Neal	mark.neal@oakhavenoutfitters.com
+101	Scott	English	scott.english@oakhavenoutfitters.com
+102	Neil	Jones	neil.jones@oakhavenoutfitters.com
+103	Dana	Davis	dana.davis@oakhavenoutfitters.com
+104	Jennifer	Smith	jennifer.smith@oakhavenoutfitters.com

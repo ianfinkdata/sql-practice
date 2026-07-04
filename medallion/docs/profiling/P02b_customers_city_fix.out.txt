@@ -1,0 +1,26 @@
+marker
+--D4 city dirt census (binary-safe)--
+leading_trailing_space	allcaps	lowercase
+240	240	240
+marker
+--D4 city examples--
+customer_id	CONCAT('[',city,']')
+20	[Gresham ]
+31	[ Billings]
+customer_id	city
+9	SEATTLE
+101	TRUCKEE
+customer_id	city
+8	renton
+60	salem
+marker
+--D1 email UPPERCASE (binary-safe)--
+COUNT(*)
+458
+customer_id	email
+41	CHRISTOPHER.SPENCER51@HOTMAIL.COM
+54	CHLOE.CHANEY@GMAIL.COM
+marker
+--D6 loyalty_tier casing (binary-safe) wrong-casing count--
+COUNT(*)
+600
