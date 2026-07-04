@@ -192,18 +192,24 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** Covers all 10 raw values in the shipped B03 census. Mapped totals — visa 27,162 · mastercard 19,068 · cash 11,203 · amex 6,143 · gift 3,087 — sum to 66,663 = the full payments row count, so silver verification asserts ZERO NULLs. 'MC' → mastercard confirmed by Ian. ELSE NULL stays as the unmapped-value tripwire (RULE-007).
 - **Changelog:** v1.1 2026-07-04 — mapping table finalized from B03 census, approved by Ian · v0.1 2026-07-04
 
-## DEF-014: Customer near-dupe resolution  (v1.0)
+## DEF-014: Customer near-dupe resolution  (v1.1)
 - **Plain definition:** customer_ids 11851–12000 are known fuzzy copies of 150 originals (CONTRACT D7). Each maps to a canonical_customer_id; silver flags, gold collapses.
 - **Canonical rule:**
   1. Candidates: customer_id BETWEEN 11851 AND 12000.
   2. Match to the original (id ≤ 11850) on normalized phone (DEF-010) when non-NULL and unique among originals.
-  3. Fallback: normalized email (DEF-015) local-part match + same birth_date.
+  3. Fallback: exact equality of DEF-015-normalized email local parts (both emails non-NULL)
+     + same raw birth_date (both non-NULL), and the match must hit exactly ONE original —
+     a candidate matching two or more originals is ambiguous and goes unresolved, never guessed.
   4. Unresolved → `canonical_customer_id = customer_id`, `dupe_resolution = 'unresolved'` (flagged, never guessed).
   For all non-candidates, `canonical_customer_id = customer_id`.
+- **dupe_resolution vocabulary:** 'phone' | 'email_birth_date' | 'unresolved' for candidates; NULL for non-candidates.
 - **Grain:** per customer
 - **Owner:** Ian
 - **Caveats:** Verification target: resolved + unresolved candidates = exactly 150; resolved originals are distinct ids ≤ 11850.
-- **Changelog:** v0.1 2026-07-04
+  Live-data finding (TASK-03, validator-confirmed): the rule-3 fallback resolves ZERO candidates — no candidate shares
+  an email local part with any original (the generator mutated them); the branch stays live in the view for rule fidelity.
+  Actual split: 134 phone-resolved + 16 unresolved.
+- **Changelog:** v1.1 2026-07-04 — rule-3 uniqueness + non-NULL guards codified from TASK-03 build (validator Warning 1), live zero-resolution finding documented; approved by Ian · v0.1 2026-07-04
 
 ## DEF-015: Email normalization rule  (v1.0)
 - **Plain definition:** Lowercase, trim; 'N/A'/'none' (any casing) become NULL.
