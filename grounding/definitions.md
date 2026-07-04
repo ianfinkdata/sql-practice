@@ -1,8 +1,9 @@
 # Definitions Registry — Oakhaven Medallion Project
 
-**STATUS: DRAFT v0.1 (2026-07-04) — seeded by the main session, PENDING IAN'S APPROVAL.**
-Until approved, agents may use these for TASK-01/02 (measurement) but silver/gold builds
-(TASK-03+) are blocked on the approval gate (IMPLEMENTATION_PLAN.md §5).
+**STATUS: APPROVED v1.0 (2026-07-04) — approval artifact: merged PR #52.**
+All DEFs are usable by all tasks. Open items: DEF-012 and DEF-013 mapping tables are
+populated from TASK-02's value census and land as a diff for Ian's approval before
+TASK-03 (silver) uses them.
 One entry per metric or business concept. Agents may READ this file; only Ian edits it
 (agents propose diffs). Increment the DEF number; bump version on any change.
 
@@ -11,7 +12,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 
 ---
 
-## DEF-001: Line net revenue  (v0.1 draft)
+## DEF-001: Line net revenue  (v1.0)
 - **Plain definition:** What a single order line is worth after its discount — the atomic money unit of the whole model.
 - **Canonical SQL:**
   ```sql
@@ -23,7 +24,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** Per-line rounding, half-up, 2dp — NEVER sum-then-round (CONTRACT §3.9 v1.2). All operands are DECIMAL/TINYINT so MySQL arithmetic is exact; ROUND on DECIMAL rounds half away from zero, which equals half-up for these non-negative values.
 - **Changelog:** v0.1 2026-07-04 — drafted from CONTRACT §3.9
 
-## DEF-002: Order true total  (v0.1 draft)
+## DEF-002: Order true total  (v1.0)
 - **Plain definition:** The real order amount: sum of its line net revenues.
 - **Canonical SQL:**
   ```sql
@@ -38,7 +39,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** `orders.order_total_text` is a formatting-practice column, not a source (see DEF-016). Captured payments for completed orders reconcile to this total ± $0.02 (CONTRACT §6.8).
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-003: Revenue-recognized order statuses  (v0.1 draft)
+## DEF-003: Revenue-recognized order statuses  (v1.0)
 - **Plain definition:** Which orders count as sales: completed and refunded orders do; cancelled and pending do not.
 - **Canonical SQL:**
   ```sql
@@ -50,7 +51,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** Refunded orders count as GROSS revenue; their give-back is netted via returns (DEF-005). Pending = only orders within 14 days of window end (11 rows).
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-004: Gross revenue  (v0.1 draft)
+## DEF-004: Gross revenue  (v1.0)
 - **Plain definition:** Total sales value of revenue-recognized orders before returns.
 - **Canonical SQL:**
   ```sql
@@ -63,7 +64,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Owner:** Ian
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-005: Net revenue  (v0.1 draft)
+## DEF-005: Net revenue  (v1.0)
 - **Plain definition:** Gross revenue minus the value refunded through returns.
 - **Canonical SQL:**
   ```sql
@@ -77,7 +78,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** Two dating policies exist; gold marts use **return_date** for trend marts (cash-timing view) and original order date for product-level return-rate marts. Each mart states which it uses.
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-006: Average order value (AOV)  (v0.1 draft)
+## DEF-006: Average order value (AOV)  (v1.0)
 - **Plain definition:** Gross revenue divided by the number of revenue-recognized orders.
 - **Canonical SQL:**
   ```sql
@@ -88,7 +89,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Owner:** Ian
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-007: Unit return rate  (v0.1 draft)
+## DEF-007: Unit return rate  (v1.0)
 - **Plain definition:** Of units sold on revenue-recognized orders, the share that came back.
 - **Canonical SQL:**
   ```sql
@@ -100,7 +101,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** LEFT JOIN — most lines have no return. A line can have at most one return row in this dataset.
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-008: Revenue return rate  (v0.1 draft)
+## DEF-008: Revenue return rate  (v1.0)
 - **Plain definition:** Refunded value as a share of gross revenue.
 - **Canonical SQL:**
   ```sql
@@ -110,7 +111,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Owner:** Ian
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-009: Boolean normalization rule  (v0.1 draft)
+## DEF-009: Boolean normalization rule  (v1.0)
 - **Plain definition:** How Y/N/1/0/yes/no/TRUE/FALSE text flags become a real 0/1.
 - **Canonical SQL:**
   ```sql
@@ -123,7 +124,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** ELSE NULL is deliberate — an unmapped value must surface in the silver verification query (count of non-NULL bronze → NULL silver must be 0), not be guessed.
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-010: Phone normalization rule  (v0.1 draft)
+## DEF-010: Phone normalization rule  (v1.0)
 - **Plain definition:** Reduce any phone format to its 10 digits; junk becomes NULL.
 - **Canonical SQL:**
   ```sql
@@ -136,7 +137,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** Handles all five contract formats incl. +1 prefix (D2); 'N/A' and NULL → NULL. Also the join key for near-dupe matching (DEF-014).
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-011: Delivered-date parse rule  (v0.1 draft)
+## DEF-011: Delivered-date parse rule  (v1.0)
 - **Plain definition:** Turn shipments.delivered_date_raw (mixed text formats) into a DATE; 'PENDING'/NULL stay NULL with a flag.
 - **Canonical SQL:**
   ```sql
@@ -152,7 +153,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** Silver adds `is_delivery_pending` = (raw = 'PENDING'). Verification: parsed NULLs must equal raw NULL + 'PENDING' counts exactly.
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-012: State normalization rule  (v0.1 draft — mapping table TBD)
+## DEF-012: State normalization rule  (v1.0 — mapping table pending TASK-02 census)
 - **Plain definition:** Map full state names and period-abbreviations ('Washington', 'Wash.') to 2-letter codes; already-2-letter values pass through uppercased.
 - **Canonical SQL:** *finalized after TASK-02's census of `SELECT DISTINCT state` — the discovered variants become an explicit CASE mapping here (diff → Ian approval).* Interim shape:
   ```sql
@@ -164,14 +165,14 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** Post-clean invariant: every silver state is exactly 2 uppercase letters; unmapped variants → NULL + verification failure, never a guess.
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-013: Payment method normalization  (v0.1 draft — mapping table TBD)
+## DEF-013: Payment method normalization  (v1.0 — mapping table pending TASK-02 census)
 - **Plain definition:** Collapse ≥8 spellings (Visa/VISA/visa, 'Master Card'/MC, AMEX, cash/CASH, GIFT…) into canonical set {visa, mastercard, amex, cash, gift} (final set confirmed by TASK-02 census).
 - **Canonical SQL:** explicit CASE over `UPPER(TRIM(method))` values discovered in TASK-02; no LIKE/fuzzy matching. Mapping table lands here as a diff for approval.
 - **Applies to:** payments.method (CONTRACT D12)
 - **Owner:** Ian
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-014: Customer near-dupe resolution  (v0.1 draft)
+## DEF-014: Customer near-dupe resolution  (v1.0)
 - **Plain definition:** customer_ids 11851–12000 are known fuzzy copies of 150 originals (CONTRACT D7). Each maps to a canonical_customer_id; silver flags, gold collapses.
 - **Canonical rule:**
   1. Candidates: customer_id BETWEEN 11851 AND 12000.
@@ -184,7 +185,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** Verification target: resolved + unresolved candidates = exactly 150; resolved originals are distinct ids ≤ 11850.
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-015: Email normalization rule  (v0.1 draft)
+## DEF-015: Email normalization rule  (v1.0)
 - **Plain definition:** Lowercase, trim; 'N/A'/'none' (any casing) become NULL.
 - **Canonical SQL:**
   ```sql
@@ -195,7 +196,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Owner:** Ian
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-016: order_total_text cast (reconciliation only)  (v0.1 draft)
+## DEF-016: order_total_text cast (reconciliation only)  (v1.0)
 - **Plain definition:** How to parse the currency-as-text column when reconciling it against DEF-002. NEVER a revenue source.
 - **Canonical SQL:**
   ```sql
@@ -206,7 +207,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** Bronze pack proves cast(text) = DEF-002 total for all 60,000 orders; after that, gold uses DEF-002 exclusively.
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-017: Sentinel policy  (v0.1 draft)
+## DEF-017: Sentinel policy  (v1.0)
 - **Plain definition:** Known impossible values become NULL in silver, with a flag column recording that a sentinel was present.
 - **Rules:**
   | Bronze value | Silver value | Flag column |
@@ -219,7 +220,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** age > 95 outliers (D5) are kept but flagged `is_age_outlier` — plausible, not impossible. Window end is a constant, not CURDATE(), for reproducibility.
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-018: Fulfillment days  (v0.1 draft)
+## DEF-018: Fulfillment days  (v1.0)
 - **Plain definition:** Days from order to delivery.
 - **Canonical SQL:**
   ```sql
