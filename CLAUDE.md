@@ -71,9 +71,13 @@ Deliverables land in `outputs/TASK-<id>/`; Ian promotes approved work to `medall
 - Add or update the relevant `grounding/index.md` entry.
 
 ## Sync & branching protocol
-- This repo is git-managed (`ianfinkdata/sql-practice`). Current work happens on the
-  branch Ian designates; never push or open PRs without being asked.
-- Changes to `grounding/definitions.md` are always presented as a diff for approval first.
+- This repo is git-managed (`ianfinkdata/sql-practice`). **All work lands on a task branch
+  (`task/<TASK-id>`) and merges to main through a PR — no direct commits to main.**
+  (Ian's standing instruction, 2026-07-04. Applies to everything: outputs, process files,
+  grounding, and especially `grounding/definitions.md`.) The PR is the approval artifact.
+- Changes to `grounding/definitions.md` are additionally presented as a diff in-session
+  for approval BEFORE the PR is opened.
+- Never push or open PRs without Ian asking for the work to ship.
 - NEVER commit credentials. `.my.cnf` lives outside the repo.
 
 ## Delegation
