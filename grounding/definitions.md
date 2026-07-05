@@ -3,7 +3,9 @@
 **STATUS: APPROVED v1.0 (2026-07-04) — approval artifact: merged PR #52.**
 All DEFs are usable by all tasks. No open items: DEF-012/013 mapping tables were
 finalized from the shipped B03 census and approved by Ian 2026-07-04 (v1.1);
-DEF-019 added same day from the TASK-02 finding.
+DEF-019 added same day from the TASK-02 finding. DEF-020/021 added 2026-07-05
+from the TASK-04 MISSING DEFINITION escalations (diffs approved by Ian in-session);
+they apply to gold via the follow-up brief TASK-20260705-01.
 One entry per metric or business concept. Agents may READ this file; only Ian edits it
 (agents propose diffs). Increment the DEF number; bump version on any change.
 
@@ -275,3 +277,35 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Owner:** Ian
 - **Caveats:** Empirically discovered (TASK-02), then adversarially verified (validator): all 3,600 transfer_out references are unique TR tokens (0 NULL, 0 reuse); matched pairs always share product_id and never share store_id. Two discoverable populations, both features per RULE-008: 54 orphan transfer_outs (contract's stated ~1.5%) and 38 reverse-orphan transfer_ins (16 NULL-reference + 22 well-formed-but-unmatched) — the latter is NOT contract-documented; gold inventory reconciliation must expect both.
 - **Changelog:** v1.0 2026-07-04 — created from TASK-02 finding; approved by Ian in-session ("apply corrections") with the reverse-orphan population documented as a discoverable
+
+## DEF-020: Loyalty tier normalization  (v1.0)
+- **Plain definition:** Collapse the 20 raw casing/whitespace variants of customers.loyalty_tier into the ordinal tier set {basic, silver, gold, platinum} (lowercase storage; reports Title-Case at render time, per DEF-013 precedent). Ordinal rank: basic=1, silver=2, gold=3, platinum=4 — tiers order by rank, never alphabetically.
+- **Canonical SQL:**
+  ```sql
+  CASE UPPER(TRIM(loyalty_tier))
+    WHEN 'BASIC'    THEN 'basic'
+    WHEN 'SILVER'   THEN 'silver'
+    WHEN 'GOLD'     THEN 'gold'
+    WHEN 'PLATINUM' THEN 'platinum'
+    ELSE NULL
+  END
+  ```
+- **Applies to:** customers.loyalty_tier — in GOLD `dim_customer` only. Silver shipped this column as a raw passthrough and stays untouched; the raw value is retained as `loyalty_tier_raw`.
+- **Grain:** per customer
+- **Owner:** Ian
+- **Caveats:** Covers all 20 raw values in the shipped B03 census (medallion/a_bronze/EXPECTED_OUTPUTS.md — 4 tiers × 5 casing/whitespace variants; the census REQUIRES a NO PAD binary collation, utf8mb4_0900_bin, or trailing-space variants silently merge per RULE-011). Mapped totals basic 7,296 · silver 2,583 · gold 1,491 · platinum 630 sum to 12,000 = the full customers count, so gold verification asserts ZERO NULLs. ELSE NULL is the unmapped-value tripwire (RULE-007).
+- **Changelog:** v1.0 2026-07-05 — created from TASK-04 MISSING DEFINITION escalation; mapping finalized from shipped B03 census; diff approved by Ian in-session
+
+## DEF-021: Unit margin  (v1.0)
+- **Plain definition:** Per-unit profit on an order line: the realized (post-discount) unit price minus the product's current unit cost. Companion product-level CATALOG margin (list_price − unit_cost) serves the R2 price-vs-cost scatter.
+- **Canonical SQL:**
+  ```sql
+  ROUND(oi.unit_price * (1 - oi.line_discount_pct / 100), 2) - p.unit_cost   -- realized, line grain
+  -- companion, product grain (R2 scatter):
+  -- p.list_price - p.unit_cost
+  ```
+- **Source:** oakhaven.order_items (unit_price, line_discount_pct) × oakhaven.products (unit_cost, list_price)
+- **Grain:** per order line (realized); per product (catalog companion)
+- **Owner:** Ian
+- **Caveats:** Cost basis is CURRENT products.unit_cost — no historical cost table exists, so margins on old orders use today's cost (stated limitation). order_items.unit_price is a true transactional price (equals list_price on only 142 of 156,190 lines — live-probed 2026-07-05). The realized unit price is rounded 2dp BEFORE subtracting, mirroring DEF-001's round-per-line law; unit_cost is an exact DECIMAL so the result is exact 2dp. Realized below-cost lines (3,534 live) and the D16 catalog below-cost products (17) / D17 penny lines are features to surface, never filter (RULE-008). R2's "median unit margin" = median over DEF-003 revenue lines in fact_order_lines.
+- **Changelog:** v1.0 2026-07-05 — created from TASK-04 MISSING DEFINITION escalation; price/cost basis probed live; diff approved by Ian in-session
