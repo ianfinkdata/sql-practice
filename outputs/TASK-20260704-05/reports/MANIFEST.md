@@ -28,6 +28,10 @@ aggregate signature (124,694 units / $28,938,760.99 — exact match) confirming 
 fabricated. Recommend commissioning a row-level (or reduced/quarterly) re-capture of Q07/Q09
 from `sql-builder` as a follow-up if the original trend/scatter visuals are wanted.
 
+**RESOLVED 2026-07-05 (TASK-20260705-03)** — see the dated entry below; the escalations in
+this section are historical (describe the state as of TASK-20260704-05) and no longer apply
+to the current `R2_product_explorer.html` on disk.
+
 ## Handoff Block (report-designer)
 
 ```
@@ -48,10 +52,11 @@ ASSUMPTIONS:
 - Money displayed at 0dp per report-spec formatting rule even for small unit-economics
   figures; exact captured value shown in KPI sub-label and embedded JSON.
 - Q07/Q09 grain mismatches resolved by building honest, clearly-labeled substitute visuals
-  rather than fabricating row-level points (see escalations above).
+  rather than fabricating row-level points (see escalations above; superseded 2026-07-05).
 
 CONFIDENCE: high on R1 and R3 (fully-captured row-level data, no gaps). Medium on R2's
 trend/scatter substitutes specifically; rest of R2 (KPIs, rollup, distribution, top/bottom) high.
+(Superseded 2026-07-05 — R2's trend/scatter are now high-confidence full-grain visuals too.)
 
 QA HINTS:
 1. Trace two KPI numbers per report through the lineage table to EXPECTED_OUTPUTS.md verbatim.
@@ -59,6 +64,7 @@ QA HINTS:
    requests.
 3. Review the two R2 escalation boxes (Q07, Q09 grain mismatch) and decide whether to
    commission a full row-level re-capture from sql-builder, or accept the substitutes.
+   (Superseded 2026-07-05 — the re-capture landed and the substitutes were retired; see below.)
 ```
 
 ## Validator findings (sql-validator, same session)
@@ -85,3 +91,36 @@ Non-blocking warnings:
    ("2020-02 → 2020-04") differ by one month at the boundary. No displayed number affected.
 6. DEF-018 listed as "required" in the brief but unused in all three reports — consistent
    with report-spec's actual per-report KPI/visual lists; likely an over-inclusive brief line.
+
+## 2026-07-05 — TASK-20260705-03: Q07/Q09 substitutes retired, real visuals wired in
+
+`medallion/c_gold/EXPECTED_OUTPUTS.md` was updated by TASK-20260705-02 (validator-approved,
+zero drift vs the old aggregate signatures) with full row-level captures for both queries:
+Q07_r2_monthly_units_top5_categories.sql (450 rows: 90 months × top-5 categories) and
+Q09_r2_price_vs_cost.sql (850 rows: one per product). `R2_product_explorer.html` was amended
+in place:
+
+- **Primary view** replaced: the top-5-categories-by-full-window-units bar is gone; in its
+  place is the report-spec's actual monthly units trend — a 5-series line chart (fixed
+  category→color mapping, crosshair + tooltip, legend) over all 90 months, sourced from the
+  full Q07 capture embedded verbatim as a TSV block and parsed at render time.
+- **Price-vs-cost panel** replaced: the catalog-totals bar (sum unit_cost / sum list_price) is
+  gone; in its place is the report-spec's actual 850-point price-vs-cost scatter (unit_cost on
+  x, list_price on y, a dashed list=cost reference line), with the 17 D16 below-cost products
+  drawn larger and in the critical color, distinct from the other 833. The D16/D17 stat chips
+  (unchanged, already legitimate full captures) remain alongside it.
+- Both `.escalation` boxes and the "Known data gaps" notes section removed (no other gap
+  remained to document).
+- The two lineage-table rows updated to drop "(aggregate signature only)" and cite
+  `EXPECTED_OUTPUTS.md § Q07_r2_monthly_units_top5_categories.sql` / `§ Q09_r2_price_vs_cost.sql`
+  (full row-level capture, TASK-20260705-02, 450 / 850 rows respectively).
+- Nothing else in R2 touched; R1, R3, and template.html untouched.
+- Row counts spot-checked post-write: exactly 450 `sales_month\tcategory_id` data rows (ids
+  10/11/12/17/19 only) and exactly 850 `product_id\tsku` data rows in the embedded TSV blocks,
+  matching the capture counts; 17 `is_below_cost=1` rows counted, matching D16.
+- File re-verified self-contained: no CDN/fetch/XHR references (the only `http://` string in
+  the file is the standard SVG XML namespace URI, not a network reference).
+
+Owner: report-designer → sql-validator → Ian (validator has not yet re-run against this
+specific edit; recommend a targeted re-check of the two new visuals and the lineage table
+before promotion).
