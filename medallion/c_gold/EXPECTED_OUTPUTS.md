@@ -1,18 +1,42 @@
-# EXPECTED_OUTPUTS.md — TASK-20260704-04 gold layer
+# EXPECTED_OUTPUTS.md — TASK-20260705-01 gold amendment (DEF-020 loyalty tier + DEF-021 unit margin)
 
-Captured 2026-07-05 via actual `--batch` runs against the live server, MySQL 8.0.39 (RULE-006 —
+This file is the COMPLETE updated capture set for the gold layer and supersedes the
+TASK-20260704-04 version (medallion/c_gold/EXPECTED_OUTPUTS.md).
+
+**What changed vs TASK-04:**
+- **Amended views (4, all additive):** `dim_customer` (+ `loyalty_tier` normalized per DEF-020,
+  + `loyalty_tier_rank`, raw kept as `loyalty_tier_raw`), `fact_order_lines` (+ `unit_margin`
+  per DEF-021 realized form, via a silver products PK join), `dim_product` (+ `catalog_margin`
+  per DEF-021 companion), `mart_product_performance` (+ `catalog_margin` carried through).
+- **New verify:** V06 (DEF-020 tier census, RULE-011 binary NO PAD collation, zero-NULL-leak),
+  V07 (DEF-021 spot reconciliation + below-cost censuses).
+- **New queries:** Q13 (R1 revenue by loyalty tier, rank-ordered), Q14 (R2 margin KPIs incl.
+  median unit margin), Q15 (R2 margin distribution histogram). Q09 needed no change (the R2
+  scatter uses unit_cost/list_price/is_below_cost, all already present).
+- **Everything else is carried over VERBATIM from the TASK-04 captures** — the regression guard
+  (below) proved no existing output moved.
+
+**REGRESSION GUARD (run 2026-07-05, after the four amended views were applied live):** the
+full shipped verify pack V01–V05 and ALL shipped queries Q01–Q12 (incl. the Q07/Q09 aggregate
+signature queries) were re-run against the amended views and diffed against the TASK-04
+captures: **all 17 targets byte-identical** — the added columns changed no existing query's
+output (every existing query SELECTs named columns; verified by re-run, not assumption).
+
+Captured 2026-07-05 via actual `--batch` runs against the live server, MySQL 8.0 (RULE-006 —
 pasted verbatim, never hand-typed; this file was assembled mechanically from the captured
 run files). Connection: `Get-Content <file>.sql -Raw | & "C:\Program Files\MySQL\MySQL Server
 8.0\bin\mysql.exe" --defaults-extra-file="C:\Users\ianfi\.my.cnf" --batch oakhaven`.
 
-Preconditions: `ddl/G00_create_schema.sql` then `G01…G11` executed in filename order — all 12
-statements (1 schema + 11 CREATE OR REPLACE VIEW in `oakhaven_gold`) completed without error.
-Gold reads from `oakhaven_silver` only (plus `oakhaven_silver` `_raw` columns in the two R3
-DQ queries, as the task brief sanctions).
+Preconditions: the TASK-04 gold layer live (G00–G11 in filename order), then the four amended
+ddl files from this task re-applied (`G03_dim_product.sql`, `G04_dim_customer.sql`,
+`G06_fact_order_lines.sql`, `G09_mart_product_performance.sql` — CREATE OR REPLACE VIEW,
+dependency order G03 → G04 → G06 → G09). Gold reads from `oakhaven_silver` only (plus
+`oakhaven_silver` `_raw` columns in the two R3 DQ queries and bronze `oakhaven` reads inside
+V07's reconciliation probes, which recompute DEF-021 off the source of truth).
 
-The FULL verify pack (V01–V05) and the FULL queries pack (Q01–Q12) were each run TWICE in
-this session and diffed byte-for-byte identical (`Compare-Object` produced no output) —
-reproducibility confirmed per medallion-spec §Reproducibility rule 5.
+Every NEW or re-run query in this file (V06, V07, Q13, Q14, Q15) was run TWICE in this session
+and diffed byte-for-byte identical — reproducibility confirmed per medallion-spec
+§Reproducibility rule 5.
 
 Long results (Q07 ≈ 450 rows, Q09 = 850 rows) are captured as AGGREGATE SIGNATURES, stated
 as such per medallion-spec §Reproducibility rule 4; the exact signature SQL is included so
@@ -102,6 +126,69 @@ lines_with_multiple_returns
 All 5,010 bronze returns sit on DEF-003 revenue-order lines (RS2 = 0), so silver = fact =
 mart_returns exactly, refund total 1,951,653.13. RS3 = 0 adversarially confirms the DEF-007
 caveat (at most one return per line) — the fact's LEFT JOIN cannot fan out.
+
+---
+
+## V06_loyalty_tier_census.sql
+
+RS1 — full-base DEF-020 census (the exact gold expression over all 12,000 silver customers);
+RS2 — zero-NULL-leak + total accounting; RS3 — raw-variant coverage under the RULE-011 NO PAD
+binary collation; RS4 — the gold dim_customer surface census (DEF-014 canonical grain):
+```
+tier	tier_rank	n_customers	n_raw_variants
+basic	1	7296	5
+silver	2	2583	5
+gold	3	1491	5
+platinum	4	630	5
+silver_customers	mapped_total	full_base_null_leaks	dim_tier_null_leaks	dim_rank_null_leaks	tier_rank_mismatches
+12000	12000	0	0	0	0
+raw_variants_binary	raw_variants_default_collation
+20	8
+loyalty_tier	loyalty_tier_rank	n_canonical_customers	n_source_customers
+basic	1	7212	7297
+silver	2	2553	2582
+gold	3	1476	1491
+platinum	4	625	630
+```
+
+RS1 hits the B03-reconciled DEF-020 mapped totals exactly — basic 7,296 · silver 2,583 ·
+gold 1,491 · platinum 630, summing to 12,000 — with 5 raw variants per tier, in rank order
+(never alphabet). RS2: all 12,000 rows map (zero NULL leaks full-base AND on the gold dim;
+zero tier↔rank mismatches — the DEF-020 bijection holds). RS3: 20 distinct raw variants under
+`COLLATE utf8mb4_0900_bin`; the schema-default ai_ci PAD collation sees only 8 (casing and
+trailing-space variants silently merge — exactly the RULE-011 trap the binary NO PAD collation
+avoids). RS4: the 11,866-row canonical census (7,212 / 2,553 / 1,476 / 625) with DEF-014
+source accounting — `n_source_customers` sums to 12,000, but its per-tier split
+(7,297 / 2,582 / 1,491 / 630) deliberately does NOT re-produce RS1: exactly one absorbed dupe's
+own raw tier (silver) differs from its canonical original's (basic). Orders attribute to the
+CANONICAL row's tier by DEF-014 design (the original wins; ids resolve, attributes don't merge).
+
+---
+
+## V07_margin_reconciliation.sql
+
+RS1 — hand-computable MIN-PK spot lines (bronze ingredients vs the fact column); RS2 —
+below-cost censuses; RS3 — full-population consistency probes:
+```
+which	order_item_id	unit_price	line_discount_pct	unit_cost	bronze_recomputed_margin	fact_unit_margin	is_match
+below_cost_min_pk	68	104.26	0.0	129.65	-25.39	-25.39	1
+overall_min_pk	1	23.19	0.0	14.64	8.55	8.55	1
+penny_line_min_pk	1830	0.01	10.0	217.87	-217.86	-217.86	1
+below_cost_all_lines	below_cost_revenue_lines	below_cost_out_of_scope	catalog_below_cost	is_below_cost_flag_total
+3534	3444	90	17	17
+fact_unit_margin_mismatches	dim_catalog_margin_mismatches	mart_catalog_margin_mismatches	below_cost_flag_mismatches
+0	0	0	0
+```
+
+RS1: all three spot lines match — e.g. the D17 penny line (order_item_id 1830):
+ROUND(0.01 × (1 − 10/100), 2) = 0.01, minus unit_cost 217.87 → −217.86 = the fact's
+unit_margin exactly (rounded BEFORE subtracting per DEF-021/RULE-004). RS2: 3,534 realized
+below-cost lines across ALL 156,190 order lines (the DEF-021 caveat census) = 3,444 in DEF-003
+revenue scope + 90 on cancelled/pending orders — the same scope-split pattern as the D17 penny
+lines (297 = 291 + 6, Q11); catalog below-cost = 17 = SUM(is_below_cost) = the B06 D16 census.
+RS3: zero mismatches recomputing both DEF-021 forms straight off bronze across all 151,818
+fact lines and all 850 products; mart_product_performance carries dim_product's catalog_margin
+exactly, and is_below_cost ⇔ catalog_margin < 0 with no exceptions.
 
 ---
 
@@ -373,7 +460,8 @@ active_products	total_products	units_sold	gross_revenue	unit_return_rate_pct
 
 590 active products (DEF-009 discontinued_flag = 0; silver V02: 590 zeros) of 850 total;
 359,151 units sold in DEF-003 scope; unit return rate 2.36% (DEF-007). "Median unit margin"
-is OMITTED — no unit-margin DEF exists (MISSING DEFINITION, escalated in the handoff).
+lives in Q14 (DEF-021, added by TASK-20260705-01) — the TASK-04 MISSING DEFINITION is closed;
+Q06 itself is unchanged and byte-identical to its TASK-04 capture.
 
 ---
 
@@ -552,3 +640,70 @@ DEF-017	products.weight_kg (sentinel)	10023	-999.00	NULL
 
 One deterministic (MIN-PK) bronze→silver example per lossy transform DEF. DEF-014 has no row
 here by design — it is an id-resolution rule, not a value transform (its census is Q11 RS1).
+
+---
+
+## Q13_r1_revenue_by_tier.sql
+```
+loyalty_tier	loyalty_tier_rank	order_count	gross_revenue	net_revenue
+basic	1	34930	49846202.15	48706061.46
+silver	2	12363	17580320.38	17156261.74
+gold	3	7778	11138543.79	10864100.67
+platinum	4	3229	4595111.66	4482100.98
+```
+
+R1 by-tier breakdown, ordered by DEF-020 rank (basic → platinum), never alphabet. Gross across
+the four tiers sums to 83,160,177.98 (= B05 to the cent) and order counts sum to 58,300
+(= DEF-003 census) — every revenue order lands in exactly one tier (V06's zero-NULL-leak law).
+Orders attribute to the canonical customer's tier (DEF-014).
+
+---
+
+## Q14_r2_margin_kpis.sql
+```
+n_revenue_lines	median_unit_margin	min_unit_margin	max_unit_margin	below_cost_lines
+151818	103.47	-239.05	340.80	3444
+```
+
+R2 margin KPI row: median unit margin 103.47 (DEF-021, median over the 151,818 DEF-003 revenue
+lines; n is even, so the median is the ROUND-2dp arithmetic mean of the two middle values at
+sorted positions 75,909 and 75,910 — the even-count rule documented in the file header).
+Distribution bounds −239.05 … 340.80; 3,444 realized below-cost lines (= V07 RS2, RULE-008
+feature).
+
+---
+
+## Q15_r2_margin_distribution.sql
+```
+band_start	band_label	line_count	line_share_pct	is_below_cost_band
+-250	[-250, -225)	15	0.01	1
+-225	[-225, -200)	39	0.03	1
+-200	[-200, -175)	26	0.02	1
+-175	[-175, -150)	25	0.02	1
+-150	[-150, -125)	33	0.02	1
+-125	[-125, -100)	42	0.03	1
+-100	[-100, -75)	74	0.05	1
+-75	[-75, -50)	142	0.09	1
+-50	[-50, -25)	1150	0.76	1
+-25	[-25, 0)	1898	1.25	1
+0	[0, 25)	19602	12.91	0
+25	[25, 50)	18636	12.28	0
+50	[50, 75)	17494	11.52	0
+75	[75, 100)	14617	9.63	0
+100	[100, 125)	16041	10.57	0
+125	[125, 150)	16704	11.00	0
+150	[150, 175)	14541	9.58	0
+175	[175, 200)	9773	6.44	0
+200	[200, 225)	6594	4.34	0
+225	[225, 250)	6439	4.24	0
+250	[250, 275)	4444	2.93	0
+275	[275, 300)	2541	1.67	0
+300	[300, 325)	849	0.56	0
+325	[325, 350)	99	0.07	0
+```
+
+24 populated $25-wide bands with constant edges anchored at $0 (band = [start, start+25)),
+spanning −250 … 325 and covering the full Q14 range. The ten negative bands (is_below_cost_band
+= 1) sum to 3,444 lines = V07's revenue-scope below-cost census; line_count sums to 151,818 and
+line_share_pct to 100.00 (±rounding). The distribution's mass sits in [0, 200) with the
+below-cost tail as the R2 call-out series (RULE-008).
