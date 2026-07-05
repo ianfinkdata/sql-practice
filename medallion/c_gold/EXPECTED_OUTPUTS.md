@@ -1,4 +1,4 @@
-# EXPECTED_OUTPUTS.md — TASK-20260705-01 gold amendment (DEF-020 loyalty tier + DEF-021 unit margin)
+# EXPECTED_OUTPUTS.md — gold layer complete capture set (as amended by TASK-20260705-01 and TASK-20260705-02)
 
 This file is the COMPLETE updated capture set for the gold layer and supersedes the
 TASK-20260704-04 version (medallion/c_gold/EXPECTED_OUTPUTS.md).
