@@ -72,11 +72,11 @@ verified honest (Q08-leaf cross-foot against Q07 signature: 124,694 / $28,938,76
 Non-blocking warnings:
 1. This MANIFEST.md (created after the validator ran) resolves the "no Handoff Block artifact
    on disk" warning — no `process/memory_log.md` entry existed until this session's log pass.
-2. R3's "Primary visual" lineage row cites DEF-009 for D6 (loyalty-tier casing), inherited
-   verbatim from `medallion/a_bronze/B04_dirt_census.sql`'s header comment, which predates
-   DEF-020 (added 2026-07-05). DEF-009's "Applies to" list in `grounding/definitions.md`
-   excludes `loyalty_tier`; DEF-020 is the correct grounding for D6 and is not cited in R3.
-   Left as-is pending Ian's call (report content edit, not a definitions.md change).
+2. **FIXED (2026-07-05, Ian-approved):** R3's "Primary visual" lineage row cited DEF-009 for
+   D6 (loyalty-tier casing), inherited verbatim from `medallion/a_bronze/B04_dirt_census.sql`'s
+   header comment, which predates DEF-020. DEF-009's "Applies to" list in
+   `grounding/definitions.md` excludes `loyalty_tier`; DEF-020 added to the row's citation
+   alongside DEF-009/011/012/013/017 (report-content edit only, no definitions.md change).
 3. Cosmetic: R2's Q10 bottom-15 "Juniper Kids Daypack" transcribed without the captured
    trailing space (invisible in rendering).
 4. R2/R3 anomaly-panel lineage rows cite RULE-008/DEF-019 across multi-bar panels without
