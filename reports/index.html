@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oakhaven Medallion Project — Exploratory Reports</title>
+<style>
+:root{
+  --surface-1:#fcfcfb; --page-plane:#f9f9f7; --text-primary:#0b0b0b; --text-secondary:#52514e;
+  --text-muted:#898781; --gridline:#e1e0d9; --border:rgba(11,11,11,0.10);
+  --series-1:#2a78d6; --series-2:#1baf7a; --series-3:#eda100;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --surface-1:#1a1a19; --page-plane:#0d0d0d; --text-primary:#ffffff; --text-secondary:#c3c2b7;
+    --text-muted:#898781; --gridline:#2c2c2a; --border:rgba(255,255,255,0.10);
+    --series-1:#3987e5; --series-2:#199e70; --series-3:#c98500;
+  }
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--page-plane);color:var(--text-primary);line-height:1.6;}
+.wrap{max-width:880px;margin:0 auto;padding:56px 20px 72px;}
+h1{font-size:1.7rem;margin:0 0 6px;}
+p.lede{color:var(--text-secondary);margin:0 0 40px;max-width:640px;}
+.cards{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));}
+a.card{display:block;background:var(--surface-1);border:1px solid var(--border);border-radius:14px;
+  padding:20px 22px;text-decoration:none;color:inherit;transition:transform .15s,border-color .15s;}
+a.card:hover{transform:translateY(-3px);border-color:var(--series-1);}
+.card .tag{font-size:0.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);}
+.card h2{font-size:1.1rem;margin:6px 0 8px;}
+.card p{margin:0;color:var(--text-secondary);font-size:0.92rem;}
+.card.r1 .tag{color:var(--series-1);} .card.r2 .tag{color:var(--series-2);} .card.r3 .tag{color:var(--series-3);}
+footer{margin-top:48px;font-size:0.82rem;color:var(--text-muted);}
+footer a{color:inherit;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Oakhaven Medallion Project — Exploratory Reports</h1>
+    <p class="lede">
+      Self-contained HTML reports built on a bronze → silver → gold medallion
+      pipeline over the Oakhaven Outfitters practice dataset. Every number on
+      every chart traces to a captured, reproducible gold or bronze query —
+      see each report's lineage footer.
+    </p>
+    <div class="cards">
+      <a class="card r1" href="R1_sales_explorer.html">
+        <span class="tag">R1</span>
+        <h2>Sales Explorer</h2>
+        <p>Revenue trend by channel, seasonality and the 2020 dip, revenue by store and loyalty tier, promo share.</p>
+      </a>
+      <a class="card r2" href="R2_product_explorer.html">
+        <span class="tag">R2</span>
+        <h2>Product &amp; Category Explorer</h2>
+        <p>Category performance, margin distribution, price-vs-cost anomalies, top/bottom products.</p>
+      </a>
+      <a class="card r3" href="R3_data_quality.html">
+        <span class="tag">R3</span>
+        <h2>Data Quality Explorer</h2>
+        <p>The bronze-to-silver dirt census, near-dupe resolution, sentinel values, and planted anomalies — proof the cleaning rules did what they say.</p>
+      </a>
+    </div>
+    <footer>
+      Structural template for building new reports: <a href="template.html">template.html</a>.
+      Source and pipeline: <a href="https://github.com/ianfinkdata/sql-practice">github.com/ianfinkdata/sql-practice</a>.
+    </footer>
+  </div>
+</body>
+</html>

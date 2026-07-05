@@ -1,6 +1,8 @@
-name: Deploy SQL Trainer Pages
+name: Deploy Pages
 
-# Publishes the static GitHub Pages site in sql-trainer/docs/.
+# Publishes a combined GitHub Pages site:
+#   /            -> sql-trainer/docs/ (SQL Trainer, unchanged)
+#   /medallion/  -> reports/ (Oakhaven medallion exploratory reports)
 # One-time setup: in the repo, go to Settings → Pages → Build and deployment
 # → Source, and choose "GitHub Actions".
 
@@ -9,6 +11,7 @@ on:
     branches: [main]
     paths:
       - "sql-trainer/docs/**"
+      - "reports/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch: {}
 
@@ -35,11 +38,22 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Assemble combined site
+        run: |
+          set -e
+          mkdir -p _site
+          cp -r sql-trainer/docs/. _site/
+          mkdir -p _site/medallion
+          cp -r reports/. _site/medallion/
+          # Add a medallion-project link to the deployed copy of the SQL Trainer
+          # nav only (sql-trainer/docs/index.html itself stays untouched — that
+          # folder's own CLAUDE.md requires it stay self-contained/splittable).
+          sed -i 's#<a href="https://github.com/ianfinkdata/sql-practice">GitHub</a>#<a href="medallion/">Medallion Project</a>\n        <a href="https://github.com/ianfinkdata/sql-practice">GitHub</a>#' _site/index.html
+
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # If you split sql-trainer/ into its own repo, change this to "docs".
-          path: sql-trainer/docs
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
