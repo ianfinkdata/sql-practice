@@ -8,8 +8,8 @@ reproducibility is enforced. Version 1.0 · 2026-07-04 · Owner: Ian.
 | Layer | Where | What it is | Mutability |
 |---|---|---|---|
 | Bronze | schema `oakhaven` (existing) | Raw source of truth, dirty by design | READ ONLY — never altered by this project |
-| Silver | schema `oakhaven_silver` | Cleaned, typed, conformed VIEWS, 1:1 with bronze tables | Views only; rebuilt from `medallion/silver/ddl/` |
-| Gold | schema `oakhaven_gold` | Business-ready VIEWS: facts, dims, marts | Views only; rebuilt from `medallion/gold/ddl/` |
+| Silver | schema `oakhaven_silver` | Cleaned, typed, conformed VIEWS, 1:1 with bronze tables | Views only; rebuilt from `medallion/b_silver/ddl/` |
+| Gold | schema `oakhaven_gold` | Business-ready VIEWS: facts, dims, marts | Views only; rebuilt from `medallion/c_gold/ddl/` |
 
 ## Bronze rules
 
@@ -58,17 +58,17 @@ reproducibility is enforced. Version 1.0 · 2026-07-04 · Owner: Ian.
 ## Naming & file layout
 
 ```
-medallion/
-  docs/DATA_DICTIONARY.md
-  bronze/  B01_row_counts.sql, B02_integrity.sql, B03_enum_census.sql,
-           B04_dirt_census.sql, B05_revenue_ground_truth.sql, ...
-           EXPECTED_OUTPUTS.md
-  silver/  ddl/S00_create_schema.sql, S01_customers.sql, ...
-           verify/V01_row_parity.sql, ...
-           EXPECTED_OUTPUTS.md
-  gold/    ddl/G00_create_schema.sql, G01_fact_order_lines.sql, ...
-           queries/Q01_monthly_sales.sql, ...   ← the report-feeding queries
-           EXPECTED_OUTPUTS.md
+medallion/            (prefixes _/a_/b_/c_ keep the layers sorted in medallion order)
+  _docs/DATA_DICTIONARY.md
+  a_bronze/  B01_row_counts.sql, B02_integrity.sql, B03_enum_census.sql,
+             B04_dirt_census.sql, B05_revenue_ground_truth.sql, ...
+             EXPECTED_OUTPUTS.md
+  b_silver/  ddl/S00_create_schema.sql, S01_customers.sql, ...
+             verify/V01_row_parity.sql, ...
+             EXPECTED_OUTPUTS.md
+  c_gold/    ddl/G00_create_schema.sql, G01_fact_order_lines.sql, ...
+             queries/Q01_monthly_sales.sql, ...   ← the report-feeding queries
+             EXPECTED_OUTPUTS.md
 ```
 (Work lands in `outputs/TASK-<id>/` first; Ian promotes to `medallion/` on approval.)
 
