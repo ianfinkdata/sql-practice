@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>R3 — Data Quality Explorer — Oakhaven (bronze → silver)</title>
+<style>
+:root{
+  --surface-1:#fcfcfb; --page-plane:#f9f9f7; --text-primary:#0b0b0b; --text-secondary:#52514e;
+  --text-muted:#898781; --gridline:#e1e0d9; --baseline:#c3c2b7; --border:rgba(11,11,11,0.10);
+  --series-1:#2a78d6; --series-2:#1baf7a; --series-3:#eda100; --series-4:#008300;
+  --series-5:#4a3aa7; --series-6:#e34948; --series-7:#e87ba4; --series-8:#eb6834;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --surface-1:#1a1a19; --page-plane:#0d0d0d; --text-primary:#ffffff; --text-secondary:#c3c2b7;
+    --text-muted:#898781; --gridline:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,0.10);
+    --series-1:#3987e5; --series-2:#199e70; --series-3:#c98500; --series-4:#008300;
+    --series-5:#9085e9; --series-6:#e66767; --series-7:#d55181; --series-8:#d95926;
+  }
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--page-plane);color:var(--text-primary);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;}
+.wrap{max-width:1160px;margin:0 auto;padding:24px 20px 60px;}
+header.report-header{padding:8px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px;}
+h1{font-size:26px;margin:0 0 4px;}
+.subtitle{color:var(--text-secondary);font-size:14px;margin:0 0 2px;}
+.generated{color:var(--text-muted);font-size:12px;}
+section.panel{margin-bottom:36px;}
+h2.section-title{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin:0 0 6px;font-weight:600;}
+.section-note{font-size:12px;color:var(--text-muted);margin:0 0 14px;}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;}
+.kpi-tile{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.kpi-label{font-size:12px;color:var(--text-secondary);margin-bottom:6px;}
+.kpi-value{font-size:24px;font-weight:600;}
+.kpi-sub{font-size:11px;color:var(--text-muted);margin-top:4px;}
+.chart-grid{display:grid;grid-template-columns:1fr;gap:24px;}
+.chart-grid.two-col{grid-template-columns:repeat(auto-fit,minmax(420px,1fr));}
+.chart-grid.three-col{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+.chart-panel{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+.chart-panel h3{font-size:14px;margin:0 0 4px;}
+.chart-legend{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 8px;font-size:12px;color:var(--text-secondary);}
+.legend-item{display:inline-flex;align-items:center;gap:6px;}
+.legend-swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
+.so-what{font-size:12.5px;color:var(--text-secondary);margin-top:10px;font-style:italic;}
+svg text{fill:var(--text-secondary);font-size:11px;font-family:inherit;}
+svg .axis-label{fill:var(--text-muted);}
+svg .bar-label{fill:var(--text-secondary);font-size:11.5px;}
+svg .bar-value{fill:var(--text-primary);font-size:11.5px;font-variant-numeric:tabular-nums;}
+svg .gridline{stroke:var(--gridline);stroke-width:1;}
+.table-wrap{max-height:460px;overflow:auto;border:1px solid var(--border);border-radius:10px;}
+.table-wrap.short{max-height:280px;}
+table{border-collapse:collapse;width:100%;font-size:13px;}
+table th{position:sticky;top:0;background:var(--surface-1);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-weight:600;cursor:pointer;white-space:nowrap;}
+table th.sort-active::after{content:' \25BE';}
+table td{padding:7px 10px;border-bottom:1px solid var(--gridline);font-variant-numeric:tabular-nums;white-space:nowrap;}
+table tbody tr:hover{background:var(--page-plane);}
+td.num{text-align:right;}
+.notes{font-size:13px;color:var(--text-secondary);line-height:1.6;}
+.notes h3{font-size:14px;color:var(--text-primary);margin:18px 0 6px;}
+.lineage-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+.lineage-table th,.lineage-table td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top;}
+.lineage-table th{background:var(--surface-1);}
+.viz-tooltip{position:fixed;display:none;background:var(--text-primary);color:var(--surface-1);font-size:12px;padding:6px 9px;border-radius:6px;pointer-events:none;max-width:280px;z-index:100;line-height:1.4;}
+footer.report-footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--border);color:var(--text-muted);font-size:11.5px;}
+code{background:var(--page-plane);border:1px solid var(--border);border-radius:4px;padding:1px 5px;}
+.footnote{font-size:11px;color:var(--text-muted);margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="report-header">
+    <h1>R3 — Data Quality Explorer</h1>
+    <p class="subtitle">Bronze → silver, the human-readable proof surface · 14 bronze tables, 25 dirt patterns (D1–D25) tracked</p>
+    <p class="generated">Generated 2026-07-05 · every number below traces to a bronze/gold capture — see Notes &amp; lineage</p>
+  </header>
+
+  <section class="panel">
+    <h2 class="section-title">Headline KPIs</h2>
+    <div class="kpi-row" id="kpi-row"></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title">Primary visual — full dirt census (every D1–D25 pattern)</h2>
+    <p class="section-note">Log-scaled bar length (counts span 2 → 90,000) so every pattern stays visible;
+    exact counts are the direct labels and the hover tooltip. Sorted by magnitude, not alphabet/number,
+    per the report-spec visual rule. Patterns tied to a RULE-008 planted anomaly (D16, D17, D24) are
+    highlighted in red. D12/D14/D20 measure <i>distinct spellings</i>, not row counts — flagged in their
+    label and tooltip so they are never misread on the same scale as a row count.</p>
+    <div class="chart-panel">
+      <div id="dirt-census"></div>
+      <p class="so-what">Every one of the 25 documented dirt patterns is present and non-zero in the live
+      database — exactly what the contract's "dirt presence" acceptance criterion requires; the
+      migration-artifact patterns (D23 junk references, D8 formatting noise) dwarf the deliberately rare
+      ones (D18 wage typos, D21 sentinel lead times) by design.</p>
+    </div>
+    <div class="table-wrap short" style="margin-top:14px;">
+      <table id="census-detail-table">
+        <thead><tr><th data-k="dirt_id">D-id</th><th data-k="pattern">Sub-pattern</th><th data-k="n">n</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="footnote">Full sub-pattern detail behind the census bar above (one row per B04 result-set
+    line) — click a column to sort.</p>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title">Breakdowns</h2>
+    <div class="chart-grid three-col">
+      <div class="chart-panel">
+        <h3>Near-dupe resolution (DEF-014)</h3>
+        <div id="dupe-resolution"></div>
+        <p class="so-what">89% of the 150 planted near-dupe candidates resolve cleanly to an original by
+        phone match; the remaining 16 stay honestly unresolved rather than being guessed.</p>
+      </div>
+      <div class="chart-panel">
+        <h3>Sentinel values flagged (DEF-017)</h3>
+        <div id="sentinel-panel"></div>
+        <p class="so-what">Sentinel values (-999, 1900-01-01, future birth dates) are rare but real —
+        silver nulls them out and flags every case rather than silently keeping the impossible value.</p>
+      </div>
+      <div class="chart-panel">
+        <h3>Known planted anomalies (RULE-008)</h3>
+        <div id="anomaly-panel"></div>
+        <p class="so-what">The "orders before signup" and "movements before intro date" counts are large
+        by design (a documented migration artifact spanning the whole window), while orphan transfers and
+        below-cost products sit at the contract's small planted quotas — both populations are surfaced,
+        never cleaned away.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title">Detail — one before/after example per lossy transform DEF</h2>
+    <div class="table-wrap short">
+      <table id="before-after-table">
+        <thead><tr>
+          <th data-k="def_id">DEF</th><th data-k="transform">Transform</th><th data-k="pk">PK</th>
+          <th data-k="raw_value">Raw (bronze)</th><th data-k="clean_value">Clean (silver)</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title">Notes &amp; lineage</h2>
+    <div class="notes">
+      <h3>Caveats</h3>
+      <p>Per-D-id totals in the census bar are the <b>sum of that D-id's own captured sub-pattern rows</b>
+      from B04 (e.g. D1 = 240+180+240+360 = 1,020) — every addend is visible in the detail table below the
+      chart and in the hover tooltip, so the rollup is fully auditable against
+      <code>medallion/a_bronze/EXPECTED_OUTPUTS.md</code>. D12/D14/D20 are <i>distinct-value</i> counts
+      (controlled-vocabulary variety), not row counts, and are labeled as such. "Total rows profiled" is
+      the sum of the 14 B01 per-table row counts (also shown in full below) — a rollup of already-aggregated
+      captured numbers, not a re-aggregation of any fact table. DEF-014's near-dupe resolution finding
+      (rule-3 email+birth-date fallback resolves zero candidates) is a live-data result, not a bug — the
+      generator mutated candidate emails so no fallback match exists; the branch stays live in the view
+      for rule fidelity (DEF-014 caveat).</p>
+      <h3>Lineage — every visual traces to a query file</h3>
+      <table class="lineage-table">
+        <thead><tr><th>Visual</th><th>Query file</th><th>DEF IDs</th><th>Captured output ref</th></tr></thead>
+        <tbody>
+          <tr><td>KPI: total rows profiled (sum of 14 B01 table counts)</td>
+              <td><code>medallion/a_bronze/B01_row_counts.sql</code></td>
+              <td>—</td><td>medallion/a_bronze/EXPECTED_OUTPUTS.md § B01_row_counts.sql</td></tr>
+          <tr><td>KPI: dirty patterns tracked (25)</td>
+              <td><code>medallion/a_bronze/B04_dirt_census.sql</code></td>
+              <td>—</td><td>medallion/a_bronze/EXPECTED_OUTPUTS.md § B04_dirt_census.sql (25 result sets)</td></tr>
+          <tr><td>KPI: top pattern by rows affected (D24, 40.4% of orders)</td>
+              <td><code>medallion/a_bronze/B06_window_anomalies.sql</code></td>
+              <td>—</td><td>medallion/a_bronze/EXPECTED_OUTPUTS.md § B06_window_anomalies.sql RS2 (prose % stated verbatim in capture notes)</td></tr>
+          <tr><td>KPI: near-dupe candidates resolved (134/150)</td>
+              <td><code>medallion/c_gold/queries/Q11_r3_dq_kpis.sql</code></td>
+              <td>DEF-014</td><td>EXPECTED_OUTPUTS.md § Q11_r3_dq_kpis.sql RS1</td></tr>
+          <tr><td>Primary visual: full dirt census (D1–D25, sub-pattern detail table)</td>
+              <td><code>medallion/a_bronze/B04_dirt_census.sql</code></td>
+              <td>DEF-009, DEF-011, DEF-012, DEF-013, DEF-017 (target columns)</td>
+              <td>medallion/a_bronze/EXPECTED_OUTPUTS.md § B04_dirt_census.sql (all 25 result sets)</td></tr>
+          <tr><td>Breakdown: near-dupe resolution split (phone / unresolved / email+birth-date)</td>
+              <td><code>medallion/c_gold/queries/Q11_r3_dq_kpis.sql</code></td>
+              <td>DEF-014</td><td>EXPECTED_OUTPUTS.md § Q11_r3_dq_kpis.sql RS1</td></tr>
+          <tr><td>Breakdown: sentinel values flagged</td>
+              <td><code>medallion/a_bronze/B04_dirt_census.sql</code> (D5, D13, D21 sub-patterns)</td>
+              <td>DEF-017</td><td>medallion/a_bronze/EXPECTED_OUTPUTS.md § B04_dirt_census.sql D5/D13/D21</td></tr>
+          <tr><td>Breakdown: known planted anomalies panel</td>
+              <td><code>medallion/a_bronze/B06_window_anomalies.sql</code></td>
+              <td>DEF-019, RULE-008</td><td>medallion/a_bronze/EXPECTED_OUTPUTS.md § B06_window_anomalies.sql RS2</td></tr>
+          <tr><td>Detail table: before/after examples per transform DEF</td>
+              <td><code>medallion/c_gold/queries/Q12_r3_before_after_examples.sql</code></td>
+              <td>DEF-009, DEF-010, DEF-011, DEF-012, DEF-013, DEF-015, DEF-016, DEF-017</td>
+              <td>EXPECTED_OUTPUTS.md § Q12_r3_before_after_examples.sql</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="report-footer">
+    Self-contained HTML — inline CSS/JS only, no CDNs, no external requests, opens from disk. Data
+    embedded below as JSON blocks transcribed verbatim from medallion/a_bronze/EXPECTED_OUTPUTS.md and
+    medallion/c_gold/EXPECTED_OUTPUTS.md.
+  </footer>
+</div>
+
+<!-- ================= EMBEDDED DATA (verbatim from EXPECTED_OUTPUTS.md) ================= -->
+<script type="application/json" id="data-b01">
+[
+{"table_name":"calendar","row_count":4748},{"table_name":"customers","row_count":12000},
+{"table_name":"employees","row_count":240},{"table_name":"inventory_movements","row_count":90000},
+{"table_name":"order_items","row_count":156190},{"table_name":"orders","row_count":60000},
+{"table_name":"payments","row_count":66663},{"table_name":"product_categories","row_count":24},
+{"table_name":"products","row_count":850},{"table_name":"promotions","row_count":70},
+{"table_name":"returns","row_count":5010},{"table_name":"shipments","row_count":29784},
+{"table_name":"stores","row_count":13},{"table_name":"suppliers","row_count":45}
+]
+</script>
+<script type="application/json" id="data-b04">
+[
+{"dirt_id":"D1","pattern":"leading/trailing space","n":240},
+{"dirt_id":"D1","pattern":"N/A or none (any case)","n":180},
+{"dirt_id":"D1","pattern":"NULL","n":240},
+{"dirt_id":"D1","pattern":"UPPERCASE","n":360},
+{"dirt_id":"D2","pattern":"1-NULL","n":477},
+{"dirt_id":"D2","pattern":"2-N/A","n":118},
+{"dirt_id":"D2","pattern":"3-(206) 555-0143 style","n":7137},
+{"dirt_id":"D2","pattern":"4-206-555-0143 style","n":2400},
+{"dirt_id":"D2","pattern":"5-206.555.0143 style","n":1226},
+{"dirt_id":"D2","pattern":"6-+1 206 555 0143 style","n":642},
+{"dirt_id":"D3","pattern":"1-full state name (e.g. Washington)","n":1200},
+{"dirt_id":"D3","pattern":"2-abbrev-period (e.g. Wash.)","n":600},
+{"dirt_id":"D3","pattern":"3-clean 2-letter code","n":10200},
+{"dirt_id":"D4","pattern":"ALLCAPS","n":240},
+{"dirt_id":"D4","pattern":"leading/trailing space","n":240},
+{"dirt_id":"D4","pattern":"lowercase","n":240},
+{"dirt_id":"D5","pattern":"1900-01-01 sentinel","n":60},
+{"dirt_id":"D5","pattern":"age > 95 as of 2026-06-30","n":36},
+{"dirt_id":"D5","pattern":"future date (> 2026-06-30)","n":24},
+{"dirt_id":"D5","pattern":"NULL","n":600},
+{"dirt_id":"D6","pattern":"1-canonical casing","n":11400},
+{"dirt_id":"D6","pattern":"2-wrong casing","n":600},
+{"dirt_id":"D7","pattern":"customer_id BETWEEN 11851 AND 12000","n":150},
+{"dirt_id":"D8","pattern":"1-standard formatting (comma present when magnitude requires it)","n":55525},
+{"dirt_id":"D8","pattern":"2-missing comma (total >= 1000, no comma)","n":1561},
+{"dirt_id":"D8","pattern":"3-no $ sign","n":1753},
+{"dirt_id":"D8","pattern":"4-leading/trailing space","n":1161},
+{"dirt_id":"D9","pattern":"non-NULL order_notes","n":12040},
+{"dirt_id":"D10","pattern":"1-NULL","n":1840},
+{"dirt_id":"D10","pattern":"2-PENDING","n":1165},
+{"dirt_id":"D10","pattern":"3-YYYY-MM-DD","n":16196},
+{"dirt_id":"D10","pattern":"4-MM/DD/YYYY","n":9112},
+{"dirt_id":"D10","pattern":"5-Mon D, YYYY","n":1471},
+{"dirt_id":"D11","pattern":"1-canonical casing","n":28048},
+{"dirt_id":"D11","pattern":"2-casing variant","n":1736},
+{"dirt_id":"D12","pattern":"distinct spellings (BINARY-exact)","n":10,"isDistinctCount":true},
+{"dirt_id":"D13","pattern":"-999 sentinel","n":9},
+{"dirt_id":"D13","pattern":"NULL","n":51},
+{"dirt_id":"D14","pattern":"distinct values (BINARY-exact)","n":6,"isDistinctCount":true},
+{"dirt_id":"D15","pattern":"ALLCAPS","n":9},
+{"dirt_id":"D15","pattern":"double space","n":26},
+{"dirt_id":"D15","pattern":"trailing space","n":17},
+{"dirt_id":"D16","pattern":"list_price < unit_cost","n":17},
+{"dirt_id":"D17","pattern":"unit_price = 0.01","n":297},
+{"dirt_id":"D18","pattern":"hourly_wage > 150.00","n":3},
+{"dirt_id":"D19","pattern":"1-canonical casing","n":226},
+{"dirt_id":"D19","pattern":"2-casing variant","n":14},
+{"dirt_id":"D20","pattern":"distinct USA codings (US/USA/United States, BINARY-exact)","n":3,"isDistinctCount":true},
+{"dirt_id":"D21","pattern":"lead_time_days = -999","n":2},
+{"dirt_id":"D22","pattern":"NULL","n":279},
+{"dirt_id":"D23","pattern":"1-MIGRATION","n":2654},
+{"dirt_id":"D23","pattern":"2-PO-style id or junk (non-NULL, non-MIGRATION)","n":64686},
+{"dirt_id":"D23","pattern":"3-NULL","n":22660},
+{"dirt_id":"D24","pattern":"DATE(order_ts) < signup_date","n":24217},
+{"dirt_id":"D25","pattern":"rows sharing a duplicated tracking_number","n":298}
+]
+</script>
+<script type="application/json" id="data-q11">
+{"rs1":{"silver_customers":12000,"canonical_customers":11866,"dupe_candidates":150,"resolved_phone":134,"resolved_email_birth_date":0,"unresolved":16},
+ "rs2":[{"anomaly":"below_cost_products","n":17},{"anomaly":"orders_before_signup","n":24217},{"anomaly":"penny_lines_revenue_scope","n":291}]}
+</script>
+<script type="application/json" id="data-b06-rs2">
+[
+{"anomaly":"below-cost products (list_price < unit_cost)","n":17},
+{"anomaly":"movements before intro_date (DATE(movement_ts) < intro_date)","n":31093},
+{"anomaly":"orders before signup (DATE(order_ts) < signup_date)","n":24217},
+{"anomaly":"orphan transfer_out (no transfer_in sharing its reference)","n":54},
+{"anomaly":"penny lines (order_items.unit_price = 0.01)","n":297}
+]
+</script>
+<script type="application/json" id="data-q12">
+[
+{"def_id":"DEF-009","transform":"customers.marketing_opt_in","pk":9,"raw_value":"TRUE","clean_value":"1"},
+{"def_id":"DEF-010","transform":"customers.phone","pk":1,"raw_value":"206.555.9858","clean_value":"2065559858"},
+{"def_id":"DEF-011","transform":"shipments.delivered_date","pk":1,"raw_value":"01/12/2019","clean_value":"2019-01-12"},
+{"def_id":"DEF-012","transform":"customers.state","pk":3,"raw_value":"Ore.","clean_value":"OR"},
+{"def_id":"DEF-013","transform":"payments.method","pk":20,"raw_value":"Master Card","clean_value":"mastercard"},
+{"def_id":"DEF-015","transform":"customers.email","pk":36,"raw_value":"none","clean_value":"NULL"},
+{"def_id":"DEF-016","transform":"orders.order_total (reconciliation-grade cast)","pk":100004,"raw_value":"4,937.73","clean_value":"4937.73"},
+{"def_id":"DEF-017","transform":"products.weight_kg (sentinel)","pk":10023,"raw_value":"-999.00","clean_value":"NULL"}
+]
+</script>
+
+<script>
+/* ============================================================================
+   SHARED CHART ENGINE (see template.html for the annotated version)
+   ========================================================================= */
+(function(){
+  const NS='http://www.w3.org/2000/svg';
+  function svgEl(tag,attrs){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+  function fmtMoney(n){ const r=Math.round(n); return (r<0?'-$':'$')+Math.abs(r).toLocaleString('en-US'); }
+  function fmtInt(n){ return Math.round(n).toLocaleString('en-US'); }
+  function fmtPct(n){ return n.toFixed(2)+'%'; }
+  function niceMax(v){ if(v<=0) return 1; const p=Math.pow(10,Math.floor(Math.log10(v))); const n=v/p; let s; if(n<=1)s=1; else if(n<=2)s=2; else if(n<=5)s=5; else s=10; return s*p; }
+  function barPath(x0,y0,w,h,r,orientation,dir){
+    if(orientation==='h'){
+      const rr=Math.min(r,h/2,Math.max(w,0.001));
+      if(dir>=0){ const x=x0; return `M${x},${y0} H${x+w-rr} Q${x+w},${y0} ${x+w},${y0+rr} V${y0+h-rr} Q${x+w},${y0+h} ${x+w-rr},${y0+h} H${x} Z`; }
+      const x=x0-w; return `M${x0},${y0} H${x+rr} Q${x},${y0} ${x},${y0+rr} V${y0+h-rr} Q${x},${y0+h} ${x+rr},${y0+h} H${x0} Z`;
+    }
+    const rr=Math.min(r,w/2,Math.max(h,0.001));
+    if(dir>=0){ const yTop=y0-h; return `M${x0},${y0} V${yTop+rr} Q${x0},${yTop} ${x0+rr},${yTop} H${x0+w-rr} Q${x0+w},${yTop} ${x0+w},${yTop+rr} V${y0} Z`; }
+    const yBot=y0+h; return `M${x0},${y0} V${yBot-rr} Q${x0},${yBot} ${x0+rr},${yBot} H${x0+w-rr} Q${x0+w},${yBot} ${x0+w},${yBot-rr} V${y0} Z`;
+  }
+  const tip=document.createElement('div'); tip.className='viz-tooltip'; document.body.appendChild(tip);
+  document.addEventListener('mousemove', function(e){
+    const t=e.target.closest('[data-tip]');
+    if(t){ tip.innerHTML=t.getAttribute('data-tip'); tip.style.display='block';
+      tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY+14)+'px'; }
+    else tip.style.display='none';
+  });
+  function hBarChart(container, data, opts){
+    opts=opts||{};
+    const w=opts.width||640, barH=opts.barH||16, gap=opts.gap||7;
+    const labelW=opts.labelW||150, valueW=opts.valueW||110;
+    const plotW=w-labelW-valueW-16;
+    const scaleFn = opts.scale==='log'
+      ? (v)=> Math.log10(Math.abs(v)+1) / Math.log10((opts.max||1)+1)
+      : (v)=> Math.abs(v) / (opts.max||1);
+    const h=data.length*(barH+gap)+gap;
+    const svg=svgEl('svg',{width:'100%',viewBox:`0 0 ${w} ${h}`});
+    data.forEach((d,i)=>{
+      const y=gap+i*(barH+gap);
+      const bw=Math.max(2, scaleFn(d.value)*plotW);
+      const txt=svgEl('text',{x:labelW-8,y:y+barH*0.75,'text-anchor':'end',class:'bar-label'}); txt.textContent=d.label; svg.appendChild(txt);
+      const path=svgEl('path',{d:barPath(labelW,y,bw,barH,3,'h',1),fill:d.color||'var(--series-1)'});
+      if(d.tip) path.setAttribute('data-tip', d.tip);
+      svg.appendChild(path);
+      const val=svgEl('text',{x:labelW+bw+8,y:y+barH*0.75,class:'bar-value'}); val.textContent=d.valueLabel!==undefined?d.valueLabel:fmtInt(d.value); svg.appendChild(val);
+    });
+    container.innerHTML=''; container.appendChild(svg);
+  }
+  function makeSortable(table, rows, renderRow){
+    let sortKey=null, sortDir=1;
+    function draw(){
+      const tbody=table.querySelector('tbody');
+      let data=rows.slice();
+      if(sortKey){ data.sort((a,b)=>{ const av=a[sortKey], bv=b[sortKey]; return (av>bv?1:av<bv?-1:0)*sortDir; }); }
+      tbody.innerHTML=data.map(renderRow).join('');
+      table.querySelectorAll('th[data-k]').forEach(th=>th.classList.toggle('sort-active', th.getAttribute('data-k')===sortKey));
+    }
+    table.querySelectorAll('th[data-k]').forEach(th=>{
+      th.addEventListener('click', ()=>{
+        const k=th.getAttribute('data-k');
+        if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; }
+        draw();
+      });
+    });
+    draw();
+  }
+  window.VIZ={svgEl,fmtMoney,fmtInt,fmtPct,niceMax,barPath,hBarChart,makeSortable};
+})();
+
+/* ============================================================================
+   RENDER — R3 Data Quality Explorer
+   ========================================================================= */
+const B01=JSON.parse(document.getElementById('data-b01').textContent);
+const B04=JSON.parse(document.getElementById('data-b04').textContent);
+const Q11=JSON.parse(document.getElementById('data-q11').textContent);
+const B06RS2=JSON.parse(document.getElementById('data-b06-rs2').textContent);
+const Q12=JSON.parse(document.getElementById('data-q12').textContent);
+
+function findB04(dirtId, patternSubstr){
+  return B04.find(r=>r.dirt_id===dirtId && r.pattern.indexOf(patternSubstr)===0 || (r.dirt_id===dirtId && r.pattern===patternSubstr));
+}
+
+// KPI row
+const totalRowsProfiled = B01.reduce((s,r)=>s+r.row_count,0); // sum of captured B01 counts, shown in full below
+document.getElementById('kpi-row').innerHTML = [
+  {l:'Total rows profiled', v:VIZ.fmtInt(totalRowsProfiled), s:'sum of 14 tables · B01'},
+  {l:'Dirty patterns tracked', v:'25', s:'D1–D25 · B04'},
+  {l:'Top pattern by rows affected', v:'D24 · '+VIZ.fmtInt(24217), s:'40.4% of orders (verbatim, B06)'},
+  {l:'Near-dupe candidates resolved', v:(Q11.rs1.resolved_phone+Q11.rs1.resolved_email_birth_date)+' / '+Q11.rs1.dupe_candidates, s:'DEF-014 · Q11 ('+Q11.rs1.unresolved+' unresolved)'}
+].map(k=>`<div class="kpi-tile"><div class="kpi-label">${k.l}</div><div class="kpi-value">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+// Primary visual: dirt census, one bar per D-id (sum of that D-id's captured sub-patterns), log scale
+const anomalyIds = new Set(['D16','D17','D24']);
+const byDirtId = {};
+B04.forEach(r=>{ (byDirtId[r.dirt_id] = byDirtId[r.dirt_id]||[]).push(r); });
+const censusRows = Object.keys(byDirtId).sort((a,b)=>parseInt(a.slice(1))-parseInt(b.slice(1))).map(id=>{
+  const rows = byDirtId[id];
+  const isDistinct = rows.length===1 && rows[0].isDistinctCount;
+  const total = rows.reduce((s,r)=>s+r.n,0);
+  const tipLines = rows.map(r=>`${r.pattern}: ${VIZ.fmtInt(r.n)}`).join('<br>');
+  return {
+    dirt_id:id, value:total, isDistinct,
+    label: id + (isDistinct? ' (distinct)':''),
+    valueLabel: VIZ.fmtInt(total) + (isDistinct? ' distinct values':' rows'),
+    color: anomalyIds.has(id) ? 'var(--critical)' : 'var(--series-1)',
+    tip: `<b>${id}</b>${isDistinct?' — distinct-value count, not a row count':''}<br>${tipLines}`
+  };
+}).sort((a,b)=>b.value-a.value);
+VIZ.hBarChart(document.getElementById('dirt-census'), censusRows,
+  {width:1080, labelW:110, valueW:150, scale:'log', max:Math.max(...censusRows.map(r=>r.value)), barH:15, gap:6});
+
+// Census sub-pattern detail table (every captured B04 row)
+const censusTable = document.getElementById('census-detail-table');
+VIZ.makeSortable(censusTable, B04, r=>
+  `<tr><td>${r.dirt_id}</td><td>${r.pattern}${r.isDistinctCount?' <span style="color:var(--text-muted)">(distinct values)</span>':''}</td><td class="num">${VIZ.fmtInt(r.n)}</td></tr>`);
+
+// Breakdown: near-dupe resolution split
+VIZ.hBarChart(document.getElementById('dupe-resolution'), [
+  {label:'phone-resolved', value:Q11.rs1.resolved_phone, color:'var(--series-1)', valueLabel:VIZ.fmtInt(Q11.rs1.resolved_phone)},
+  {label:'email+birth_date', value:Q11.rs1.resolved_email_birth_date, color:'var(--series-5)', valueLabel:VIZ.fmtInt(Q11.rs1.resolved_email_birth_date)+' (fallback never hits — DEF-014 caveat)'},
+  {label:'unresolved', value:Q11.rs1.unresolved, color:'var(--critical)', valueLabel:VIZ.fmtInt(Q11.rs1.unresolved)}
+], {width:600, labelW:120, valueW:190, max:Q11.rs1.resolved_phone});
+
+// Breakdown: sentinel values (DEF-017) — pulled from the same B04 rows already embedded above
+const sentinelData = [
+  {label:'weight_kg = -999', row:findB04('D13','-999 sentinel')},
+  {label:'lead_time_days = -999', row:findB04('D21','lead_time_days = -999')},
+  {label:'birth_date = 1900-01-01', row:findB04('D5','1900-01-01 sentinel')},
+  {label:'birth_date future (> window end)', row:findB04('D5','future date (> 2026-06-30)')}
+];
+VIZ.hBarChart(document.getElementById('sentinel-panel'),
+  sentinelData.map(s=>({label:s.label, value:s.row.n, color:'var(--series-3)', valueLabel:VIZ.fmtInt(s.row.n),
+    tip:`<b>${s.row.dirt_id}</b>: ${s.row.pattern}<br>n = ${VIZ.fmtInt(s.row.n)} (DEF-017)`})),
+  {width:600, labelW:170, valueW:70, max:Math.max(...sentinelData.map(s=>s.row.n))});
+
+// Breakdown: planted anomalies panel (B06 RS2)
+VIZ.hBarChart(document.getElementById('anomaly-panel'),
+  B06RS2.map(r=>({label:r.anomaly.split(' (')[0], value:r.n, color:'var(--critical)', valueLabel:VIZ.fmtInt(r.n),
+    tip:`<b>${r.anomaly}</b><br>n = ${VIZ.fmtInt(r.n)} (B06 RS2, RULE-008)`})),
+  {width:600, labelW:190, valueW:70, scale:'log', max:Math.max(...B06RS2.map(r=>r.n))});
+
+// Detail: before/after examples (Q12)
+const beforeAfterTable = document.getElementById('before-after-table');
+VIZ.makeSortable(beforeAfterTable, Q12, r=>
+  `<tr><td>${r.def_id}</td><td>${r.transform}</td><td>${r.pk}</td><td>${r.raw_value}</td><td>${r.clean_value}</td></tr>`);
+</script>
+</body>
+</html>

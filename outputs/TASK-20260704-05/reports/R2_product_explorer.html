@@ -45,6 +45,10 @@ h2.section-title{font-size:15px;text-transform:uppercase;letter-spacing:.06em;co
 .legend-swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
 .so-what{font-size:12.5px;color:var(--text-secondary);margin-top:10px;font-style:italic;}
 .escalation{font-size:12px;color:var(--critical);background:color-mix(in srgb, var(--critical) 10%, var(--surface-1));border:1px solid var(--critical);border-radius:8px;padding:8px 10px;margin-top:10px;}
+.mini-stats{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+.mini-stat{flex:1 1 140px;background:var(--page-plane);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
+.mini-stat .v{font-size:19px;font-weight:600;color:var(--critical);}
+.mini-stat .l{font-size:11px;color:var(--text-secondary);margin-top:2px;}
 svg text{fill:var(--text-secondary);font-size:11px;font-family:inherit;}
 svg .axis-label{fill:var(--text-muted);}
 svg .bar-label{fill:var(--text-secondary);font-size:12px;}
@@ -123,6 +127,7 @@ code{background:var(--page-plane);border:1px solid var(--border);border-radius:4
       <div class="chart-panel">
         <h3>Price-vs-cost anomalies (D16 / D17)</h3>
         <div id="pricecost-chart"></div>
+        <div class="mini-stats" id="pricecost-stats"></div>
         <p class="so-what">17 catalog products (~2% of 850) list below their own cost, and 291 order
         lines in revenue scope were sold at a $0.01 penny price — both are planted anomalies to
         investigate, never silently corrected.</p>
@@ -132,9 +137,11 @@ code{background:var(--page-plane);border:1px solid var(--border);border-radius:4
         <b>aggregate reproducibility signature</b> (n_rows=850, sum_unit_cost=$103,962.91,
         sum_list_price=$203,872.50, below_cost_products=17) — no per-product (list_price, unit_cost)
         pairs were captured, so individual scatter points cannot be plotted without inventing them. The
-        panel above shows only the captured catalog-level totals and the D16/D17 counts (from Q09's
-        signature, Q11 RS2, and the B04/B06 bronze census). Requesting: a full Q09 row-level re-capture
-        (or a reduced "below-cost + penny-price products only" query) from sql-builder for a true scatter.</div>
+        bars above show only the captured catalog-level totals; the stat chips show the captured D16/D17
+        counts (from Q09's signature, Q11 RS2, and the B04/B06 bronze census) — deliberately NOT drawn as
+        bars on the same axis as the dollar totals (mixing counts and dollars on one length-scale would
+        misrepresent both). Requesting: a full Q09 row-level re-capture (or a reduced "below-cost + penny
+        -price products only" query) from sql-builder for a true scatter.</div>
       </div>
     </div>
   </section>
@@ -469,17 +476,17 @@ VIZ.vBarChart(document.getElementById('margin-hist'),
     tip:`<b>${r.band_label}</b><br>Lines: ${VIZ.fmtInt(r.line_count)} (${VIZ.fmtPct(r.line_share_pct)})${r.is_below_cost_band?'<br><i>below-cost band (RULE-008)</i>':''}`})),
   {width:620, height:260, labelEvery:1});
 
-// Breakdown: price-vs-cost anomaly panel (Q09 signature + Q11/B04/B06 counts) — NOT a scatter (see escalation)
+// Breakdown: price-vs-cost — catalog $ totals as bars (same unit, legitimate comparison);
+// D16/D17 counts as separate stat chips (NOT mixed onto the dollar bar scale — see escalation note)
 VIZ.hBarChart(document.getElementById('pricecost-chart'), [
   {label:'Sum unit_cost (850 products)', value:Q09SIG.sum_unit_cost, color:'var(--series-1)', valueLabel:VIZ.fmtMoney(Q09SIG.sum_unit_cost),
-   tip:`Catalog-wide sum of unit_cost across all 850 products (Q09 aggregate signature).`},
+   tip:'Catalog-wide sum of unit_cost across all 850 products (Q09 aggregate signature).'},
   {label:'Sum list_price (850 products)', value:Q09SIG.sum_list_price, color:'var(--series-5)', valueLabel:VIZ.fmtMoney(Q09SIG.sum_list_price),
-   tip:`Catalog-wide sum of list_price across all 850 products (Q09 aggregate signature).`},
-  {label:'D16 below-cost products', value:ANOM.below_cost_products_d16*1000, color:'var(--critical)', valueLabel:VIZ.fmtInt(ANOM.below_cost_products_d16)+' ('+ANOM.below_cost_pct_approx+' of 850)',
-   tip:`list_price < unit_cost — 17 products, ~2% of the 850-product catalog (D16, B04/B06/Q09).`},
-  {label:'D17 penny-price lines (revenue scope)', value:ANOM.penny_lines_revenue_scope_d17*1000, color:'var(--critical)', valueLabel:VIZ.fmtInt(ANOM.penny_lines_revenue_scope_d17)+' of 297 all-order',
-   tip:`unit_price = $0.01 — 291 lines within DEF-003 revenue scope, 297 across all orders (D17, Q11 RS2 / B04).`}
-], {width:620, labelW:220, valueW:150, max:Math.max(Q09SIG.sum_list_price, ANOM.penny_lines_revenue_scope_d17*1000)});
+   tip:'Catalog-wide sum of list_price across all 850 products (Q09 aggregate signature).'}
+], {width:620, labelW:190, valueW:100});
+document.getElementById('pricecost-stats').innerHTML =
+  `<div class="mini-stat"><div class="v">${VIZ.fmtInt(ANOM.below_cost_products_d16)}</div><div class="l">D16 below-cost products (${ANOM.below_cost_pct_approx} of 850)</div></div>` +
+  `<div class="mini-stat"><div class="v">${VIZ.fmtInt(ANOM.penny_lines_revenue_scope_d17)}</div><div class="l">D17 penny-price lines, revenue scope (${VIZ.fmtInt(ANOM.penny_lines_all_orders_d17)} across all orders)</div></div>`;
 
 // Detail table: top/bottom 15 products (Q10), sortable
 const productTable = document.getElementById('product-table');
