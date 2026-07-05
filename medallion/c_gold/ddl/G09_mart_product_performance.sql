@@ -1,8 +1,11 @@
--- TASK-20260704-04 · G09_mart_product_performance.sql · 2026-07-05
+-- TASK-20260705-01 · G09_mart_product_performance.sql · 2026-07-05 (amends TASK-20260704-04 version — additive)
 -- PURPOSE: Gold mart_product_performance — per-product whole-window performance: units, gross
 --          revenue, unit return rate (DEF-007), revenue return rate (DEF-008).
+--          AMENDED: catalog_margin carried through from dim_product per DEF-021 (product-grain
+--          companion — fits this mart's grain; realized line margins live in fact_order_lines).
 -- GROUNDING: DEF-003 (scope), DEF-004 (gross revenue), DEF-005 (refund value input),
---            DEF-007 (unit return rate), DEF-008 (revenue return rate), DEF-009 (discontinued_flag)
+--            DEF-007 (unit return rate), DEF-008 (revenue return rate), DEF-009 (discontinued_flag),
+--            DEF-021 v1.0 (catalog margin companion)
 -- RUN: Get-Content G09_mart_product_performance.sql -Raw | & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" --defaults-extra-file="C:\Users\ianfi\.my.cnf" --batch oakhaven
 -- (PowerShell has no "<" input redirection — always the Get-Content pipe form; add --table for human-readable grids)
 --
@@ -14,8 +17,8 @@
 -- NOTES:
 -- * Grain: product — LEFT JOIN from dim_product so ALL 850 products appear; a product with no
 --   revenue lines shows zero counts and NULL rates (0/0 division → NULL, deliberate).
--- * No margin measure: "unit margin" has no DEF (escalated as MISSING DEFINITION in the task
---   handoff); unit_cost/list_price/is_below_cost are attributes for the R2 scatter instead.
+-- * catalog_margin is a product ATTRIBUTE (functionally dependent on product_id), added to the
+--   GROUP BY alongside the other dim attributes — it cannot change the mart's 850-row grain.
 
 CREATE OR REPLACE VIEW oakhaven_gold.mart_product_performance AS
 SELECT
@@ -28,6 +31,7 @@ SELECT
   p.discontinued_flag,                                  -- DEF-009 (normalized in silver)
   p.unit_cost,
   p.list_price,
+  p.catalog_margin,                                     -- DEF-021 (catalog companion, product grain)
   p.is_below_cost,                                      -- D16 planted anomaly flag (RULE-008)
   COUNT(f.order_item_id) AS line_count,                 -- DEF-003 scope lines
   COUNT(DISTINCT f.order_id) AS order_count,            -- DEF-003
@@ -40,4 +44,5 @@ SELECT
 FROM oakhaven_gold.dim_product p
 LEFT JOIN oakhaven_gold.fact_order_lines f ON f.product_id = p.product_id
 GROUP BY p.product_id, p.sku, p.product_name, p.category_id, p.category_name,
-         p.parent_category_name, p.discontinued_flag, p.unit_cost, p.list_price, p.is_below_cost;
+         p.parent_category_name, p.discontinued_flag, p.unit_cost, p.list_price,
+         p.catalog_margin, p.is_below_cost;
