@@ -5,8 +5,8 @@
 --            B06 census = 17); dim_product attributes; report-spec R2 breakdowns
 -- RUN: Get-Content Q09_r2_price_vs_cost.sql -Raw | & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" --defaults-extra-file="C:\Users\ianfi\.my.cnf" --batch oakhaven
 -- (PowerShell has no "<" input redirection — always the Get-Content pipe form; add --table for human-readable grids)
--- NOTE: 850 rows — captured as an aggregate signature per medallion-spec §Reproducibility
---       rule 4 (stated in EXPECTED_OUTPUTS.md). ORDER BY product_id (PK — RULE-001).
+-- NOTE: 850 rows — captured in full in EXPECTED_OUTPUTS.md (TASK-20260705-02).
+--       ORDER BY product_id (PK — RULE-001).
 -- OMITTED: "margin distribution" (report-spec R2) — "unit margin" has NO DEF in
 --          grounding/definitions.md; escalated as MISSING DEFINITION in the task handoff.
 --          The D17 penny-line count for the R2 call-out is in Q11 RS2 (anomalies panel).
