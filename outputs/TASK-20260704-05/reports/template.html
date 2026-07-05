@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Oakhaven Exploratory Report — Template (structural reference)</title>
+<style>
+/* ============================================================================
+   TEMPLATE.HTML — reusable exploratory-report skeleton
+   Implements grounding/report-spec.md anatomy exactly:
+     Title/subtitle/date -> KPI row -> primary trend (+ comparison split) ->
+     breakdowns (2-4 categorical) -> detail table -> notes & lineage footer.
+   This file is a STRUCTURAL REFERENCE, not a data report. Every number you see
+   below is a labeled SAMPLE — do not cite it, do not copy it into a real report.
+   To build a new report: copy this file, keep the CSS/engine <script> block
+   verbatim (it is the shared chart engine — vanilla SVG, no dependencies),
+   replace the JSON data blocks with values pasted from a captured query output
+   (EXPECTED_OUTPUTS.md), and fill in the lineage table footer — one row per
+   visual, no exceptions (report-spec "every number traces to a query file").
+   ========================================================================= */
+
+/* ---- Palette: dataviz skill reference instance (grounding: dataviz skill,
+   references/palette.md). Categorical hues assigned in FIXED order, never
+   cycled. Channel/tier colors below match R1/R2/R3 exactly for consistency. */
+:root{
+  --surface-1:#fcfcfb; --page-plane:#f9f9f7; --text-primary:#0b0b0b; --text-secondary:#52514e;
+  --text-muted:#898781; --gridline:#e1e0d9; --baseline:#c3c2b7; --border:rgba(11,11,11,0.10);
+  --series-1:#2a78d6; --series-2:#1baf7a; --series-3:#eda100; --series-4:#008300;
+  --series-5:#4a3aa7; --series-6:#e34948; --series-7:#e87ba4; --series-8:#eb6834;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --tier-basic:#86b6ef; --tier-silver:#5598e7; --tier-gold:#2a78d6; --tier-platinum:#1c5cab;
+  /* channel colors: fixed across all three reports */
+  --channel-store: var(--series-1); --channel-web: var(--series-2);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --surface-1:#1a1a19; --page-plane:#0d0d0d; --text-primary:#ffffff; --text-secondary:#c3c2b7;
+    --text-muted:#898781; --gridline:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,0.10);
+    --series-1:#3987e5; --series-2:#199e70; --series-3:#c98500; --series-4:#008300;
+    --series-5:#9085e9; --series-6:#e66767; --series-7:#d55181; --series-8:#d95926;
+    --tier-basic:#184f95; --tier-silver:#1c5cab; --tier-gold:#3987e5; --tier-platinum:#5598e7;
+  }
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--page-plane);color:var(--text-primary);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;}
+.wrap{max-width:1160px;margin:0 auto;padding:24px 20px 60px;}
+.template-banner{background:var(--warning);color:#241a00;font-size:13px;font-weight:600;padding:10px 16px;border-radius:8px;margin-bottom:20px;}
+header.report-header{padding:8px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px;}
+h1{font-size:26px;margin:0 0 4px;}
+.subtitle{color:var(--text-secondary);font-size:14px;margin:0 0 2px;}
+.generated{color:var(--text-muted);font-size:12px;}
+section.panel{margin-bottom:36px;}
+h2.section-title{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin:0 0 6px;font-weight:600;}
+.section-help{font-size:12px;color:var(--text-muted);margin:0 0 14px;}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;}
+.kpi-tile{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.kpi-label{font-size:12px;color:var(--text-secondary);margin-bottom:6px;}
+.kpi-value{font-size:26px;font-weight:600;}
+.kpi-sub{font-size:11px;color:var(--text-muted);margin-top:4px;}
+.chart-grid{display:grid;grid-template-columns:1fr;gap:24px;}
+.chart-grid.two-col{grid-template-columns:repeat(auto-fit,minmax(420px,1fr));}
+.chart-panel{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+.chart-panel h3{font-size:14px;margin:0 0 4px;}
+.chart-legend{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 8px;font-size:12px;color:var(--text-secondary);}
+.legend-item{display:inline-flex;align-items:center;gap:6px;}
+.legend-swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
+.so-what{font-size:12.5px;color:var(--text-secondary);margin-top:10px;font-style:italic;}
+svg text{fill:var(--text-secondary);font-size:11px;font-family:inherit;}
+svg .axis-label{fill:var(--text-muted);}
+svg .bar-label{fill:var(--text-secondary);font-size:12px;}
+svg .bar-value{fill:var(--text-primary);font-size:12px;font-variant-numeric:tabular-nums;}
+svg .gridline{stroke:var(--gridline);stroke-width:1;}
+svg .annotation-label{fill:var(--text-muted);font-size:10px;}
+.table-wrap{max-height:420px;overflow:auto;border:1px solid var(--border);border-radius:10px;}
+table{border-collapse:collapse;width:100%;font-size:13px;}
+table th{position:sticky;top:0;background:var(--surface-1);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-weight:600;cursor:pointer;white-space:nowrap;}
+table td{padding:7px 10px;border-bottom:1px solid var(--gridline);font-variant-numeric:tabular-nums;white-space:nowrap;}
+table tbody tr:hover{background:var(--page-plane);}
+.callout{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--text-secondary);}
+.callout.critical{color:var(--critical);border-color:var(--critical);}
+.notes{font-size:13px;color:var(--text-secondary);line-height:1.6;}
+.notes h3{font-size:14px;color:var(--text-primary);margin:18px 0 6px;}
+.lineage-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+.lineage-table th,.lineage-table td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top;}
+.lineage-table th{background:var(--surface-1);}
+.viz-tooltip{position:fixed;display:none;background:var(--text-primary);color:var(--surface-1);font-size:12px;padding:6px 9px;border-radius:6px;pointer-events:none;max-width:260px;z-index:100;line-height:1.4;}
+.badge{display:inline-block;background:var(--page-plane);border:1px solid var(--border);border-radius:6px;padding:2px 7px;font-size:11px;color:var(--text-secondary);}
+footer.report-footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--border);color:var(--text-muted);font-size:11.5px;}
+code{background:var(--page-plane);border:1px solid var(--border);border-radius:4px;padding:1px 5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="template-banner">TEMPLATE — structural reference only, not a data report. Every value on
+  this page is a labeled SAMPLE for layout demonstration; nothing here traces to a capture and nothing
+  should be cited. See grounding/report-spec.md for the normative anatomy this file implements.</div>
+
+  <!-- ================= 1. TITLE / SUBTITLE / GENERATED DATE ================= -->
+  <header class="report-header">
+    <h1>[Report title] — [One-line scope]</h1>
+    <p class="subtitle">[Data window, e.g. 2019-01-01 – 2026-06-30] · [grain note]</p>
+    <p class="generated">Generated [date] · source: captured query outputs, see lineage footer</p>
+  </header>
+
+  <!-- ================= 2. KPI ROW (3-5 stat tiles) ================= -->
+  <section class="panel">
+    <h2 class="section-title">Headline KPIs</h2>
+    <p class="section-help">3-5 stat tiles pulled straight from one KPI query's single row. Value uses
+    proportional figures (not tabular-nums) per dataviz marks-and-anatomy; label is sentence case, no
+    trailing colon.</p>
+    <div class="kpi-row" id="kpi-row"></div>
+  </section>
+
+  <!-- ================= 3. PRIMARY TREND + comparison split ================= -->
+  <section class="panel">
+    <h2 class="section-title">Primary trend</h2>
+    <p class="section-help">Time on the x-axis, left-to-right, full business window. One split series
+    (channel/store/tier) with a legend (>=2 series always gets one). Annotate the "shape" callouts the
+    report-spec's brief requires (seasonality, dips) as shaded bands, not just prose.</p>
+    <div class="chart-panel">
+      <h3>[Metric] by month, split by [dimension]</h3>
+      <div class="chart-legend" id="trend-legend"></div>
+      <div id="trend-chart"></div>
+      <p class="so-what">One-sentence "so what" caption goes here — every chart needs exactly one.</p>
+    </div>
+  </section>
+
+  <!-- ================= 4. BREAKDOWNS (2-4 categorical) ================= -->
+  <section class="panel">
+    <h2 class="section-title">Breakdowns</h2>
+    <p class="section-help">Bars sorted by value (not alphabet) unless the axis is genuinely ordinal
+    (months, loyalty tiers). Top-N with an explicit "other" bucket if the source has a long tail. No
+    pie charts beyond 2 slices anywhere in this system — prefer bars.</p>
+    <div class="chart-grid two-col">
+      <div class="chart-panel">
+        <h3>[Breakdown A — e.g. revenue by store]</h3>
+        <div id="breakdown-a"></div>
+        <p class="so-what">So-what caption.</p>
+      </div>
+      <div class="chart-panel">
+        <h3>[Breakdown B — e.g. revenue by tier (ordinal ramp)]</h3>
+        <div id="breakdown-b"></div>
+        <p class="so-what">So-what caption.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 5. DETAIL TABLE ================= -->
+  <section class="panel">
+    <h2 class="section-title">Detail</h2>
+    <p class="section-help">Top/bottom entities, sortable columns (click a header), scrolls inside its
+    own container — the page itself never needs to scroll past a giant table.</p>
+    <div class="table-wrap">
+      <table id="detail-table">
+        <thead><tr><th data-k="a">Column A</th><th data-k="b">Column B</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= 6. NOTES & LINEAGE FOOTER (required, every visual) ================= -->
+  <section class="panel">
+    <h2 class="section-title">Notes &amp; lineage</h2>
+    <div class="notes">
+      <h3>Caveats</h3>
+      <p>State dating policies, scope caveats, anything a DEF's Caveats line calls out that affects how
+      to read this report (e.g. "return_date vs order_date", "current cost basis, no history").</p>
+      <h3>Lineage — every visual traces to a query file</h3>
+      <table class="lineage-table">
+        <thead><tr><th>Visual</th><th>Query file</th><th>DEF IDs</th><th>Captured output ref</th></tr></thead>
+        <tbody>
+          <tr><td>[Visual name]</td><td><code>medallion/c_gold/queries/Qxx_....sql</code></td>
+              <td>DEF-xxx</td><td>EXPECTED_OUTPUTS.md § Qxx_....sql</td></tr>
+          <tr><td colspan="4">One row per visual on this page — a visual with no row here is a defect
+              (report-spec acceptance criterion 3).</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="report-footer">
+    Self-contained HTML — inline CSS/JS only, no CDNs, no external requests, opens from disk.
+    Chart engine: vanilla SVG built at render time from the embedded JSON data block (view source to
+    inspect). Palette: dataviz skill reference instance (grounding/report-spec.md "Visual rules").
+  </footer>
+</div>
+
+<script>
+/* ============================================================================
+   SHARED CHART ENGINE — copy this block verbatim into any new report.
+   Pure vanilla SVG + a delegated tooltip. No external calls, no build step.
+   ========================================================================= */
+(function(){
+  const NS='http://www.w3.org/2000/svg';
+  function svgEl(tag,attrs){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+  function fmtMoney(n){ const r=Math.round(n); return (r<0?'-$':'$')+Math.abs(r).toLocaleString('en-US'); }
+  function fmtInt(n){ return Math.round(n).toLocaleString('en-US'); }
+  function fmtPct(n){ return n.toFixed(2)+'%'; }
+  function niceMax(v){ if(v<=0) return 1; const p=Math.pow(10,Math.floor(Math.log10(v))); const n=v/p; let s; if(n<=1)s=1; else if(n<=2)s=2; else if(n<=5)s=5; else s=10; return s*p; }
+
+  // Rounded-cap bar path: square at the baseline, 4px rounded at the data end
+  // (dataviz marks-and-anatomy). orientation 'h' grows along x from x0 (dir=1 right/-1 left);
+  // 'v' grows along y from y0 (dir=1 up/-1 down).
+  function barPath(x0,y0,w,h,r,orientation,dir){
+    if(orientation==='h'){
+      const rr=Math.min(r,h/2,Math.max(w,0.001));
+      if(dir>=0){ const x=x0; return `M${x},${y0} H${x+w-rr} Q${x+w},${y0} ${x+w},${y0+rr} V${y0+h-rr} Q${x+w},${y0+h} ${x+w-rr},${y0+h} H${x} Z`; }
+      const x=x0-w; return `M${x0},${y0} H${x+rr} Q${x},${y0} ${x},${y0+rr} V${y0+h-rr} Q${x},${y0+h} ${x+rr},${y0+h} H${x0} Z`;
+    }
+    const rr=Math.min(r,w/2,Math.max(h,0.001));
+    if(dir>=0){ const yTop=y0-h; return `M${x0},${y0} V${yTop+rr} Q${x0},${yTop} ${x0+rr},${yTop} H${x0+w-rr} Q${x0+w},${yTop} ${x0+w},${yTop+rr} V${y0} Z`; }
+    const yBot=y0+h; return `M${x0},${y0} V${yBot-rr} Q${x0},${yBot} ${x0+rr},${yBot} H${x0+w-rr} Q${x0+w},${yBot} ${x0+w},${yBot-rr} V${y0} Z`;
+  }
+
+  const tip=document.createElement('div'); tip.className='viz-tooltip'; document.body.appendChild(tip);
+  document.addEventListener('mousemove', function(e){
+    const t=e.target.closest('[data-tip]');
+    if(t){ tip.innerHTML=t.getAttribute('data-tip'); tip.style.display='block';
+      tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY+14)+'px'; }
+    else tip.style.display='none';
+  });
+
+  // Horizontal ranking bar chart — categorical/ordinal breakdowns
+  function hBarChart(container, data, opts){
+    opts=opts||{};
+    const w=opts.width||640, barH=opts.barH||18, gap=opts.gap||9;
+    const labelW=opts.labelW||170, valueW=opts.valueW||100;
+    const plotW=w-labelW-valueW-16;
+    const max=opts.max||niceMax(Math.max(...data.map(d=>Math.abs(d.value))));
+    const h=data.length*(barH+gap)+gap;
+    const svg=svgEl('svg',{width:'100%',viewBox:`0 0 ${w} ${h}`});
+    data.forEach((d,i)=>{
+      const y=gap+i*(barH+gap);
+      const bw=Math.max(2,(Math.abs(d.value)/max)*plotW);
+      const txt=svgEl('text',{x:labelW-8,y:y+barH*0.72,'text-anchor':'end',class:'bar-label'}); txt.textContent=d.label; svg.appendChild(txt);
+      const path=svgEl('path',{d:barPath(labelW,y,bw,barH,4,'h',1),fill:d.color||'var(--series-1)'});
+      if(d.tip) path.setAttribute('data-tip', d.tip);
+      svg.appendChild(path);
+      const val=svgEl('text',{x:labelW+bw+8,y:y+barH*0.72,class:'bar-value'}); val.textContent=d.valueLabel!==undefined?d.valueLabel:fmtInt(d.value); svg.appendChild(val);
+    });
+    container.innerHTML=''; container.appendChild(svg);
+  }
+
+  // Vertical bar chart — histograms / ordinal series, supports negative values (diverging)
+  function vBarChart(container, data, opts){
+    opts=opts||{};
+    const w=opts.width||640, h=opts.height||260;
+    const margin={top:14,right:10,bottom:opts.bottomMargin||40,left:opts.leftMargin||56};
+    const plotW=w-margin.left-margin.right, plotH=h-margin.top-margin.bottom;
+    const vals=data.map(d=>d.value);
+    const maxV=opts.max!==undefined?opts.max:niceMax(Math.max(...vals,0));
+    const minV=opts.min!==undefined?opts.min:Math.min(0,...vals);
+    const yScale=(v)=>margin.top+plotH-((v-minV)/(maxV-minV))*plotH;
+    const bw=(plotW/data.length);
+    const barW=Math.min(opts.maxBarW||28, bw*0.62);
+    const svg=svgEl('svg',{width:'100%',viewBox:`0 0 ${w} ${h}`});
+    const steps=4;
+    for(let i=0;i<=steps;i++){
+      const v=minV+(maxV-minV)*i/steps;
+      const yy=yScale(v);
+      svg.appendChild(svgEl('line',{x1:margin.left,x2:w-margin.right,y1:yy,y2:yy,class:'gridline'}));
+      const t=svgEl('text',{x:margin.left-8,y:yy+4,'text-anchor':'end',class:'axis-label'}); t.textContent=opts.yFormat?opts.yFormat(v):fmtInt(v); svg.appendChild(t);
+    }
+    data.forEach((d,i)=>{
+      const cx=margin.left+bw*i+bw/2;
+      const y0=yScale(0), yV=yScale(d.value);
+      const barH2=Math.abs(y0-yV);
+      const dir=d.value>=0?1:-1;
+      const path=svgEl('path',{d:barPath(cx-barW/2, y0, barW, barH2,4,'v',dir), fill:d.color||'var(--series-1)'});
+      if(d.tip) path.setAttribute('data-tip', d.tip);
+      svg.appendChild(path);
+      if(opts.showXLabels!==false && (opts.labelEvery?(i%opts.labelEvery===0):true)){
+        const t=svgEl('text',{x:cx,y:h-margin.bottom+16,'text-anchor':'middle',class:'axis-label'}); t.textContent=d.label; svg.appendChild(t);
+      }
+    });
+    svg.appendChild(svgEl('line',{x1:margin.left,x2:w-margin.right,y1:yScale(0),y2:yScale(0),stroke:'var(--baseline)','stroke-width':1}));
+    container.innerHTML=''; container.appendChild(svg);
+  }
+
+  // Multi-series line chart — time trend with shaded-band annotations
+  function lineChart(container, categories, series, opts){
+    opts=opts||{};
+    const w=opts.width||900,h=opts.height||280;
+    const margin={top:16,right:opts.rightMargin||16,bottom:34,left:opts.leftMargin||68};
+    const plotW=w-margin.left-margin.right, plotH=h-margin.top-margin.bottom;
+    const allVals=series.flatMap(s=>s.values);
+    const maxV=opts.max!==undefined?opts.max:niceMax(Math.max(...allVals));
+    const minV=opts.min!==undefined?opts.min:0;
+    const x=i=>margin.left+(i/(categories.length-1))*plotW;
+    const y=v=>margin.top+plotH-((v-minV)/(maxV-minV))*plotH;
+    const svg=svgEl('svg',{width:'100%',viewBox:`0 0 ${w} ${h}`});
+    const steps=4;
+    for(let i=0;i<=steps;i++){
+      const v=minV+(maxV-minV)*i/steps;
+      const yy=y(v);
+      svg.appendChild(svgEl('line',{x1:margin.left,x2:w-margin.right,y1:yy,y2:yy,class:'gridline'}));
+      const t=svgEl('text',{x:margin.left-8,y:yy+4,'text-anchor':'end',class:'axis-label'}); t.textContent=opts.yFormat?opts.yFormat(v):fmtInt(v); svg.appendChild(t);
+    }
+    (opts.annotations||[]).forEach(a=>{
+      const x0=x(a.i0), x1=x(a.i1);
+      svg.appendChild(svgEl('rect',{x:x0,y:margin.top,width:Math.max(1,x1-x0),height:plotH,fill:'var(--text-muted)',opacity:'0.12'}));
+      const lt=svgEl('text',{x:(x0+x1)/2,y:margin.top+12,'text-anchor':'middle',class:'annotation-label'}); lt.textContent=a.label; svg.appendChild(lt);
+    });
+    const tickEvery=opts.tickEvery||12;
+    categories.forEach((c,i)=>{
+      if(i%tickEvery===0||i===categories.length-1){
+        const t=svgEl('text',{x:x(i),y:h-margin.bottom+18,'text-anchor':'middle',class:'axis-label'}); t.textContent=c; svg.appendChild(t);
+      }
+    });
+    series.forEach(s=>{
+      let d='';
+      s.values.forEach((v,i)=>{ d+=(i===0?'M':'L')+x(i)+','+y(v)+' '; });
+      svg.appendChild(svgEl('path',{d,fill:'none',stroke:s.color,'stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'}));
+    });
+    series.forEach(s=>{
+      s.values.forEach((v,i)=>{
+        const c=svgEl('circle',{cx:x(i),cy:y(v),r:7,fill:'transparent','data-tip':`<b>${s.name}</b><br>${categories[i]}: ${opts.yFormat?opts.yFormat(v):fmtInt(v)}`});
+        svg.appendChild(c);
+      });
+    });
+    container.innerHTML=''; container.appendChild(svg);
+    if(opts.legendEl){
+      opts.legendEl.innerHTML=series.map(s=>`<span class="legend-item"><span class="legend-swatch" style="background:${s.color}"></span>${s.name}</span>`).join('');
+    }
+  }
+
+  // sortable table helper — attach to a <table> with data-k header attrs
+  function makeSortable(table, rows, columns, renderRow){
+    let sortKey=null, sortDir=1;
+    function draw(){
+      const tbody=table.querySelector('tbody');
+      let data=rows.slice();
+      if(sortKey){ data.sort((a,b)=>{ const av=a[sortKey], bv=b[sortKey]; return (av>bv?1:av<bv?-1:0)*sortDir; }); }
+      tbody.innerHTML=data.map(renderRow).join('');
+    }
+    table.querySelectorAll('th[data-k]').forEach(th=>{
+      th.addEventListener('click', ()=>{
+        const k=th.getAttribute('data-k');
+        if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; }
+        draw();
+      });
+    });
+    draw();
+  }
+
+  window.VIZ={svgEl,fmtMoney,fmtInt,fmtPct,niceMax,barPath,hBarChart,vBarChart,lineChart,makeSortable};
+})();
+
+/* ---- SAMPLE render calls (delete in a real report; replace with real JSON) ---- */
+document.getElementById('kpi-row').innerHTML = ['Gross revenue','Net revenue','Orders','AOV'].map(l=>
+  `<div class="kpi-tile"><div class="kpi-label">${l}</div><div class="kpi-value">—</div><div class="kpi-sub">sample — replace</div></div>`
+).join('');
+VIZ.lineChart(document.getElementById('trend-chart'), ['Jan','Feb','Mar','Apr','May','Jun'],
+  [{name:'Series A', color:'var(--channel-store)', values:[10,14,9,18,22,17]},
+   {name:'Series B', color:'var(--channel-web)', values:[8,9,11,10,15,19]}],
+  {legendEl:document.getElementById('trend-legend'), annotations:[{i0:1,i1:2,label:'sample dip'}]});
+VIZ.hBarChart(document.getElementById('breakdown-a'), [
+  {label:'Item 1', value:80, color:'var(--series-1)'},
+  {label:'Item 2', value:55, color:'var(--series-1)'},
+  {label:'Item 3', value:30, color:'var(--series-1)'}
+]);
+VIZ.hBarChart(document.getElementById('breakdown-b'), [
+  {label:'basic', value:20, color:'var(--tier-basic)'},
+  {label:'silver', value:45, color:'var(--tier-silver)'},
+  {label:'gold', value:70, color:'var(--tier-gold)'},
+  {label:'platinum', value:95, color:'var(--tier-platinum)'}
+]);
+document.querySelector('#detail-table tbody').innerHTML = '<tr><td>sample</td><td>sample</td></tr>';
+</script>
+</body>
+</html>

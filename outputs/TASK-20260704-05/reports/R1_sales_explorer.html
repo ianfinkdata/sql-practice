@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>R1 — Sales Explorer — Oakhaven</title>
+<style>
+:root{
+  --surface-1:#fcfcfb; --page-plane:#f9f9f7; --text-primary:#0b0b0b; --text-secondary:#52514e;
+  --text-muted:#898781; --gridline:#e1e0d9; --baseline:#c3c2b7; --border:rgba(11,11,11,0.10);
+  --series-1:#2a78d6; --series-2:#1baf7a; --series-3:#eda100; --series-4:#008300;
+  --series-5:#4a3aa7; --series-6:#e34948; --series-7:#e87ba4; --series-8:#eb6834;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --tier-basic:#86b6ef; --tier-silver:#5598e7; --tier-gold:#2a78d6; --tier-platinum:#1c5cab;
+  --channel-store: var(--series-1); --channel-web: var(--series-2);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --surface-1:#1a1a19; --page-plane:#0d0d0d; --text-primary:#ffffff; --text-secondary:#c3c2b7;
+    --text-muted:#898781; --gridline:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,0.10);
+    --series-1:#3987e5; --series-2:#199e70; --series-3:#c98500; --series-4:#008300;
+    --series-5:#9085e9; --series-6:#e66767; --series-7:#d55181; --series-8:#d95926;
+    --tier-basic:#184f95; --tier-silver:#1c5cab; --tier-gold:#3987e5; --tier-platinum:#5598e7;
+  }
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--page-plane);color:var(--text-primary);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;}
+.wrap{max-width:1160px;margin:0 auto;padding:24px 20px 60px;}
+header.report-header{padding:8px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px;}
+h1{font-size:26px;margin:0 0 4px;}
+.subtitle{color:var(--text-secondary);font-size:14px;margin:0 0 2px;}
+.generated{color:var(--text-muted);font-size:12px;}
+section.panel{margin-bottom:36px;}
+h2.section-title{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin:0 0 14px;font-weight:600;}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;}
+.kpi-tile{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.kpi-label{font-size:12px;color:var(--text-secondary);margin-bottom:6px;}
+.kpi-value{font-size:26px;font-weight:600;}
+.kpi-sub{font-size:11px;color:var(--text-muted);margin-top:4px;}
+.chart-grid{display:grid;grid-template-columns:1fr;gap:24px;}
+.chart-grid.two-col{grid-template-columns:repeat(auto-fit,minmax(420px,1fr));}
+.chart-grid.three-col{grid-template-columns:repeat(auto-fit,minmax(340px,1fr));}
+.chart-panel{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+.chart-panel h3{font-size:14px;margin:0 0 4px;}
+.chart-legend{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 8px;font-size:12px;color:var(--text-secondary);}
+.legend-item{display:inline-flex;align-items:center;gap:6px;}
+.legend-swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
+.so-what{font-size:12.5px;color:var(--text-secondary);margin-top:10px;font-style:italic;}
+svg text{fill:var(--text-secondary);font-size:11px;font-family:inherit;}
+svg .axis-label{fill:var(--text-muted);}
+svg .bar-label{fill:var(--text-secondary);font-size:12px;}
+svg .bar-value{fill:var(--text-primary);font-size:12px;font-variant-numeric:tabular-nums;}
+svg .gridline{stroke:var(--gridline);stroke-width:1;}
+svg .annotation-label{fill:var(--text-muted);font-size:10px;}
+.table-wrap{max-height:420px;overflow:auto;border:1px solid var(--border);border-radius:10px;}
+table{border-collapse:collapse;width:100%;font-size:13px;}
+table th{position:sticky;top:0;background:var(--surface-1);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-weight:600;cursor:pointer;white-space:nowrap;}
+table th.sort-active::after{content:' \25BE';}
+table td{padding:7px 10px;border-bottom:1px solid var(--gridline);font-variant-numeric:tabular-nums;white-space:nowrap;}
+table tbody tr:hover{background:var(--page-plane);}
+td.num{text-align:right;}
+td.pos{color:var(--good);}
+td.neg{color:var(--critical);}
+.notes{font-size:13px;color:var(--text-secondary);line-height:1.6;}
+.notes h3{font-size:14px;color:var(--text-primary);margin:18px 0 6px;}
+.lineage-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+.lineage-table th,.lineage-table td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top;}
+.lineage-table th{background:var(--surface-1);}
+.viz-tooltip{position:fixed;display:none;background:var(--text-primary);color:var(--surface-1);font-size:12px;padding:6px 9px;border-radius:6px;pointer-events:none;max-width:260px;z-index:100;line-height:1.4;}
+footer.report-footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--border);color:var(--text-muted);font-size:11.5px;}
+code{background:var(--page-plane);border:1px solid var(--border);border-radius:4px;padding:1px 5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="report-header">
+    <h1>R1 — Sales Explorer</h1>
+    <p class="subtitle">Full business window 2019-01-01 – 2026-06-30 (2,738 days, 90 sales months) · gross/net revenue, orders, AOV, returns</p>
+    <p class="generated">Generated 2026-07-05 · every number below traces to a gold query capture — see Notes &amp; lineage</p>
+  </header>
+
+  <section class="panel">
+    <h2 class="section-title">Headline KPIs</h2>
+    <div class="kpi-row" id="kpi-row"></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title">Primary trend</h2>
+    <div class="chart-panel">
+      <h3>Monthly gross revenue by channel</h3>
+      <div class="chart-legend" id="trend-legend"></div>
+      <div id="trend-chart"></div>
+      <p class="so-what">Revenue climbs steadily year over year with a repeating summer (Jun–Aug) seasonal
+      peak, interrupted by a sharp COVID-era trough in spring 2020 that the business fully recovered from
+      by mid-2021.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title">Breakdowns</h2>
+    <div class="chart-grid three-col">
+      <div class="chart-panel">
+        <h3>Revenue by store</h3>
+        <div id="breakdown-store"></div>
+        <p class="so-what">The WEB channel alone out-earns any single physical store by roughly 8x — it is
+        the single largest "store" in the network.</p>
+      </div>
+      <div class="chart-panel">
+        <h3>Revenue by loyalty tier (ordinal, ranked basic → platinum)</h3>
+        <div id="breakdown-tier"></div>
+        <p class="so-what">Basic-tier customers (the largest cohort) still generate the majority of gross
+        revenue — tier is a loyalty signal here, not the main revenue lever.</p>
+      </div>
+      <div class="chart-panel">
+        <h3>Promo vs non-promo revenue share</h3>
+        <div class="chart-legend" id="promo-legend"></div>
+        <div id="breakdown-promo"></div>
+        <p class="so-what">Promotions touch only 11.07% of gross revenue — most sales happen at full,
+        undiscounted price.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title">Detail — top 15 months by revenue, with month-over-month change</h2>
+    <div class="table-wrap">
+      <table id="mom-table">
+        <thead><tr>
+          <th data-k="sales_month">Month</th>
+          <th data-k="gross_revenue">Gross revenue</th>
+          <th data-k="mom_change">MoM change</th>
+          <th data-k="mom_change_pct">MoM change %</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title">Notes &amp; lineage</h2>
+    <div class="notes">
+      <h3>Caveats</h3>
+      <p>Gross revenue (DEF-004) counts completed + refunded orders (DEF-003); net revenue (DEF-005)
+      subtracts refund value dated by <code>return_date</code> for this full-window total (dating policy
+      is moot at full-window grain — see DEF-005 caveat). Revenue by loyalty tier and by store attributes
+      each order to the <b>canonical</b> customer (DEF-014) — absorbed near-dupe customers' orders count
+      under their original's tier/identity, never split. The 2020 COVID dip and summer-seasonality shading
+      on the trend chart are visual annotations over the captured Q02 series, not separate query outputs.</p>
+      <h3>Lineage — every visual traces to a query file</h3>
+      <table class="lineage-table">
+        <thead><tr><th>Visual</th><th>Query file</th><th>DEF IDs</th><th>Captured output ref</th></tr></thead>
+        <tbody>
+          <tr><td>Subtitle data window (2019-01-01 – 2026-06-30, 90 months)</td>
+              <td><code>medallion/c_gold/verify/V04_dim_date_window.sql</code></td>
+              <td>—</td><td>EXPECTED_OUTPUTS.md § V04_dim_date_window.sql</td></tr>
+          <tr><td>KPI row (gross revenue, net revenue, order count, AOV, revenue return rate)</td>
+              <td><code>medallion/c_gold/queries/Q01_r1_sales_kpis.sql</code></td>
+              <td>DEF-003, DEF-004, DEF-005, DEF-006, DEF-008</td>
+              <td>EXPECTED_OUTPUTS.md § Q01_r1_sales_kpis.sql</td></tr>
+          <tr><td>Primary trend: monthly gross revenue by channel (+ COVID dip / seasonality annotations)</td>
+              <td><code>medallion/c_gold/queries/Q02_r1_monthly_revenue_by_channel.sql</code></td>
+              <td>DEF-003, DEF-004</td>
+              <td>EXPECTED_OUTPUTS.md § Q02_r1_monthly_revenue_by_channel.sql (180 rows, captured in full)</td></tr>
+          <tr><td>Breakdown: revenue by store</td>
+              <td><code>medallion/c_gold/queries/Q03_r1_revenue_by_store.sql</code></td>
+              <td>DEF-003, DEF-004, DEF-005</td>
+              <td>EXPECTED_OUTPUTS.md § Q03_r1_revenue_by_store.sql</td></tr>
+          <tr><td>Breakdown: revenue by loyalty tier</td>
+              <td><code>medallion/c_gold/queries/Q13_r1_revenue_by_tier.sql</code></td>
+              <td>DEF-020, DEF-003, DEF-004, DEF-005, DEF-014</td>
+              <td>EXPECTED_OUTPUTS.md § Q13_r1_revenue_by_tier.sql</td></tr>
+          <tr><td>Breakdown: promo vs non-promo revenue share</td>
+              <td><code>medallion/c_gold/queries/Q04_r1_promo_share.sql</code></td>
+              <td>DEF-003, DEF-004</td>
+              <td>EXPECTED_OUTPUTS.md § Q04_r1_promo_share.sql</td></tr>
+          <tr><td>Detail table: top 15 months by revenue with MoM change</td>
+              <td><code>medallion/c_gold/queries/Q05_r1_top15_months_mom.sql</code></td>
+              <td>DEF-004</td>
+              <td>EXPECTED_OUTPUTS.md § Q05_r1_top15_months_mom.sql</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="report-footer">
+    Self-contained HTML — inline CSS/JS only, no CDNs, no external requests, opens from disk. Data embedded
+    below as JSON blocks transcribed verbatim from medallion/c_gold/EXPECTED_OUTPUTS.md.
+  </footer>
+</div>
+
+<!-- ================= EMBEDDED DATA (verbatim from EXPECTED_OUTPUTS.md) ================= -->
+<script type="application/json" id="data-q01">
+{"gross_revenue":83160177.98,"returned_value":1951653.13,"net_revenue":81208524.85,"order_count":58300,"aov":1426.42,"revenue_return_rate_pct":2.35}
+</script>
+<script type="application/json" id="data-q02">
+[
+{"m":"2019-01","store":202718.28,"web":185701.62},{"m":"2019-02","store":185159.35,"web":126393.55},
+{"m":"2019-03","store":245997.52,"web":226329.31},{"m":"2019-04","store":278129.75,"web":233875.61},
+{"m":"2019-05","store":264081.24,"web":293196.83},{"m":"2019-06","store":443968.15,"web":329720.93},
+{"m":"2019-07","store":353856.66,"web":285830.39},{"m":"2019-08","store":354209.91,"web":373391.84},
+{"m":"2019-09","store":273663.95,"web":233142.79},{"m":"2019-10","store":296559.16,"web":228644.93},
+{"m":"2019-11","store":334423.53,"web":223946.00},{"m":"2019-12","store":333420.25,"web":333760.12},
+{"m":"2020-01","store":187673.05,"web":151035.16},{"m":"2020-02","store":193929.19,"web":145712.83},
+{"m":"2020-03","store":94586.61,"web":100275.74},{"m":"2020-04","store":86514.63,"web":71825.82},
+{"m":"2020-05","store":166927.10,"web":161456.29},{"m":"2020-06","store":275275.55,"web":206361.22},
+{"m":"2020-07","store":395029.20,"web":297873.12},{"m":"2020-08","store":386851.40,"web":291552.75},
+{"m":"2020-09","store":294460.21,"web":235061.69},{"m":"2020-10","store":262261.78,"web":212698.89},
+{"m":"2020-11","store":334565.91,"web":306188.01},{"m":"2020-12","store":343253.07,"web":274912.50},
+{"m":"2021-01","store":306225.48,"web":209126.70},{"m":"2021-02","store":244174.81,"web":233784.66},
+{"m":"2021-03","store":277200.79,"web":284946.77},{"m":"2021-04","store":386012.22,"web":276132.05},
+{"m":"2021-05","store":456654.15,"web":358226.94},{"m":"2021-06","store":465401.89,"web":472331.40},
+{"m":"2021-07","store":575830.38,"web":448907.34},{"m":"2021-08","store":569609.92,"web":454078.10},
+{"m":"2021-09","store":356893.55,"web":338047.04},{"m":"2021-10","store":385089.21,"web":341619.20},
+{"m":"2021-11","store":442643.58,"web":356344.28},{"m":"2021-12","store":526702.33,"web":411817.00},
+{"m":"2022-01","store":316037.18,"web":281033.86},{"m":"2022-02","store":327343.51,"web":264385.19},
+{"m":"2022-03","store":388805.63,"web":390396.79},{"m":"2022-04","store":429069.68,"web":343217.09},
+{"m":"2022-05","store":539493.84,"web":443304.36},{"m":"2022-06","store":613618.73,"web":535754.36},
+{"m":"2022-07","store":700240.11,"web":535925.16},{"m":"2022-08","store":677403.66,"web":530009.55},
+{"m":"2022-09","store":535198.83,"web":416090.44},{"m":"2022-10","store":427692.41,"web":390293.00},
+{"m":"2022-11","store":513290.56,"web":440116.93},{"m":"2022-12","store":545499.14,"web":496936.70},
+{"m":"2023-01","store":408711.55,"web":329389.20},{"m":"2023-02","store":316171.46,"web":306535.58},
+{"m":"2023-03","store":430699.61,"web":382756.64},{"m":"2023-04","store":490681.11,"web":432778.50},
+{"m":"2023-05","store":612006.48,"web":475258.30},{"m":"2023-06","store":706926.78,"web":602603.78},
+{"m":"2023-07","store":888217.07,"web":627909.45},{"m":"2023-08","store":725625.83,"web":664742.11},
+{"m":"2023-09","store":575112.66,"web":463858.44},{"m":"2023-10","store":575110.06,"web":422939.42},
+{"m":"2023-11","store":628692.16,"web":473179.10},{"m":"2023-12","store":666555.93,"web":657699.37},
+{"m":"2024-01","store":490788.09,"web":415973.51},{"m":"2024-02","store":369294.05,"web":357126.82},
+{"m":"2024-03","store":574680.48,"web":399273.42},{"m":"2024-04","store":589289.20,"web":418912.85},
+{"m":"2024-05","store":685584.15,"web":609002.79},{"m":"2024-06","store":763602.34,"web":618005.49},
+{"m":"2024-07","store":897062.62,"web":763566.01},{"m":"2024-08","store":857432.56,"web":677886.93},
+{"m":"2024-09","store":643293.77,"web":594696.88},{"m":"2024-10","store":547387.01,"web":434891.64},
+{"m":"2024-11","store":744121.59,"web":575978.19},{"m":"2024-12","store":854296.55,"web":765970.54},
+{"m":"2025-01","store":433317.16,"web":385406.66},{"m":"2025-02","store":434514.52,"web":314683.84},
+{"m":"2025-03","store":625859.99,"web":467853.31},{"m":"2025-04","store":650323.58,"web":475128.84},
+{"m":"2025-05","store":856882.37,"web":720729.32},{"m":"2025-06","store":837681.33,"web":688524.36},
+{"m":"2025-07","store":918879.01,"web":790078.24},{"m":"2025-08","store":886503.57,"web":775225.60},
+{"m":"2025-09","store":850224.19,"web":596419.43},{"m":"2025-10","store":707954.04,"web":502965.78},
+{"m":"2025-11","store":792351.29,"web":697343.57},{"m":"2025-12","store":835263.74,"web":738092.74},
+{"m":"2026-01","store":524553.33,"web":372374.65},{"m":"2026-02","store":445477.87,"web":354091.06},
+{"m":"2026-03","store":651748.19,"web":470143.63},{"m":"2026-04","store":658938.75,"web":539855.57},
+{"m":"2026-05","store":805910.99,"web":727662.64},{"m":"2026-06","store":945812.08,"web":793764.78}
+]
+</script>
+<script type="application/json" id="data-q03">
+[
+{"store_code":"WEB","city":"Online","state":"WA","order_count":26438,"gross_revenue":37662991.83},
+{"store_code":"SEA-PIKE","city":"Seattle","state":"WA","order_count":3295,"gross_revenue":4810385.30},
+{"store_code":"SEA-BAL","city":"Seattle","state":"WA","order_count":3344,"gross_revenue":4757842.21},
+{"store_code":"PDX-PRL","city":"Portland","state":"OR","order_count":3321,"gross_revenue":4678141.69},
+{"store_code":"BEL-01","city":"Bellevue","state":"WA","order_count":3192,"gross_revenue":4603206.56},
+{"store_code":"TAC-01","city":"Tacoma","state":"WA","order_count":3193,"gross_revenue":4572816.09},
+{"store_code":"SPO-01","city":"Spokane","state":"WA","order_count":2897,"gross_revenue":4021410.04},
+{"store_code":"PDX-HAW","city":"Portland","state":"OR","order_count":2624,"gross_revenue":3724235.84},
+{"store_code":"EUG-01","city":"Eugene","state":"OR","order_count":2557,"gross_revenue":3588077.77},
+{"store_code":"BOI-01","city":"Boise","state":"ID","order_count":2447,"gross_revenue":3489147.38},
+{"store_code":"MSO-01","city":"Missoula","state":"MT","order_count":2246,"gross_revenue":3282689.18},
+{"store_code":"BZN-01","city":"Bozeman","state":"MT","order_count":1681,"gross_revenue":2441938.49},
+{"store_code":"BEN-01","city":"Bend","state":"OR","order_count":1065,"gross_revenue":1527295.60}
+]
+</script>
+<script type="application/json" id="data-q13">
+[
+{"loyalty_tier":"basic","loyalty_tier_rank":1,"order_count":34930,"gross_revenue":49846202.15,"net_revenue":48706061.46},
+{"loyalty_tier":"silver","loyalty_tier_rank":2,"order_count":12363,"gross_revenue":17580320.38,"net_revenue":17156261.74},
+{"loyalty_tier":"gold","loyalty_tier_rank":3,"order_count":7778,"gross_revenue":11138543.79,"net_revenue":10864100.67},
+{"loyalty_tier":"platinum","loyalty_tier_rank":4,"order_count":3229,"gross_revenue":4595111.66,"net_revenue":4482100.98}
+]
+</script>
+<script type="application/json" id="data-q04">
+[
+{"promo_flag":"no_promo","order_count":51064,"gross_revenue":73956202.54,"revenue_share_pct":88.93},
+{"promo_flag":"promo","order_count":7236,"gross_revenue":9203975.44,"revenue_share_pct":11.07}
+]
+</script>
+<script type="application/json" id="data-q05">
+[
+{"sales_month":"2026-06","gross_revenue":1739576.86,"mom_change":206003.23,"mom_change_pct":13.43},
+{"sales_month":"2025-07","gross_revenue":1708957.25,"mom_change":182751.56,"mom_change_pct":11.97},
+{"sales_month":"2025-08","gross_revenue":1661729.17,"mom_change":-47228.08,"mom_change_pct":-2.76},
+{"sales_month":"2024-07","gross_revenue":1660628.63,"mom_change":279020.80,"mom_change_pct":20.20},
+{"sales_month":"2024-12","gross_revenue":1620267.09,"mom_change":300167.31,"mom_change_pct":22.74},
+{"sales_month":"2025-05","gross_revenue":1577611.69,"mom_change":452159.27,"mom_change_pct":40.18},
+{"sales_month":"2025-12","gross_revenue":1573356.48,"mom_change":83661.62,"mom_change_pct":5.62},
+{"sales_month":"2024-08","gross_revenue":1535319.49,"mom_change":-125309.14,"mom_change_pct":-7.55},
+{"sales_month":"2026-05","gross_revenue":1533573.63,"mom_change":334779.31,"mom_change_pct":27.93},
+{"sales_month":"2025-06","gross_revenue":1526205.69,"mom_change":-51406.00,"mom_change_pct":-3.26},
+{"sales_month":"2023-07","gross_revenue":1516126.52,"mom_change":206595.96,"mom_change_pct":15.78},
+{"sales_month":"2025-11","gross_revenue":1489694.86,"mom_change":278775.04,"mom_change_pct":23.02},
+{"sales_month":"2025-09","gross_revenue":1446643.62,"mom_change":-215085.55,"mom_change_pct":-12.94},
+{"sales_month":"2023-08","gross_revenue":1390367.94,"mom_change":-125758.58,"mom_change_pct":-8.29},
+{"sales_month":"2024-06","gross_revenue":1381607.83,"mom_change":87020.89,"mom_change_pct":6.72}
+]
+</script>
+
+<script>
+/* ============================================================================
+   SHARED CHART ENGINE (see template.html for the annotated version)
+   ========================================================================= */
+(function(){
+  const NS='http://www.w3.org/2000/svg';
+  function svgEl(tag,attrs){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+  function fmtMoney(n){ const r=Math.round(n); return (r<0?'-$':'$')+Math.abs(r).toLocaleString('en-US'); }
+  function fmtInt(n){ return Math.round(n).toLocaleString('en-US'); }
+  function fmtPct(n){ return n.toFixed(2)+'%'; }
+  function niceMax(v){ if(v<=0) return 1; const p=Math.pow(10,Math.floor(Math.log10(v))); const n=v/p; let s; if(n<=1)s=1; else if(n<=2)s=2; else if(n<=5)s=5; else s=10; return s*p; }
+  function barPath(x0,y0,w,h,r,orientation,dir){
+    if(orientation==='h'){
+      const rr=Math.min(r,h/2,Math.max(w,0.001));
+      if(dir>=0){ const x=x0; return `M${x},${y0} H${x+w-rr} Q${x+w},${y0} ${x+w},${y0+rr} V${y0+h-rr} Q${x+w},${y0+h} ${x+w-rr},${y0+h} H${x} Z`; }
+      const x=x0-w; return `M${x0},${y0} H${x+rr} Q${x},${y0} ${x},${y0+rr} V${y0+h-rr} Q${x},${y0+h} ${x+rr},${y0+h} H${x0} Z`;
+    }
+    const rr=Math.min(r,w/2,Math.max(h,0.001));
+    if(dir>=0){ const yTop=y0-h; return `M${x0},${y0} V${yTop+rr} Q${x0},${yTop} ${x0+rr},${yTop} H${x0+w-rr} Q${x0+w},${yTop} ${x0+w},${yTop+rr} V${y0} Z`; }
+    const yBot=y0+h; return `M${x0},${y0} V${yBot-rr} Q${x0},${yBot} ${x0+rr},${yBot} H${x0+w-rr} Q${x0+w},${yBot} ${x0+w},${yBot-rr} V${y0} Z`;
+  }
+  const tip=document.createElement('div'); tip.className='viz-tooltip'; document.body.appendChild(tip);
+  document.addEventListener('mousemove', function(e){
+    const t=e.target.closest('[data-tip]');
+    if(t){ tip.innerHTML=t.getAttribute('data-tip'); tip.style.display='block';
+      tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY+14)+'px'; }
+    else tip.style.display='none';
+  });
+  function hBarChart(container, data, opts){
+    opts=opts||{};
+    const w=opts.width||640, barH=opts.barH||18, gap=opts.gap||9;
+    const labelW=opts.labelW||110, valueW=opts.valueW||100;
+    const plotW=w-labelW-valueW-16;
+    const max=opts.max||niceMax(Math.max(...data.map(d=>Math.abs(d.value))));
+    const h=data.length*(barH+gap)+gap;
+    const svg=svgEl('svg',{width:'100%',viewBox:`0 0 ${w} ${h}`});
+    data.forEach((d,i)=>{
+      const y=gap+i*(barH+gap);
+      const bw=Math.max(2,(Math.abs(d.value)/max)*plotW);
+      const txt=svgEl('text',{x:labelW-8,y:y+barH*0.72,'text-anchor':'end',class:'bar-label'}); txt.textContent=d.label; svg.appendChild(txt);
+      const path=svgEl('path',{d:barPath(labelW,y,bw,barH,4,'h',1),fill:d.color||'var(--series-1)'});
+      if(d.tip) path.setAttribute('data-tip', d.tip);
+      svg.appendChild(path);
+      const val=svgEl('text',{x:labelW+bw+8,y:y+barH*0.72,class:'bar-value'}); val.textContent=d.valueLabel!==undefined?d.valueLabel:fmtInt(d.value); svg.appendChild(val);
+    });
+    container.innerHTML=''; container.appendChild(svg);
+  }
+  function lineChart(container, categories, series, opts){
+    opts=opts||{};
+    const w=opts.width||900,h=opts.height||280;
+    const margin={top:16,right:opts.rightMargin||16,bottom:34,left:opts.leftMargin||68};
+    const plotW=w-margin.left-margin.right, plotH=h-margin.top-margin.bottom;
+    const allVals=series.flatMap(s=>s.values);
+    const maxV=opts.max!==undefined?opts.max:niceMax(Math.max(...allVals));
+    const minV=opts.min!==undefined?opts.min:0;
+    const x=i=>margin.left+(i/(categories.length-1))*plotW;
+    const y=v=>margin.top+plotH-((v-minV)/(maxV-minV))*plotH;
+    const svg=svgEl('svg',{width:'100%',viewBox:`0 0 ${w} ${h}`});
+    const steps=4;
+    for(let i=0;i<=steps;i++){
+      const v=minV+(maxV-minV)*i/steps;
+      const yy=y(v);
+      svg.appendChild(svgEl('line',{x1:margin.left,x2:w-margin.right,y1:yy,y2:yy,class:'gridline'}));
+      const t=svgEl('text',{x:margin.left-8,y:yy+4,'text-anchor':'end',class:'axis-label'}); t.textContent=opts.yFormat?opts.yFormat(v):fmtInt(v); svg.appendChild(t);
+    }
+    (opts.annotations||[]).forEach(a=>{
+      const x0=x(a.i0), x1=x(a.i1);
+      svg.appendChild(svgEl('rect',{x:x0,y:margin.top,width:Math.max(1,x1-x0),height:plotH,fill:a.fill||'var(--text-muted)',opacity:a.opacity||'0.12'}));
+      if(a.label){
+        const lt=svgEl('text',{x:(x0+x1)/2,y:margin.top+12,'text-anchor':'middle',class:'annotation-label'}); lt.textContent=a.label; svg.appendChild(lt);
+      }
+    });
+    const tickEvery=opts.tickEvery||12;
+    categories.forEach((c,i)=>{
+      if(i%tickEvery===0||i===categories.length-1){
+        const t=svgEl('text',{x:x(i),y:h-margin.bottom+18,'text-anchor':'middle',class:'axis-label'}); t.textContent=c; svg.appendChild(t);
+      }
+    });
+    series.forEach(s=>{
+      let d='';
+      s.values.forEach((v,i)=>{ d+=(i===0?'M':'L')+x(i)+','+y(v)+' '; });
+      svg.appendChild(svgEl('path',{d,fill:'none',stroke:s.color,'stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'}));
+    });
+    series.forEach(s=>{
+      s.values.forEach((v,i)=>{
+        const c=svgEl('circle',{cx:x(i),cy:y(v),r:7,fill:'transparent','data-tip':`<b>${s.name}</b><br>${categories[i]}: ${opts.yFormat?opts.yFormat(v):fmtInt(v)}`});
+        svg.appendChild(c);
+      });
+    });
+    container.innerHTML=''; container.appendChild(svg);
+    if(opts.legendEl){
+      opts.legendEl.innerHTML=series.map(s=>`<span class="legend-item"><span class="legend-swatch" style="background:${s.color}"></span>${s.name}</span>`).join('');
+    }
+  }
+  function makeSortable(table, rows, renderRow){
+    let sortKey=null, sortDir=1;
+    function draw(){
+      const tbody=table.querySelector('tbody');
+      let data=rows.slice();
+      if(sortKey){ data.sort((a,b)=>{ const av=a[sortKey], bv=b[sortKey]; return (av>bv?1:av<bv?-1:0)*sortDir; }); }
+      tbody.innerHTML=data.map(renderRow).join('');
+      table.querySelectorAll('th[data-k]').forEach(th=>th.classList.toggle('sort-active', th.getAttribute('data-k')===sortKey));
+    }
+    table.querySelectorAll('th[data-k]').forEach(th=>{
+      th.addEventListener('click', ()=>{
+        const k=th.getAttribute('data-k');
+        if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; }
+        draw();
+      });
+    });
+    draw();
+  }
+  window.VIZ={svgEl,fmtMoney,fmtInt,fmtPct,niceMax,barPath,hBarChart,lineChart,makeSortable};
+})();
+
+/* ============================================================================
+   RENDER — R1 Sales Explorer
+   ========================================================================= */
+const Q01=JSON.parse(document.getElementById('data-q01').textContent);
+const Q02=JSON.parse(document.getElementById('data-q02').textContent);
+const Q03=JSON.parse(document.getElementById('data-q03').textContent);
+const Q13=JSON.parse(document.getElementById('data-q13').textContent);
+const Q04=JSON.parse(document.getElementById('data-q04').textContent);
+const Q05=JSON.parse(document.getElementById('data-q05').textContent);
+
+// KPI row (Q01_r1_sales_kpis.sql)
+document.getElementById('kpi-row').innerHTML = [
+  {l:'Gross revenue', v:VIZ.fmtMoney(Q01.gross_revenue), s:'DEF-004 · Q01'},
+  {l:'Net revenue', v:VIZ.fmtMoney(Q01.net_revenue), s:'DEF-005 · Q01'},
+  {l:'Order count', v:VIZ.fmtInt(Q01.order_count), s:'DEF-003 · Q01'},
+  {l:'AOV', v:VIZ.fmtMoney(Q01.aov), s:'DEF-006 · Q01'},
+  {l:'Revenue return rate', v:VIZ.fmtPct(Q01.revenue_return_rate_pct), s:'DEF-008 · Q01'}
+].map(k=>`<div class="kpi-tile"><div class="kpi-label">${k.l}</div><div class="kpi-value">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+// Primary trend (Q02) + COVID dip (2020-02..2020-04) + repeating summer bands
+const months = Q02.map(r=>r.m);
+const summerBands = [];
+for (let y=2019; y<=2025; y++){
+  const janIdx = (y-2019)*12;
+  summerBands.push({i0: janIdx+5, i1: janIdx+8, fill:'var(--series-3)', opacity:'0.08'});
+}
+const covidBand = {i0: 13, i1: 16, fill:'var(--series-6)', opacity:'0.16', label:'COVID dip (2020-02 → 2020-04)'};
+VIZ.lineChart(document.getElementById('trend-chart'), months,
+  [{name:'STORE', color:'var(--channel-store)', values:Q02.map(r=>r.store)},
+   {name:'WEB', color:'var(--channel-web)', values:Q02.map(r=>r.web)}],
+  {legendEl:document.getElementById('trend-legend'), tickEvery:6, height:300,
+   yFormat:v=>'$'+Math.round(v/1000)+'K',
+   annotations:[...summerBands, covidBand]});
+
+// Breakdown: revenue by store (Q03) — WEB in channel-web color, physical stores in channel-store color
+VIZ.hBarChart(document.getElementById('breakdown-store'),
+  Q03.map(r=>({label:r.store_code, value:r.gross_revenue,
+    color: r.store_code==='WEB' ? 'var(--channel-web)' : 'var(--channel-store)',
+    valueLabel: VIZ.fmtMoney(r.gross_revenue),
+    tip:`<b>${r.store_code}</b> (${r.city}, ${r.state})<br>Gross: ${VIZ.fmtMoney(r.gross_revenue)}<br>Orders: ${VIZ.fmtInt(r.order_count)}`})),
+  {width:620, labelW:80});
+
+// Breakdown: revenue by loyalty tier (Q13) — ordinal ramp, rank order (never alphabet)
+const tierColor = {basic:'var(--tier-basic)', silver:'var(--tier-silver)', gold:'var(--tier-gold)', platinum:'var(--tier-platinum)'};
+VIZ.hBarChart(document.getElementById('breakdown-tier'),
+  Q13.map(r=>({label:r.loyalty_tier[0].toUpperCase()+r.loyalty_tier.slice(1), value:r.gross_revenue,
+    color:tierColor[r.loyalty_tier], valueLabel:VIZ.fmtMoney(r.gross_revenue),
+    tip:`<b>${r.loyalty_tier}</b> (rank ${r.loyalty_tier_rank})<br>Gross: ${VIZ.fmtMoney(r.gross_revenue)}<br>Orders: ${VIZ.fmtInt(r.order_count)}`})),
+  {width:620, labelW:80});
+
+// Breakdown: promo share (Q04) — 2 bars, not a pie (report-spec: no pie beyond 2 slices; bars used anyway)
+document.getElementById('promo-legend').innerHTML =
+  `<span class="legend-item"><span class="legend-swatch" style="background:var(--series-8)"></span>promo</span>` +
+  `<span class="legend-item"><span class="legend-swatch" style="background:var(--series-1)"></span>no_promo</span>`;
+VIZ.hBarChart(document.getElementById('breakdown-promo'),
+  Q04.map(r=>({label:r.promo_flag, value:r.revenue_share_pct,
+    color: r.promo_flag==='promo' ? 'var(--series-8)' : 'var(--series-1)',
+    valueLabel: VIZ.fmtPct(r.revenue_share_pct),
+    tip:`<b>${r.promo_flag}</b><br>Revenue share: ${VIZ.fmtPct(r.revenue_share_pct)}<br>Gross: ${VIZ.fmtMoney(r.gross_revenue)}<br>Orders: ${VIZ.fmtInt(r.order_count)}`})),
+  {width:620, labelW:80, max:100});
+
+// Detail table: top 15 months MoM (Q05), sortable
+const momTable = document.getElementById('mom-table');
+VIZ.makeSortable(momTable, Q05, r=>{
+  const cls = r.mom_change>=0?'pos':'neg';
+  return `<tr><td>${r.sales_month}</td><td class="num">${VIZ.fmtMoney(r.gross_revenue)}</td>
+    <td class="num ${cls}">${r.mom_change>=0?'+':''}${VIZ.fmtMoney(r.mom_change)}</td>
+    <td class="num ${cls}">${r.mom_change_pct>=0?'+':''}${VIZ.fmtPct(r.mom_change_pct)}</td></tr>`;
+});
+</script>
+</body>
+</html>
