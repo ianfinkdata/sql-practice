@@ -6,8 +6,8 @@
 -- RUN: Get-Content Q07_r2_monthly_units_top5_categories.sql -Raw | & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" --defaults-extra-file="C:\Users\ianfi\.my.cnf" --batch oakhaven
 -- (PowerShell has no "<" input redirection — always the Get-Content pipe form; add --table for human-readable grids)
 -- NOTE: top-5 cut is deterministic (units DESC, category_id tie-break — RULE-001); output is
---       ~450 rows (90 months × 5 categories), captured as an aggregate signature per
---       medallion-spec §Reproducibility rule 4 (stated in EXPECTED_OUTPUTS.md).
+--       450 rows (90 months × 5 categories), captured in full in EXPECTED_OUTPUTS.md
+--       (TASK-20260705-02).
 
 WITH category_totals AS (
   SELECT m.category_id,
