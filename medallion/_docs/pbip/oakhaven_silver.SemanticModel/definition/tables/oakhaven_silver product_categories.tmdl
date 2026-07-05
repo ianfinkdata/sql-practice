@@ -1,0 +1,38 @@
+table 'oakhaven_silver product_categories'
+	lineageTag: 5b8b25c2-2894-462a-8785-8d8fa444d521
+
+	column category_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 1e27f124-df4f-4ff8-9930-356b5fb03f6a
+		summarizeBy: none
+		sourceColumn: category_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column category_name
+		dataType: string
+		lineageTag: 96e751e9-2611-49ad-b326-67033fbba0ce
+		summarizeBy: none
+		sourceColumn: category_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column parent_category_id
+		dataType: int64
+		formatString: 0
+		lineageTag: feda1dde-70d7-4981-84fd-505f2d544f5a
+		summarizeBy: none
+		sourceColumn: parent_category_id
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'oakhaven_silver product_categories' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "product_categories"]}[Data]
+				in
+				  #"Navigation 1"
+

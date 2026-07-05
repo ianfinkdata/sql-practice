@@ -1,0 +1,95 @@
+table 'oakhaven_silver shipments'
+	lineageTag: ef8582e7-412d-4c8f-a601-21c91dd4efc0
+
+	column shipment_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 65d77815-5ef4-4ace-a3d9-93f235a0a988
+		summarizeBy: sum
+		sourceColumn: shipment_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_id
+		dataType: int64
+		formatString: 0
+		lineageTag: ac325034-15fe-42d7-874a-4378b46a410d
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column carrier
+		dataType: string
+		lineageTag: 575699e3-ca6f-4464-993b-5c30bff87f35
+		summarizeBy: none
+		sourceColumn: carrier
+
+		annotation SummarizationSetBy = Automatic
+
+	column shipped_ts
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 76f1e7b1-35f0-4413-9ee1-4dce9b6ec720
+		summarizeBy: none
+		sourceColumn: shipped_ts
+
+		annotation SummarizationSetBy = Automatic
+
+	column delivered_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 2b65d239-523b-4ec4-bd62-5ce351db23d0
+		summarizeBy: none
+		sourceColumn: delivered_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column delivered_date_raw
+		dataType: string
+		lineageTag: c6330e60-112d-4977-b0d5-c2de76b20f98
+		summarizeBy: none
+		sourceColumn: delivered_date_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_delivery_pending
+		dataType: int64
+		formatString: 0
+		lineageTag: 889a6f36-180d-4d80-8b58-0e0d9c2a6a3b
+		summarizeBy: sum
+		sourceColumn: is_delivery_pending
+
+		annotation SummarizationSetBy = Automatic
+
+	column tracking_number
+		dataType: string
+		lineageTag: af3772d0-734f-434e-885a-7de255054ed4
+		summarizeBy: none
+		sourceColumn: tracking_number
+
+		annotation SummarizationSetBy = Automatic
+
+	column ship_cost
+		dataType: double
+		lineageTag: 4a7a1e21-ef3a-4255-8079-7137c72435f9
+		summarizeBy: sum
+		sourceColumn: ship_cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'oakhaven_silver shipments' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "shipments"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

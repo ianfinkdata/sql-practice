@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "oakhaven_silver"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "8ea526b0-303b-4d41-ae0e-f4a5f9324d28"
+  }
+}

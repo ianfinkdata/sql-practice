@@ -1,0 +1,83 @@
+table 'oakhaven_silver inventory_movements'
+	lineageTag: f076e9e5-15cc-4113-a058-da7a58b85e67
+
+	column movement_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 50fe2c0f-2970-420e-8ce9-2f5cef357093
+		summarizeBy: sum
+		sourceColumn: movement_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: a79b957f-8ff9-47cc-8211-5251e9335678
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column store_id
+		dataType: int64
+		formatString: 0
+		lineageTag: a26e8f52-9439-417a-ac49-8b6eb2f76d2f
+		summarizeBy: none
+		sourceColumn: store_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column movement_ts
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 64681c14-4840-4bd9-9d38-66fcc7617860
+		summarizeBy: none
+		sourceColumn: movement_ts
+
+		annotation SummarizationSetBy = Automatic
+
+	column movement_type
+		dataType: string
+		lineageTag: 79965476-27e0-4372-8b43-c4102b34f06d
+		summarizeBy: none
+		sourceColumn: movement_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 202978a2-b53c-4515-b50a-2a0b5ae230c8
+		summarizeBy: sum
+		sourceColumn: quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column reference
+		dataType: string
+		lineageTag: 5d222529-b4fd-4d30-8ce5-8394b5eeb6f8
+		summarizeBy: none
+		sourceColumn: reference
+
+		annotation SummarizationSetBy = Automatic
+
+	column unit_cost_at_time
+		dataType: double
+		lineageTag: 4509ac41-8715-4564-a3b1-fb25870749b5
+		summarizeBy: sum
+		sourceColumn: unit_cost_at_time
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'oakhaven_silver inventory_movements' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "inventory_movements"]}[Data]
+				in
+				  #"Navigation 1"
+

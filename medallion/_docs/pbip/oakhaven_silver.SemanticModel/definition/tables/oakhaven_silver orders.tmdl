@@ -1,0 +1,115 @@
+table 'oakhaven_silver orders'
+	lineageTag: 22756250-8cce-430a-9541-e39f3676ab07
+
+	column order_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 633b878e-6675-402a-ae12-9049593a2bc9
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 71ef4194-e10c-45e3-909d-b591b7b39c5e
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column store_id
+		dataType: int64
+		formatString: 0
+		lineageTag: ac8a11c0-1e12-430b-a59f-36b318a9baf8
+		summarizeBy: sum
+		sourceColumn: store_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column employee_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 1ee4ca1d-262f-449f-9d8d-e169ca2a8687
+		summarizeBy: none
+		sourceColumn: employee_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column promo_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 3a0d0abb-7e86-4fdd-adfd-effaa6fc6493
+		summarizeBy: none
+		sourceColumn: promo_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column channel
+		dataType: string
+		lineageTag: 7b56e63c-9320-4cfa-b105-047ce21ce155
+		summarizeBy: none
+		sourceColumn: channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_ts
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: d8a54085-0104-43e6-87ca-31c0ee180176
+		summarizeBy: none
+		sourceColumn: order_ts
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column status
+		dataType: string
+		lineageTag: 3e2ed9a5-326c-49fc-ac45-a9b852b3a0be
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_total
+		dataType: double
+		lineageTag: fb78556b-021d-4894-91bd-d7b9cfdc8709
+		summarizeBy: none
+		sourceColumn: order_total
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column order_total_raw
+		dataType: string
+		lineageTag: 31fd20eb-f79d-499a-ba4a-cc8db95553af
+		summarizeBy: none
+		sourceColumn: order_total_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_notes
+		dataType: string
+		lineageTag: 55921063-c177-4ba1-8b42-1d9d73a7330b
+		summarizeBy: none
+		sourceColumn: order_notes
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'oakhaven_silver orders' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "orders"]}[Data],
+				    #"Changed Type" = Table.TransformColumnTypes(#"Navigation 1",{{"order_ts", type date}})
+				in
+				  #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

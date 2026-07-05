@@ -1,0 +1,38 @@
+table 'oakhaven_silver customer_dupe_map'
+	lineageTag: 1d97da02-6c23-4bcf-a062-9141b5344bbb
+
+	column customer_id
+		dataType: int64
+		formatString: 0
+		lineageTag: e7bbb660-ddcf-4ad4-9210-3fa7a534f1fa
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column canonical_customer_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 556063d1-d959-41c5-8676-008d6d92a399
+		summarizeBy: none
+		sourceColumn: canonical_customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column dupe_resolution
+		dataType: string
+		lineageTag: 88e4066c-437f-4638-b831-5c9de4699c53
+		summarizeBy: none
+		sourceColumn: dupe_resolution
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'oakhaven_silver customer_dupe_map' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "customer_dupe_map"]}[Data]
+				in
+				  #"Navigation 1"
+

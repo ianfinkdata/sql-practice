@@ -1,0 +1,67 @@
+relationship AutoDetected_f8d857a4-6d94-451b-b003-c87a37bb29b8
+	fromColumn: 'oakhaven_silver orders'.customer_id
+	toColumn: 'oakhaven_silver customers'.customer_id
+
+relationship AutoDetected_cdd1c71e-4bdb-47f9-a2e5-2d72de90585c
+	fromColumn: 'oakhaven_silver orders'.employee_id
+	toColumn: 'oakhaven_silver employees'.employee_id
+
+relationship AutoDetected_7eaa25fb-6bc9-4391-97d0-33896980335d
+	fromColumn: 'oakhaven_silver employees'.store_id
+	toColumn: 'oakhaven_silver stores'.store_id
+
+relationship AutoDetected_6a94ae87-e598-4497-8392-6434a7469880
+	fromColumn: 'oakhaven_silver inventory_movements'.store_id
+	toColumn: 'oakhaven_silver stores'.store_id
+
+relationship AutoDetected_758c2455-7deb-46df-b66d-b29fa6c4781b
+	isActive: false
+	fromColumn: 'oakhaven_silver orders'.store_id
+	toColumn: 'oakhaven_silver stores'.store_id
+
+relationship AutoDetected_4af44cfa-0ab1-438e-90f3-b5100bd5a675
+	fromColumn: 'oakhaven_silver inventory_movements'.product_id
+	toColumn: 'oakhaven_silver products'.product_id
+
+relationship AutoDetected_160b7fcd-4879-4dc4-beb8-1e68bdd5fe2b
+	fromColumn: 'oakhaven_silver order_items'.product_id
+	toColumn: 'oakhaven_silver products'.product_id
+
+relationship AutoDetected_4d4caed5-fc89-427c-86e2-d10ea08754e8
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: 'oakhaven_silver returns'.order_item_id
+	toColumn: 'oakhaven_silver order_items'.order_item_id
+
+relationship AutoDetected_f376bb8a-b70e-43d0-b7a7-b9ceaef9f70e
+	fromColumn: 'oakhaven_silver order_items'.order_id
+	toColumn: 'oakhaven_silver orders'.order_id
+
+relationship AutoDetected_426d867b-aaf7-4250-926a-6402ac56cc31
+	fromColumn: 'oakhaven_silver payments'.order_id
+	toColumn: 'oakhaven_silver orders'.order_id
+
+relationship AutoDetected_04e308a1-0973-4932-80fe-d21a4cb16365
+	fromColumn: 'oakhaven_silver shipments'.order_id
+	toColumn: 'oakhaven_silver orders'.order_id
+
+relationship AutoDetected_daabe109-9b0d-45d9-ad38-d346dd8d7f4a
+	fromColumn: 'oakhaven_silver orders'.promo_id
+	toColumn: 'oakhaven_silver promotions'.promo_id
+
+relationship AutoDetected_de3028f5-c054-443e-a778-c43e63cfd344
+	fromColumn: 'oakhaven_silver products'.category_id
+	toColumn: 'oakhaven_silver product_categories'.category_id
+
+relationship AutoDetected_9a71ff77-2afe-4ffa-b5b2-45e610c42f68
+	fromColumn: 'oakhaven_silver products'.supplier_id
+	toColumn: 'oakhaven_silver suppliers'.supplier_id
+
+relationship f95b731c-4236-8a30-56cb-3204e339a5ea
+	fromColumn: 'oakhaven_silver customers'.customer_id
+	toColumn: 'oakhaven_silver customer_dupe_map'.customer_id
+
+relationship f08a2f3c-cd92-78f7-f213-ccf83c5a8448
+	fromColumn: 'oakhaven_silver orders'.order_ts
+	toColumn: 'oakhaven_silver calendar'.date
+

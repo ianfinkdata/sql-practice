@@ -1,0 +1,68 @@
+table 'oakhaven_silver order_items'
+	lineageTag: c31b0ce1-954a-4322-b1ae-b5d96b34203e
+
+	column order_item_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 99b9bad9-5adc-4a03-b92c-5e3bf6af0d22
+		summarizeBy: none
+		sourceColumn: order_item_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_id
+		dataType: int64
+		formatString: 0
+		lineageTag: fb5de826-560d-480e-a194-09b0d59466a5
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 834fd72f-79db-4744-a35a-3f437390fecf
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 88756673-79da-401a-b251-22bfc0c9656a
+		summarizeBy: sum
+		sourceColumn: quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column unit_price
+		dataType: double
+		lineageTag: afeb6889-3216-4344-ae52-18eba46aa285
+		summarizeBy: sum
+		sourceColumn: unit_price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column line_discount_pct
+		dataType: double
+		lineageTag: 8fa4af9c-11d1-4cd2-8fd7-3b71126d8ba1
+		summarizeBy: sum
+		sourceColumn: line_discount_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'oakhaven_silver order_items' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "order_items"]}[Data]
+				in
+				  #"Navigation 1"
+

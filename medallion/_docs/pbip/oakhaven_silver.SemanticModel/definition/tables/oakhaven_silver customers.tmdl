@@ -1,0 +1,219 @@
+table 'oakhaven_silver customers'
+	lineageTag: 5cba1a0f-c18d-4cbe-9351-d8e36b5983e0
+
+	column customer_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 65a4972c-8a7c-4d8f-9aaa-d077205ef842
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_name
+		dataType: string
+		lineageTag: adc6ae99-01a6-4709-8d24-78365201d896
+		summarizeBy: none
+		sourceColumn: first_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column middle_name
+		dataType: string
+		lineageTag: 6de82d81-7e31-4277-8f70-77f96d1696d5
+		summarizeBy: none
+		sourceColumn: middle_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column last_name
+		dataType: string
+		lineageTag: ed4dfc2d-da83-46d2-a4df-ba9ad463f180
+		summarizeBy: none
+		sourceColumn: last_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column email
+		dataType: string
+		lineageTag: a745f86b-c45f-41d6-b967-10bc1e3cec90
+		summarizeBy: none
+		sourceColumn: email
+
+		annotation SummarizationSetBy = Automatic
+
+	column email_raw
+		dataType: string
+		lineageTag: 1e249ec4-fe95-4a88-af1a-5fa4e43a9299
+		summarizeBy: none
+		sourceColumn: email_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	column phone
+		dataType: string
+		lineageTag: dc880be9-26df-4283-a2da-8b26f09b529e
+		summarizeBy: none
+		sourceColumn: phone
+
+		annotation SummarizationSetBy = Automatic
+
+	column phone_raw
+		dataType: string
+		lineageTag: 0b3a351e-db0c-4205-a4cc-5e9234a118db
+		summarizeBy: none
+		sourceColumn: phone_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	column street_address
+		dataType: string
+		lineageTag: 42a24b1f-0843-499e-94ba-9b9633465738
+		summarizeBy: none
+		sourceColumn: street_address
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		lineageTag: 669f0e86-f5c4-45f8-95a5-79035c1e56ec
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column state
+		dataType: string
+		lineageTag: 8a4b80aa-f588-4977-9e15-2a6b1cf80d69
+		summarizeBy: none
+		sourceColumn: state
+
+		annotation SummarizationSetBy = Automatic
+
+	column state_raw
+		dataType: string
+		lineageTag: e91bf3da-dd07-41d4-822f-bce941786c14
+		summarizeBy: none
+		sourceColumn: state_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	column postal_code
+		dataType: string
+		lineageTag: 506127fc-c5f4-4bc1-943d-2f4bad3d0c43
+		summarizeBy: none
+		sourceColumn: postal_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column birth_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 2baa0f81-2081-4a4e-a848-44ed10e26951
+		summarizeBy: none
+		sourceColumn: birth_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column birth_date_raw
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 1f510eb6-dc68-4e0d-abf9-3e67d68a2d05
+		summarizeBy: none
+		sourceColumn: birth_date_raw
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column is_birth_date_sentinel
+		dataType: int64
+		formatString: 0
+		lineageTag: d9d0cd55-7bfd-4efb-a167-03678fa4ae86
+		summarizeBy: sum
+		sourceColumn: is_birth_date_sentinel
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_birth_date_future
+		dataType: int64
+		formatString: 0
+		lineageTag: 6ae72a95-3272-473d-ba06-393e1186928a
+		summarizeBy: sum
+		sourceColumn: is_birth_date_future
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_age_outlier
+		dataType: int64
+		formatString: 0
+		lineageTag: 0c7bfe8e-18a2-4715-afc2-8b7a3912f17c
+		summarizeBy: sum
+		sourceColumn: is_age_outlier
+
+		annotation SummarizationSetBy = Automatic
+
+	column signup_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: df2078d7-edbd-4064-88d8-51edd79ed23e
+		summarizeBy: none
+		sourceColumn: signup_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column loyalty_tier
+		dataType: string
+		lineageTag: 60b6cc5d-5a4c-48ee-9f96-a4a7a427ab23
+		summarizeBy: none
+		sourceColumn: loyalty_tier
+
+		annotation SummarizationSetBy = Automatic
+
+	column marketing_opt_in
+		dataType: int64
+		formatString: 0
+		lineageTag: 7f99dbfe-7fc5-4cf8-9269-628080f0cfec
+		summarizeBy: sum
+		sourceColumn: marketing_opt_in
+
+		annotation SummarizationSetBy = Automatic
+
+	column marketing_opt_in_raw
+		dataType: string
+		lineageTag: 3abb9764-fa58-443e-82d0-7e7f76dc31f8
+		summarizeBy: none
+		sourceColumn: marketing_opt_in_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	column canonical_customer_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 27981ab6-280f-488c-b798-3001182b4955
+		summarizeBy: sum
+		sourceColumn: canonical_customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column dupe_resolution
+		dataType: string
+		lineageTag: 0437cce5-514a-457c-8c67-c0f280b05be0
+		summarizeBy: none
+		sourceColumn: dupe_resolution
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'oakhaven_silver customers' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "customers"]}[Data]
+				in
+				  #"Navigation 1"
+

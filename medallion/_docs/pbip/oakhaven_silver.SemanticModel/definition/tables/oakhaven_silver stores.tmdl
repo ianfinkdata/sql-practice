@@ -1,0 +1,67 @@
+table 'oakhaven_silver stores'
+	lineageTag: 3353dc0c-62c6-4e6b-8cf9-95647c6ffffe
+
+	column store_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 22138258-8f80-4712-bd5f-ed7565650039
+		summarizeBy: none
+		sourceColumn: store_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column store_code
+		dataType: string
+		lineageTag: 024f0b19-2b23-497b-86c5-8172724d5589
+		summarizeBy: none
+		sourceColumn: store_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		lineageTag: 5421898b-55c0-43d7-84fe-829ec4ff5967
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column state
+		dataType: string
+		lineageTag: 1ee19089-f065-429c-a916-a922b7f76736
+		summarizeBy: none
+		sourceColumn: state
+
+		annotation SummarizationSetBy = Automatic
+
+	column opened_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: a7e1dbd8-eac3-4c7f-b41f-2299ffd08e2c
+		summarizeBy: none
+		sourceColumn: opened_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column square_feet
+		dataType: int64
+		formatString: 0
+		lineageTag: faea5512-4d3f-44a8-8e01-4e3f4dd0b8d1
+		summarizeBy: sum
+		sourceColumn: square_feet
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'oakhaven_silver stores' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "stores"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

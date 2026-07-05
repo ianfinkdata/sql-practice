@@ -1,0 +1,115 @@
+table 'oakhaven_silver suppliers'
+	lineageTag: 87d7fff9-27c8-4fb4-9b78-749f3fd9e344
+
+	column supplier_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 2eaf5701-12c9-4117-b35d-f9a9de013970
+		summarizeBy: none
+		sourceColumn: supplier_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column supplier_name
+		dataType: string
+		lineageTag: 571df028-ab6a-4763-a907-8d3852c53f79
+		summarizeBy: none
+		sourceColumn: supplier_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column country
+		dataType: string
+		lineageTag: 1fa8ad19-3e0b-4938-b999-75232f658c96
+		summarizeBy: none
+		sourceColumn: country
+
+		annotation SummarizationSetBy = Automatic
+
+	column contact_email
+		dataType: string
+		lineageTag: 59cae54c-2e89-4d2c-b9d5-60a376ab8962
+		summarizeBy: none
+		sourceColumn: contact_email
+
+		annotation SummarizationSetBy = Automatic
+
+	column contact_email_raw
+		dataType: string
+		lineageTag: 287a8c12-0826-41f9-8c44-0a6530167b03
+		summarizeBy: none
+		sourceColumn: contact_email_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	column phone
+		dataType: string
+		lineageTag: 156d5ded-7d23-4791-9377-f35fdd32860c
+		summarizeBy: none
+		sourceColumn: phone
+
+		annotation SummarizationSetBy = Automatic
+
+	column phone_raw
+		dataType: string
+		lineageTag: c0830de0-e3ca-4a00-b0da-178d3c9ffebf
+		summarizeBy: none
+		sourceColumn: phone_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	column lead_time_days
+		dataType: int64
+		formatString: 0
+		lineageTag: 189086e0-b455-48ac-8aa2-f758953eafbe
+		summarizeBy: none
+		sourceColumn: lead_time_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column lead_time_days_raw
+		dataType: int64
+		formatString: 0
+		lineageTag: fd3ba260-1586-474d-bdeb-2f0140b1f13c
+		summarizeBy: none
+		sourceColumn: lead_time_days_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_lead_time_sentinel
+		dataType: int64
+		formatString: 0
+		lineageTag: a0f278ec-f29d-4e8b-b255-63831cb6a08b
+		summarizeBy: none
+		sourceColumn: is_lead_time_sentinel
+
+		annotation SummarizationSetBy = Automatic
+
+	column active_flag
+		dataType: int64
+		formatString: 0
+		lineageTag: abcb7dd0-6aa8-49b4-873c-8ca37f5fd849
+		summarizeBy: none
+		sourceColumn: active_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column active_flag_raw
+		dataType: string
+		lineageTag: 880e8e19-d544-47ff-875a-a555bc1fe37e
+		summarizeBy: none
+		sourceColumn: active_flag_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'oakhaven_silver suppliers' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "suppliers"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

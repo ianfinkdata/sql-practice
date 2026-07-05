@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "oakhaven_silver"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "e764bfdf-b318-447b-b1e8-e54eaa0ceaa5"
+  }
+}
