@@ -1,0 +1,81 @@
+table 'oakhaven_silver payments'
+	lineageTag: de5242a9-a721-4a95-907a-19be29d30d4d
+
+	column payment_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 50374922-89d6-41bd-ab94-616eb7c12e19
+		summarizeBy: sum
+		sourceColumn: payment_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_id
+		dataType: int64
+		formatString: 0
+		lineageTag: ebe33ef6-4e12-466b-bbcf-78a4fa252a3f
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column payment_ts
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: cf1dfae8-2620-4dd8-8cb3-178a2b2b5be0
+		summarizeBy: none
+		sourceColumn: payment_ts
+
+		annotation SummarizationSetBy = Automatic
+
+	column method
+		dataType: string
+		lineageTag: 233f96a7-cada-4e1c-9753-045f098056a0
+		summarizeBy: none
+		sourceColumn: method
+
+		annotation SummarizationSetBy = Automatic
+
+	column method_raw
+		dataType: string
+		lineageTag: 13d02c27-4a2e-4727-b079-edad09ed9a6c
+		summarizeBy: none
+		sourceColumn: method_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	column amount
+		dataType: double
+		lineageTag: c90ea7fe-b975-4694-9193-fa764f90f6c2
+		summarizeBy: sum
+		sourceColumn: amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column status
+		dataType: string
+		lineageTag: fa8536a1-6d15-41d6-932e-2ad61c6bc17d
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column card_last4
+		dataType: string
+		lineageTag: 2e377927-f3f2-46fb-86fd-ce63292a324b
+		summarizeBy: none
+		sourceColumn: card_last4
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'oakhaven_silver payments' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "payments"]}[Data]
+				in
+				  #"Navigation 1"
+

@@ -1,0 +1,167 @@
+table 'oakhaven_silver calendar'
+	lineageTag: 0460b5cc-b40e-4e76-ac52-8f94bbb5cc9a
+	dataCategory: Time
+
+	column date_key
+		dataType: int64
+		formatString: 0
+		lineageTag: f1bf0717-13ef-4b3f-ac66-cc400b9528d2
+		summarizeBy: none
+		sourceColumn: date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column date
+		dataType: dateTime
+		isKey
+		formatString: Short Date
+		lineageTag: e0a7ea35-1779-43cc-a97f-8b139c0f471f
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column year
+		dataType: int64
+		formatString: 0
+		lineageTag: 1a8ae293-1ea8-497d-b0f4-dc21edf6c585
+		summarizeBy: none
+		sourceColumn: year
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_num
+		dataType: int64
+		formatString: 0
+		lineageTag: 33dd3083-6f28-45c1-ab10-c81356fbb3e4
+		summarizeBy: none
+		sourceColumn: month_num
+
+		annotation SummarizationSetBy = Automatic
+
+	column month
+		dataType: string
+		lineageTag: 7e079fc0-75c3-4787-a32a-0745f652189c
+		summarizeBy: none
+		sourceColumn: month
+		sortByColumn: month_num
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column quarter
+		dataType: int64
+		formatString: 0
+		lineageTag: 1c4487a7-fed5-4194-869d-530747cc5612
+		summarizeBy: none
+		sourceColumn: quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column week_day
+		dataType: int64
+		formatString: 0
+		lineageTag: a57fc408-b8c0-4176-b971-9df4f9ada470
+		summarizeBy: none
+		sourceColumn: week_day
+
+		annotation SummarizationSetBy = Automatic
+
+	column week_day_name
+		dataType: string
+		lineageTag: ac87e2d7-3c9a-4989-b8d4-f5ce46432183
+		summarizeBy: none
+		sourceColumn: week_day_name
+		sortByColumn: week_day
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_weekend
+		dataType: int64
+		formatString: 0
+		lineageTag: 9371c9e5-05e0-4328-a9b6-91a0224beb9f
+		summarizeBy: none
+		sourceColumn: is_weekend
+
+		annotation SummarizationSetBy = Automatic
+
+	column week_start
+		dataType: dateTime
+		formatString: mm/dd/yy
+		lineageTag: 8e805cab-5004-4e56-9a3b-6654bfb3841a
+		summarizeBy: none
+		sourceColumn: week_start
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column iso_week_start
+		dataType: dateTime
+		formatString: mm/dd/yy
+		lineageTag: 18df033c-aa88-4721-96ab-a60d41587233
+		summarizeBy: none
+		sourceColumn: iso_week_start
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column monthstart
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 27fe2257-8424-4dc0-9547-e5b93c60256b
+		summarizeBy: none
+		sourceColumn: monthstart
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column quarterstart
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 0a011b4d-741b-49a3-a948-deae37d574ce
+		summarizeBy: none
+		sourceColumn: quarterstart
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column quarterformatted
+		dataType: string
+		lineageTag: f57998fa-9c82-4219-901b-a6ee97314582
+		summarizeBy: none
+		sourceColumn: quarterformatted
+		sortByColumn: quarter
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'oakhaven_silver calendar' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "calendar"]}[Data],
+				    monthstart = Table.AddColumn(#"Navigation 1", "monthstart", each Date.StartOfMonth([date]), type date),
+				    quarterstart = Table.AddColumn(monthstart, "quarterstart", each Date.StartOfQuarter([date]), type date),
+				    quarterformatted = Table.AddColumn(quarterstart, "quarterformatted", each Text.Combine( {"Q", Text.From([quarter])},""), type text )
+				in
+				  quarterformatted
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

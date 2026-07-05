@@ -1,0 +1,111 @@
+table 'oakhaven_silver employees'
+	lineageTag: 30982904-8530-41d2-adf2-645f6d07afe6
+
+	column employee_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 81ef1418-3662-463e-8846-6d45c442c28d
+		summarizeBy: none
+		sourceColumn: employee_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_name
+		dataType: string
+		lineageTag: 4771fc8a-7598-416d-932e-8a20fb2ec6d1
+		summarizeBy: none
+		sourceColumn: first_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column last_name
+		dataType: string
+		lineageTag: 26f3c079-ea83-456f-81f7-b0df80e75002
+		summarizeBy: none
+		sourceColumn: last_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column job_title
+		dataType: string
+		lineageTag: f9ba64e4-6e00-42fb-8b41-3ff62fbde764
+		summarizeBy: none
+		sourceColumn: job_title
+
+		annotation SummarizationSetBy = Automatic
+
+	column store_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 31cb3b89-c92d-45ea-906c-1ef3767dd78e
+		summarizeBy: none
+		sourceColumn: store_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column manager_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 1be6f29a-b98a-4a0f-9095-457d5ca5b24b
+		summarizeBy: sum
+		sourceColumn: manager_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column hire_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 4115ae14-d3c4-4f6f-9113-7bc9f1d77e22
+		summarizeBy: none
+		sourceColumn: hire_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column termination_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 7dbfcadf-0f9e-48c9-8103-43e447bf9b6d
+		summarizeBy: none
+		sourceColumn: termination_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column hourly_wage
+		dataType: double
+		lineageTag: ba23c8ef-f80f-4df2-b1c4-71367cb42609
+		summarizeBy: sum
+		sourceColumn: hourly_wage
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column work_email
+		dataType: string
+		lineageTag: 0aa2eb05-f032-4cb5-8933-467eb24932a4
+		summarizeBy: none
+		sourceColumn: work_email
+
+		annotation SummarizationSetBy = Automatic
+
+	column work_email_raw
+		dataType: string
+		lineageTag: 2b808377-db6c-42f1-a5fb-b79517efe191
+		summarizeBy: none
+		sourceColumn: work_email_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'oakhaven_silver employees' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "employees"]}[Data]
+				in
+				  #"Navigation 1"
+

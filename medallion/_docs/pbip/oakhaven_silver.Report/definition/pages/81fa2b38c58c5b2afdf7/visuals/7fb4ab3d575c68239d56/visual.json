@@ -1,0 +1,367 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "7fb4ab3d575c68239d56",
+  "position": {
+    "x": 20.850678733031675,
+    "y": 64.868778280542983,
+    "z": 0,
+    "height": 589.61085972850674,
+    "width": 1226.7149321266968,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "pivotTable",
+    "query": {
+      "queryState": {
+        "Columns": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "oakhaven_silver calendar"
+                    }
+                  },
+                  "Property": "week_day_name"
+                }
+              },
+              "queryRef": "oakhaven_silver calendar.week_day_name",
+              "nativeQueryRef": "week_day_name",
+              "active": true
+            }
+          ]
+        },
+        "Rows": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "oakhaven_silver calendar"
+                    }
+                  },
+                  "Property": "year"
+                }
+              },
+              "queryRef": "oakhaven_silver calendar.year",
+              "nativeQueryRef": "year",
+              "active": true
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "oakhaven_silver calendar"
+                    }
+                  },
+                  "Property": "quarterformatted"
+                }
+              },
+              "queryRef": "oakhaven_silver calendar.quarterformatted",
+              "nativeQueryRef": "quarterformatted",
+              "active": false
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "oakhaven_silver calendar"
+                    }
+                  },
+                  "Property": "month"
+                }
+              },
+              "queryRef": "oakhaven_silver calendar.month",
+              "nativeQueryRef": "month",
+              "active": false
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "oakhaven_silver calendar"
+                    }
+                  },
+                  "Property": "week_start"
+                }
+              },
+              "queryRef": "oakhaven_silver calendar.week_start",
+              "nativeQueryRef": "week_start",
+              "active": false
+            }
+          ]
+        },
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_measures"
+                    }
+                  },
+                  "Property": "Total Sales Orders"
+                }
+              },
+              "queryRef": "_measures.Total Sales Orders",
+              "nativeQueryRef": "Total Sales Orders"
+            }
+          ]
+        }
+      }
+    },
+    "expansionStates": [
+      {
+        "roles": [
+          "Rows"
+        ],
+        "levels": [
+          {
+            "queryRefs": [
+              "oakhaven_silver calendar.year"
+            ],
+            "isCollapsed": true,
+            "identityKeys": [
+              {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "oakhaven_silver calendar"
+                    }
+                  },
+                  "Property": "year"
+                }
+              }
+            ],
+            "isPinned": true
+          },
+          {
+            "queryRefs": [
+              "oakhaven_silver calendar.quarterformatted"
+            ],
+            "isCollapsed": true,
+            "identityKeys": [
+              {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "oakhaven_silver calendar"
+                    }
+                  },
+                  "Property": "quarterformatted"
+                }
+              }
+            ],
+            "isPinned": true
+          },
+          {
+            "queryRefs": [
+              "oakhaven_silver calendar.month"
+            ],
+            "isCollapsed": true,
+            "identityKeys": [
+              {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "oakhaven_silver calendar"
+                    }
+                  },
+                  "Property": "month"
+                }
+              }
+            ],
+            "isPinned": true
+          },
+          {
+            "queryRefs": [
+              "oakhaven_silver calendar.week_start"
+            ],
+            "isCollapsed": true,
+            "isPinned": true
+          }
+        ],
+        "root": {}
+      }
+    ],
+    "objects": {
+      "columnWidth": [
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "155.70135746606334D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "oakhaven_silver calendar.year"
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {}
+        }
+      ],
+      "values": [
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "FillRule": {
+                      "Input": {
+                        "Measure": {
+                          "Expression": {
+                            "SourceRef": {
+                              "Entity": "_measures"
+                            }
+                          },
+                          "Property": "Total Sales Orders"
+                        }
+                      },
+                      "FillRule": {
+                        "linearGradient2": {
+                          "min": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#bed5ed'"
+                              }
+                            }
+                          },
+                          "max": {
+                            "color": {
+                              "Literal": {
+                                "Value": "'#7ab561'"
+                              }
+                            }
+                          },
+                          "nullColoringStrategy": {
+                            "strategy": {
+                              "Literal": {
+                                "Value": "'noColor'"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "_measures.Total Sales Orders"
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "fc086e8173bbac7b575d",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "oakhaven_silver calendar"
+              }
+            },
+            "Property": "year"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "b3be16b56bea2797662b",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "oakhaven_silver calendar"
+              }
+            },
+            "Property": "week_start"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "76fcc21cf9c4db79623d",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "oakhaven_silver calendar"
+              }
+            },
+            "Property": "week_day_name"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "fba017c37d4f2f703bea",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "oakhaven_silver calendar"
+              }
+            },
+            "Property": "quarterformatted"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "b849f427e5974276bd90",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "oakhaven_silver calendar"
+              }
+            },
+            "Property": "month"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "9c2403ea43c98b31717d",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "_measures"
+              }
+            },
+            "Property": "Total Sales Orders"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

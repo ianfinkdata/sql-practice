@@ -1,0 +1,230 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 1222.0598537286951,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 793.43953605169793,
+            "y": 21.083850720379218
+          },
+          "nodeIndex": "oakhaven_silver calendar",
+          "nodeLineageTag": "0460b5cc-b40e-4e76-ac52-8f94bbb5cc9a",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 15
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 598.465942785972
+          },
+          "nodeIndex": "oakhaven_silver customer_dupe_map",
+          "nodeLineageTag": "1d97da02-6c23-4bcf-a062-9141b5344bbb",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 12
+        },
+        {
+          "location": {
+            "x": 402.63929466147187,
+            "y": 757.37266591548769
+          },
+          "nodeIndex": "oakhaven_silver customers",
+          "nodeLineageTag": "5cba1a0f-c18d-4cbe-9351-d8e36b5983e0",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 1392.8203302220825,
+            "y": 180.0803313087504
+          },
+          "nodeIndex": "oakhaven_silver employees",
+          "nodeLineageTag": "30982904-8530-41d2-adf2-645f6d07afe6",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 1653.0471843669636,
+            "y": 391.71933345419563
+          },
+          "nodeIndex": "oakhaven_silver inventory_movements",
+          "nodeLineageTag": "f076e9e5-15cc-4113-a058-da7a58b85e67",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 855.25999846242485,
+            "y": 788.21483310885856
+          },
+          "nodeIndex": "oakhaven_silver order_items",
+          "nodeLineageTag": "c31b0ce1-954a-4322-b1ae-b5d96b34203e",
+          "size": {
+            "height": 224,
+            "width": 434.52172257285815
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 729.94284581431691,
+            "y": 360.80822440457047
+          },
+          "nodeIndex": "oakhaven_silver orders",
+          "nodeLineageTag": "22756250-8cce-430a-9541-e39f3676ab07",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 14
+        },
+        {
+          "location": {
+            "x": 355.89649985725521,
+            "y": 65.2725994759491
+          },
+          "nodeIndex": "oakhaven_silver payments",
+          "nodeLineageTag": "de5242a9-a721-4a95-907a-19be29d30d4d",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 1615.6913566799406,
+            "y": 1216.4299051440921
+          },
+          "nodeIndex": "oakhaven_silver product_categories",
+          "nodeLineageTag": "5b8b25c2-2894-462a-8785-8d8fa444d521",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 1939.3362418740069,
+            "y": 956.05279680546494
+          },
+          "nodeIndex": "oakhaven_silver products",
+          "nodeLineageTag": "6cff709f-d768-4066-a7e4-5e40900c2035",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 1089.2859330441033,
+            "y": 99.562628401790874
+          },
+          "nodeIndex": "oakhaven_silver promotions",
+          "nodeLineageTag": "73cd4559-95b9-4eb9-b805-6b03f555f87d",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 8
+        },
+        {
+          "location": {
+            "x": 985.41218636693964,
+            "y": 1229.5121341080458
+          },
+          "nodeIndex": "oakhaven_silver returns",
+          "nodeLineageTag": "96280b80-e59f-489c-8910-7582c0d4b46b",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 13
+        },
+        {
+          "location": {
+            "x": 342.68764836343888,
+            "y": 419.87953094323996
+          },
+          "nodeIndex": "oakhaven_silver shipments",
+          "nodeLineageTag": "ef8582e7-412d-4c8f-a601-21c91dd4efc0",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 9
+        },
+        {
+          "location": {
+            "x": 1327.0734796071063,
+            "y": 694.17508481651191
+          },
+          "nodeIndex": "oakhaven_silver stores",
+          "nodeLineageTag": "3353dc0c-62c6-4e6b-8cf9-95647c6ffffe",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 10
+        },
+        {
+          "location": {
+            "x": 2279.1250558361276,
+            "y": 758.99158431739124
+          },
+          "nodeIndex": "oakhaven_silver suppliers",
+          "nodeLineageTag": "87d7fff9-27c8-4fb4-9b78-749f3fd9e344",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 11
+        },
+        {
+          "location": {
+            "x": 2513.1250558361276,
+            "y": 683.24209193395973
+          },
+          "nodeIndex": "_measures",
+          "nodeLineageTag": "b418ed02-9867-4d8c-a853-ee19e4ea8318",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 85.373398999650192,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

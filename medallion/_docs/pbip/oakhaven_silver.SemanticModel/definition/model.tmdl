@@ -1,0 +1,33 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["oakhaven_silver calendar","oakhaven_silver customer_dupe_map","oakhaven_silver customers","oakhaven_silver employees","oakhaven_silver inventory_movements","oakhaven_silver order_items","oakhaven_silver orders","oakhaven_silver payments","oakhaven_silver product_categories","oakhaven_silver products","oakhaven_silver promotions","oakhaven_silver returns","oakhaven_silver shipments","oakhaven_silver stores","oakhaven_silver suppliers","_measures"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table 'oakhaven_silver calendar'
+ref table 'oakhaven_silver customer_dupe_map'
+ref table 'oakhaven_silver customers'
+ref table 'oakhaven_silver employees'
+ref table 'oakhaven_silver inventory_movements'
+ref table 'oakhaven_silver order_items'
+ref table 'oakhaven_silver orders'
+ref table 'oakhaven_silver payments'
+ref table 'oakhaven_silver product_categories'
+ref table 'oakhaven_silver products'
+ref table 'oakhaven_silver promotions'
+ref table 'oakhaven_silver returns'
+ref table 'oakhaven_silver shipments'
+ref table 'oakhaven_silver stores'
+ref table 'oakhaven_silver suppliers'
+ref table _measures
+
+ref cultureInfo en-US
+

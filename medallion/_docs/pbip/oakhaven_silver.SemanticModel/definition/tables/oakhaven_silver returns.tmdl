@@ -1,0 +1,78 @@
+table 'oakhaven_silver returns'
+	lineageTag: 96280b80-e59f-489c-8910-7582c0d4b46b
+
+	column return_id
+		dataType: int64
+		formatString: 0
+		lineageTag: de0cdfa6-0763-4fb4-8f05-d1a53a59ada8
+		summarizeBy: sum
+		sourceColumn: return_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_item_id
+		dataType: int64
+		formatString: 0
+		lineageTag: aed95207-68ce-4ba2-803f-0487208137e7
+		summarizeBy: none
+		sourceColumn: order_item_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column return_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 169c9f69-f5ee-467a-83f1-0369d892ab8d
+		summarizeBy: none
+		sourceColumn: return_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column quantity_returned
+		dataType: int64
+		formatString: 0
+		lineageTag: f0f92b80-6d49-4a5a-8f7d-df52da0a1d55
+		summarizeBy: sum
+		sourceColumn: quantity_returned
+
+		annotation SummarizationSetBy = Automatic
+
+	column reason
+		dataType: string
+		lineageTag: 31adf2db-baa7-4395-8c98-f467ac7cc4fa
+		summarizeBy: none
+		sourceColumn: reason
+
+		annotation SummarizationSetBy = Automatic
+
+	column refund_amount
+		dataType: double
+		lineageTag: a541c7fb-d21e-4823-9a61-e0c75a084b62
+		summarizeBy: sum
+		sourceColumn: refund_amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column condition_code
+		dataType: string
+		lineageTag: 64b87aa5-1857-4f76-8c7a-34add5623a73
+		summarizeBy: none
+		sourceColumn: condition_code
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'oakhaven_silver returns' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "returns"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

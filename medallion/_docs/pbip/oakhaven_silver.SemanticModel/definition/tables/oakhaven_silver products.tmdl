@@ -1,0 +1,142 @@
+table 'oakhaven_silver products'
+	lineageTag: 6cff709f-d768-4066-a7e4-5e40900c2035
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 7261d664-89d9-45d2-b199-f4c50c5dec85
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sku
+		dataType: string
+		lineageTag: a5791789-8eb0-4d9b-a7f3-6b7739697c4f
+		summarizeBy: none
+		sourceColumn: sku
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_name
+		dataType: string
+		lineageTag: afb8f000-fcf6-4909-a224-c6d8d693a058
+		summarizeBy: none
+		sourceColumn: product_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column category_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 13b35af3-9975-4413-9e81-e5f163189b37
+		summarizeBy: none
+		sourceColumn: category_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column supplier_id
+		dataType: int64
+		formatString: 0
+		lineageTag: a3b9ef19-449c-4d53-b647-90efd03e241d
+		summarizeBy: none
+		sourceColumn: supplier_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column unit_cost
+		dataType: double
+		lineageTag: cddc0550-2aaf-4144-930b-4d90f7387d8d
+		summarizeBy: sum
+		sourceColumn: unit_cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column list_price
+		dataType: double
+		lineageTag: 99a1d30c-d0b8-4010-a80f-10dea9833f88
+		summarizeBy: sum
+		sourceColumn: list_price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column weight_kg
+		dataType: double
+		lineageTag: 54d614f4-ab1f-4106-9658-bd1e9cb2de20
+		summarizeBy: sum
+		sourceColumn: weight_kg
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column weight_kg_raw
+		dataType: double
+		lineageTag: 340390c6-52c9-4e43-a4eb-69e276fb8348
+		summarizeBy: sum
+		sourceColumn: weight_kg_raw
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column is_weight_sentinel
+		dataType: int64
+		formatString: 0
+		lineageTag: 3c08b278-c0c5-4d40-ad8b-481439f0090d
+		summarizeBy: sum
+		sourceColumn: is_weight_sentinel
+
+		annotation SummarizationSetBy = Automatic
+
+	column intro_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 6f64e2f6-e006-4c12-8e70-367284e59dd6
+		summarizeBy: none
+		sourceColumn: intro_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column discontinued_flag
+		dataType: int64
+		formatString: 0
+		lineageTag: 2bd1f342-0ac1-4699-8983-f2e9f4d63b5d
+		summarizeBy: sum
+		sourceColumn: discontinued_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column discontinued_flag_raw
+		dataType: string
+		lineageTag: 2c4e8f1b-a146-40b9-ac6c-b7e5a0b98aa1
+		summarizeBy: none
+		sourceColumn: discontinued_flag_raw
+
+		annotation SummarizationSetBy = Automatic
+
+	column color
+		dataType: string
+		lineageTag: 08b0d012-c692-4f84-b8e3-27c9d24908b6
+		summarizeBy: none
+		sourceColumn: color
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'oakhaven_silver products' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "products"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+

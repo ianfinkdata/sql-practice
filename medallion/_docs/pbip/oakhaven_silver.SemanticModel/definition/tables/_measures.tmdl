@@ -1,0 +1,29 @@
+table _measures
+	lineageTag: b418ed02-9867-4d8c-a853-ee19e4ea8318
+
+	measure 'Total Sales Orders' = SUM('oakhaven_silver orders'[order_total])
+		formatString: \$#,0;(\$#,0);\$#,0
+		lineageTag: 98d84026-3b4b-4362-9ae0-cc4b206c2923
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	column Column1
+		dataType: string
+		lineageTag: 5739c8cc-d058-4054-87c2-2b280b3db212
+		summarizeBy: none
+		sourceColumn: Column1
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _measures = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t])
+				in
+				  Source
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,71 @@
+table 'oakhaven_silver promotions'
+	lineageTag: 73cd4559-95b9-4eb9-b805-6b03f555f87d
+
+	column promo_id
+		dataType: int64
+		formatString: 0
+		lineageTag: f32f6895-423c-4d3e-991b-b92963e8277f
+		summarizeBy: none
+		sourceColumn: promo_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column promo_code
+		dataType: string
+		lineageTag: 637f7162-73d4-41cf-bd29-665c15d55b0e
+		summarizeBy: none
+		sourceColumn: promo_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 19912c13-1578-4704-84e2-93edaf7ed7b2
+		summarizeBy: none
+		sourceColumn: start_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ffc4a7a0-5932-4dfc-9b8e-270d81ca9d8b
+		summarizeBy: none
+		sourceColumn: end_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column discount_pct
+		dataType: double
+		lineageTag: e9e6e8af-66fc-4265-9256-400830104fd8
+		summarizeBy: none
+		sourceColumn: discount_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column description
+		dataType: string
+		lineageTag: 33c3f2c3-ea82-490f-8418-5f2a02f173d0
+		summarizeBy: none
+		sourceColumn: description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'oakhaven_silver promotions' = m
+		mode: import
+		source =
+				let
+				  Source = MySQL.Database("127.0.0.1", "oakhaven_silver"),
+				  #"Navigation 1" = Source{[Schema = "oakhaven_silver", Item = "promotions"]}[Data]
+				in
+				  #"Navigation 1"
+
+	annotation PBI_ResultType = Table
+
