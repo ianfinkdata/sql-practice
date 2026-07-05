@@ -38,7 +38,7 @@ stores	13	13	1
 suppliers	45	45	1
 ```
 
-All 14 rows `is_match = 1`; counts equal `medallion/bronze/EXPECTED_OUTPUTS.md` B01 exactly.
+All 14 rows `is_match = 1`; counts equal `medallion/a_bronze/EXPECTED_OUTPUTS.md` B01 exactly.
 
 ---
 

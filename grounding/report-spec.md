@@ -5,7 +5,7 @@ Normative template for report deliverables. Version 1.0 · 2026-07-04 · Owner: 
 ## Principles
 
 1. **Every number on a report traces to a query file.** A report may only display values
-   produced by a promoted gold query (`medallion/gold/queries/`) or bronze pack query;
+   produced by a promoted gold query (`medallion/c_gold/queries/`) or bronze pack query;
    the report's lineage table (below) makes the mapping explicit and the validator checks it.
 2. **Exploratory, not operational.** These reports invite scanning and drill-reading:
    overview first (KPIs), then trends, then breakdowns, then detail/quality notes.

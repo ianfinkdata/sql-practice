@@ -59,8 +59,8 @@ Workflow per task: brief → plan → ground → execute (builder) → machine v
 | TASK-20260704-04 Gold layer | `outputs/TASK-20260704-04/gold/ddl/*.sql` (facts/dims/marts) + business queries + captured outputs | sql-builder → sql-validator | 03 |
 | TASK-20260704-05 Report templates | `outputs/TASK-20260704-05/reports/` — template spec instantiation + 3 exploratory HTML reports (Sales Explorer, Product & Category Explorer, Data Quality Explorer) | report-designer → sql-validator (data lineage check) | 04 |
 
-Promotion on Ian's approval: SQL layers → `medallion/{bronze,silver,gold}/`,
-documentation → `medallion/docs/`, reports → `reports/`.
+Promotion on Ian's approval: SQL layers → `medallion/{a_bronze,b_silver,c_gold}/`,
+documentation → `medallion/_docs/`, reports → `reports/`.
 
 ## 5. Definitions gate (Phase 2 — blocking)
 

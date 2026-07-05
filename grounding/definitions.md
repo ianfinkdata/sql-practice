@@ -169,7 +169,7 @@ database. Where a DEF restates contract law, the contract citation is included.
   ```
 - **Applies to:** customers.state
 - **Owner:** Ian
-- **Caveats:** Mapping covers all 15 raw values in the shipped B03 census (medallion/bronze/EXPECTED_OUTPUTS.md). Silver verification asserts post-clean distinct = {CA, ID, MT, OR, WA} and ZERO NULLs — every bronze value maps. The IN() comparisons run under the schema's case-insensitive collation (deliberate tolerance); ELSE NULL stays as the unmapped-value tripwire (RULE-007).
+- **Caveats:** Mapping covers all 15 raw values in the shipped B03 census (medallion/a_bronze/EXPECTED_OUTPUTS.md). Silver verification asserts post-clean distinct = {CA, ID, MT, OR, WA} and ZERO NULLs — every bronze value maps. The IN() comparisons run under the schema's case-insensitive collation (deliberate tolerance); ELSE NULL stays as the unmapped-value tripwire (RULE-007).
 - **Changelog:** v1.1 2026-07-04 — mapping table finalized from B03 census, approved by Ian · v0.1 2026-07-04
 
 ## DEF-013: Payment method normalization  (v1.1)
