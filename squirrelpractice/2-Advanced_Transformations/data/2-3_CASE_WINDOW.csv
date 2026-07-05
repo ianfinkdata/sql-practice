@@ -1,8 +1,0 @@
-sale_id,customer_id,name,region,customer_email,rep_name,sale_amount,sale_month,deal_size_category,rep_sales_rank
-6,5,"Eagle Evangelists",Midwest,customer5@eee.com,"Benjamin Boa",4448.76,2026-01-01,"High Value",1
-7,5,"Eagle Evangelists",Midwest,customer5@eee.com,"Benjamin Boa",3243.39,2026-01-01,"High Value",2
-5,5,"Eagle Evangelists",Midwest,customer5@eee.com,"Benjamin Boa",2833.48,2026-01-01,Standard,3
-1,1,"ABC Company",Midwest,customer1@abc.com,"Sammy Snake",3034.06,2026-01-01,"High Value",1
-3,3,"Creative Concept Consulting",Midwest,customer3@ccc.com,"Sammy Snake",2454.74,2026-01-01,Standard,2
-2,2,"Before-for Consulting",Midwest,customer2@bbbb.com,"Sammy Snake",2011.38,2026-01-01,Standard,3
-4,4,"Demolition Dave's Depot",Midwest,customer4@ddd.com,"Sammy Snake",1739.54,2026-01-01,"Low Value",4

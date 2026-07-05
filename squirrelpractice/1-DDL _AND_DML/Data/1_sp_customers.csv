@@ -1,8 +1,0 @@
-customer_id,contact_details,customer_name,region
-1,"[{"type": "email", "value": "customer1@abc.com"}, {"type": "phone", "value": "314-555-1111"}]","ABC Company",Midwest
-2,"[{"type": "email", "value": "customer2@bbbb.com"}, {"type": "phone", "value": "314-555-2222"}]","Before-for Consulting",Midwest
-3,"[{"type": "email", "value": "customer3@ccc.com"}, {"type": "phone", "value": "314-555-3333"}]","Creative Concept Consulting",Midwest
-4,"[{"type": "email", "value": "customer4@ddd.com"}, {"type": "phone", "value": "314-555-4444"}]","Demolition Dave's Depot",Midwest
-5,"[{"type": "email", "value": "customer5@eee.com"}, {"type": "phone", "value": "314-555-5555"}]","Eagle Evangelists",Midwest
-6,"[{"type": "email", "value": "customer6@fff.com"}, {"type": "phone", "value": "314-555-6666"}]","Fink About It Consulting",Midwest
-7,"[{"type": "email", "value": "customer7@ggg.com"}, {"type": "phone", "value": "314-555-7777"}]","Grand Consulting",Midwest
