@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>R2 — Product &amp; Category Explorer — Oakhaven</title>
+<style>
+:root{
+  --surface-1:#fcfcfb; --page-plane:#f9f9f7; --text-primary:#0b0b0b; --text-secondary:#52514e;
+  --text-muted:#898781; --gridline:#e1e0d9; --baseline:#c3c2b7; --border:rgba(11,11,11,0.10);
+  --series-1:#2a78d6; --series-2:#1baf7a; --series-3:#eda100; --series-4:#008300;
+  --series-5:#4a3aa7; --series-6:#e34948; --series-7:#e87ba4; --series-8:#eb6834;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --channel-store: var(--series-1); --channel-web: var(--series-2);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --surface-1:#1a1a19; --page-plane:#0d0d0d; --text-primary:#ffffff; --text-secondary:#c3c2b7;
+    --text-muted:#898781; --gridline:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,0.10);
+    --series-1:#3987e5; --series-2:#199e70; --series-3:#c98500; --series-4:#008300;
+    --series-5:#9085e9; --series-6:#e66767; --series-7:#d55181; --series-8:#d95926;
+  }
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--page-plane);color:var(--text-primary);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;}
+.wrap{max-width:1160px;margin:0 auto;padding:24px 20px 60px;}
+header.report-header{padding:8px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px;}
+h1{font-size:26px;margin:0 0 4px;}
+.subtitle{color:var(--text-secondary);font-size:14px;margin:0 0 2px;}
+.generated{color:var(--text-muted);font-size:12px;}
+section.panel{margin-bottom:36px;}
+h2.section-title{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin:0 0 6px;font-weight:600;}
+.section-note{font-size:12px;color:var(--text-muted);margin:0 0 14px;}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;}
+.kpi-tile{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.kpi-label{font-size:12px;color:var(--text-secondary);margin-bottom:6px;}
+.kpi-value{font-size:26px;font-weight:600;}
+.kpi-sub{font-size:11px;color:var(--text-muted);margin-top:4px;}
+.chart-grid{display:grid;grid-template-columns:1fr;gap:24px;}
+.chart-grid.two-col{grid-template-columns:repeat(auto-fit,minmax(420px,1fr));}
+.chart-grid.three-col{grid-template-columns:repeat(auto-fit,minmax(340px,1fr));}
+.chart-panel{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+.chart-panel h3{font-size:14px;margin:0 0 4px;}
+.chart-legend{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 8px;font-size:12px;color:var(--text-secondary);}
+.legend-item{display:inline-flex;align-items:center;gap:6px;}
+.legend-swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
+.so-what{font-size:12.5px;color:var(--text-secondary);margin-top:10px;font-style:italic;}
+.escalation{font-size:12px;color:var(--critical);background:color-mix(in srgb, var(--critical) 10%, var(--surface-1));border:1px solid var(--critical);border-radius:8px;padding:8px 10px;margin-top:10px;}
+.mini-stats{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+.mini-stat{flex:1 1 140px;background:var(--page-plane);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
+.mini-stat .v{font-size:19px;font-weight:600;color:var(--critical);}
+.mini-stat .l{font-size:11px;color:var(--text-secondary);margin-top:2px;}
+svg text{fill:var(--text-secondary);font-size:11px;font-family:inherit;}
+svg .axis-label{fill:var(--text-muted);}
+svg .bar-label{fill:var(--text-secondary);font-size:12px;}
+svg .bar-value{fill:var(--text-primary);font-size:12px;font-variant-numeric:tabular-nums;}
+svg .gridline{stroke:var(--gridline);stroke-width:1;}
+.table-wrap{max-height:460px;overflow:auto;border:1px solid var(--border);border-radius:10px;}
+table{border-collapse:collapse;width:100%;font-size:13px;}
+table th{position:sticky;top:0;background:var(--surface-1);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-weight:600;cursor:pointer;white-space:nowrap;}
+table th.sort-active::after{content:' \25BE';}
+table td{padding:7px 10px;border-bottom:1px solid var(--gridline);font-variant-numeric:tabular-nums;white-space:nowrap;}
+table tbody tr:hover{background:var(--page-plane);}
+td.num{text-align:right;}
+.badge{display:inline-block;background:var(--page-plane);border:1px solid var(--border);border-radius:6px;padding:1px 7px;font-size:11px;color:var(--text-secondary);}
+.badge.top{color:var(--good);border-color:var(--good);}
+.badge.bottom{color:var(--critical);border-color:var(--critical);}
+.notes{font-size:13px;color:var(--text-secondary);line-height:1.6;}
+.notes h3{font-size:14px;color:var(--text-primary);margin:18px 0 6px;}
+.lineage-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+.lineage-table th,.lineage-table td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top;}
+.lineage-table th{background:var(--surface-1);}
+.viz-tooltip{position:fixed;display:none;background:var(--text-primary);color:var(--surface-1);font-size:12px;padding:6px 9px;border-radius:6px;pointer-events:none;max-width:260px;z-index:100;line-height:1.4;}
+footer.report-footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--border);color:var(--text-muted);font-size:11.5px;}
+code{background:var(--page-plane);border:1px solid var(--border);border-radius:4px;padding:1px 5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="report-header">
+    <h1>R2 — Product &amp; Category Explorer</h1>
+    <p class="subtitle">Full business window 2019-01-01 – 2026-06-30 · 850-product catalog, 590 active · DEF-021 unit margin</p>
+    <p class="generated">Generated 2026-07-05 · every number below traces to a gold/bronze query capture — see Notes &amp; lineage</p>
+  </header>
+
+  <section class="panel">
+    <h2 class="section-title">Headline KPIs</h2>
+    <div class="kpi-row" id="kpi-row"></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title">Primary view — top-5 categories by units sold</h2>
+    <p class="section-note">Substituted for a monthly trend line — see escalation note below the chart.</p>
+    <div class="chart-panel">
+      <h3>Top-5 categories by units sold (full-window total)</h3>
+      <div id="top5-chart"></div>
+      <p class="so-what">Kayaks, Backpacks, Camp Kitchen, Sleeping Bags and Jackets are the five
+      highest-unit-volume categories over the full window — together they moved 124,694 units and
+      $28.94M gross.</p>
+      <div class="escalation">MISSING QUERY (escalated, not fabricated): report-spec R2 calls for a
+      <b>monthly</b> units trend for the top-5 categories (Q07_r2_monthly_units_top5_categories.sql).
+      Q07's 450-row (90 months × 5 categories) output was captured only as an <b>aggregate reproducibility
+      signature</b> (medallion-spec §Reproducibility rule 4: n_rows=450, n_months=90, n_categories=5,
+      category_ids="10,11,12,17,19", total_units=124,694, total_gross=28,938,760.99) — the row-level
+      month×category grid needed to draw a real trend line was never pasted into EXPECTED_OUTPUTS.md.
+      The bar above uses the same 5 categories' full-window totals from Q08 (which <i>was</i> captured
+      in full) as the closest honest substitute. Requesting: a full Q07 re-capture (or a reduced sample —
+      e.g. quarterly instead of monthly) from sql-builder so a true trend can be rendered.</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title">Breakdowns</h2>
+    <div class="chart-grid three-col">
+      <div class="chart-panel">
+        <h3>Category revenue by parent (rollup)</h3>
+        <div id="category-rollup"></div>
+        <p class="so-what">Hiking and Camping alone account for over a third of all gross revenue — the
+        catalog's center of gravity is trail/camp gear, not apparel or winter sports.</p>
+      </div>
+      <div class="chart-panel">
+        <h3>Realized unit margin distribution ($25 bands)</h3>
+        <div id="margin-hist"></div>
+        <p class="so-what">The distribution sits mostly in the healthy $0–$200 range, but a real
+        below-cost tail (3,444 revenue-scope lines, shown in red) is a planted feature to monitor, not
+        a data error to hide (RULE-008).</p>
+      </div>
+      <div class="chart-panel">
+        <h3>Price-vs-cost anomalies (D16 / D17)</h3>
+        <div id="pricecost-chart"></div>
+        <div class="mini-stats" id="pricecost-stats"></div>
+        <p class="so-what">17 catalog products (~2% of 850) list below their own cost, and 291 order
+        lines in revenue scope were sold at a $0.01 penny price — both are planted anomalies to
+        investigate, never silently corrected.</p>
+        <div class="escalation">MISSING QUERY (escalated, not fabricated): report-spec R2 calls for a
+        <b>price-vs-cost scatter</b> (850 points) highlighting the below-cost/penny-price products
+        individually (Q09_r2_price_vs_cost.sql). Q09's 850-row output was captured only as an
+        <b>aggregate reproducibility signature</b> (n_rows=850, sum_unit_cost=$103,962.91,
+        sum_list_price=$203,872.50, below_cost_products=17) — no per-product (list_price, unit_cost)
+        pairs were captured, so individual scatter points cannot be plotted without inventing them. The
+        bars above show only the captured catalog-level totals; the stat chips show the captured D16/D17
+        counts (from Q09's signature, Q11 RS2, and the B04/B06 bronze census) — deliberately NOT drawn as
+        bars on the same axis as the dollar totals (mixing counts and dollars on one length-scale would
+        misrepresent both). Requesting: a full Q09 row-level re-capture (or a reduced "below-cost + penny
+        -price products only" query) from sql-builder for a true scatter.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title">Detail — top &amp; bottom 15 products by gross revenue</h2>
+    <div class="table-wrap">
+      <table id="product-table">
+        <thead><tr>
+          <th data-k="rank_group">Rank</th>
+          <th data-k="product_name">Product</th>
+          <th data-k="category_name">Category</th>
+          <th data-k="units_sold">Units sold</th>
+          <th data-k="gross_revenue">Gross revenue</th>
+          <th data-k="unit_return_rate_pct">Unit return rate</th>
+          <th data-k="revenue_return_rate_pct">Revenue return rate</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title">Notes &amp; lineage</h2>
+    <div class="notes">
+      <h3>Caveats</h3>
+      <p>Unit margin (DEF-021) uses <i>current</i> product cost — there is no historical cost table, so
+      margins on older orders are computed against today's cost basis (a stated limitation, not a defect).
+      Median unit margin (Q14) is computed over the 151,818 DEF-003 revenue lines in <code>fact_order_lines</code>;
+      with an even line count the median is the rounded mean of the two middle sorted values. Below-cost
+      lines (realized, 3,444) and below-cost catalog products (D16, 17) are RULE-008 planted features —
+      surfaced here deliberately, never filtered out of any figure on this page.</p>
+      <h3>Known data gaps (escalated to sql-builder, not silently worked around)</h3>
+      <ul>
+        <li><b>Q07 grain mismatch</b> — R2's monthly top-5-category trend needs 450 row-level rows;
+        only an aggregate signature was captured. See escalation box under "Primary view" above.</li>
+        <li><b>Q09 grain mismatch</b> — R2's price-vs-cost scatter needs 850 per-product rows; only an
+        aggregate signature was captured. See escalation box under "Price-vs-cost anomalies" above.</li>
+      </ul>
+      <h3>Lineage — every visual traces to a query file</h3>
+      <table class="lineage-table">
+        <thead><tr><th>Visual</th><th>Query file</th><th>DEF IDs</th><th>Captured output ref</th></tr></thead>
+        <tbody>
+          <tr><td>KPI row (active products, units sold, gross revenue, unit return rate)</td>
+              <td><code>medallion/c_gold/queries/Q06_r2_product_kpis.sql</code></td>
+              <td>DEF-003, DEF-004, DEF-007, DEF-009</td>
+              <td>EXPECTED_OUTPUTS.md § Q06_r2_product_kpis.sql</td></tr>
+          <tr><td>KPI row (median unit margin, below-cost lines)</td>
+              <td><code>medallion/c_gold/queries/Q14_r2_margin_kpis.sql</code></td>
+              <td>DEF-021, DEF-003</td>
+              <td>EXPECTED_OUTPUTS.md § Q14_r2_margin_kpis.sql</td></tr>
+          <tr><td>Primary view: top-5 categories by units sold (substitute for monthly trend; category
+              identity + totals from the Q07 signature, full leaf figures from Q08)</td>
+              <td><code>medallion/c_gold/queries/Q07_r2_monthly_units_top5_categories.sql</code>
+                  (aggregate signature only) + <code>medallion/c_gold/queries/Q08_r2_category_revenue_rollup.sql</code></td>
+              <td>DEF-003, DEF-004</td>
+              <td>EXPECTED_OUTPUTS.md § Q07 (signature) and § Q08 (leaf rows)</td></tr>
+          <tr><td>Breakdown: category revenue by parent (rollup)</td>
+              <td><code>medallion/c_gold/queries/Q08_r2_category_revenue_rollup.sql</code></td>
+              <td>DEF-003, DEF-004</td>
+              <td>EXPECTED_OUTPUTS.md § Q08_r2_category_revenue_rollup.sql (RS1 parent rollup)</td></tr>
+          <tr><td>Breakdown: realized unit margin distribution ($25 bands, below-cost tail highlighted)</td>
+              <td><code>medallion/c_gold/queries/Q15_r2_margin_distribution.sql</code></td>
+              <td>DEF-021, DEF-003</td>
+              <td>EXPECTED_OUTPUTS.md § Q15_r2_margin_distribution.sql</td></tr>
+          <tr><td>Breakdown: price-vs-cost anomaly panel (D16 catalog totals, D16/D17 counts — not a
+              per-product scatter, see escalation)</td>
+              <td><code>medallion/c_gold/queries/Q09_r2_price_vs_cost.sql</code> (aggregate signature) +
+                  <code>medallion/c_gold/queries/Q11_r3_dq_kpis.sql</code> +
+                  <code>medallion/a_bronze/B04_dirt_census.sql</code> / <code>B06_window_anomalies.sql</code></td>
+              <td>RULE-008</td>
+              <td>EXPECTED_OUTPUTS.md § Q09 (signature), § Q11 RS2, § B04 (D16/D17), § B06 RS2</td></tr>
+          <tr><td>Detail table: top/bottom 15 products by gross revenue with return rates</td>
+              <td><code>medallion/c_gold/queries/Q10_r2_top_bottom_products.sql</code></td>
+              <td>DEF-004, DEF-007, DEF-008</td>
+              <td>EXPECTED_OUTPUTS.md § Q10_r2_top_bottom_products.sql</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="report-footer">
+    Self-contained HTML — inline CSS/JS only, no CDNs, no external requests, opens from disk. Data
+    embedded below as JSON blocks transcribed verbatim from medallion/c_gold/EXPECTED_OUTPUTS.md and
+    medallion/a_bronze/EXPECTED_OUTPUTS.md.
+  </footer>
+</div>
+
+<!-- ================= EMBEDDED DATA (verbatim from EXPECTED_OUTPUTS.md) ================= -->
+<script type="application/json" id="data-q06">
+{"active_products":590,"total_products":850,"units_sold":359151,"gross_revenue":83160177.98,"unit_return_rate_pct":2.36}
+</script>
+<script type="application/json" id="data-q14">
+{"n_revenue_lines":151818,"median_unit_margin":103.47,"min_unit_margin":-239.05,"max_unit_margin":340.80,"below_cost_lines":3444}
+</script>
+<script type="application/json" id="data-q07-signature">
+{"n_rows":450,"n_months":90,"n_categories":5,"category_ids":"10,11,12,17,19","total_units":124694,"total_gross":28938760.99}
+</script>
+<script type="application/json" id="data-q08-parent">
+[
+{"parent_category_name":"Hiking","units_sold":70893,"gross_revenue":17066740.97},
+{"parent_category_name":"Camping","units_sold":67275,"gross_revenue":15619384.28},
+{"parent_category_name":"Footwear","units_sold":44934,"gross_revenue":10965816.94},
+{"parent_category_name":"Paddling","units_sold":43814,"gross_revenue":10424721.51},
+{"parent_category_name":"Apparel","units_sold":45758,"gross_revenue":10234089.00},
+{"parent_category_name":"Climbing","units_sold":43374,"gross_revenue":9328127.04},
+{"parent_category_name":"Accessories","units_sold":22168,"gross_revenue":5241080.64},
+{"parent_category_name":"Winter Sports","units_sold":20935,"gross_revenue":4280217.60}
+]
+</script>
+<script type="application/json" id="data-q08-leaf-top5">
+[
+{"category_id":17,"category_name":"Kayaks","units_sold":23514,"gross_revenue":5657557.03},
+{"category_id":11,"category_name":"Camp Kitchen","units_sold":25462,"gross_revenue":5747764.41},
+{"category_id":10,"category_name":"Sleeping Bags","units_sold":23519,"gross_revenue":5456564.09},
+{"category_id":12,"category_name":"Backpacks","units_sold":25394,"gross_revenue":6128683.14},
+{"category_id":19,"category_name":"Jackets","units_sold":26805,"gross_revenue":5948192.32}
+]
+</script>
+<script type="application/json" id="data-q15">
+[
+{"band_start":-250,"band_label":"[-250, -225)","line_count":15,"line_share_pct":0.01,"is_below_cost_band":1},
+{"band_start":-225,"band_label":"[-225, -200)","line_count":39,"line_share_pct":0.03,"is_below_cost_band":1},
+{"band_start":-200,"band_label":"[-200, -175)","line_count":26,"line_share_pct":0.02,"is_below_cost_band":1},
+{"band_start":-175,"band_label":"[-175, -150)","line_count":25,"line_share_pct":0.02,"is_below_cost_band":1},
+{"band_start":-150,"band_label":"[-150, -125)","line_count":33,"line_share_pct":0.02,"is_below_cost_band":1},
+{"band_start":-125,"band_label":"[-125, -100)","line_count":42,"line_share_pct":0.03,"is_below_cost_band":1},
+{"band_start":-100,"band_label":"[-100, -75)","line_count":74,"line_share_pct":0.05,"is_below_cost_band":1},
+{"band_start":-75,"band_label":"[-75, -50)","line_count":142,"line_share_pct":0.09,"is_below_cost_band":1},
+{"band_start":-50,"band_label":"[-50, -25)","line_count":1150,"line_share_pct":0.76,"is_below_cost_band":1},
+{"band_start":-25,"band_label":"[-25, 0)","line_count":1898,"line_share_pct":1.25,"is_below_cost_band":1},
+{"band_start":0,"band_label":"[0, 25)","line_count":19602,"line_share_pct":12.91,"is_below_cost_band":0},
+{"band_start":25,"band_label":"[25, 50)","line_count":18636,"line_share_pct":12.28,"is_below_cost_band":0},
+{"band_start":50,"band_label":"[50, 75)","line_count":17494,"line_share_pct":11.52,"is_below_cost_band":0},
+{"band_start":75,"band_label":"[75, 100)","line_count":14617,"line_share_pct":9.63,"is_below_cost_band":0},
+{"band_start":100,"band_label":"[100, 125)","line_count":16041,"line_share_pct":10.57,"is_below_cost_band":0},
+{"band_start":125,"band_label":"[125, 150)","line_count":16704,"line_share_pct":11.00,"is_below_cost_band":0},
+{"band_start":150,"band_label":"[150, 175)","line_count":14541,"line_share_pct":9.58,"is_below_cost_band":0},
+{"band_start":175,"band_label":"[175, 200)","line_count":9773,"line_share_pct":6.44,"is_below_cost_band":0},
+{"band_start":200,"band_label":"[200, 225)","line_count":6594,"line_share_pct":4.34,"is_below_cost_band":0},
+{"band_start":225,"band_label":"[225, 250)","line_count":6439,"line_share_pct":4.24,"is_below_cost_band":0},
+{"band_start":250,"band_label":"[250, 275)","line_count":4444,"line_share_pct":2.93,"is_below_cost_band":0},
+{"band_start":275,"band_label":"[275, 300)","line_count":2541,"line_share_pct":1.67,"is_below_cost_band":0},
+{"band_start":300,"band_label":"[300, 325)","line_count":849,"line_share_pct":0.56,"is_below_cost_band":0},
+{"band_start":325,"band_label":"[325, 350)","line_count":99,"line_share_pct":0.07,"is_below_cost_band":0}
+]
+</script>
+<script type="application/json" id="data-q09-signature">
+{"n_rows":850,"n_products":850,"sum_unit_cost":103962.91,"sum_list_price":203872.50,"below_cost_products":17}
+</script>
+<script type="application/json" id="data-anomalies">
+{"below_cost_products_d16":17,"below_cost_pct_approx":"~2%","penny_lines_revenue_scope_d17":291,"penny_lines_all_orders_d17":297}
+</script>
+<script type="application/json" id="data-q10">
+[
+{"rank_group":"top","product_name":"Meridian Touring Kayak 14ft Lite","category_name":"Kayaks","units_sold":486,"gross_revenue":240616.56,"unit_return_rate_pct":2.06,"revenue_return_rate_pct":1.98},
+{"rank_group":"top","product_name":"Glacier Aluminum Kayak Paddle","category_name":"Paddles & PFDs","units_sold":493,"gross_revenue":237063.87,"unit_return_rate_pct":2.23,"revenue_return_rate_pct":2.20},
+{"rank_group":"top","product_name":"Nimbus Carbon Kayak Paddle","category_name":"Paddles & PFDs","units_sold":455,"gross_revenue":235861.66,"unit_return_rate_pct":2.20,"revenue_return_rate_pct":2.27},
+{"rank_group":"top","product_name":"Sable Zero-Drop Trail Runners II","category_name":"Trail Runners","units_sold":459,"gross_revenue":235377.11,"unit_return_rate_pct":2.18,"revenue_return_rate_pct":2.28},
+{"rank_group":"top","product_name":"Ridgeline Summit Pack 18L","category_name":"Backpacks","units_sold":458,"gross_revenue":233039.27,"unit_return_rate_pct":1.75,"revenue_return_rate_pct":1.75},
+{"rank_group":"top","product_name":"Timberline 0F Winter Sleeping Bag","category_name":"Sleeping Bags","units_sold":472,"gross_revenue":233027.25,"unit_return_rate_pct":1.69,"revenue_return_rate_pct":1.70},
+{"rank_group":"top","product_name":"Rainier Zero-Drop Trail Runners","category_name":"Trail Runners","units_sold":460,"gross_revenue":223258.56,"unit_return_rate_pct":2.83,"revenue_return_rate_pct":2.92},
+{"rank_group":"top","product_name":"Cinder Bike Bottle 24oz","category_name":"Water Bottles","units_sold":431,"gross_revenue":220342.19,"unit_return_rate_pct":0.23,"revenue_return_rate_pct":0.24},
+{"rank_group":"top","product_name":"Kestrel Ultralight Quilt","category_name":"Sleeping Bags","units_sold":494,"gross_revenue":219197.21,"unit_return_rate_pct":1.01,"revenue_return_rate_pct":1.03},
+{"rank_group":"top","product_name":"Granite 3-Season Tent","category_name":"Tents","units_sold":468,"gross_revenue":219165.13,"unit_return_rate_pct":1.92,"revenue_return_rate_pct":1.58},
+{"rank_group":"top","product_name":"Summit Travel Pack 35L","category_name":"Backpacks","units_sold":469,"gross_revenue":217388.52,"unit_return_rate_pct":1.07,"revenue_return_rate_pct":1.11},
+{"rank_group":"top","product_name":"Rainier Zero-Drop Trail Runners","category_name":"Trail Runners","units_sold":444,"gross_revenue":216901.58,"unit_return_rate_pct":1.80,"revenue_return_rate_pct":1.90},
+{"rank_group":"top","product_name":"Basalt Daypack 22L","category_name":"Backpacks","units_sold":494,"gross_revenue":215901.62,"unit_return_rate_pct":3.04,"revenue_return_rate_pct":2.95},
+{"rank_group":"top","product_name":"Cascade 4-Season Expedition Tent","category_name":"Tents","units_sold":468,"gross_revenue":215152.23,"unit_return_rate_pct":2.99,"revenue_return_rate_pct":2.99},
+{"rank_group":"top","product_name":"Timberline Merino Base Layer Top","category_name":"Base Layers","units_sold":432,"gross_revenue":214945.03,"unit_return_rate_pct":3.24,"revenue_return_rate_pct":3.10},
+{"rank_group":"bottom","product_name":"Olympic Climbing Harness","category_name":"Ropes & Harnesses","units_sold":429,"gross_revenue":3297.38,"unit_return_rate_pct":3.03,"revenue_return_rate_pct":3.08},
+{"rank_group":"bottom","product_name":"Wildwood 3-Season Tent","category_name":"Tents","units_sold":402,"gross_revenue":3880.63,"unit_return_rate_pct":1.49,"revenue_return_rate_pct":1.45},
+{"rank_group":"bottom","product_name":"Juniper Kids Daypack","category_name":"Backpacks","units_sold":338,"gross_revenue":3890.35,"unit_return_rate_pct":2.96,"revenue_return_rate_pct":3.03},
+{"rank_group":"bottom","product_name":"Cascade 2-Burner Camp Stove XT","category_name":"Camp Kitchen","units_sold":416,"gross_revenue":4054.62,"unit_return_rate_pct":0.72,"revenue_return_rate_pct":0.67},
+{"rank_group":"bottom","product_name":"Fjord Wind Shell","category_name":"Jackets","units_sold":473,"gross_revenue":4499.80,"unit_return_rate_pct":3.81,"revenue_return_rate_pct":3.73},
+{"rank_group":"bottom","product_name":"Meridian Altimeter Watch","category_name":"Navigation","units_sold":449,"gross_revenue":4810.81,"unit_return_rate_pct":2.00,"revenue_return_rate_pct":2.06},
+{"rank_group":"bottom","product_name":"Juniper 20F Down Sleeping Bag","category_name":"Sleeping Bags","units_sold":438,"gross_revenue":5533.31,"unit_return_rate_pct":2.74,"revenue_return_rate_pct":2.79},
+{"rank_group":"bottom","product_name":"Juniper Steel Growler 64oz","category_name":"Water Bottles","units_sold":446,"gross_revenue":6463.22,"unit_return_rate_pct":1.79,"revenue_return_rate_pct":1.56},
+{"rank_group":"bottom","product_name":"Sable Aluminum Kayak Paddle","category_name":"Paddles & PFDs","units_sold":401,"gross_revenue":6633.77,"unit_return_rate_pct":2.49,"revenue_return_rate_pct":2.49},
+{"rank_group":"bottom","product_name":"Skyline Softshell Jacket","category_name":"Jackets","units_sold":387,"gross_revenue":6727.94,"unit_return_rate_pct":0.78,"revenue_return_rate_pct":0.80},
+{"rank_group":"bottom","product_name":"Glacier Powder Skis","category_name":"Skis & Snowboards","units_sold":409,"gross_revenue":6757.25,"unit_return_rate_pct":3.67,"revenue_return_rate_pct":3.34},
+{"rank_group":"bottom","product_name":"Olympic Quickdraw Set","category_name":"Carabiners & Hardware","units_sold":375,"gross_revenue":6813.69,"unit_return_rate_pct":1.60,"revenue_return_rate_pct":1.66},
+{"rank_group":"bottom","product_name":"Cascade Nut Tool","category_name":"Carabiners & Hardware","units_sold":423,"gross_revenue":7012.41,"unit_return_rate_pct":1.42,"revenue_return_rate_pct":1.44},
+{"rank_group":"bottom","product_name":"Solstice Waterproof Trail Shoes","category_name":"Trail Runners","units_sold":392,"gross_revenue":7217.64,"unit_return_rate_pct":2.55,"revenue_return_rate_pct":2.22},
+{"rank_group":"bottom","product_name":"Juniper Rain Jacket","category_name":"Jackets","units_sold":482,"gross_revenue":7478.85,"unit_return_rate_pct":0.83,"revenue_return_rate_pct":0.88}
+]
+</script>
+
+<script>
+/* ============================================================================
+   SHARED CHART ENGINE (see template.html for the annotated version)
+   ========================================================================= */
+(function(){
+  const NS='http://www.w3.org/2000/svg';
+  function svgEl(tag,attrs){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+  function fmtMoney(n){ const r=Math.round(n); return (r<0?'-$':'$')+Math.abs(r).toLocaleString('en-US'); }
+  function fmtInt(n){ return Math.round(n).toLocaleString('en-US'); }
+  function fmtPct(n){ return n.toFixed(2)+'%'; }
+  function niceMax(v){ if(v<=0) return 1; const p=Math.pow(10,Math.floor(Math.log10(v))); const n=v/p; let s; if(n<=1)s=1; else if(n<=2)s=2; else if(n<=5)s=5; else s=10; return s*p; }
+  function barPath(x0,y0,w,h,r,orientation,dir){
+    if(orientation==='h'){
+      const rr=Math.min(r,h/2,Math.max(w,0.001));
+      if(dir>=0){ const x=x0; return `M${x},${y0} H${x+w-rr} Q${x+w},${y0} ${x+w},${y0+rr} V${y0+h-rr} Q${x+w},${y0+h} ${x+w-rr},${y0+h} H${x} Z`; }
+      const x=x0-w; return `M${x0},${y0} H${x+rr} Q${x},${y0} ${x},${y0+rr} V${y0+h-rr} Q${x},${y0+h} ${x+rr},${y0+h} H${x0} Z`;
+    }
+    const rr=Math.min(r,w/2,Math.max(h,0.001));
+    if(dir>=0){ const yTop=y0-h; return `M${x0},${y0} V${yTop+rr} Q${x0},${yTop} ${x0+rr},${yTop} H${x0+w-rr} Q${x0+w},${yTop} ${x0+w},${yTop+rr} V${y0} Z`; }
+    const yBot=y0+h; return `M${x0},${y0} V${yBot-rr} Q${x0},${yBot} ${x0+rr},${yBot} H${x0+w-rr} Q${x0+w},${yBot} ${x0+w},${yBot-rr} V${y0} Z`;
+  }
+  const tip=document.createElement('div'); tip.className='viz-tooltip'; document.body.appendChild(tip);
+  document.addEventListener('mousemove', function(e){
+    const t=e.target.closest('[data-tip]');
+    if(t){ tip.innerHTML=t.getAttribute('data-tip'); tip.style.display='block';
+      tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY+14)+'px'; }
+    else tip.style.display='none';
+  });
+  function hBarChart(container, data, opts){
+    opts=opts||{};
+    const w=opts.width||640, barH=opts.barH||18, gap=opts.gap||9;
+    const labelW=opts.labelW||150, valueW=opts.valueW||100;
+    const plotW=w-labelW-valueW-16;
+    const max=opts.max||niceMax(Math.max(...data.map(d=>Math.abs(d.value))));
+    const h=data.length*(barH+gap)+gap;
+    const svg=svgEl('svg',{width:'100%',viewBox:`0 0 ${w} ${h}`});
+    data.forEach((d,i)=>{
+      const y=gap+i*(barH+gap);
+      const bw=Math.max(2,(Math.abs(d.value)/max)*plotW);
+      const txt=svgEl('text',{x:labelW-8,y:y+barH*0.72,'text-anchor':'end',class:'bar-label'}); txt.textContent=d.label; svg.appendChild(txt);
+      const path=svgEl('path',{d:barPath(labelW,y,bw,barH,4,'h',1),fill:d.color||'var(--series-1)'});
+      if(d.tip) path.setAttribute('data-tip', d.tip);
+      svg.appendChild(path);
+      const val=svgEl('text',{x:labelW+bw+8,y:y+barH*0.72,class:'bar-value'}); val.textContent=d.valueLabel!==undefined?d.valueLabel:fmtInt(d.value); svg.appendChild(val);
+    });
+    container.innerHTML=''; container.appendChild(svg);
+  }
+  function vBarChart(container, data, opts){
+    opts=opts||{};
+    const w=opts.width||640, h=opts.height||260;
+    const margin={top:14,right:10,bottom:opts.bottomMargin||36,left:opts.leftMargin||56};
+    const plotW=w-margin.left-margin.right, plotH=h-margin.top-margin.bottom;
+    const vals=data.map(d=>d.value);
+    const maxV=opts.max!==undefined?opts.max:niceMax(Math.max(...vals,0));
+    const minV=opts.min!==undefined?opts.min:Math.min(0,...vals);
+    const yScale=(v)=>margin.top+plotH-((v-minV)/(maxV-minV))*plotH;
+    const bw=(plotW/data.length);
+    const barW=Math.min(opts.maxBarW||28, bw*0.7);
+    const svg=svgEl('svg',{width:'100%',viewBox:`0 0 ${w} ${h}`});
+    const steps=4;
+    for(let i=0;i<=steps;i++){
+      const v=minV+(maxV-minV)*i/steps;
+      const yy=yScale(v);
+      svg.appendChild(svgEl('line',{x1:margin.left,x2:w-margin.right,y1:yy,y2:yy,class:'gridline'}));
+      const t=svgEl('text',{x:margin.left-8,y:yy+4,'text-anchor':'end',class:'axis-label'}); t.textContent=opts.yFormat?opts.yFormat(v):fmtInt(v); svg.appendChild(t);
+    }
+    data.forEach((d,i)=>{
+      const cx=margin.left+bw*i+bw/2;
+      const y0=yScale(0), yV=yScale(d.value);
+      const barH2=Math.abs(y0-yV);
+      const dir=d.value>=0?1:-1;
+      const path=svgEl('path',{d:barPath(cx-barW/2, y0, barW, barH2,3,'v',dir), fill:d.color||'var(--series-1)'});
+      if(d.tip) path.setAttribute('data-tip', d.tip);
+      svg.appendChild(path);
+      if(opts.showXLabels!==false && (opts.labelEvery?(i%opts.labelEvery===0):true)){
+        const t=svgEl('text',{x:cx,y:h-margin.bottom+16,'text-anchor':'middle',class:'axis-label'}); t.textContent=d.label; svg.appendChild(t);
+      }
+    });
+    svg.appendChild(svgEl('line',{x1:margin.left,x2:w-margin.right,y1:yScale(0),y2:yScale(0),stroke:'var(--baseline)','stroke-width':1}));
+    container.innerHTML=''; container.appendChild(svg);
+  }
+  function makeSortable(table, rows, renderRow){
+    let sortKey=null, sortDir=1;
+    function draw(){
+      const tbody=table.querySelector('tbody');
+      let data=rows.slice();
+      if(sortKey){ data.sort((a,b)=>{ const av=a[sortKey], bv=b[sortKey]; return (av>bv?1:av<bv?-1:0)*sortDir; }); }
+      tbody.innerHTML=data.map(renderRow).join('');
+      table.querySelectorAll('th[data-k]').forEach(th=>th.classList.toggle('sort-active', th.getAttribute('data-k')===sortKey));
+    }
+    table.querySelectorAll('th[data-k]').forEach(th=>{
+      th.addEventListener('click', ()=>{
+        const k=th.getAttribute('data-k');
+        if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; }
+        draw();
+      });
+    });
+    draw();
+  }
+  window.VIZ={svgEl,fmtMoney,fmtInt,fmtPct,niceMax,barPath,hBarChart,vBarChart,makeSortable};
+})();
+
+/* ============================================================================
+   RENDER — R2 Product & Category Explorer
+   ========================================================================= */
+const Q06=JSON.parse(document.getElementById('data-q06').textContent);
+const Q14=JSON.parse(document.getElementById('data-q14').textContent);
+const Q07SIG=JSON.parse(document.getElementById('data-q07-signature').textContent);
+const Q08PARENT=JSON.parse(document.getElementById('data-q08-parent').textContent);
+const Q08TOP5=JSON.parse(document.getElementById('data-q08-leaf-top5').textContent);
+const Q15=JSON.parse(document.getElementById('data-q15').textContent);
+const Q09SIG=JSON.parse(document.getElementById('data-q09-signature').textContent);
+const ANOM=JSON.parse(document.getElementById('data-anomalies').textContent);
+const Q10=JSON.parse(document.getElementById('data-q10').textContent);
+
+// KPI row (Q06_r2_product_kpis.sql + Q14_r2_margin_kpis.sql)
+document.getElementById('kpi-row').innerHTML = [
+  {l:'Active products', v:VIZ.fmtInt(Q06.active_products)+' / '+VIZ.fmtInt(Q06.total_products), s:'DEF-009 · Q06'},
+  {l:'Units sold', v:VIZ.fmtInt(Q06.units_sold), s:'DEF-003 · Q06'},
+  {l:'Product gross revenue', v:VIZ.fmtMoney(Q06.gross_revenue), s:'DEF-004 · Q06'},
+  {l:'Median unit margin', v:VIZ.fmtMoney(Q14.median_unit_margin), s:'DEF-021 · Q14 (exact: $103.47)'},
+  {l:'Unit return rate', v:VIZ.fmtPct(Q06.unit_return_rate_pct), s:'DEF-007 · Q06'}
+].map(k=>`<div class="kpi-tile"><div class="kpi-label">${k.l}</div><div class="kpi-value">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+// Primary view substitute: top-5 categories by units (Q08 leaf rows for the 5 ids named in Q07's signature)
+VIZ.hBarChart(document.getElementById('top5-chart'),
+  Q08TOP5.slice().sort((a,b)=>b.units_sold-a.units_sold).map(r=>({
+    label:r.category_name, value:r.units_sold, color:'var(--series-1)',
+    valueLabel:VIZ.fmtInt(r.units_sold)+' units',
+    tip:`<b>${r.category_name}</b> (category_id ${r.category_id})<br>Units: ${VIZ.fmtInt(r.units_sold)}<br>Gross: ${VIZ.fmtMoney(r.gross_revenue)}`
+  })), {width:620, labelW:120, valueW:110});
+
+// Breakdown: category revenue by parent (Q08 RS1)
+VIZ.hBarChart(document.getElementById('category-rollup'),
+  Q08PARENT.map(r=>({label:r.parent_category_name, value:r.gross_revenue, color:'var(--series-1)',
+    valueLabel:VIZ.fmtMoney(r.gross_revenue),
+    tip:`<b>${r.parent_category_name}</b><br>Gross: ${VIZ.fmtMoney(r.gross_revenue)}<br>Units: ${VIZ.fmtInt(r.units_sold)}`})),
+  {width:620, labelW:110});
+
+// Breakdown: margin distribution histogram (Q15) — diverging: below-cost bands (red) vs healthy (blue)
+VIZ.vBarChart(document.getElementById('margin-hist'),
+  Q15.map(r=>({label: r.band_start%50===0? '$'+r.band_start : '', value:r.line_count,
+    color: r.is_below_cost_band? 'var(--series-6)' : 'var(--series-1)',
+    tip:`<b>${r.band_label}</b><br>Lines: ${VIZ.fmtInt(r.line_count)} (${VIZ.fmtPct(r.line_share_pct)})${r.is_below_cost_band?'<br><i>below-cost band (RULE-008)</i>':''}`})),
+  {width:620, height:260, labelEvery:1});
+
+// Breakdown: price-vs-cost — catalog $ totals as bars (same unit, legitimate comparison);
+// D16/D17 counts as separate stat chips (NOT mixed onto the dollar bar scale — see escalation note)
+VIZ.hBarChart(document.getElementById('pricecost-chart'), [
+  {label:'Sum unit_cost (850 products)', value:Q09SIG.sum_unit_cost, color:'var(--series-1)', valueLabel:VIZ.fmtMoney(Q09SIG.sum_unit_cost),
+   tip:'Catalog-wide sum of unit_cost across all 850 products (Q09 aggregate signature).'},
+  {label:'Sum list_price (850 products)', value:Q09SIG.sum_list_price, color:'var(--series-5)', valueLabel:VIZ.fmtMoney(Q09SIG.sum_list_price),
+   tip:'Catalog-wide sum of list_price across all 850 products (Q09 aggregate signature).'}
+], {width:620, labelW:190, valueW:100});
+document.getElementById('pricecost-stats').innerHTML =
+  `<div class="mini-stat"><div class="v">${VIZ.fmtInt(ANOM.below_cost_products_d16)}</div><div class="l">D16 below-cost products (${ANOM.below_cost_pct_approx} of 850)</div></div>` +
+  `<div class="mini-stat"><div class="v">${VIZ.fmtInt(ANOM.penny_lines_revenue_scope_d17)}</div><div class="l">D17 penny-price lines, revenue scope (${VIZ.fmtInt(ANOM.penny_lines_all_orders_d17)} across all orders)</div></div>`;
+
+// Detail table: top/bottom 15 products (Q10), sortable
+const productTable = document.getElementById('product-table');
+VIZ.makeSortable(productTable, Q10, r=>{
+  const badge = r.rank_group==='top' ? '<span class="badge top">TOP</span>' : '<span class="badge bottom">BOTTOM</span>';
+  return `<tr><td>${badge}</td><td>${r.product_name}</td><td>${r.category_name}</td>
+    <td class="num">${VIZ.fmtInt(r.units_sold)}</td><td class="num">${VIZ.fmtMoney(r.gross_revenue)}</td>
+    <td class="num">${VIZ.fmtPct(r.unit_return_rate_pct)}</td><td class="num">${VIZ.fmtPct(r.revenue_return_rate_pct)}</td></tr>`;
+});
+</script>
+</body>
+</html>
