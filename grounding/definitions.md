@@ -246,7 +246,7 @@ database. Where a DEF restates contract law, the contract citation is included.
 - **Caveats:** age > 95 outliers (D5) are kept but flagged `is_age_outlier` — plausible, not impossible. Window end is a constant, not CURDATE(), for reproducibility.
 - **Changelog:** v0.1 2026-07-04
 
-## DEF-018: Fulfillment days  (v1.0)
+## DEF-018: Fulfillment days  (v1.1)
 - **Plain definition:** Days from order to delivery.
 - **Canonical SQL:**
   ```sql
@@ -254,8 +254,11 @@ database. Where a DEF restates contract law, the contract citation is included.
   ```
 - **Grain:** per shipment (an order may have 2 shipments — 3% split; order-level fulfillment = MAX over its shipments)
 - **Owner:** Ian
-- **Caveats:** NULL while pending. Ship-to-deliver lag alternative uses shipped_ts; marts state which anchor they use.
-- **Changelog:** v0.1 2026-07-04
+- **Caveats:** NULL while pending — at ORDER level, "pending" means the order has no shipment
+  or ANY undelivered shipment; the MAX is over fully-delivered shipment sets only (ratified
+  from TASK-04, affects 160 partially-delivered multi-shipment orders vs the ignore-NULLs
+  reading). Ship-to-deliver lag alternative uses shipped_ts; marts state which anchor they use.
+- **Changelog:** v1.1 2026-07-05 — order-level pending semantics ratified (TASK-04 validator Warning 2; approved by Ian in-session) · v0.1 2026-07-04
 
 ## DEF-019: Inventory transfer pairing  (v1.0)
 - **Plain definition:** A transfer_out row and its receiving transfer_in row are the same physical transfer, linked by an identical `reference` token (`TR-######`).
