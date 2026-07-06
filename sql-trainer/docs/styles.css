@@ -224,9 +224,36 @@ nav.top {
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
-nav.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+nav.top .wrap { position: relative; display: flex; align-items: center; justify-content: space-between; height: 56px; }
 nav.top .brand { font-weight: 700; color: var(--text); }
 nav.top .links { display: flex; gap: 20px; font-size: 0.9rem; }
 nav.top .links a { color: var(--text-dim); }
 nav.top .links a:hover { color: var(--text); text-decoration: none; }
-@media (max-width: 620px) { nav.top .links { display: none; } }
+nav.top .nav-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+@media (max-width: 620px) {
+  nav.top .nav-toggle { display: block; }
+  nav.top .links {
+    display: none;
+    position: absolute;
+    top: 56px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 20px 14px;
+  }
+  nav.top .links.open { display: flex; }
+  nav.top .links a { padding: 8px 0; }
+}
