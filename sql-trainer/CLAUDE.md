@@ -26,6 +26,11 @@ single step.
 ## House rules for edits
 - Keep everything **self-contained** — only relative links, nothing reaching
   into the parent repo. This folder must stay cleanly splittable.
+  - **One deliberate exception:** `docs/index.html`'s nav has a `medallion/`
+    link to the Oakhaven medallion project's reports, which only resolves
+    when deployed as part of the combined Pages site (see
+    `.github/workflows/pages.yml`). Ian approved this trade-off 2026-07-05.
+    If this folder is ever split into its own repo, remove that one link.
 - Teach concepts in **standard ANSI SQL**; route dialect-specific syntax through
   the Dialect Decoder rather than hardcoding one vendor.
 - Shared sample tables used in all examples:

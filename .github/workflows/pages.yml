@@ -45,10 +45,6 @@ jobs:
           cp -r sql-trainer/docs/. _site/
           mkdir -p _site/medallion
           cp -r reports/. _site/medallion/
-          # Add a medallion-project link to the deployed copy of the SQL Trainer
-          # nav only (sql-trainer/docs/index.html itself stays untouched — that
-          # folder's own CLAUDE.md requires it stay self-contained/splittable).
-          sed -i 's#<a href="https://github.com/ianfinkdata/sql-practice">GitHub</a>#<a href="medallion/">Medallion Project</a>\n        <a href="https://github.com/ianfinkdata/sql-practice">GitHub</a>#' _site/index.html
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
