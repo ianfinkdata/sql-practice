@@ -12,7 +12,8 @@
   <nav class="top">
     <div class="wrap">
       <span class="brand">🐿️ SQL Trainer</span>
-      <span class="links">
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="nav-links">☰</button>
+      <span class="links" id="nav-links">
         <a href="#curriculum">Curriculum</a>
         <a href="#decoder">Dialect Decoder</a>
         <a href="#philosophy">Philosophy</a>
@@ -285,5 +286,23 @@
     </div>
   </footer>
 
+  <script>
+    // Mobile nav toggle (<=620px, matches the .links breakpoint in styles.css).
+    // No dependencies — vanilla JS, keeps this folder self-contained.
+    (function () {
+      var toggle = document.querySelector('.nav-toggle');
+      var links = document.getElementById('nav-links');
+      toggle.addEventListener('click', function () {
+        var open = links.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      links.addEventListener('click', function (e) {
+        if (e.target.tagName === 'A') {
+          links.classList.remove('open');
+          toggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
