@@ -1,0 +1,4 @@
+Placeholder so the empty csv/ output directory is tracked in git.
+run_all_exports.ps1 writes stores.tsv ... inventory_movements.tsv here (14 files, one per
+E01-E14 export query). This directory is a build output location, not a source file -- the
+generated .tsv files are not meant to be hand-authored or committed.
