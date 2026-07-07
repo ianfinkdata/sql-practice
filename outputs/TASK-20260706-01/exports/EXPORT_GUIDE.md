@@ -98,21 +98,28 @@ footgun.
 
 ## 4. Power BI import — step by step
 
-**Option A: import the whole folder at once**
+**Recommended: import one file at a time (Option B below).** These 14 files have 14
+different schemas (different column sets), and Power BI's **Get Data → Folder →
+"Combine & Transform Data"** button is built to *stack same-schema files into one table*
+(e.g. 12 monthly CSVs of the same report) — it is **not** a way to load 14 different tables
+in one step. Used here, it would try to combine `orders.tsv` and `customers.tsv` (etc.) as if
+they were the same table and either error or silently produce a garbage combined result.
+Don't use "Combine & Transform Data" for this export pack.
+
+**Option A: browse the folder, then import files individually from Power Query**
 
 1. Power BI Desktop → **Get Data** → **Folder**.
 2. Browse to `exports/csv/` (the folder `run_all_exports.ps1` populates) → **OK**.
-3. In the folder preview, click **Combine & Transform Data** (or **Transform Data** to stage
-   each file individually first).
-4. In the Power Query editor, for each resulting table:
-   - Confirm delimiter = **Tab**.
-   - Confirm **Use First Row as Headers** is applied (Power Query usually does this
-     automatically for a delimited file; verify it under **Transform** if not).
-   - **Apply the NULL-string fix from §3 above now, before letting Power Query auto-detect
-     column types** — replace the literal text `"NULL"` with `null` first, then set data types.
-5. **Close & Apply**.
+3. In the folder preview, click **Transform Data** (NOT "Combine & Transform Data") — this
+   opens Power Query showing one row per file (file paths + binary content), not yet the
+   actual table data.
+4. For each file you want as its own table: right-click its row → **Add as New Query**, then
+   in that new query expand the binary content as a delimited file (Tab-delimited). Repeat
+   per file. This gets you to the same place as Option B, just reached via the folder browser
+   — it does not save real effort over Option B for 14 differently-shaped files, which is why
+   Option B is the recommended path below.
 
-**Option B: import one file at a time**
+**Option B (recommended): import one file at a time**
 
 1. Power BI Desktop → **Get Data** → **Text/CSV**.
 2. Select one file, e.g. `exports/csv/orders.tsv`.
@@ -125,9 +132,9 @@ footgun.
 7. Set/confirm column data types (date, decimal, int, text) once nulls are handled correctly.
 8. **Close & Apply**. Repeat for each of the 14 files.
 
-Either option produces the same 14 tables; Option A is faster for loading everything at once,
-Option B gives more per-table control over data types and is easier to troubleshoot if one
-table's NULL handling needs a different treatment than the rest.
+Option B is the reliable path for this pack (14 tables, 14 different schemas) and gives full
+per-table control over data types — use it as the default. Option A is documented above only
+because the folder browser is a common first instinct; it doesn't save meaningful effort here.
 
 ## 5. Notes
 

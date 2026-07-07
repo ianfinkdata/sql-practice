@@ -42,6 +42,8 @@ $exports = @(
     @{ File = "E14_inventory_movements.sql"; Table = "inventory_movements" }
 )
 
+$failed = @()
+
 foreach ($export in $exports) {
     $sqlPath = Join-Path $scriptDir $export.File
     $outPath = Join-Path $csvDir ($export.Table + ".tsv")
@@ -52,6 +54,19 @@ foreach ($export in $exports) {
     Get-Content $sqlPath -Raw |
         & $mysqlExe --defaults-extra-file="$defaultsFile" --batch oakhaven |
         Set-Content -Encoding utf8 $outPath
+
+    # $ErrorActionPreference = "Stop" only catches PowerShell-terminating errors, not a
+    # nonzero exit from the native mysql.exe process -- check $LASTEXITCODE explicitly so a
+    # mid-run connection failure can't silently leave a truncated/empty .tsv for one table
+    # while the loop continues on to the next as if nothing happened.
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "mysql.exe exited $LASTEXITCODE while exporting $($export.Table) -- $outPath may be truncated or empty."
+        $failed += $export.Table
+    }
 }
 
-Write-Host "Done. 14 files written to $csvDir"
+if ($failed.Count -gt 0) {
+    Write-Warning "Export finished with $($failed.Count) failed table(s): $($failed -join ', '). Re-run this script, or re-run the individual .sql file(s) for just those tables, before trusting the row-count check in EXPORT_GUIDE.md."
+} else {
+    Write-Host "Done. 14 files written to $csvDir"
+}
