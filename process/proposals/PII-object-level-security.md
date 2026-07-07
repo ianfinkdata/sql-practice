@@ -22,6 +22,17 @@ casing/flag cleanup touches `marketing_opt_in`, not because it's PII, but becaus
 There's no policy for "this column should never reach a downstream consumer" or "this column
 should reach downstream consumers only in a reduced form."
 
+**Production framing:** this proposal is about silver/gold, not bronze access itself. In a
+real production deployment, bronze would already be access-controlled to only the roles/people
+who genuinely need raw-table access (source-system owners, a small data-engineering group) —
+most consumers would never touch bronze directly at all. §3–§6 below are about what silver/gold
+expose to the *broader* set of downstream consumers (analysts, BI tools, reports), and that
+handling is inherently case-by-case per column/consumer rather than a single blanket rule —
+which is exactly why §3 treats exclusion vs. masking as a per-column decision, not a
+project-wide switch.
+
+## 2. Columns in scope (as of `grounding/schema.md`, 2026-07-04 snapshot)
+
 ## 2. Columns in scope (as of `grounding/schema.md`, 2026-07-04 snapshot)
 
 | Table | Column | Why it's in scope |
