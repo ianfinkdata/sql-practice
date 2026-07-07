@@ -97,3 +97,7 @@ work and produce a proposed diff.
 - Power BI PBIR versions of the three reports via pbi-cli (strong fit with existing skills).
 - sql-trainer exercise integration against silver/gold.
 - Materialization + refresh script if view performance ever matters (it shouldn't at 420k rows).
+- **Object-level security for PII columns** — proposal only, not approved/implemented:
+  `process/proposals/PII-object-level-security.md`. Covers which columns are in scope,
+  ETL-exclusion vs. SQL-masking tradeoffs, and the conflict with RULE-005 (flag-never-filter)
+  that any real implementation would need to resolve explicitly.
