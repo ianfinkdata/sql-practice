@@ -21,7 +21,7 @@ SELECT 'C1.04','row count: employees','=240',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=
 SELECT 'C1.05','row count: products','=850',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=850,'PASS','FAIL') FROM products;
 SELECT 'C1.06','row count: customers','=12000',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=12000,'PASS','FAIL') FROM customers;
 SELECT 'C1.07','row count: promotions','=70',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=70,'PASS','FAIL') FROM promotions;
-SELECT 'C1.08','row count: calendar','=4748',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=4748,'PASS','FAIL') FROM calendar;
+SELECT 'C1.08','row count: calendar','=7670',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=7670,'PASS','FAIL') FROM calendar;
 SELECT 'C1.09','row count: orders','=60000',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=60000,'PASS','FAIL') FROM orders;
 SELECT 'C1.10','row count: order_items','=156190',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=156190,'PASS','FAIL') FROM order_items;
 SELECT 'C1.11','row count: payments (66000 +/-5%)','62700..69300',CAST(COUNT(*) AS CHAR),IF(COUNT(*) BETWEEN 62700 AND 69300,'PASS','FAIL') FROM payments;
@@ -310,7 +310,9 @@ FROM shipments sh JOIN orders o ON sh.order_id=o.order_id WHERE sh.shipped_ts < 
 --   C8.02b — SUM(ROUND(line,2))  (round-per-line; the convention Agent B used —
 --            payments match it EXACTLY for all completed orders)
 -- Known divergence: order 122965 (8 lines, all ending in .5 mills rounding up)
--- differs by $0.03 between the two conventions. Flagged for Ian's ruling.
+-- differs by $0.03 between the two conventions. RULED (DATA_CONTRACT.md v1.2,
+-- 2026-07-02): C8.02a is retired, expected to show exactly 1 FAIL forever;
+-- C8.02b (per-line rounding) is the binding check and must show 0.
 SELECT 'C8.02a','completed orders: captured sum <> truth ROUND(SUM(line),2) (+/-0.02)','0',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=0,'PASS','FAIL')
 FROM (
   SELECT o.order_id
