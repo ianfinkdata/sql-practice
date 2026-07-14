@@ -167,6 +167,28 @@ date-window sanity, seasonality spot-check.
   exercises: 24,217 orders predate customer signup ("migration artifact");
   31,093 inventory movements predate product intro_date.
 
+- **2026-07-13 — REBUILT ON UBUNTU after the Windows machine's drive died.**
+  Full detail: `UBUNTU_REBUILD.md` (this directory). Nothing was actually
+  lost — `oakhaven/data/*.csv` was always gitignored, and generation is
+  deterministic (fixed seed), so this is a straight regeneration. One real
+  gap: `oakhaven.calendar` depended on a `common_db.dim_date` table that
+  doesn't exist on this machine and has no reproducible source; dropped that
+  indirection and generate the calendar directly instead (recursive CTE,
+  `ddl/02_calendar_generate.sql`), bronze-minimal (`date_key`+`date` only,
+  2018-01-01..2038-12-31, 7,670 rows) — codified as `DATA_CONTRACT.md` v1.3.
+  Regenerated CSVs matched the original 2026-07-02 row counts **exactly**
+  (orders 60,000, order_items 156,190, payments 66,663, returns 5,010,
+  shipments 29,784, inventory_movements 90,000, etc.) — confirms the
+  determinism claim held across machines. Load tooling ported to Linux:
+  `load/run_load.sh` replaces `run_load.ps1`, paths in `load_all.sql`
+  retargeted from `C:/github/...` to this clone's path. Credentials: no
+  `.my.cnf` on this machine by design (see `ubuntu_26.04` repo's MySQL
+  setup) — `claude@localhost` password entered live per session instead.
+  QA rerun clean: same shape as the original verdict (only the
+  already-retired `C8.02a` and the pre-approved `C8.03` exception are
+  non-PASS). Caught and fixed one stale QA check along the way (`C1.08`
+  still hardcoded the old common_db-era calendar count).
+
 ## Future enhancement: holiday + fiscal backfill on the calendar
 
 Decided 2026-07-02 (contract v1.1): `oakhaven.calendar` is a verbatim
