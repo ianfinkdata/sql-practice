@@ -21,7 +21,7 @@ SELECT 'C1.04','row count: employees','=240',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=
 SELECT 'C1.05','row count: products','=850',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=850,'PASS','FAIL') FROM products;
 SELECT 'C1.06','row count: customers','=12000',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=12000,'PASS','FAIL') FROM customers;
 SELECT 'C1.07','row count: promotions','=70',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=70,'PASS','FAIL') FROM promotions;
-SELECT 'C1.08','row count: calendar','=4748',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=4748,'PASS','FAIL') FROM calendar;
+SELECT 'C1.08','row count: calendar','=7670',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=7670,'PASS','FAIL') FROM calendar;
 SELECT 'C1.09','row count: orders','=60000',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=60000,'PASS','FAIL') FROM orders;
 SELECT 'C1.10','row count: order_items','=156190',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=156190,'PASS','FAIL') FROM order_items;
 SELECT 'C1.11','row count: payments (66000 +/-5%)','62700..69300',CAST(COUNT(*) AS CHAR),IF(COUNT(*) BETWEEN 62700 AND 69300,'PASS','FAIL') FROM payments;
@@ -310,7 +310,9 @@ FROM shipments sh JOIN orders o ON sh.order_id=o.order_id WHERE sh.shipped_ts < 
 --   C8.02b — SUM(ROUND(line,2))  (round-per-line; the convention Agent B used —
 --            payments match it EXACTLY for all completed orders)
 -- Known divergence: order 122965 (8 lines, all ending in .5 mills rounding up)
--- differs by $0.03 between the two conventions. Flagged for Ian's ruling.
+-- differs by $0.03 between the two conventions. RULED (DATA_CONTRACT.md v1.2,
+-- 2026-07-02): C8.02a is retired, expected to show exactly 1 FAIL forever;
+-- C8.02b (per-line rounding) is the binding check and must show 0.
 SELECT 'C8.02a','completed orders: captured sum <> truth ROUND(SUM(line),2) (+/-0.02)','0',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=0,'PASS','FAIL')
 FROM (
   SELECT o.order_id
@@ -349,18 +351,15 @@ SELECT 'C9.03','cancelled orders with shipments','0',CAST(COUNT(DISTINCT o.order
 FROM orders o JOIN shipments s ON s.order_id=o.order_id WHERE o.status='cancelled';
 
 -- ---------------------------------------------------------------------------
--- Criterion 10 — calendar (contract v1.1: verbatim copy of common_db.dim_date)
+-- Criterion 10 — calendar (contract v1.3: generated directly, no common_db)
 -- ---------------------------------------------------------------------------
-SELECT 'C10.01','calendar row count','=4748',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=4748,'PASS','FAIL') FROM calendar;
+SELECT 'C10.01','calendar row count','=7670',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=7670,'PASS','FAIL') FROM calendar;
 SELECT 'C10.02','calendar gapless on date','span=count, distinct=count',
 CONCAT('span=',DATEDIFF(MAX(date),MIN(date))+1,' rows=',COUNT(*),' distinct=',COUNT(DISTINCT date)),
 IF(DATEDIFF(MAX(date),MIN(date))+1=COUNT(*) AND COUNT(DISTINCT date)=COUNT(*),'PASS','FAIL') FROM calendar;
-SELECT 'C10.03','calendar covers business window','min<=2019-01-01, max>=2026-06-30',
+SELECT 'C10.03','calendar covers business window + full span','min=2018-01-01, max=2038-12-31',
 CONCAT('min=',MIN(date),' max=',MAX(date)),
-IF(MIN(date)<='2019-01-01' AND MAX(date)>='2026-06-30','PASS','FAIL') FROM calendar;
-SELECT 'C10.04','calendar row count = common_db.dim_date','equal',
-CONCAT('calendar=',(SELECT COUNT(*) FROM calendar),' dim_date=',(SELECT COUNT(*) FROM common_db.dim_date)),
-IF((SELECT COUNT(*) FROM calendar)=(SELECT COUNT(*) FROM common_db.dim_date),'PASS','FAIL');
+IF(MIN(date)='2018-01-01' AND MAX(date)='2038-12-31','PASS','FAIL') FROM calendar;
 
 -- ---------------------------------------------------------------------------
 -- Emergent anomalies — informational (counted and reported, not pass/fail

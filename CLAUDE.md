@@ -29,12 +29,24 @@ runnable in MySQL and reproduce its captured output exactly.
   governed and shipped. This project only READS the `oakhaven` schema.
 - Sub-agents use only their allowlisted tools. If a task needs more, escalate.
 
-## Database access (local MySQL 8.0, Windows)
+## Database access (local MySQL, Windows or Linux)
+
+**Windows** (original machine):
 - Connect EXACTLY like this (Windows mysql does NOT auto-read `~/.my.cnf`):
   `& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" --defaults-extra-file="C:\Users\ianfi\.my.cnf" --batch oakhaven -e "<query>"`
   Details and file-based execution: `process/mysql-setup.md`.
 - NEVER read, print, or copy the contents of `.my.cnf`; never place credentials in
   prompts, files, or logs.
+
+**Linux** (Ubuntu, rebuilt 2026-07-13 — see `oakhaven/UBUNTU_REBUILD.md`):
+- No `.my.cnf` file — deliberately (see the `ubuntu_26.04` repo's MySQL setup).
+  `claude@localhost` connects over `127.0.0.1:3306`; the password is entered
+  live per session, never written to a file or committed anywhere.
+  `mysql -u claude -h 127.0.0.1 --batch oakhaven -e "<query>"`
+- `SET GLOBAL local_infile = 1` needs root (`claude` only has grants on the
+  three oakhaven schemas, not `SUPER`/`SYSTEM_VARIABLES_ADMIN`) — a one-time,
+  human-run step, not something an agent does unattended.
+- Same rule as Windows: never place credentials in prompts, files, or logs.
 - Write scope is a hard boundary:
   - `oakhaven` schema: **READ ONLY.** No INSERT/UPDATE/DELETE/DDL, ever.
   - `oakhaven_silver`, `oakhaven_gold` schemas: CREATE SCHEMA / CREATE OR REPLACE VIEW /
