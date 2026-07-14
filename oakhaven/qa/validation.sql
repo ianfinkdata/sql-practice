@@ -349,18 +349,15 @@ SELECT 'C9.03','cancelled orders with shipments','0',CAST(COUNT(DISTINCT o.order
 FROM orders o JOIN shipments s ON s.order_id=o.order_id WHERE o.status='cancelled';
 
 -- ---------------------------------------------------------------------------
--- Criterion 10 — calendar (contract v1.1: verbatim copy of common_db.dim_date)
+-- Criterion 10 — calendar (contract v1.3: generated directly, no common_db)
 -- ---------------------------------------------------------------------------
-SELECT 'C10.01','calendar row count','=4748',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=4748,'PASS','FAIL') FROM calendar;
+SELECT 'C10.01','calendar row count','=7670',CAST(COUNT(*) AS CHAR),IF(COUNT(*)=7670,'PASS','FAIL') FROM calendar;
 SELECT 'C10.02','calendar gapless on date','span=count, distinct=count',
 CONCAT('span=',DATEDIFF(MAX(date),MIN(date))+1,' rows=',COUNT(*),' distinct=',COUNT(DISTINCT date)),
 IF(DATEDIFF(MAX(date),MIN(date))+1=COUNT(*) AND COUNT(DISTINCT date)=COUNT(*),'PASS','FAIL') FROM calendar;
-SELECT 'C10.03','calendar covers business window','min<=2019-01-01, max>=2026-06-30',
+SELECT 'C10.03','calendar covers business window + full span','min=2018-01-01, max=2038-12-31',
 CONCAT('min=',MIN(date),' max=',MAX(date)),
-IF(MIN(date)<='2019-01-01' AND MAX(date)>='2026-06-30','PASS','FAIL') FROM calendar;
-SELECT 'C10.04','calendar row count = common_db.dim_date','equal',
-CONCAT('calendar=',(SELECT COUNT(*) FROM calendar),' dim_date=',(SELECT COUNT(*) FROM common_db.dim_date)),
-IF((SELECT COUNT(*) FROM calendar)=(SELECT COUNT(*) FROM common_db.dim_date),'PASS','FAIL');
+IF(MIN(date)='2018-01-01' AND MAX(date)='2038-12-31','PASS','FAIL') FROM calendar;
 
 -- ---------------------------------------------------------------------------
 -- Emergent anomalies — informational (counted and reported, not pass/fail
