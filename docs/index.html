@@ -63,7 +63,7 @@
         required yet. Covers environment setup and generating the
         Oakhaven database for the first time.
       </p>
-      <a class="tier-link" href="../curriculum/00-orientation/">curriculum/00-orientation/ &rarr;</a>
+      <a class="tier-link" href="https://github.com/ianfinkdata/sql-practice/tree/main/curriculum/00-orientation/">curriculum/00-orientation/ &rarr;</a>
     </div>
 
     <div class="tier-card tier-1">
@@ -73,7 +73,7 @@
         <code>WHERE</code>, <code>ORDER BY</code>, aggregate functions,
         and pattern matching with <code>LIKE</code>.
       </p>
-      <a class="tier-link" href="../curriculum/01-beginner/">curriculum/01-beginner/ &rarr;</a>
+      <a class="tier-link" href="https://github.com/ianfinkdata/sql-practice/tree/main/curriculum/01-beginner/">curriculum/01-beginner/ &rarr;</a>
     </div>
 
     <div class="tier-card tier-2">
@@ -84,7 +84,7 @@
         data — exactly the kind of mess Oakhaven's bronze layer is full
         of.
       </p>
-      <a class="tier-link" href="../curriculum/02-intermediate/">curriculum/02-intermediate/ &rarr;</a>
+      <a class="tier-link" href="https://github.com/ianfinkdata/sql-practice/tree/main/curriculum/02-intermediate/">curriculum/02-intermediate/ &rarr;</a>
     </div>
 
     <div class="tier-card tier-3">
@@ -94,7 +94,7 @@
         This is where the medallion bronze&rarr;silver thread begins in
         earnest.
       </p>
-      <a class="tier-link" href="../curriculum/03-advanced/">curriculum/03-advanced/ &rarr;</a>
+      <a class="tier-link" href="https://github.com/ianfinkdata/sql-practice/tree/main/curriculum/03-advanced/">curriculum/03-advanced/ &rarr;</a>
     </div>
 
     <div class="tier-card tier-4">
@@ -103,7 +103,7 @@
         DDL, transactions, views, indexes, and query optimization —
         culminating in writing your first gold-layer view.
       </p>
-      <a class="tier-link" href="../curriculum/04-expert/">curriculum/04-expert/ &rarr;</a>
+      <a class="tier-link" href="https://github.com/ianfinkdata/sql-practice/tree/main/curriculum/04-expert/">curriculum/04-expert/ &rarr;</a>
     </div>
 
     <div class="tier-card tier-5">
@@ -112,7 +112,7 @@
         Dimensional modeling and star schema design. The medallion
         pipeline end to end, capped off with a capstone project.
       </p>
-      <a class="tier-link" href="../curriculum/05-master/">curriculum/05-master/ &rarr;</a>
+      <a class="tier-link" href="https://github.com/ianfinkdata/sql-practice/tree/main/curriculum/05-master/">curriculum/05-master/ &rarr;</a>
     </div>
   </div>
 </section>
@@ -128,18 +128,18 @@
       joins, and more. Work through the curriculum, then use the
       portfolio to build your own reference collection of these patterns.
     </p>
-    <p><a href="../portfolio/">portfolio/ &rarr;</a></p>
+    <p><a href="https://github.com/ianfinkdata/sql-practice/tree/main/portfolio/">portfolio/ &rarr;</a></p>
   </div>
 </section>
 
 <section id="oakhaven">
   <h2>About the Oakhaven database</h2>
   <p>
-    Oakhaven is a fictional outdoor-gear retailer. Its database is
-    generated locally by <code>project/build.py</code> and is
-    <strong>not committed to the repository</strong> — you build it
-    yourself, and because the generator is seeded, your copy will match
-    everyone else's exactly.
+    Oakhaven is a fictional outdoor-gear retailer. Its database,
+    <code>project/oakhaven.db</code>, is committed to the repository, so
+    you can clone it and open the file directly — or generate your own
+    copy with <code>project/build.py</code>; because the generator is
+    seeded, it'll match the committed one byte-for-byte.
   </p>
   <ul class="facts-list">
     <li>600 customers, 150 products, 35 employees, and 12,000 sales line
@@ -163,13 +163,15 @@
   <div class="callout">
     <h3>Get started</h3>
     <p>
-      The first thing you do in this course is generate your own copy of
-      <code>oakhaven.db</code> — that's Tier 0 of the curriculum, not a
-      prerequisite to skip past. Full step-by-step setup (including the
-      one common pitfall on modern Debian/Ubuntu systems) lives there:
+      <code>oakhaven.db</code> is already committed in the repo, so you
+      can clone it and open the file directly in a SQLite GUI with zero
+      setup. Tier 0 of the curriculum also walks you through generating
+      your own copy from scratch — worth doing once to see the pipeline
+      run. Full step-by-step setup (including the one common pitfall on
+      modern Debian/Ubuntu systems) lives there:
     </p>
     <p>
-      <a href="../curriculum/00-orientation/03-tools-and-setup.md">curriculum/00-orientation/03-tools-and-setup.md &rarr;</a>
+      <a href="https://github.com/ianfinkdata/sql-practice/blob/main/curriculum/00-orientation/03-tools-and-setup.md">curriculum/00-orientation/03-tools-and-setup.md &rarr;</a>
     </p>
     <p>
       Pairing with an AI coding assistant? This repo ships a
