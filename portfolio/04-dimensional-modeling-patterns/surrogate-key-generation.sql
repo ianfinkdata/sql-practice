@@ -1,0 +1,106 @@
+-- =============================================================================
+-- PATTERN: Surrogate key generation with ROW_NUMBER()
+-- =============================================================================
+-- PROBLEM
+--   A dimension table needs a stable, warehouse-internal integer key
+--   (a "surrogate key," conventionally suffixed _sk) that's independent
+--   of the source system's natural/business key. This matters most once
+--   you outgrow a pure Type-1 dimension: SCD Type 2 history tracking
+--   requires MULTIPLE surrogate-key rows to share one natural key (one
+--   row per version of the entity over time), which is impossible if the
+--   natural key is also your primary key.
+--
+-- WHEN TO REACH FOR IT
+--   - Any dimension you're about to version with SCD Type 2 (see
+--     scd-type-2-history-tracking.sql in this directory) -- you need a
+--     key that's unique per ROW, not per entity.
+--   - Building a star schema where fact tables should reference
+--     dimension rows by a compact, engine-friendly integer rather than a
+--     wide/composite/string natural key -- smaller join keys, and
+--     insulates the fact table from natural-key changes upstream.
+--   - Any source system whose "primary key" isn't actually reliable
+--     (reused ids across systems, ids that collide after a merger, or --
+--     as in this dataset -- natural keys with no enforced uniqueness at
+--     all in the raw bronze layer).
+--
+-- HOW IT WORKS
+--   ROW_NUMBER() OVER (ORDER BY <a stable tiebreak, usually the natural
+--   key or a source timestamp>) assigns a dense 1..N sequence with no
+--   gaps and no duplicates -- exactly what a synthetic key needs. Order by
+--   something deterministic (the natural key itself is usually simplest)
+--   so the same input always produces the same surrogate key, which
+--   matters for reproducible builds.
+--
+-- REAL EXAMPLE (Oakhaven)
+--   This repo's dim_customer/dim_product/dim_employee views currently
+--   expose the natural key (customer_id/product_id/employee_id) directly
+--   as their join key -- fine for Type 1 dimensions with one row per
+--   entity. The pattern below shows how you'd layer a true surrogate key
+--   on top of dim_customer without disturbing anything upstream --
+--   useful the moment you need multiple historical rows per customer
+--   (e.g. if customer_segment or state were tracked with SCD Type 2).
+--
+-- SAMPLE OUTPUT (real data)
+--   customer_sk  customer_id  full_name
+--   1            1            Michael Cantu
+--   2            2            Ricardo Brooks
+--   3            3            Kevin Potter
+--   4            4            Rachel Gomez
+--   5            5            John Harris
+--
+-- PORTABILITY
+--   ROW_NUMBER() is standard ANSI SQL -- identical on SQLite, Postgres,
+--   Snowflake, BigQuery, and Databricks. Where engines diverge is in
+--   *auto-generated* single-column surrogate keys for a physical (not
+--   view-based) dimension table, i.e. how you'd define the key column
+--   itself rather than derive it via SELECT:
+--     - SQLite: INTEGER PRIMARY KEY column is itself an alias for the
+--       internal rowid and auto-increments on INSERT with no extra syntax
+--       needed (add AUTOINCREMENT only if you need strict monotonic
+--       non-reuse guarantees after deletes).
+--     - Postgres: GENERATED ALWAYS AS IDENTITY (SQL-standard, preferred
+--       over the legacy SERIAL pseudo-type).
+--     - Snowflake: column defined `NUMBER AUTOINCREMENT` / IDENTITY, or
+--       an explicit SEQUENCE object referenced via NEXTVAL for more
+--       control over start/increment.
+--     - BigQuery: no native auto-increment column at all -- BigQuery
+--       tables have no concept of row-insertion-order identity. The
+--       idiomatic BigQuery approach is exactly the ROW_NUMBER()-over-
+--       a-materialized-batch pattern shown below (or GENERATE_UUID() for
+--       a non-sequential surrogate key), since BigQuery is
+--       batch/analytics-oriented rather than transactional.
+--     - Databricks (Delta Lake): `GENERATED ALWAYS AS IDENTITY` on Delta
+--       tables (Spark SQL, since Delta Lake supports identity columns
+--       directly), or monotonically_increasing_id() for a non-contiguous
+--       but fast-to-generate key in Spark DataFrame code.
+--   Takeaway: ROW_NUMBER() is the one surrogate-key technique that's
+--   truly universal across all five engines -- it's the right choice when
+--   portability matters more than using each engine's "native" identity
+--   mechanism.
+-- =============================================================================
+
+-- The core pattern: assign a dense surrogate key ordered by the natural
+-- key, so the mapping is deterministic and reproducible across rebuilds.
+SELECT
+    ROW_NUMBER() OVER (ORDER BY customer_id) AS customer_sk,
+    customer_id,
+    full_name
+FROM dim_customer
+LIMIT 5;
+
+-- Illustrative only (not executed as DDL against the shared oakhaven.db):
+-- materializing this as the dimension's actual key column, so fact tables
+-- join on customer_sk instead of customer_id directly --
+--
+-- CREATE VIEW dim_customer_sk AS
+-- SELECT
+--     ROW_NUMBER() OVER (ORDER BY customer_id) AS customer_sk,
+--     customer_id,   -- natural key retained for traceability back to source
+--     first_name, last_name, full_name, email, phone, state,
+--     signup_date, is_active, customer_segment
+-- FROM dim_customer;
+--
+-- This becomes essential (not just tidy) once a dimension needs SCD Type
+-- 2 versioning: the natural key (customer_id) repeats across a customer's
+-- historical versions, but customer_sk must stay unique per row/version --
+-- see scd-type-2-history-tracking.sql for the full pattern.

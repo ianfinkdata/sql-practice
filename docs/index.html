@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sql-practice — Learn SQL with Oakhaven</title>
+<meta name="description" content="A portable, SQLite-based path from your first SELECT to dimensional modeling, built around a generated medallion-architecture retail database.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="site-header">
+  <h1>sql-practice</h1>
+  <p class="tagline">
+    A portable, self-generated path from your first <code>SELECT</code> to
+    dimensional modeling — built around a small, realistic retail database
+    you build yourself with one command.
+  </p>
+</header>
+
+<section id="about">
+  <h2>What this is</h2>
+  <p>
+    <strong>sql-practice</strong> is a SQL curriculum you run entirely on
+    your own machine. There's no server, no account, and no sample dataset
+    to download — instead you generate <strong>Oakhaven</strong>, a
+    fictional outdoor-gear retailer's database, with a single Python script
+    powered by <a href="https://faker.readthedocs.io/">Faker</a> and
+    SQLite.
+  </p>
+  <p>
+    Oakhaven is built as a small <strong>medallion architecture</strong>:
+    a messy <strong>bronze</strong> layer (real-world data quality problems —
+    inconsistent casing, null foreign keys, malformed numbers), a cleaned
+    <strong>silver</strong> layer, and a modeled <strong>gold</strong> layer
+    of star-schema dimension and fact tables plus pre-aggregated views. You
+    write the SQL that moves data through every one of those layers
+    yourself, over the course of the curriculum.
+  </p>
+  <p>
+    Because the generator uses a fixed random seed, every learner's copy of
+    <code>oakhaven.db</code> is <strong>byte-identical</strong> — the same
+    600 customers, 150 products, 35 employees, and 12,000 sales line items,
+    every time it's built, on every machine.
+  </p>
+</section>
+
+<section id="curriculum">
+  <h2>The curriculum</h2>
+  <p>
+    Six tiers, each in its own folder under <code>curriculum/</code>, with
+    matching practice sets under <code>exercises/</code>. Work through them
+    in order — each tier assumes the SQL from the ones before it.
+  </p>
+
+  <div class="tiers">
+    <div class="tier-card tier-0">
+      <h3><span class="tier-num">0</span> Orientation</h3>
+      <p>
+        What a database actually is, and what SQL is for — no code
+        required yet. Covers environment setup and generating the
+        Oakhaven database for the first time.
+      </p>
+      <a class="tier-link" href="../curriculum/00-orientation/">curriculum/00-orientation/ &rarr;</a>
+    </div>
+
+    <div class="tier-card tier-1">
+      <h3><span class="tier-num">1</span> Beginner</h3>
+      <p>
+        Asking a database simple questions: <code>SELECT</code>,
+        <code>WHERE</code>, <code>ORDER BY</code>, aggregate functions,
+        and pattern matching with <code>LIKE</code>.
+      </p>
+      <a class="tier-link" href="../curriculum/01-beginner/">curriculum/01-beginner/ &rarr;</a>
+    </div>
+
+    <div class="tier-card tier-2">
+      <h3><span class="tier-num">2</span> Intermediate</h3>
+      <p>
+        Combining tables with joins, summarizing with
+        <code>GROUP BY</code>, and cleaning up the messy parts of real
+        data — exactly the kind of mess Oakhaven's bronze layer is full
+        of.
+      </p>
+      <a class="tier-link" href="../curriculum/02-intermediate/">curriculum/02-intermediate/ &rarr;</a>
+    </div>
+
+    <div class="tier-card tier-3">
+      <h3><span class="tier-num">3</span> Advanced</h3>
+      <p>
+        CTEs, window functions, recursive CTEs, and time intelligence.
+        This is where the medallion bronze&rarr;silver thread begins in
+        earnest.
+      </p>
+      <a class="tier-link" href="../curriculum/03-advanced/">curriculum/03-advanced/ &rarr;</a>
+    </div>
+
+    <div class="tier-card tier-4">
+      <h3><span class="tier-num">4</span> Expert</h3>
+      <p>
+        DDL, transactions, views, indexes, and query optimization —
+        culminating in writing your first gold-layer view.
+      </p>
+      <a class="tier-link" href="../curriculum/04-expert/">curriculum/04-expert/ &rarr;</a>
+    </div>
+
+    <div class="tier-card tier-5">
+      <h3><span class="tier-num">5</span> Master</h3>
+      <p>
+        Dimensional modeling and star schema design. The medallion
+        pipeline end to end, capped off with a capstone project.
+      </p>
+      <a class="tier-link" href="../curriculum/05-master/">curriculum/05-master/ &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<section id="portfolio">
+  <div class="callout">
+    <h3>Build a pattern portfolio</h3>
+    <p>
+      Alongside the curriculum, <code>portfolio/</code> is a library of
+      medallion query patterns — the reusable shapes you'll reach for
+      again and again once you're writing real bronze/silver/gold
+      pipelines: deduplication, slowly-changing cleanup rules, date-spine
+      joins, and more. Work through the curriculum, then use the
+      portfolio to build your own reference collection of these patterns.
+    </p>
+    <p><a href="../portfolio/">portfolio/ &rarr;</a></p>
+  </div>
+</section>
+
+<section id="oakhaven">
+  <h2>About the Oakhaven database</h2>
+  <p>
+    Oakhaven is a fictional outdoor-gear retailer. Its database is
+    generated locally by <code>project/build.py</code> and is
+    <strong>not committed to the repository</strong> — you build it
+    yourself, and because the generator is seeded, your copy will match
+    everyone else's exactly.
+  </p>
+  <ul class="facts-list">
+    <li>600 customers, 150 products, 35 employees, and 12,000 sales line
+      items (7,199 distinct orders) across a bronze &rarr; silver &rarr;
+      gold pipeline</li>
+    <li>A date dimension built with a recursive CTE spanning
+      <strong>2018-01-01 through 2038-12-31</strong> (7,670 days) — no
+      Python date loop, pure SQL</li>
+    <li>Deliberately messy bronze data: inconsistent casing and spacing in
+      categories, departments, and regions; null and malformed values;
+      orphaned foreign keys; a discount-percent unit bug — all fixed as
+      you build the silver layer</li>
+    <li>A gold layer of star-schema dimensions
+      (<code>dim_customer</code>, <code>dim_product</code>,
+      <code>dim_employee</code>, <code>dim_date</code>), a fact table
+      (<code>fact_sales</code>), and pre-built aggregate views</li>
+  </ul>
+</section>
+
+<section id="get-started">
+  <h2>Get started</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-label">1. Install dependencies</div>
+      <pre><code>pip install -r project/requirements.txt</code></pre>
+      <p>
+        The only dependency is <code>faker</code>; everything else is
+        Python standard library (<code>sqlite3</code>, <code>random</code>,
+        <code>datetime</code>).
+      </p>
+    </div>
+    <div class="step">
+      <div class="step-label">2. Build the database</div>
+      <pre><code>python project/build.py</code></pre>
+      <p>
+        This creates <code>project/oakhaven.db</code> from scratch —
+        bronze, silver, and gold layers, in that order. Re-running it is
+        safe and always produces the same byte-identical database.
+      </p>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Common error on modern Debian/Ubuntu:</strong> if
+    <code>pip install</code> fails with
+    <code>error: externally-managed-environment</code>, your system Python
+    is blocking global installs (<a href="https://peps.python.org/pep-0668/">PEP 668</a>).
+    Create a virtual environment first and the install will work
+    normally:
+    <pre><code>python3 -m venv .venv
+source .venv/bin/activate
+pip install -r project/requirements.txt</code></pre>
+  </div>
+
+  <p>
+    Once the database exists, open it with the
+    <a href="https://www.sqlite.org/cli.html"><code>sqlite3</code></a>
+    command-line tool, DB Browser for SQLite, or any SQLite-compatible
+    client, and start with
+    <a href="../curriculum/00-orientation/">curriculum/00-orientation/</a>.
+  </p>
+</section>
+
+<footer class="site-footer">
+  <p>
+    sql-practice is a self-contained, dependency-free learning repo — this
+    page has no build step and no external dependencies. See
+    <a href="INSTRUCTIONS.md">INSTRUCTIONS.md</a> for how to preview or
+    publish this site.
+  </p>
+</footer>
+
+</div>
