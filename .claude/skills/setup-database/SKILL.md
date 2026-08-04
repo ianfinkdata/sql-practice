@@ -5,11 +5,15 @@ description: Use when the user wants to set up, build, generate, rebuild, or reg
 
 # Set up the Oakhaven practice database
 
-`project/oakhaven.db` is never committed to this repo — every learner
-generates their own copy. Generation is deterministic (fixed seed,
-pinned Faker version in `project/build_lib/config.py` /
-`project/requirements.txt`), so a correctly-built database is
-byte-identical no matter who builds it or when.
+`project/oakhaven.db` is committed to this repo, so most users never
+need to build it — they can just clone and open the file. This skill
+is for the case where a user wants to (re)build it anyway: e.g. no
+Claude Code-shipped copy is present, they want to confirm it still
+builds cleanly, or they modified something under `project/`. Generation
+is deterministic (fixed seed, pinned Faker version in
+`project/build_lib/config.py` / `project/requirements.txt`), so a
+correctly-built database is byte-identical no matter who builds it or
+when.
 
 Do these steps yourself with the Bash tool — don't just print them for
 the user to copy/paste. Run everything from the repo root.
@@ -93,7 +97,10 @@ Expect 5 `bronze_*` tables, 5 `silver_*` views, 4 `dim_*` views,
 
 Tell the user:
 - The database is built and verified at `project/oakhaven.db`.
-- It won't show up in `git status` — it's gitignored by design.
+- This file is tracked in git — if the rebuild changed nothing (the
+  common case, since generation is deterministic), `git status` will
+  show it as unmodified. If it did change, that's a sign the build
+  script or its inputs were edited.
 - Where to go next: `curriculum/00-orientation/` if they haven't started
   the curriculum yet, or straight to whichever tier they're working on.
 

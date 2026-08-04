@@ -10,14 +10,17 @@ exists and is sitting in `project/`.
 
 ## Building the database
 
-The database isn't checked into the repo as a static file you just
-download — it's *generated* by a Python script, deterministically,
-from a fixed random seed. That means if you rebuild it, you'll get
-byte-for-byte the same data every time (same customers, same messy
-strings, same row counts). This matters because every example and
-exercise in this course cites exact numbers from that one deterministic
-build — if your database doesn't match, it's because you haven't built
-it yet, not because the numbers are wrong.
+`project/oakhaven.db` is already checked into the repo — if you just
+cloned it, you can skip straight to [Opening the
+database](#opening-the-database) below. But it's worth building it
+yourself at least once: the whole thing is *generated* by a Python
+script, deterministically, from a fixed random seed. That means
+rebuilding it gets you byte-for-byte the same data every time (same
+customers, same messy strings, same row counts) — this matters because
+every example and exercise in this course cites exact numbers from
+that one deterministic build. If a number you compute doesn't match,
+it's a sign to check whether your database has drifted from a fresh
+build, not that the numbers in the lesson are wrong.
 
 From the repo root:
 
@@ -84,11 +87,14 @@ CLI tips (readable output formatting, useful dot-commands, common
 gotchas), see **`project/docs/sqlite_cli_guide.md`** — worth a skim
 before Tier 1.
 
-**Option B: DB Browser for SQLite.** A free graphical application —
-opens the `.db` file in a window, lets you browse tables, run SQL in a
-query editor, and see results in a spreadsheet-like grid. Good if you
-prefer a visual interface over a terminal. Download it at
-**https://sqlitebrowser.org/**.
+**Option B: a GUI like DB Browser for SQLite or Beekeeper Studio.** Free
+graphical applications — open the `.db` file in a window, let you
+browse tables, run SQL in a query editor, and see results in a
+spreadsheet-like grid. Good if you prefer a visual interface over a
+terminal, or if you'd rather skip installing Python entirely and just
+open the committed `project/oakhaven.db` directly. Download DB Browser
+at **https://sqlitebrowser.org/** or Beekeeper Studio at
+**https://www.beekeeperstudio.io/**.
 
 Either is fine. Some people use both — the CLI for quick one-off
 queries, a GUI for browsing table structure. Nothing in this course
@@ -107,13 +113,15 @@ a different number, re-run `python project/build.py` and try again.
 
 ## Key takeaways
 
-- The practice database is *generated*, not downloaded:
+- `project/oakhaven.db` is already committed to the repo — clone and go
+  if you just want to query it.
+- You can also generate it yourself, byte-identically:
   `pip install -r project/requirements.txt` then `python project/build.py`.
 - If `pip install` fails with "externally-managed-environment," create
   a virtual environment first (`python3 -m venv .venv && source
   .venv/bin/activate`) and install inside it.
-- Open the resulting `project/oakhaven.db` with either the `sqlite3`
-  CLI or DB Browser for SQLite (https://sqlitebrowser.org/) — your
-  choice.
+- Open `project/oakhaven.db` with the `sqlite3` CLI, DB Browser for
+  SQLite (https://sqlitebrowser.org/), or Beekeeper Studio
+  (https://www.beekeeperstudio.io/) — your choice.
 - `project/docs/sqlite_cli_guide.md` is your reference for CLI-specific
   tips once you start running real queries.

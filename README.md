@@ -14,8 +14,10 @@ It's also built to be **maximally portable**: no database server to
 install, no credentials to manage, no OS-specific setup, and no Python to
 write. Everything here is either Markdown or SQLite — the kind of thing
 that runs the same on a laptop, in a CI runner, or handed to an AI
-assistant. Clone the repo, run one command, and you have a real,
-intentionally-messy company database sitting in a single file.
+assistant. The practice database, `project/oakhaven.db`, is committed
+to the repo — clone it and open the file directly in any SQLite GUI, no
+build step required. Prefer to generate it yourself? One command
+reproduces it byte-for-byte.
 
 ---
 
@@ -87,9 +89,12 @@ scale you can actually hold in your head:
 
 Generation is fully deterministic (a fixed random seed and a pinned
 Faker version), so every learner's `oakhaven.db` is byte-identical —
-exercise answer keys stay valid no matter who runs the build. The `.db`
-file itself is **not** committed to the repo; you generate it in one
-command as your first Tier 0 exercise.
+exercise answer keys stay valid no matter who runs the build, or
+whether they run it at all. The `.db` file itself **is committed** to
+the repo at `project/oakhaven.db`: clone and open it directly in a
+SQLite GUI, no setup needed. If you'd rather watch the pipeline run
+(or you're on Tier 0 and want the exercise), the command above
+reproduces it byte-for-byte.
 
 **Note on `pip install`:** modern Debian/Ubuntu systems refuse
 `pip install` outside a virtual environment with an
@@ -120,12 +125,21 @@ for building most medallion lakehouses."
 ## How to use this repo
 
 ### If you're learning on your own
-1. Read [`curriculum/00-orientation/`](curriculum/00-orientation/) and
-   generate `oakhaven.db`.
+1. Read [`curriculum/00-orientation/`](curriculum/00-orientation/).
+   `oakhaven.db` is already sitting in [`project/`](project/), or
+   generate your own copy as the Tier 0 exercise.
 2. Work tier by tier. Each module ends with matching exercises.
 3. From Tier 3 on, query [`project/`](project/) alongside the lesson.
 4. Once you've finished Tier 5, browse [`portfolio/`](portfolio/) as a
    reference you can keep using long after this repo.
+
+### If you just want the database, no setup at all
+No Python, no Claude Code, no CLI. Download or clone the repo, then
+open [`project/oakhaven.db`](project/oakhaven.db) directly in
+[DB Browser for SQLite](https://sqlitebrowser.org/) or
+[Beekeeper Studio](https://www.beekeeperstudio.io/) and start
+querying against [`exercises/`](exercises/) and
+[`project/docs/data_dictionary.md`](project/docs/data_dictionary.md).
 
 ### If you want the web version
 Enable GitHub Pages on your fork pointing at `docs/` — see
@@ -168,6 +182,8 @@ sql-practice/
 **Opening the project database**
 - [DB Browser for SQLite](https://sqlitebrowser.org/) — free GUI, works
   on Windows/Mac/Linux, no install expertise required.
+- [Beekeeper Studio](https://www.beekeeperstudio.io/) — free, modern
+  SQL editor/GUI with SQLite support, also cross-platform.
 - [`sqlite.org/lang.html`](https://sqlite.org/lang.html) — SQLite's own
   SQL language reference.
 - [`project/docs/sqlite_cli_guide.md`](project/docs/sqlite_cli_guide.md) —

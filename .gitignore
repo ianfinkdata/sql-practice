@@ -1,4 +1,3 @@
-project/oakhaven.db
 .venv/
 __pycache__/
 *.pyc
