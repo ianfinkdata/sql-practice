@@ -1,8 +1,7 @@
 # 5. Indexes and EXPLAIN QUERY PLAN
 
-
 <!-- nav -->
-Previous: [4. Views](04-views.md). Next: [6. Query Optimization Basics](06-query-optimization-basics.md).
+Previous: [4. Views](04-views.md). Next: [6. Query Optimization Basics](06-query-optimization-basics.md). Exercises: [5. Indexes and EXPLAIN QUERY PLAN](../../exercises/04-expert/05-indexes-and-explain-query-plan.md).
 <!-- /nav -->
 
 ## The idea
@@ -217,5 +216,5 @@ the columns `fact_sales` joins against `dim_customer` and
 ---
 
 <!-- nav -->
-Previous: [4. Views](04-views.md). Next: [6. Query Optimization Basics](06-query-optimization-basics.md).
+Previous: [4. Views](04-views.md). Next: [6. Query Optimization Basics](06-query-optimization-basics.md). Exercises: [5. Indexes and EXPLAIN QUERY PLAN](../../exercises/04-expert/05-indexes-and-explain-query-plan.md).
 <!-- /nav -->

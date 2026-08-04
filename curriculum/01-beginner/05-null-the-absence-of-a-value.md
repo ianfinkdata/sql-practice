@@ -1,8 +1,7 @@
 # 5. NULL: the Absence of a Value
 
-
 <!-- nav -->
-Previous: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md). Next: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md).
+Previous: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md). Next: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md). Exercises: [5. NULL: the Absence of a Value](../../exercises/01-beginner/05-null-the-absence-of-a-value.md).
 <!-- /nav -->
 
 ## The idea
@@ -184,5 +183,5 @@ certainly why.
 ---
 
 <!-- nav -->
-Previous: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md). Next: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md).
+Previous: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md). Next: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md). Exercises: [5. NULL: the Absence of a Value](../../exercises/01-beginner/05-null-the-absence-of-a-value.md).
 <!-- /nav -->

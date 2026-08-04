@@ -1,8 +1,7 @@
 # 8. DISTINCT and Duplicates
 
-
 <!-- nav -->
-Previous: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md). Next: [Tier 2 — Intermediate](../02-intermediate/README.md).
+Previous: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md). Next: [Tier 2 — Intermediate](../02-intermediate/README.md). Exercises: [8. DISTINCT and Duplicates](../../exercises/01-beginner/08-distinct-and-duplicates.md).
 <!-- /nav -->
 
 ## The idea
@@ -185,5 +184,5 @@ database.
 ---
 
 <!-- nav -->
-Previous: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md). Next: [Tier 2 — Intermediate](../02-intermediate/README.md).
+Previous: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md). Next: [Tier 2 — Intermediate](../02-intermediate/README.md). Exercises: [8. DISTINCT and Duplicates](../../exercises/01-beginner/08-distinct-and-duplicates.md).
 <!-- /nav -->

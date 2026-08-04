@@ -1,5 +1,9 @@
 # Exercises: Constraints and Data Integrity
 
+<!-- nav -->
+Curriculum: [7. Constraints and Data Integrity](../../curriculum/04-expert/07-constraints-and-data-integrity.md). Previous: [6. Query Optimization Basics](06-query-optimization-basics.md). Next: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md).
+<!-- /nav -->
+
 Exercise 1 is read-only. All others create tables/indexes and must run
 against your own scratch copy:
 
@@ -263,3 +267,9 @@ start, would have made an entire category of bronze's messiness
 structurally impossible to create.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [7. Constraints and Data Integrity](../../curriculum/04-expert/07-constraints-and-data-integrity.md). Previous: [6. Query Optimization Basics](06-query-optimization-basics.md). Next: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md).
+<!-- /nav -->

@@ -1,8 +1,7 @@
 # 4. Meet Oakhaven
 
-
 <!-- nav -->
-Previous: [3. Tools and Setup](03-tools-and-setup.md). Next: [Tier 1 — Beginner](../01-beginner/README.md).
+Previous: [3. Tools and Setup](03-tools-and-setup.md). Next: [Tier 1 — Beginner](../01-beginner/README.md). Exercises: [4. Meet Oakhaven](../../exercises/00-orientation/04-meet-oakhaven.md).
 <!-- /nav -->
 
 ## The company
@@ -174,5 +173,5 @@ above is intentional, and there's a plan for it.
 ---
 
 <!-- nav -->
-Previous: [3. Tools and Setup](03-tools-and-setup.md). Next: [Tier 1 — Beginner](../01-beginner/README.md).
+Previous: [3. Tools and Setup](03-tools-and-setup.md). Next: [Tier 1 — Beginner](../01-beginner/README.md). Exercises: [4. Meet Oakhaven](../../exercises/00-orientation/04-meet-oakhaven.md).
 <!-- /nav -->

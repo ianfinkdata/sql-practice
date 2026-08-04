@@ -1,5 +1,9 @@
 # Exercises: LEFT JOIN and Missing Data
 
+<!-- nav -->
+Curriculum: [LEFT JOIN and Missing Data](../../curriculum/02-intermediate/02-left-join-and-missing-data.md). Previous: [Combining Tables with JOIN](01-combining-tables-with-join.md). Next: [GROUP BY](03-group-by.md).
+<!-- /nav -->
+
 Use `project/oakhaven.db`. Every solution below was run against the
 real database — your output should match exactly.
 
@@ -193,3 +197,9 @@ time.
 </details>
 
 ---
+
+---
+
+<!-- nav -->
+Curriculum: [LEFT JOIN and Missing Data](../../curriculum/02-intermediate/02-left-join-and-missing-data.md). Previous: [Combining Tables with JOIN](01-combining-tables-with-join.md). Next: [GROUP BY](03-group-by.md).
+<!-- /nav -->

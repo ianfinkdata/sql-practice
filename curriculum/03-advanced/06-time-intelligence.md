@@ -1,8 +1,7 @@
 # 6. Time Intelligence
 
-
 <!-- nav -->
-Previous: [5. Recursive CTEs](05-recursive-ctes.md). Next: [7. The Date-Spine Pattern](07-the-date-spine-pattern.md).
+Previous: [5. Recursive CTEs](05-recursive-ctes.md). Next: [7. The Date-Spine Pattern](07-the-date-spine-pattern.md). Exercises: [6. Time Intelligence](../../exercises/03-advanced/06-time-intelligence.md).
 <!-- /nav -->
 
 ## The idea
@@ -224,5 +223,5 @@ case logic.
 ---
 
 <!-- nav -->
-Previous: [5. Recursive CTEs](05-recursive-ctes.md). Next: [7. The Date-Spine Pattern](07-the-date-spine-pattern.md).
+Previous: [5. Recursive CTEs](05-recursive-ctes.md). Next: [7. The Date-Spine Pattern](07-the-date-spine-pattern.md). Exercises: [6. Time Intelligence](../../exercises/03-advanced/06-time-intelligence.md).
 <!-- /nav -->

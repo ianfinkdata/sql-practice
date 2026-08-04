@@ -1,8 +1,7 @@
 # 3. Window Functions II — Running Totals & Moving Aggregates
 
-
 <!-- nav -->
-Previous: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md). Next: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md).
+Previous: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md). Next: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md). Exercises: [3. Window Functions II — Running Totals & Moving Aggregates](../../exercises/03-advanced/03-window-functions-ii-running-totals.md).
 <!-- /nav -->
 
 ## The idea
@@ -174,5 +173,5 @@ per category here.
 ---
 
 <!-- nav -->
-Previous: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md). Next: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md).
+Previous: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md). Next: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md). Exercises: [3. Window Functions II — Running Totals & Moving Aggregates](../../exercises/03-advanced/03-window-functions-ii-running-totals.md).
 <!-- /nav -->

@@ -1,8 +1,7 @@
 # 4. Designing a Dimension
 
-
 <!-- nav -->
-Previous: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md). Next: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md).
+Previous: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md). Next: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md). Exercises: [4. Designing a Dimension](../../exercises/05-master/04-designing-a-dimension.md).
 <!-- /nav -->
 
 ## The idea
@@ -233,5 +232,5 @@ problem.
 ---
 
 <!-- nav -->
-Previous: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md). Next: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md).
+Previous: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md). Next: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md). Exercises: [4. Designing a Dimension](../../exercises/05-master/04-designing-a-dimension.md).
 <!-- /nav -->

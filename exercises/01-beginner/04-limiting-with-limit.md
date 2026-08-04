@@ -1,5 +1,9 @@
 # Exercises: Limiting with LIMIT (and OFFSET)
 
+<!-- nav -->
+Curriculum: [4. Limiting with LIMIT (and OFFSET)](../../curriculum/01-beginner/04-limiting-with-limit.md). Previous: [3. Sorting with ORDER BY](03-sorting-with-order-by.md). Next: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md).
+<!-- /nav -->
+
 ### 1. First page
 
 Write a query showing the first 3 employees alphabetically by last
@@ -135,3 +139,9 @@ total, and page 2 (rows 6–10) only has 4 rows to give (rows 6, 7, 8,
 error.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [4. Limiting with LIMIT (and OFFSET)](../../curriculum/01-beginner/04-limiting-with-limit.md). Previous: [3. Sorting with ORDER BY](03-sorting-with-order-by.md). Next: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md).
+<!-- /nav -->

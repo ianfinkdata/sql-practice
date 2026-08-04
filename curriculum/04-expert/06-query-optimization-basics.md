@@ -1,8 +1,7 @@
 # 6. Query Optimization Basics
 
-
 <!-- nav -->
-Previous: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md). Next: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md).
+Previous: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md). Next: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md). Exercises: [6. Query Optimization Basics](../../exercises/04-expert/06-query-optimization-basics.md).
 <!-- /nav -->
 
 ## The idea
@@ -212,5 +211,5 @@ Not every filter benefits from an index, even written correctly:
 ---
 
 <!-- nav -->
-Previous: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md). Next: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md).
+Previous: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md). Next: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md). Exercises: [6. Query Optimization Basics](../../exercises/04-expert/06-query-optimization-basics.md).
 <!-- /nav -->

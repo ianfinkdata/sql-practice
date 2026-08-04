@@ -1,5 +1,9 @@
 # Exercises: Writing Your First Gold View
 
+<!-- nav -->
+Curriculum: [8. Writing Your First Gold View](../../curriculum/04-expert/08-writing-your-first-gold-view.md). Previous: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md). Next: [9. Portable, Idempotent DDL Patterns](09-portable-idempotent-ddl-patterns.md).
+<!-- /nav -->
+
 Every exercise here is a plain, read-only `SELECT` — verify each one
 against the real, shared `project/oakhaven.db`. None of these should
 be persisted as an actual `CREATE VIEW`; you're practicing designing
@@ -260,3 +264,9 @@ other unless something in the business genuinely differs between
 online and in-store fulfillment.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [8. Writing Your First Gold View](../../curriculum/04-expert/08-writing-your-first-gold-view.md). Previous: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md). Next: [9. Portable, Idempotent DDL Patterns](09-portable-idempotent-ddl-patterns.md).
+<!-- /nav -->

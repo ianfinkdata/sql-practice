@@ -1,8 +1,7 @@
 # LEFT JOIN and Missing Data
 
-
 <!-- nav -->
-Previous: [Combining Tables with JOIN](01-combining-tables-with-join.md). Next: [GROUP BY](03-group-by.md).
+Previous: [Combining Tables with JOIN](01-combining-tables-with-join.md). Next: [GROUP BY](03-group-by.md). Exercises: [LEFT JOIN and Missing Data](../../exercises/02-intermediate/02-left-join-and-missing-data.md).
 <!-- /nav -->
 
 ## The idea
@@ -187,5 +186,5 @@ orphan count.
 ---
 
 <!-- nav -->
-Previous: [Combining Tables with JOIN](01-combining-tables-with-join.md). Next: [GROUP BY](03-group-by.md).
+Previous: [Combining Tables with JOIN](01-combining-tables-with-join.md). Next: [GROUP BY](03-group-by.md). Exercises: [LEFT JOIN and Missing Data](../../exercises/02-intermediate/02-left-join-and-missing-data.md).
 <!-- /nav -->

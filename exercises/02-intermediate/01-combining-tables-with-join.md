@@ -1,5 +1,9 @@
 # Exercises: Combining Tables with JOIN
 
+<!-- nav -->
+Curriculum: [Combining Tables with JOIN](../../curriculum/02-intermediate/01-combining-tables-with-join.md). Previous: [8. DISTINCT and Duplicates](../01-beginner/08-distinct-and-duplicates.md). Next: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md).
+<!-- /nav -->
+
 Use `project/oakhaven.db`. Every solution below was run against the
 real database — your output should match exactly.
 
@@ -199,3 +203,9 @@ up even at this small scale, foreshadowing Module 3 and Module 6.
 </details>
 
 ---
+
+---
+
+<!-- nav -->
+Curriculum: [Combining Tables with JOIN](../../curriculum/02-intermediate/01-combining-tables-with-join.md). Previous: [8. DISTINCT and Duplicates](../01-beginner/08-distinct-and-duplicates.md). Next: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md).
+<!-- /nav -->

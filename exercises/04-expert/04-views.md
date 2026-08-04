@@ -1,5 +1,9 @@
 # Exercises: Views
 
+<!-- nav -->
+Curriculum: [4. Views](../../curriculum/04-expert/04-views.md). Previous: [3. Transactions](03-transactions.md). Next: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md).
+<!-- /nav -->
+
 Exercises 1, 2, 4, and 5 are read-only (querying/reading `.sql` files
 against the shared `project/oakhaven.db`). Exercise 3 modifies data —
 use your own scratch copy for that one:
@@ -256,3 +260,9 @@ staleness in exchange for not recomputing a four-layer view chain on
 every page load.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [4. Views](../../curriculum/04-expert/04-views.md). Previous: [3. Transactions](03-transactions.md). Next: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md).
+<!-- /nav -->

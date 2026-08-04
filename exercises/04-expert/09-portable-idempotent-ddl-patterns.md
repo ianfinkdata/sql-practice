@@ -1,5 +1,9 @@
 # Exercises: Portable, Idempotent DDL Patterns
 
+<!-- nav -->
+Curriculum: [9. Portable, Idempotent DDL Patterns](../../curriculum/04-expert/09-portable-idempotent-ddl-patterns.md). Previous: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md). Next: [1. Why We Model Data: OLTP vs. Analytical Schemas](../05-master/01-why-model-data-oltp-vs-analytical.md).
+<!-- /nav -->
+
 Exercise 1 is read-only (a `grep` over `.sql` files). Every other
 exercise creates database objects — work against your own scratch
 copy:
@@ -253,3 +257,9 @@ rerun after any edit to any silver/gold `.sql` file and always end up
 with the database matching the current state of the code.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [9. Portable, Idempotent DDL Patterns](../../curriculum/04-expert/09-portable-idempotent-ddl-patterns.md). Previous: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md). Next: [1. Why We Model Data: OLTP vs. Analytical Schemas](../05-master/01-why-model-data-oltp-vs-analytical.md).
+<!-- /nav -->

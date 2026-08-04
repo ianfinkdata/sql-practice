@@ -1,8 +1,7 @@
 # 1. Why We Model Data: OLTP vs. Analytical Schemas
 
-
 <!-- nav -->
-Previous: [Tier 4 — Expert](../04-expert/README.md). Next: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md).
+Previous: [Tier 4 — Expert](../04-expert/README.md). Next: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md). Exercises: [1. Why We Model Data: OLTP vs. Analytical Schemas](../../exercises/05-master/01-why-model-data-oltp-vs-analytical.md).
 <!-- /nav -->
 
 ## The idea
@@ -215,5 +214,5 @@ not re-solved by every analytical query.
 ---
 
 <!-- nav -->
-Previous: [Tier 4 — Expert](../04-expert/README.md). Next: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md).
+Previous: [Tier 4 — Expert](../04-expert/README.md). Next: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md). Exercises: [1. Why We Model Data: OLTP vs. Analytical Schemas](../../exercises/05-master/01-why-model-data-oltp-vs-analytical.md).
 <!-- /nav -->

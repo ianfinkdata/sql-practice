@@ -1,5 +1,9 @@
 # Exercises: Recursive CTEs
 
+<!-- nav -->
+Curriculum: [5. Recursive CTEs](../../curriculum/03-advanced/05-recursive-ctes.md). Previous: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md). Next: [6. Time Intelligence](06-time-intelligence.md).
+<!-- /nav -->
+
 Query `project/oakhaven.db` for all of these. Run with:
 
 ```bash
@@ -157,3 +161,9 @@ years), there's no manual "is this a leap year" logic anywhere in
 for free from SQLite's own date arithmetic.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [5. Recursive CTEs](../../curriculum/03-advanced/05-recursive-ctes.md). Previous: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md). Next: [6. Time Intelligence](06-time-intelligence.md).
+<!-- /nav -->

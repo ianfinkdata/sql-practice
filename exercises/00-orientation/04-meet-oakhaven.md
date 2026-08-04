@@ -1,5 +1,9 @@
 # Exercises: Meet Oakhaven
 
+<!-- nav -->
+Curriculum: [4. Meet Oakhaven](../../curriculum/00-orientation/04-meet-oakhaven.md). Previous: [3. Tools and Setup](03-tools-and-setup.md). Next: [1. SELECT and FROM](../01-beginner/01-select-and-from.md).
+<!-- /nav -->
+
 Your first real queries — nothing fancy yet, just `SELECT *` and
 `LIMIT` to get comfortable looking around. Run these against
 `project/oakhaven.db`.
@@ -127,3 +131,9 @@ separate line items. This is the "one row per order line" grain
 mentioned in the curriculum module.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [4. Meet Oakhaven](../../curriculum/00-orientation/04-meet-oakhaven.md). Previous: [3. Tools and Setup](03-tools-and-setup.md). Next: [1. SELECT and FROM](../01-beginner/01-select-and-from.md).
+<!-- /nav -->

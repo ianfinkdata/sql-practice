@@ -1,5 +1,9 @@
 # Exercises: Filtering with WHERE
 
+<!-- nav -->
+Curriculum: [2. Filtering with WHERE](../../curriculum/01-beginner/02-filtering-with-where.md). Previous: [1. SELECT and FROM](01-select-and-from.md). Next: [3. Sorting with ORDER BY](03-sorting-with-order-by.md).
+<!-- /nav -->
+
 ### 1. One category
 
 Write a query that shows `product_name` and `unit_price` for every
@@ -171,3 +175,9 @@ literally says and what you'd actually want ("not footwear, in any
 casing") is exactly why raw `category` gets cleaned up in Tier 2.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [2. Filtering with WHERE](../../curriculum/01-beginner/02-filtering-with-where.md). Previous: [1. SELECT and FROM](01-select-and-from.md). Next: [3. Sorting with ORDER BY](03-sorting-with-order-by.md).
+<!-- /nav -->

@@ -1,5 +1,9 @@
 # Exercises: LEAD, LAG, and Period-over-Period Comparisons
 
+<!-- nav -->
+Curriculum: [4. LEAD, LAG, and Period-over-Period Comparisons](../../curriculum/03-advanced/04-lead-lag-period-over-period.md). Previous: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md). Next: [5. Recursive CTEs](05-recursive-ctes.md).
+<!-- /nav -->
+
 Query `project/oakhaven.db` for all of these. Run with:
 
 ```bash
@@ -196,3 +200,9 @@ exactly the kind of edge case that's easy to overlook until it shows up in
 production.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [4. LEAD, LAG, and Period-over-Period Comparisons](../../curriculum/03-advanced/04-lead-lag-period-over-period.md). Previous: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md). Next: [5. Recursive CTEs](05-recursive-ctes.md).
+<!-- /nav -->

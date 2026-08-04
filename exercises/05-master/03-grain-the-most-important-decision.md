@@ -1,5 +1,9 @@
 # Exercises: 3. Grain: The Most Important Decision in Star Schema Design
 
+<!-- nav -->
+Curriculum: [3. Grain: The Most Important Decision in Star Schema Design](../../curriculum/05-master/03-grain-the-most-important-decision.md). Previous: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md). Next: [4. Designing a Dimension](04-designing-a-dimension.md).
+<!-- /nav -->
+
 Work against `project/oakhaven.db`. Read-only — every query below is a
 `SELECT`.
 
@@ -201,3 +205,9 @@ what's guaranteed unique; other column combinations (like
 were never claimed to be.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [3. Grain: The Most Important Decision in Star Schema Design](../../curriculum/05-master/03-grain-the-most-important-decision.md). Previous: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md). Next: [4. Designing a Dimension](04-designing-a-dimension.md).
+<!-- /nav -->

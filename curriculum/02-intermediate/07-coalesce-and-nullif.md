@@ -1,8 +1,7 @@
 # COALESCE and NULLIF
 
-
 <!-- nav -->
-Previous: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md). Next: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md).
+Previous: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md). Next: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md). Exercises: [COALESCE and NULLIF](../../exercises/02-intermediate/07-coalesce-and-nullif.md).
 <!-- /nav -->
 
 ## The idea
@@ -198,5 +197,5 @@ doesn't touch; that's a `WHERE`/`CASE` problem, not a `NULLIF` one.)
 ---
 
 <!-- nav -->
-Previous: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md). Next: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md).
+Previous: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md). Next: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md). Exercises: [COALESCE and NULLIF](../../exercises/02-intermediate/07-coalesce-and-nullif.md).
 <!-- /nav -->

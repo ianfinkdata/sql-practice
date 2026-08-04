@@ -1,5 +1,9 @@
 # Exercises: DDL Basics and Type Affinity
 
+<!-- nav -->
+Curriculum: [1. DDL Basics and Type Affinity](../../curriculum/04-expert/01-ddl-basics-and-type-affinity.md). Previous: [10. Capstone — Combining CTEs and Window Functions](../03-advanced/10-combining-ctes-and-window-functions.md). Next: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md).
+<!-- /nav -->
+
 Exercises 1 and 4–5 are read-only (query the shared `project/oakhaven.db`
 directly). Exercises 2, 3, and 6 create/modify tables — work against
 your own scratch copy for those:
@@ -243,3 +247,9 @@ enforcement, demonstrated against the real orphan-FK problem in
 `bronze_sales`.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [1. DDL Basics and Type Affinity](../../curriculum/04-expert/01-ddl-basics-and-type-affinity.md). Previous: [10. Capstone — Combining CTEs and Window Functions](../03-advanced/10-combining-ctes-and-window-functions.md). Next: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md).
+<!-- /nav -->

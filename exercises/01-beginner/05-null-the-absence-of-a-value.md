@@ -1,5 +1,9 @@
 # Exercises: NULL — the Absence of a Value
 
+<!-- nav -->
+Curriculum: [5. NULL: the Absence of a Value](../../curriculum/01-beginner/05-null-the-absence-of-a-value.md). Previous: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md). Next: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md).
+<!-- /nav -->
+
 ### 1. Missing emails
 
 Write a query that shows `employee_id`, `first_name`, `last_name`,
@@ -160,3 +164,9 @@ starting in Tier 2.
 
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [5. NULL: the Absence of a Value](../../curriculum/01-beginner/05-null-the-absence-of-a-value.md). Previous: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md). Next: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md).
+<!-- /nav -->

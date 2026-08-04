@@ -1,5 +1,9 @@
 # Exercises: CASE Expressions
 
+<!-- nav -->
+Curriculum: [CASE Expressions](../../curriculum/02-intermediate/05-case-expressions.md). Previous: [HAVING](04-having.md). Next: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md).
+<!-- /nav -->
+
 Use `project/oakhaven.db`. Every solution below was run against the
 real database — your output should match exactly.
 
@@ -216,3 +220,9 @@ groups.
 </details>
 
 ---
+
+---
+
+<!-- nav -->
+Curriculum: [CASE Expressions](../../curriculum/02-intermediate/05-case-expressions.md). Previous: [HAVING](04-having.md). Next: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md).
+<!-- /nav -->

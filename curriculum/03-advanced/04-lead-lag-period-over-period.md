@@ -1,8 +1,7 @@
 # 4. LEAD, LAG, and Period-over-Period Comparisons
 
-
 <!-- nav -->
-Previous: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md). Next: [5. Recursive CTEs](05-recursive-ctes.md).
+Previous: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md). Next: [5. Recursive CTEs](05-recursive-ctes.md). Exercises: [4. LEAD, LAG, and Period-over-Period Comparisons](../../exercises/03-advanced/04-lead-lag-period-over-period.md).
 <!-- /nav -->
 
 ## The idea
@@ -185,5 +184,5 @@ question you're asking.
 ---
 
 <!-- nav -->
-Previous: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md). Next: [5. Recursive CTEs](05-recursive-ctes.md).
+Previous: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md). Next: [5. Recursive CTEs](05-recursive-ctes.md). Exercises: [4. LEAD, LAG, and Period-over-Period Comparisons](../../exercises/03-advanced/04-lead-lag-period-over-period.md).
 <!-- /nav -->

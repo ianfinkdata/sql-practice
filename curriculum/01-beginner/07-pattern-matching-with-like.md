@@ -1,8 +1,7 @@
 # 7. Pattern Matching with LIKE
 
-
 <!-- nav -->
-Previous: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md). Next: [8. DISTINCT and Duplicates](08-distinct-and-duplicates.md).
+Previous: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md). Next: [8. DISTINCT and Duplicates](08-distinct-and-duplicates.md). Exercises: [7. Pattern Matching with LIKE](../../exercises/01-beginner/07-pattern-matching-with-like.md).
 <!-- /nav -->
 
 ## The idea
@@ -184,5 +183,5 @@ interchangeable.
 ---
 
 <!-- nav -->
-Previous: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md). Next: [8. DISTINCT and Duplicates](08-distinct-and-duplicates.md).
+Previous: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md). Next: [8. DISTINCT and Duplicates](08-distinct-and-duplicates.md). Exercises: [7. Pattern Matching with LIKE](../../exercises/01-beginner/07-pattern-matching-with-like.md).
 <!-- /nav -->

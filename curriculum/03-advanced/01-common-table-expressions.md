@@ -1,8 +1,7 @@
 # 1. Common Table Expressions (CTEs)
 
-
 <!-- nav -->
-Previous: [Tier 2 — Intermediate](../02-intermediate/README.md). Next: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md).
+Previous: [Tier 2 — Intermediate](../02-intermediate/README.md). Next: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md). Exercises: [1. Common Table Expressions (CTEs)](../../exercises/03-advanced/01-common-table-expressions.md).
 <!-- /nav -->
 
 ## The idea
@@ -183,5 +182,5 @@ one clear job, and the final `SELECT` just consumes the last one's output.
 ---
 
 <!-- nav -->
-Previous: [Tier 2 — Intermediate](../02-intermediate/README.md). Next: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md).
+Previous: [Tier 2 — Intermediate](../02-intermediate/README.md). Next: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md). Exercises: [1. Common Table Expressions (CTEs)](../../exercises/03-advanced/01-common-table-expressions.md).
 <!-- /nav -->

@@ -1,5 +1,9 @@
 # Exercises: Window Functions II — Running Totals & Moving Aggregates
 
+<!-- nav -->
+Curriculum: [3. Window Functions II — Running Totals & Moving Aggregates](../../curriculum/03-advanced/03-window-functions-ii-running-totals.md). Previous: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md). Next: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md).
+<!-- /nav -->
+
 Query `project/oakhaven.db` for all of these. Run with:
 
 ```bash
@@ -198,3 +202,9 @@ Verified output:
 | 2021-01-07 | 30445.80 |
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [3. Window Functions II — Running Totals & Moving Aggregates](../../curriculum/03-advanced/03-window-functions-ii-running-totals.md). Previous: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md). Next: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md).
+<!-- /nav -->

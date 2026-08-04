@@ -1,8 +1,7 @@
 # 10. Capstone: Design a Novel Gold View
 
-
 <!-- nav -->
-Previous: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md). Next: [11. Beyond SQLite: Portability Notes](11-beyond-sqlite-portability-notes.md).
+Previous: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md). Next: [11. Beyond SQLite: Portability Notes](11-beyond-sqlite-portability-notes.md). Exercises: [10. Capstone: Design a Novel Gold View](../../exercises/05-master/10-capstone-build-a-novel-gold-view.md).
 <!-- /nav -->
 
 ## The idea
@@ -182,5 +181,5 @@ own real, verified solutions for you to check your work against.
 ---
 
 <!-- nav -->
-Previous: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md). Next: [11. Beyond SQLite: Portability Notes](11-beyond-sqlite-portability-notes.md).
+Previous: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md). Next: [11. Beyond SQLite: Portability Notes](11-beyond-sqlite-portability-notes.md). Exercises: [10. Capstone: Design a Novel Gold View](../../exercises/05-master/10-capstone-build-a-novel-gold-view.md).
 <!-- /nav -->

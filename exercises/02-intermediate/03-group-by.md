@@ -1,5 +1,9 @@
 # Exercises: GROUP BY
 
+<!-- nav -->
+Curriculum: [GROUP BY](../../curriculum/02-intermediate/03-group-by.md). Previous: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md). Next: [HAVING](04-having.md).
+<!-- /nav -->
+
 Use `project/oakhaven.db`. Every solution below was run against the
 real database — your output should match exactly.
 
@@ -220,3 +224,9 @@ question ("channel by category") actually has to offer.
 </details>
 
 ---
+
+---
+
+<!-- nav -->
+Curriculum: [GROUP BY](../../curriculum/02-intermediate/03-group-by.md). Previous: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md). Next: [HAVING](04-having.md).
+<!-- /nav -->

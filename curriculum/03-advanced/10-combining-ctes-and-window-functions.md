@@ -1,8 +1,7 @@
 # 10. Capstone — Combining CTEs and Window Functions
 
-
 <!-- nav -->
-Previous: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](09-correlated-subqueries-exists.md). Next: [Tier 4 — Expert](../04-expert/README.md).
+Previous: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](09-correlated-subqueries-exists.md). Next: [Tier 4 — Expert](../04-expert/README.md). Exercises: [10. Capstone — Combining CTEs and Window Functions](../../exercises/03-advanced/10-combining-ctes-and-window-functions.md).
 <!-- /nav -->
 
 ## The idea
@@ -155,5 +154,5 @@ takes one extra line once you're comfortable with the mechanism.
 ---
 
 <!-- nav -->
-Previous: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](09-correlated-subqueries-exists.md). Next: [Tier 4 — Expert](../04-expert/README.md).
+Previous: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](09-correlated-subqueries-exists.md). Next: [Tier 4 — Expert](../04-expert/README.md). Exercises: [10. Capstone — Combining CTEs and Window Functions](../../exercises/03-advanced/10-combining-ctes-and-window-functions.md).
 <!-- /nav -->

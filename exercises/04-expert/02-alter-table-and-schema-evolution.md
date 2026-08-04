@@ -1,5 +1,9 @@
 # Exercises: ALTER TABLE and Schema Evolution
 
+<!-- nav -->
+Curriculum: [2. ALTER TABLE and Schema Evolution](../../curriculum/04-expert/02-alter-table-and-schema-evolution.md). Previous: [1. DDL Basics and Type Affinity](01-ddl-basics-and-type-affinity.md). Next: [3. Transactions](03-transactions.md).
+<!-- /nav -->
+
 Every exercise here modifies a table's structure — work against your
 own scratch copy for all of them, never `project/oakhaven.db`:
 
@@ -225,3 +229,9 @@ UNIQUE` from the start, and populate distinct values as part of the
 copy.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [2. ALTER TABLE and Schema Evolution](../../curriculum/04-expert/02-alter-table-and-schema-evolution.md). Previous: [1. DDL Basics and Type Affinity](01-ddl-basics-and-type-affinity.md). Next: [3. Transactions](03-transactions.md).
+<!-- /nav -->

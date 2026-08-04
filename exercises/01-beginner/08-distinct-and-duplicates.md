@@ -1,5 +1,9 @@
 # Exercises: DISTINCT and Duplicates
 
+<!-- nav -->
+Curriculum: [8. DISTINCT and Duplicates](../../curriculum/01-beginner/08-distinct-and-duplicates.md). Previous: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md). Next: [Combining Tables with JOIN](../02-intermediate/01-combining-tables-with-join.md).
+<!-- /nav -->
+
 ### 1. Distinct regions
 
 Write a query listing every distinct `region` value in
@@ -200,3 +204,9 @@ alone is not a safe way to identify "one specific product" — you'd
 want `product_id` for that.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [8. DISTINCT and Duplicates](../../curriculum/01-beginner/08-distinct-and-duplicates.md). Previous: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md). Next: [Combining Tables with JOIN](../02-intermediate/01-combining-tables-with-join.md).
+<!-- /nav -->

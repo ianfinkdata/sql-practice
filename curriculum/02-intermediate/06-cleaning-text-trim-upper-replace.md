@@ -1,8 +1,7 @@
 # Cleaning Text: TRIM, UPPER, LOWER, REPLACE
 
-
 <!-- nav -->
-Previous: [CASE Expressions](05-case-expressions.md). Next: [COALESCE and NULLIF](07-coalesce-and-nullif.md).
+Previous: [CASE Expressions](05-case-expressions.md). Next: [COALESCE and NULLIF](07-coalesce-and-nullif.md). Exercises: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](../../exercises/02-intermediate/06-cleaning-text-trim-upper-replace.md).
 <!-- /nav -->
 
 ## The idea
@@ -233,5 +232,5 @@ thing" (abbreviation vs. full name) on their own.
 ---
 
 <!-- nav -->
-Previous: [CASE Expressions](05-case-expressions.md). Next: [COALESCE and NULLIF](07-coalesce-and-nullif.md).
+Previous: [CASE Expressions](05-case-expressions.md). Next: [COALESCE and NULLIF](07-coalesce-and-nullif.md). Exercises: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](../../exercises/02-intermediate/06-cleaning-text-trim-upper-replace.md).
 <!-- /nav -->

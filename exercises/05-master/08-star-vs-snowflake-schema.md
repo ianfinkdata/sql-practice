@@ -1,5 +1,9 @@
 # Exercises: Star vs. Snowflake Schema
 
+<!-- nav -->
+Curriculum: [8. Star vs. Snowflake Schema](../../curriculum/05-master/08-star-vs-snowflake-schema.md). Previous: [7. Designing the Fact Table](07-designing-the-fact-table.md). Next: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md).
+<!-- /nav -->
+
 All solutions verified against `project/oakhaven.db`.
 
 ## 1. One-hop rollup by subcategory
@@ -214,3 +218,9 @@ it's the combination of "has its own attributes" and "genuinely shared
 across multiple fact tables" that does.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [8. Star vs. Snowflake Schema](../../curriculum/05-master/08-star-vs-snowflake-schema.md). Previous: [7. Designing the Fact Table](07-designing-the-fact-table.md). Next: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md).
+<!-- /nav -->

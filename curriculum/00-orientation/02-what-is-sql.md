@@ -1,8 +1,7 @@
 # 2. What Is SQL?
 
-
 <!-- nav -->
-Previous: [1. What Is a Database?](01-what-is-a-database.md). Next: [3. Tools and Setup](03-tools-and-setup.md).
+Previous: [1. What Is a Database?](01-what-is-a-database.md). Next: [3. Tools and Setup](03-tools-and-setup.md). Exercises: [2. What Is SQL?](../../exercises/00-orientation/02-what-is-sql.md).
 <!-- /nav -->
 
 ## The idea
@@ -74,5 +73,5 @@ that single keyword.
 ---
 
 <!-- nav -->
-Previous: [1. What Is a Database?](01-what-is-a-database.md). Next: [3. Tools and Setup](03-tools-and-setup.md).
+Previous: [1. What Is a Database?](01-what-is-a-database.md). Next: [3. Tools and Setup](03-tools-and-setup.md). Exercises: [2. What Is SQL?](../../exercises/00-orientation/02-what-is-sql.md).
 <!-- /nav -->

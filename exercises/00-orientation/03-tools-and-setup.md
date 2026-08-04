@@ -1,5 +1,9 @@
 # Exercises: Tools and Setup
 
+<!-- nav -->
+Curriculum: [3. Tools and Setup](../../curriculum/00-orientation/03-tools-and-setup.md). Previous: [2. What Is SQL?](02-what-is-sql.md). Next: [4. Meet Oakhaven](04-meet-oakhaven.md).
+<!-- /nav -->
+
 Confirm your environment actually works before moving on — these are
 short, practical checks rather than reflection questions.
 
@@ -90,3 +94,9 @@ from a clean run of `project/build.py` — rebuild it (note that
 rebuilding deletes and recreates `oakhaven.db` from scratch).
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [3. Tools and Setup](../../curriculum/00-orientation/03-tools-and-setup.md). Previous: [2. What Is SQL?](02-what-is-sql.md). Next: [4. Meet Oakhaven](04-meet-oakhaven.md).
+<!-- /nav -->

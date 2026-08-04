@@ -1,5 +1,9 @@
 # Exercises: What Is a Database?
 
+<!-- nav -->
+Curriculum: [1. What Is a Database?](../../curriculum/00-orientation/01-what-is-a-database.md). Previous: [All Exercises](../README.md). Next: [2. What Is SQL?](02-what-is-sql.md).
+<!-- /nav -->
+
 No SQL yet — just a few questions to make sure the mental model stuck
 before you start writing queries. Jot down your own answers (in your
 head, on paper, wherever) before checking the solution notes.
@@ -67,3 +71,9 @@ is a core relational database idea — you'll get hands-on with joins in
 a later tier.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [1. What Is a Database?](../../curriculum/00-orientation/01-what-is-a-database.md). Previous: [All Exercises](../README.md). Next: [2. What Is SQL?](02-what-is-sql.md).
+<!-- /nav -->

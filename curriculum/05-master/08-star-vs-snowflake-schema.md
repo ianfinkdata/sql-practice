@@ -1,8 +1,7 @@
 # 8. Star vs. Snowflake Schema
 
-
 <!-- nav -->
-Previous: [7. Designing the Fact Table](07-designing-the-fact-table.md). Next: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md).
+Previous: [7. Designing the Fact Table](07-designing-the-fact-table.md). Next: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md). Exercises: [8. Star vs. Snowflake Schema](../../exercises/05-master/08-star-vs-snowflake-schema.md).
 <!-- /nav -->
 
 ## The idea
@@ -256,5 +255,5 @@ dimension almost always means "leave it flat."
 ---
 
 <!-- nav -->
-Previous: [7. Designing the Fact Table](07-designing-the-fact-table.md). Next: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md).
+Previous: [7. Designing the Fact Table](07-designing-the-fact-table.md). Next: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md). Exercises: [8. Star vs. Snowflake Schema](../../exercises/05-master/08-star-vs-snowflake-schema.md).
 <!-- /nav -->

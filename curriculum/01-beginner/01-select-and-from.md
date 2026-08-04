@@ -1,8 +1,7 @@
 # 1. SELECT and FROM
 
-
 <!-- nav -->
-Previous: [Tier 0 — Orientation](../00-orientation/README.md). Next: [2. Filtering with WHERE](02-filtering-with-where.md).
+Previous: [Tier 0 — Orientation](../00-orientation/README.md). Next: [2. Filtering with WHERE](02-filtering-with-where.md). Exercises: [1. SELECT and FROM](../../exercises/01-beginner/01-select-and-from.md).
 <!-- /nav -->
 
 ## The idea
@@ -172,5 +171,5 @@ LIMIT 3;
 ---
 
 <!-- nav -->
-Previous: [Tier 0 — Orientation](../00-orientation/README.md). Next: [2. Filtering with WHERE](02-filtering-with-where.md).
+Previous: [Tier 0 — Orientation](../00-orientation/README.md). Next: [2. Filtering with WHERE](02-filtering-with-where.md). Exercises: [1. SELECT and FROM](../../exercises/01-beginner/01-select-and-from.md).
 <!-- /nav -->

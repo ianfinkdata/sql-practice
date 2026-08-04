@@ -1,5 +1,9 @@
 # Exercises: Beyond SQLite — Portability Notes
 
+<!-- nav -->
+Curriculum: [11. Beyond SQLite: Portability Notes](../../curriculum/05-master/11-beyond-sqlite-portability-notes.md). Previous: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md). Next: [Portfolio](../../portfolio/README.md).
+<!-- /nav -->
+
 All solutions verified against `project/oakhaven.db` (or, for
 syntax-only checks, an in-memory SQLite database — noted where used).
 
@@ -208,3 +212,9 @@ Looking at the actual `fact_sales.sql` definition:
    need translation.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [11. Beyond SQLite: Portability Notes](../../curriculum/05-master/11-beyond-sqlite-portability-notes.md). Previous: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md). Next: [Portfolio](../../portfolio/README.md).
+<!-- /nav -->

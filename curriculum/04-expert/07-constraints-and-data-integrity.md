@@ -1,8 +1,7 @@
 # 7. Constraints and Data Integrity
 
-
 <!-- nav -->
-Previous: [6. Query Optimization Basics](06-query-optimization-basics.md). Next: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md).
+Previous: [6. Query Optimization Basics](06-query-optimization-basics.md). Next: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md). Exercises: [7. Constraints and Data Integrity](../../exercises/04-expert/07-constraints-and-data-integrity.md).
 <!-- /nav -->
 
 ## The idea
@@ -252,5 +251,5 @@ problem rather than pretend it doesn't exist.
 ---
 
 <!-- nav -->
-Previous: [6. Query Optimization Basics](06-query-optimization-basics.md). Next: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md).
+Previous: [6. Query Optimization Basics](06-query-optimization-basics.md). Next: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md). Exercises: [7. Constraints and Data Integrity](../../exercises/04-expert/07-constraints-and-data-integrity.md).
 <!-- /nav -->

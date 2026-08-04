@@ -1,5 +1,9 @@
 # Exercises: Pattern Matching with LIKE
 
+<!-- nav -->
+Curriculum: [7. Pattern Matching with LIKE](../../curriculum/01-beginner/07-pattern-matching-with-like.md). Previous: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md). Next: [8. DISTINCT and Duplicates](08-distinct-and-duplicates.md).
+<!-- /nav -->
+
 ### 1. Contains a word
 
 Write a query for every product whose `product_name` contains the
@@ -166,3 +170,9 @@ wouldn't catch a hypothetical `CLIMBING ` (trailing space) as a
 whitespace.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [7. Pattern Matching with LIKE](../../curriculum/01-beginner/07-pattern-matching-with-like.md). Previous: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md). Next: [8. DISTINCT and Duplicates](08-distinct-and-duplicates.md).
+<!-- /nav -->

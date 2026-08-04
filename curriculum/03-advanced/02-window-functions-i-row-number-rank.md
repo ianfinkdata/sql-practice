@@ -1,8 +1,7 @@
 # 2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK
 
-
 <!-- nav -->
-Previous: [1. Common Table Expressions (CTEs)](01-common-table-expressions.md). Next: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md).
+Previous: [1. Common Table Expressions (CTEs)](01-common-table-expressions.md). Next: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md). Exercises: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](../../exercises/03-advanced/02-window-functions-i-row-number-rank.md).
 <!-- /nav -->
 
 ## The idea
@@ -193,5 +192,5 @@ good illustration of why real dedup logic is rarely a single clean rule.
 ---
 
 <!-- nav -->
-Previous: [1. Common Table Expressions (CTEs)](01-common-table-expressions.md). Next: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md).
+Previous: [1. Common Table Expressions (CTEs)](01-common-table-expressions.md). Next: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md). Exercises: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](../../exercises/03-advanced/02-window-functions-i-row-number-rank.md).
 <!-- /nav -->

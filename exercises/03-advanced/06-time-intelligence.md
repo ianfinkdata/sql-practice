@@ -1,5 +1,9 @@
 # Exercises: Time Intelligence
 
+<!-- nav -->
+Curriculum: [6. Time Intelligence](../../curriculum/03-advanced/06-time-intelligence.md). Previous: [5. Recursive CTEs](05-recursive-ctes.md). Next: [7. The Date-Spine Pattern](07-the-date-spine-pattern.md).
+<!-- /nav -->
+
 Query `project/oakhaven.db` for all of these. Run with:
 
 ```bash
@@ -145,3 +149,9 @@ WHERE ship_date IS NOT NULL AND order_date IS NOT NULL
 Verified output: **216** — matches the facts sheet exactly.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [6. Time Intelligence](../../curriculum/03-advanced/06-time-intelligence.md). Previous: [5. Recursive CTEs](05-recursive-ctes.md). Next: [7. The Date-Spine Pattern](07-the-date-spine-pattern.md).
+<!-- /nav -->

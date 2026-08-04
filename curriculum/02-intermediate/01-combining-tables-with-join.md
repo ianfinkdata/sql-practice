@@ -1,8 +1,7 @@
 # Combining Tables with JOIN
 
-
 <!-- nav -->
-Previous: [Tier 1 — Beginner](../01-beginner/README.md). Next: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md).
+Previous: [Tier 1 — Beginner](../01-beginner/README.md). Next: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md). Exercises: [Combining Tables with JOIN](../../exercises/02-intermediate/01-combining-tables-with-join.md).
 <!-- /nav -->
 
 ## The idea
@@ -186,5 +185,5 @@ LIMIT 5;
 ---
 
 <!-- nav -->
-Previous: [Tier 1 — Beginner](../01-beginner/README.md). Next: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md).
+Previous: [Tier 1 — Beginner](../01-beginner/README.md). Next: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md). Exercises: [Combining Tables with JOIN](../../exercises/02-intermediate/01-combining-tables-with-join.md).
 <!-- /nav -->

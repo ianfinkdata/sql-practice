@@ -1,8 +1,7 @@
 # CASE Expressions
 
-
 <!-- nav -->
-Previous: [HAVING](04-having.md). Next: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md).
+Previous: [HAVING](04-having.md). Next: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md). Exercises: [CASE Expressions](../../exercises/02-intermediate/05-case-expressions.md).
 <!-- /nav -->
 
 ## The idea
@@ -218,5 +217,5 @@ without needing a separate query per condition.
 ---
 
 <!-- nav -->
-Previous: [HAVING](04-having.md). Next: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md).
+Previous: [HAVING](04-having.md). Next: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md). Exercises: [CASE Expressions](../../exercises/02-intermediate/05-case-expressions.md).
 <!-- /nav -->

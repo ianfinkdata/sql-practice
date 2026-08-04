@@ -1,5 +1,9 @@
 # Exercises: Transactions
 
+<!-- nav -->
+Curriculum: [3. Transactions](../../curriculum/04-expert/03-transactions.md). Previous: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md). Next: [4. Views](04-views.md).
+<!-- /nav -->
+
 Every exercise here writes data — work against your own scratch copy
 for all of them, never `project/oakhaven.db`:
 
@@ -257,3 +261,9 @@ both changes and closed the transaction entirely). The subsequent
 transaction that should otherwise still go through.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [3. Transactions](../../curriculum/04-expert/03-transactions.md). Previous: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md). Next: [4. Views](04-views.md).
+<!-- /nav -->

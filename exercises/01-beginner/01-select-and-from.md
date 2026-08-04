@@ -1,5 +1,9 @@
 # Exercises: SELECT and FROM
 
+<!-- nav -->
+Curriculum: [1. SELECT and FROM](../../curriculum/01-beginner/01-select-and-from.md). Previous: [4. Meet Oakhaven](../00-orientation/04-meet-oakhaven.md). Next: [2. Filtering with WHERE](02-filtering-with-where.md).
+<!-- /nav -->
+
 ### 1. Everything, a few rows
 
 Write a query that returns every column of `bronze_employees`, limited
@@ -127,3 +131,9 @@ SELECT product_name, brand FROM bronze_products;
 ```
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [1. SELECT and FROM](../../curriculum/01-beginner/01-select-and-from.md). Previous: [4. Meet Oakhaven](../00-orientation/04-meet-oakhaven.md). Next: [2. Filtering with WHERE](02-filtering-with-where.md).
+<!-- /nav -->

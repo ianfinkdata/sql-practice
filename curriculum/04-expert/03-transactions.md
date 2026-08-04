@@ -1,8 +1,7 @@
 # 3. Transactions
 
-
 <!-- nav -->
-Previous: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md). Next: [4. Views](04-views.md).
+Previous: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md). Next: [4. Views](04-views.md). Exercises: [3. Transactions](../../exercises/04-expert/03-transactions.md).
 <!-- /nav -->
 
 ## The idea
@@ -218,5 +217,5 @@ a half-populated database on disk.
 ---
 
 <!-- nav -->
-Previous: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md). Next: [4. Views](04-views.md).
+Previous: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md). Next: [4. Views](04-views.md). Exercises: [3. Transactions](../../exercises/04-expert/03-transactions.md).
 <!-- /nav -->

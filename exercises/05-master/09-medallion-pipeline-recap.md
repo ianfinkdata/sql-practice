@@ -1,5 +1,9 @@
 # Exercises: The Medallion Pipeline, Start to Finish
 
+<!-- nav -->
+Curriculum: [9. The Medallion Pipeline, Start to Finish](../../curriculum/05-master/09-medallion-pipeline-recap.md). Previous: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md). Next: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md).
+<!-- /nav -->
+
 All solutions verified against `project/oakhaven.db`.
 
 ## 1. Follow the discount_pct bug through all three layers
@@ -162,3 +166,9 @@ of gold, confirm nothing got silently dropped or duplicated on the way
 there.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [9. The Medallion Pipeline, Start to Finish](../../curriculum/05-master/09-medallion-pipeline-recap.md). Previous: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md). Next: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md).
+<!-- /nav -->

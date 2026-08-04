@@ -1,5 +1,9 @@
 # Exercises: Sorting with ORDER BY
 
+<!-- nav -->
+Curriculum: [3. Sorting with ORDER BY](../../curriculum/01-beginner/03-sorting-with-order-by.md). Previous: [2. Filtering with WHERE](02-filtering-with-where.md). Next: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md).
+<!-- /nav -->
+
 ### 1. Alphabetical by last name
 
 Write a query showing `first_name` and `last_name` from
@@ -161,3 +165,9 @@ answer needs the dates parsed into one consistent format first — which
 is exactly what the silver layer does in Tier 2.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [3. Sorting with ORDER BY](../../curriculum/01-beginner/03-sorting-with-order-by.md). Previous: [2. Filtering with WHERE](02-filtering-with-where.md). Next: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md).
+<!-- /nav -->

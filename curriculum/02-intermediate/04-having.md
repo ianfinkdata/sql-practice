@@ -1,8 +1,7 @@
 # HAVING
 
-
 <!-- nav -->
-Previous: [GROUP BY](03-group-by.md). Next: [CASE Expressions](05-case-expressions.md).
+Previous: [GROUP BY](03-group-by.md). Next: [CASE Expressions](05-case-expressions.md). Exercises: [HAVING](../../exercises/02-intermediate/04-having.md).
 <!-- /nav -->
 
 ## The idea
@@ -185,5 +184,5 @@ doing their separate jobs, in one query.
 ---
 
 <!-- nav -->
-Previous: [GROUP BY](03-group-by.md). Next: [CASE Expressions](05-case-expressions.md).
+Previous: [GROUP BY](03-group-by.md). Next: [CASE Expressions](05-case-expressions.md). Exercises: [HAVING](../../exercises/02-intermediate/04-having.md).
 <!-- /nav -->

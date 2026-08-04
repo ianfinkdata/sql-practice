@@ -1,5 +1,9 @@
 # Exercises: Correlated Subqueries, EXISTS, and NOT EXISTS
 
+<!-- nav -->
+Curriculum: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](../../curriculum/03-advanced/09-correlated-subqueries-exists.md). Previous: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md). Next: [10. Capstone — Combining CTEs and Window Functions](10-combining-ctes-and-window-functions.md).
+<!-- /nav -->
+
 Query `project/oakhaven.db` for all of these. Run with:
 
 ```bash
@@ -165,3 +169,9 @@ employee were added who genuinely had zero sales, the `NOT IN` query would
 today only because the current data happens not to trigger it.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](../../curriculum/03-advanced/09-correlated-subqueries-exists.md). Previous: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md). Next: [10. Capstone — Combining CTEs and Window Functions](10-combining-ctes-and-window-functions.md).
+<!-- /nav -->

@@ -1,8 +1,7 @@
 # 2. ALTER TABLE and Schema Evolution
 
-
 <!-- nav -->
-Previous: [1. DDL Basics and Type Affinity](01-ddl-basics-and-type-affinity.md). Next: [3. Transactions](03-transactions.md).
+Previous: [1. DDL Basics and Type Affinity](01-ddl-basics-and-type-affinity.md). Next: [3. Transactions](03-transactions.md). Exercises: [2. ALTER TABLE and Schema Evolution](../../exercises/04-expert/02-alter-table-and-schema-evolution.md).
 <!-- /nav -->
 
 ## The idea
@@ -234,5 +233,5 @@ pattern), not a rebuild.
 ---
 
 <!-- nav -->
-Previous: [1. DDL Basics and Type Affinity](01-ddl-basics-and-type-affinity.md). Next: [3. Transactions](03-transactions.md).
+Previous: [1. DDL Basics and Type Affinity](01-ddl-basics-and-type-affinity.md). Next: [3. Transactions](03-transactions.md). Exercises: [2. ALTER TABLE and Schema Evolution](../../exercises/04-expert/02-alter-table-and-schema-evolution.md).
 <!-- /nav -->

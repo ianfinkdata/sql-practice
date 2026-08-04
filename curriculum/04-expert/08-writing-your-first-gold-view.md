@@ -1,8 +1,7 @@
 # 8. Writing Your First Gold View
 
-
 <!-- nav -->
-Previous: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md). Next: [9. Portable, Idempotent DDL Patterns](09-portable-idempotent-ddl-patterns.md).
+Previous: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md). Next: [9. Portable, Idempotent DDL Patterns](09-portable-idempotent-ddl-patterns.md). Exercises: [8. Writing Your First Gold View](../../exercises/04-expert/08-writing-your-first-gold-view.md).
 <!-- /nav -->
 
 ## The idea
@@ -221,5 +220,5 @@ Before you consider your own version done, ask the same questions
 ---
 
 <!-- nav -->
-Previous: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md). Next: [9. Portable, Idempotent DDL Patterns](09-portable-idempotent-ddl-patterns.md).
+Previous: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md). Next: [9. Portable, Idempotent DDL Patterns](09-portable-idempotent-ddl-patterns.md). Exercises: [8. Writing Your First Gold View](../../exercises/04-expert/08-writing-your-first-gold-view.md).
 <!-- /nav -->

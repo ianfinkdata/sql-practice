@@ -1,5 +1,9 @@
 # Exercises: What Is SQL?
 
+<!-- nav -->
+Curriculum: [2. What Is SQL?](../../curriculum/00-orientation/02-what-is-sql.md). Previous: [1. What Is a Database?](01-what-is-a-database.md). Next: [3. Tools and Setup](03-tools-and-setup.md).
+<!-- /nav -->
+
 Still no SQL to run — these are quick checks on the DDL/DML/DQL
 vocabulary and where this course puts its weight.
 
@@ -62,3 +66,9 @@ the file for everyone. Treating the shared database as read-only
 avoids that entirely.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [2. What Is SQL?](../../curriculum/00-orientation/02-what-is-sql.md). Previous: [1. What Is a Database?](01-what-is-a-database.md). Next: [3. Tools and Setup](03-tools-and-setup.md).
+<!-- /nav -->

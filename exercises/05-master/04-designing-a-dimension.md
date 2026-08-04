@@ -1,5 +1,9 @@
 # Exercises: 4. Designing a Dimension
 
+<!-- nav -->
+Curriculum: [4. Designing a Dimension](../../curriculum/05-master/04-designing-a-dimension.md). Previous: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md). Next: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md).
+<!-- /nav -->
+
 Work against `project/oakhaven.db`. Read-only — every query below is a
 `SELECT`. None of these modify `dim_customer.sql` or any other gold
 object; they're all standalone `SELECT`s exploring what a fix *would*
@@ -225,3 +229,9 @@ delete the duplicates" the wrong first instinct for fixing a dimension
 like this.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [4. Designing a Dimension](../../curriculum/05-master/04-designing-a-dimension.md). Previous: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md). Next: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md).
+<!-- /nav -->

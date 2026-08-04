@@ -1,5 +1,9 @@
 # Exercises: Common Table Expressions
 
+<!-- nav -->
+Curriculum: [1. Common Table Expressions (CTEs)](../../curriculum/03-advanced/01-common-table-expressions.md). Previous: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](../02-intermediate/09-set-operations.md). Next: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md).
+<!-- /nav -->
+
 Query `project/oakhaven.db` for all of these. Run with:
 
 ```bash
@@ -238,3 +242,9 @@ Verified output (both versions):
 naturally lower than a full year's.)
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [1. Common Table Expressions (CTEs)](../../curriculum/03-advanced/01-common-table-expressions.md). Previous: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](../02-intermediate/09-set-operations.md). Next: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md).
+<!-- /nav -->

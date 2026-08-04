@@ -1,8 +1,7 @@
 # 2. Dimensions and Facts: Core Vocabulary
 
-
 <!-- nav -->
-Previous: [1. Why We Model Data: OLTP vs. Analytical Schemas](01-why-model-data-oltp-vs-analytical.md). Next: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md).
+Previous: [1. Why We Model Data: OLTP vs. Analytical Schemas](01-why-model-data-oltp-vs-analytical.md). Next: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md). Exercises: [2. Dimensions and Facts: Core Vocabulary](../../exercises/05-master/02-dimensions-and-facts-core-vocabulary.md).
 <!-- /nav -->
 
 ## The idea
@@ -206,5 +205,5 @@ directly.
 ---
 
 <!-- nav -->
-Previous: [1. Why We Model Data: OLTP vs. Analytical Schemas](01-why-model-data-oltp-vs-analytical.md). Next: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md).
+Previous: [1. Why We Model Data: OLTP vs. Analytical Schemas](01-why-model-data-oltp-vs-analytical.md). Next: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md). Exercises: [2. Dimensions and Facts: Core Vocabulary](../../exercises/05-master/02-dimensions-and-facts-core-vocabulary.md).
 <!-- /nav -->

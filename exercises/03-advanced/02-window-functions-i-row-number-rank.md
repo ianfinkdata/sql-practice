@@ -1,5 +1,9 @@
 # Exercises: Window Functions I — ROW_NUMBER, RANK, DENSE_RANK
 
+<!-- nav -->
+Curriculum: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](../../curriculum/03-advanced/02-window-functions-i-row-number-rank.md). Previous: [1. Common Table Expressions (CTEs)](01-common-table-expressions.md). Next: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md).
+<!-- /nav -->
+
 Query `project/oakhaven.db` for all of these. Run with:
 
 ```bash
@@ -193,3 +197,9 @@ Verified output:
 | Backcountry Ski | 88323.00 |
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](../../curriculum/03-advanced/02-window-functions-i-row-number-rank.md). Previous: [1. Common Table Expressions (CTEs)](01-common-table-expressions.md). Next: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md).
+<!-- /nav -->

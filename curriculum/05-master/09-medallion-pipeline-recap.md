@@ -1,8 +1,7 @@
 # 9. The Medallion Pipeline, Start to Finish
 
-
 <!-- nav -->
-Previous: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md). Next: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md).
+Previous: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md). Next: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md). Exercises: [9. The Medallion Pipeline, Start to Finish](../../exercises/05-master/09-medallion-pipeline-recap.md).
 <!-- /nav -->
 
 ## The idea
@@ -284,5 +283,5 @@ module is about the shape that survives the move to any of them.
 ---
 
 <!-- nav -->
-Previous: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md). Next: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md).
+Previous: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md). Next: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md). Exercises: [9. The Medallion Pipeline, Start to Finish](../../exercises/05-master/09-medallion-pipeline-recap.md).
 <!-- /nav -->

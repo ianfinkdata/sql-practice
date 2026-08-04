@@ -1,8 +1,7 @@
 # 5. Recursive CTEs
 
-
 <!-- nav -->
-Previous: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md). Next: [6. Time Intelligence](06-time-intelligence.md).
+Previous: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md). Next: [6. Time Intelligence](06-time-intelligence.md). Exercises: [5. Recursive CTEs](../../exercises/03-advanced/05-recursive-ctes.md).
 <!-- /nav -->
 
 ## The idea
@@ -204,5 +203,5 @@ other people or processes; that's true here and in production alike.)
 ---
 
 <!-- nav -->
-Previous: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md). Next: [6. Time Intelligence](06-time-intelligence.md).
+Previous: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md). Next: [6. Time Intelligence](06-time-intelligence.md). Exercises: [5. Recursive CTEs](../../exercises/03-advanced/05-recursive-ctes.md).
 <!-- /nav -->

@@ -1,8 +1,7 @@
 # Subqueries and Derived Tables
 
-
 <!-- nav -->
-Previous: [COALESCE and NULLIF](07-coalesce-and-nullif.md). Next: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](09-set-operations.md).
+Previous: [COALESCE and NULLIF](07-coalesce-and-nullif.md). Next: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](09-set-operations.md). Exercises: [Subqueries and Derived Tables](../../exercises/02-intermediate/08-subqueries-and-derived-tables.md).
 <!-- /nav -->
 
 ## The idea
@@ -230,5 +229,5 @@ somehow" into "step 2 of 3 is the problem."
 ---
 
 <!-- nav -->
-Previous: [COALESCE and NULLIF](07-coalesce-and-nullif.md). Next: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](09-set-operations.md).
+Previous: [COALESCE and NULLIF](07-coalesce-and-nullif.md). Next: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](09-set-operations.md). Exercises: [Subqueries and Derived Tables](../../exercises/02-intermediate/08-subqueries-and-derived-tables.md).
 <!-- /nav -->

@@ -1,5 +1,9 @@
 # Exercises: Cleaning Text (TRIM, UPPER, LOWER, REPLACE)
 
+<!-- nav -->
+Curriculum: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](../../curriculum/02-intermediate/06-cleaning-text-trim-upper-replace.md). Previous: [CASE Expressions](05-case-expressions.md). Next: [COALESCE and NULLIF](07-coalesce-and-nullif.md).
+<!-- /nav -->
+
 Use `project/oakhaven.db`. Every solution below was run against the
 real database — your output should match exactly.
 
@@ -220,3 +224,9 @@ to see the full value of this module end to end.
 </details>
 
 ---
+
+---
+
+<!-- nav -->
+Curriculum: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](../../curriculum/02-intermediate/06-cleaning-text-trim-upper-replace.md). Previous: [CASE Expressions](05-case-expressions.md). Next: [COALESCE and NULLIF](07-coalesce-and-nullif.md).
+<!-- /nav -->

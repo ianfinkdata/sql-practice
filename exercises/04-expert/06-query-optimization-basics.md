@@ -1,5 +1,9 @@
 # Exercises: Query Optimization Basics
 
+<!-- nav -->
+Curriculum: [6. Query Optimization Basics](../../curriculum/04-expert/06-query-optimization-basics.md). Previous: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md). Next: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md).
+<!-- /nav -->
+
 `EXPLAIN QUERY PLAN` alone is read-only. Any exercise creating an
 index must run against your own scratch copy:
 
@@ -236,3 +240,9 @@ column you know is consistently ISO-formatted, such as
 directly.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [6. Query Optimization Basics](../../curriculum/04-expert/06-query-optimization-basics.md). Previous: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md). Next: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md).
+<!-- /nav -->

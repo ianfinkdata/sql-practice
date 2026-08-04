@@ -1,8 +1,7 @@
 # 4. Limiting with LIMIT (and OFFSET)
 
-
 <!-- nav -->
-Previous: [3. Sorting with ORDER BY](03-sorting-with-order-by.md). Next: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md).
+Previous: [3. Sorting with ORDER BY](03-sorting-with-order-by.md). Next: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md). Exercises: [4. Limiting with LIMIT (and OFFSET)](../../exercises/01-beginner/04-limiting-with-limit.md).
 <!-- /nav -->
 
 ## The idea
@@ -154,5 +153,5 @@ and gives you the next — the 2nd cheapest.
 ---
 
 <!-- nav -->
-Previous: [3. Sorting with ORDER BY](03-sorting-with-order-by.md). Next: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md).
+Previous: [3. Sorting with ORDER BY](03-sorting-with-order-by.md). Next: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md). Exercises: [4. Limiting with LIMIT (and OFFSET)](../../exercises/01-beginner/04-limiting-with-limit.md).
 <!-- /nav -->

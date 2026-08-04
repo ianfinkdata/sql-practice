@@ -1,5 +1,9 @@
 # Exercises: Designing the Fact Table
 
+<!-- nav -->
+Curriculum: [7. Designing the Fact Table](../../curriculum/05-master/07-designing-the-fact-table.md). Previous: [6. Designing the Date Dimension](06-designing-the-date-dimension.md). Next: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md).
+<!-- /nav -->
+
 All solutions verified against `project/oakhaven.db`. Try each query
 yourself before expanding the solution.
 
@@ -195,3 +199,9 @@ works because the fact table chose to carry these flags through
 instead of hiding the rows that triggered them.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [7. Designing the Fact Table](../../curriculum/05-master/07-designing-the-fact-table.md). Previous: [6. Designing the Date Dimension](06-designing-the-date-dimension.md). Next: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md).
+<!-- /nav -->

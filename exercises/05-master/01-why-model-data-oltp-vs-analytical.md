@@ -1,5 +1,9 @@
 # Exercises: 1. Why We Model Data: OLTP vs. Analytical Schemas
 
+<!-- nav -->
+Curriculum: [1. Why We Model Data: OLTP vs. Analytical Schemas](../../curriculum/05-master/01-why-model-data-oltp-vs-analytical.md). Previous: [9. Portable, Idempotent DDL Patterns](../04-expert/09-portable-idempotent-ddl-patterns.md). Next: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md).
+<!-- /nav -->
+
 Work against `project/oakhaven.db`. Read-only — every query below is a
 `SELECT`.
 
@@ -201,3 +205,9 @@ grain (here, via a subquery `GROUP BY order_id`) if that's the question
 you actually meant to ask.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [1. Why We Model Data: OLTP vs. Analytical Schemas](../../curriculum/05-master/01-why-model-data-oltp-vs-analytical.md). Previous: [9. Portable, Idempotent DDL Patterns](../04-expert/09-portable-idempotent-ddl-patterns.md). Next: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md).
+<!-- /nav -->

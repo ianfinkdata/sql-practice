@@ -1,8 +1,7 @@
 # 2. Filtering with WHERE
 
-
 <!-- nav -->
-Previous: [1. SELECT and FROM](01-select-and-from.md). Next: [3. Sorting with ORDER BY](03-sorting-with-order-by.md).
+Previous: [1. SELECT and FROM](01-select-and-from.md). Next: [3. Sorting with ORDER BY](03-sorting-with-order-by.md). Exercises: [2. Filtering with WHERE](../../exercises/01-beginner/02-filtering-with-where.md).
 <!-- /nav -->
 
 ## The idea
@@ -217,5 +216,5 @@ another reason messy casing needs real cleaning, not just careful
 ---
 
 <!-- nav -->
-Previous: [1. SELECT and FROM](01-select-and-from.md). Next: [3. Sorting with ORDER BY](03-sorting-with-order-by.md).
+Previous: [1. SELECT and FROM](01-select-and-from.md). Next: [3. Sorting with ORDER BY](03-sorting-with-order-by.md). Exercises: [2. Filtering with WHERE](../../exercises/01-beginner/02-filtering-with-where.md).
 <!-- /nav -->

@@ -1,8 +1,7 @@
 # 4. Views
 
-
 <!-- nav -->
-Previous: [3. Transactions](03-transactions.md). Next: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md).
+Previous: [3. Transactions](03-transactions.md). Next: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md). Exercises: [4. Views](../../exercises/04-expert/04-views.md).
 <!-- /nav -->
 
 ## The idea
@@ -265,5 +264,5 @@ documents.
 ---
 
 <!-- nav -->
-Previous: [3. Transactions](03-transactions.md). Next: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md).
+Previous: [3. Transactions](03-transactions.md). Next: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md). Exercises: [4. Views](../../exercises/04-expert/04-views.md).
 <!-- /nav -->

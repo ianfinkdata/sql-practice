@@ -1,8 +1,7 @@
 # 1. DDL Basics and Type Affinity
 
-
 <!-- nav -->
-Previous: [Tier 3 — Advanced](../03-advanced/README.md). Next: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md).
+Previous: [Tier 3 — Advanced](../03-advanced/README.md). Next: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md). Exercises: [1. DDL Basics and Type Affinity](../../exercises/04-expert/01-ddl-basics-and-type-affinity.md).
 <!-- /nav -->
 
 ## The idea
@@ -261,5 +260,5 @@ contrasts this directly against a properly constrained schema.
 ---
 
 <!-- nav -->
-Previous: [Tier 3 — Advanced](../03-advanced/README.md). Next: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md).
+Previous: [Tier 3 — Advanced](../03-advanced/README.md). Next: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md). Exercises: [1. DDL Basics and Type Affinity](../../exercises/04-expert/01-ddl-basics-and-type-affinity.md).
 <!-- /nav -->

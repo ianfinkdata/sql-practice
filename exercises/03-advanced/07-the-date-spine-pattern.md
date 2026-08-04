@@ -1,5 +1,9 @@
 # Exercises: The Date-Spine Pattern
 
+<!-- nav -->
+Curriculum: [7. The Date-Spine Pattern](../../curriculum/03-advanced/07-the-date-spine-pattern.md). Previous: [6. Time Intelligence](06-time-intelligence.md). Next: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md).
+<!-- /nav -->
+
 Query `project/oakhaven.db` for all of these. Run with:
 
 ```bash
@@ -181,3 +185,9 @@ disappear from an `INNER JOIN`-based report instead of showing up as a
 legitimate `0`.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [7. The Date-Spine Pattern](../../curriculum/03-advanced/07-the-date-spine-pattern.md). Previous: [6. Time Intelligence](06-time-intelligence.md). Next: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md).
+<!-- /nav -->

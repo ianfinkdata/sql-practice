@@ -1,8 +1,7 @@
 # 9. Correlated Subqueries, EXISTS, and NOT EXISTS
 
-
 <!-- nav -->
-Previous: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md). Next: [10. Capstone — Combining CTEs and Window Functions](10-combining-ctes-and-window-functions.md).
+Previous: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md). Next: [10. Capstone — Combining CTEs and Window Functions](10-combining-ctes-and-window-functions.md). Exercises: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](../../exercises/03-advanced/09-correlated-subqueries-exists.md).
 <!-- /nav -->
 
 ## The idea
@@ -196,5 +195,5 @@ explicitly filters the poison out) would report it correctly.
 ---
 
 <!-- nav -->
-Previous: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md). Next: [10. Capstone — Combining CTEs and Window Functions](10-combining-ctes-and-window-functions.md).
+Previous: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md). Next: [10. Capstone — Combining CTEs and Window Functions](10-combining-ctes-and-window-functions.md). Exercises: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](../../exercises/03-advanced/09-correlated-subqueries-exists.md).
 <!-- /nav -->

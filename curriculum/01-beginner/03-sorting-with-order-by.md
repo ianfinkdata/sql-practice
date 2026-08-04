@@ -1,8 +1,7 @@
 # 3. Sorting with ORDER BY
 
-
 <!-- nav -->
-Previous: [2. Filtering with WHERE](02-filtering-with-where.md). Next: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md).
+Previous: [2. Filtering with WHERE](02-filtering-with-where.md). Next: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md). Exercises: [3. Sorting with ORDER BY](../../exercises/01-beginner/03-sorting-with-order-by.md).
 <!-- /nav -->
 
 ## The idea
@@ -181,5 +180,5 @@ first things the silver layer does (Tier 2).
 ---
 
 <!-- nav -->
-Previous: [2. Filtering with WHERE](02-filtering-with-where.md). Next: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md).
+Previous: [2. Filtering with WHERE](02-filtering-with-where.md). Next: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md). Exercises: [3. Sorting with ORDER BY](../../exercises/01-beginner/03-sorting-with-order-by.md).
 <!-- /nav -->

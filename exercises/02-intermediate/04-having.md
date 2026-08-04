@@ -1,5 +1,9 @@
 # Exercises: HAVING
 
+<!-- nav -->
+Curriculum: [HAVING](../../curriculum/02-intermediate/04-having.md). Previous: [GROUP BY](03-group-by.md). Next: [CASE Expressions](05-case-expressions.md).
+<!-- /nav -->
+
 Use `project/oakhaven.db`. Every solution below was run against the
 real database — your output should match exactly.
 
@@ -204,3 +208,9 @@ handed it, messy spellings and all.
 </details>
 
 ---
+
+---
+
+<!-- nav -->
+Curriculum: [HAVING](../../curriculum/02-intermediate/04-having.md). Previous: [GROUP BY](03-group-by.md). Next: [CASE Expressions](05-case-expressions.md).
+<!-- /nav -->

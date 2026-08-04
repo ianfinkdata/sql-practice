@@ -1,8 +1,7 @@
 # 1. What Is a Database?
 
-
 <!-- nav -->
-Previous: [sql-practice](../../README.md). Next: [2. What Is SQL?](02-what-is-sql.md).
+Previous: [sql-practice](../../README.md). Next: [2. What Is SQL?](02-what-is-sql.md). Exercises: [1. What Is a Database?](../../exercises/00-orientation/01-what-is-a-database.md).
 <!-- /nav -->
 
 ## The idea
@@ -85,5 +84,5 @@ Oakhaven.
 ---
 
 <!-- nav -->
-Previous: [sql-practice](../../README.md). Next: [2. What Is SQL?](02-what-is-sql.md).
+Previous: [sql-practice](../../README.md). Next: [2. What Is SQL?](02-what-is-sql.md). Exercises: [1. What Is a Database?](../../exercises/00-orientation/01-what-is-a-database.md).
 <!-- /nav -->

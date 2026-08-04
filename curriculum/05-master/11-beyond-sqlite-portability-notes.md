@@ -1,8 +1,7 @@
 # 11. Beyond SQLite: Portability Notes
 
-
 <!-- nav -->
-Previous: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md). Next: [Portfolio](../../portfolio/README.md).
+Previous: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md). Next: [Portfolio](../../portfolio/README.md). Exercises: [11. Beyond SQLite: Portability Notes](../../exercises/05-master/11-beyond-sqlite-portability-notes.md).
 <!-- /nav -->
 
 ## The idea
@@ -302,5 +301,5 @@ production engines.
 ---
 
 <!-- nav -->
-Previous: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md). Next: [Portfolio](../../portfolio/README.md).
+Previous: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md). Next: [Portfolio](../../portfolio/README.md). Exercises: [11. Beyond SQLite: Portability Notes](../../exercises/05-master/11-beyond-sqlite-portability-notes.md).
 <!-- /nav -->

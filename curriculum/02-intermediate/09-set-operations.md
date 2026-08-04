@@ -1,8 +1,7 @@
 # Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT
 
-
 <!-- nav -->
-Previous: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md). Next: [Tier 3 — Advanced](../03-advanced/README.md).
+Previous: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md). Next: [Tier 3 — Advanced](../03-advanced/README.md). Exercises: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](../../exercises/02-intermediate/09-set-operations.md).
 <!-- /nav -->
 
 ## The idea
@@ -280,5 +279,5 @@ there.
 ---
 
 <!-- nav -->
-Previous: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md). Next: [Tier 3 — Advanced](../03-advanced/README.md).
+Previous: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md). Next: [Tier 3 — Advanced](../03-advanced/README.md). Exercises: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](../../exercises/02-intermediate/09-set-operations.md).
 <!-- /nav -->

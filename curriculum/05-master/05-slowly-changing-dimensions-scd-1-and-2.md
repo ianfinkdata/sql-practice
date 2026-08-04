@@ -1,8 +1,7 @@
 # 5. Slowly Changing Dimensions: Type 1 and Type 2
 
-
 <!-- nav -->
-Previous: [4. Designing a Dimension](04-designing-a-dimension.md). Next: [6. Designing the Date Dimension](06-designing-the-date-dimension.md).
+Previous: [4. Designing a Dimension](04-designing-a-dimension.md). Next: [6. Designing the Date Dimension](06-designing-the-date-dimension.md). Exercises: [5. Slowly Changing Dimensions: Type 1 and Type 2](../../exercises/05-master/05-slowly-changing-dimensions-scd-1-and-2.md).
 <!-- /nav -->
 
 ## The idea
@@ -227,5 +226,5 @@ protects you from this exact class of mistake.
 ---
 
 <!-- nav -->
-Previous: [4. Designing a Dimension](04-designing-a-dimension.md). Next: [6. Designing the Date Dimension](06-designing-the-date-dimension.md).
+Previous: [4. Designing a Dimension](04-designing-a-dimension.md). Next: [6. Designing the Date Dimension](06-designing-the-date-dimension.md). Exercises: [5. Slowly Changing Dimensions: Type 1 and Type 2](../../exercises/05-master/05-slowly-changing-dimensions-scd-1-and-2.md).
 <!-- /nav -->

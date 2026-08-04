@@ -1,5 +1,9 @@
 # Exercises: Subqueries and Derived Tables
 
+<!-- nav -->
+Curriculum: [Subqueries and Derived Tables](../../curriculum/02-intermediate/08-subqueries-and-derived-tables.md). Previous: [COALESCE and NULLIF](07-coalesce-and-nullif.md). Next: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](09-set-operations.md).
+<!-- /nav -->
+
 Use `project/oakhaven.db`. Every solution below was run against the
 real database — your output should match exactly.
 
@@ -240,3 +244,9 @@ tip — is much more manageable than writing all three levels at once.
 </details>
 
 ---
+
+---
+
+<!-- nav -->
+Curriculum: [Subqueries and Derived Tables](../../curriculum/02-intermediate/08-subqueries-and-derived-tables.md). Previous: [COALESCE and NULLIF](07-coalesce-and-nullif.md). Next: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](09-set-operations.md).
+<!-- /nav -->

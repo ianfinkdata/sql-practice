@@ -1,8 +1,7 @@
 # 7. Designing the Fact Table
 
-
 <!-- nav -->
-Previous: [6. Designing the Date Dimension](06-designing-the-date-dimension.md). Next: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md).
+Previous: [6. Designing the Date Dimension](06-designing-the-date-dimension.md). Next: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md). Exercises: [7. Designing the Fact Table](../../exercises/05-master/07-designing-the-fact-table.md).
 <!-- /nav -->
 
 ## The idea
@@ -306,5 +305,5 @@ reliability is *why* they're the measures, not an accident.
 ---
 
 <!-- nav -->
-Previous: [6. Designing the Date Dimension](06-designing-the-date-dimension.md). Next: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md).
+Previous: [6. Designing the Date Dimension](06-designing-the-date-dimension.md). Next: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md). Exercises: [7. Designing the Fact Table](../../exercises/05-master/07-designing-the-fact-table.md).
 <!-- /nav -->

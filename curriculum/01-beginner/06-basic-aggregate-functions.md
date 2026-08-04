@@ -1,8 +1,7 @@
 # 6. Basic Aggregate Functions
 
-
 <!-- nav -->
-Previous: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md). Next: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md).
+Previous: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md). Next: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md). Exercises: [6. Basic Aggregate Functions](../../exercises/01-beginner/06-basic-aggregate-functions.md).
 <!-- /nav -->
 
 ## The idea
@@ -177,5 +176,5 @@ but it's worth being deliberate about, since it can be easy to assume
 ---
 
 <!-- nav -->
-Previous: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md). Next: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md).
+Previous: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md). Next: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md). Exercises: [6. Basic Aggregate Functions](../../exercises/01-beginner/06-basic-aggregate-functions.md).
 <!-- /nav -->

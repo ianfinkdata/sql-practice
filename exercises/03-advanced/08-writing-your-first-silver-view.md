@@ -1,5 +1,9 @@
 # Exercises: Writing Your First Silver View
 
+<!-- nav -->
+Curriculum: [8. Writing Your First Silver View](../../curriculum/03-advanced/08-writing-your-first-silver-view.md). Previous: [7. The Date-Spine Pattern](07-the-date-spine-pattern.md). Next: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](09-correlated-subqueries-exists.md).
+<!-- /nav -->
+
 Query `project/oakhaven.db` for all of these. Run these as plain
 `SELECT` statements — **never** run `CREATE VIEW`, `DROP`, or any DDL
 against the shared `oakhaven.db`. Run with:
@@ -226,3 +230,9 @@ unrecognized value falls through to `ELSE NULL`, not a default guess and
 not a dropped row.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [8. Writing Your First Silver View](../../curriculum/03-advanced/08-writing-your-first-silver-view.md). Previous: [7. The Date-Spine Pattern](07-the-date-spine-pattern.md). Next: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](09-correlated-subqueries-exists.md).
+<!-- /nav -->

@@ -1,8 +1,7 @@
 # 3. Grain: The Most Important Decision in Star Schema Design
 
-
 <!-- nav -->
-Previous: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md). Next: [4. Designing a Dimension](04-designing-a-dimension.md).
+Previous: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md). Next: [4. Designing a Dimension](04-designing-a-dimension.md). Exercises: [3. Grain: The Most Important Decision in Star Schema Design](../../exercises/05-master/03-grain-the-most-important-decision.md).
 <!-- /nav -->
 
 ## The idea
@@ -212,5 +211,5 @@ layer, which depends on that per-line `product_id`.
 ---
 
 <!-- nav -->
-Previous: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md). Next: [4. Designing a Dimension](04-designing-a-dimension.md).
+Previous: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md). Next: [4. Designing a Dimension](04-designing-a-dimension.md). Exercises: [3. Grain: The Most Important Decision in Star Schema Design](../../exercises/05-master/03-grain-the-most-important-decision.md).
 <!-- /nav -->

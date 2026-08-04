@@ -1,5 +1,9 @@
 # Exercises: Indexes and EXPLAIN QUERY PLAN
 
+<!-- nav -->
+Curriculum: [5. Indexes and EXPLAIN QUERY PLAN](../../curriculum/04-expert/05-indexes-and-explain-query-plan.md). Previous: [4. Views](04-views.md). Next: [6. Query Optimization Basics](06-query-optimization-basics.md).
+<!-- /nav -->
+
 `EXPLAIN QUERY PLAN` alone is read-only and safe against the shared
 database. Any exercise involving `CREATE INDEX` must run against your
 own scratch copy:
@@ -270,3 +274,9 @@ No more `SCAN`, and no more separate `TEMP B-TREE FOR ORDER BY` step
 — one index serves both the filter and the sort.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [5. Indexes and EXPLAIN QUERY PLAN](../../curriculum/04-expert/05-indexes-and-explain-query-plan.md). Previous: [4. Views](04-views.md). Next: [6. Query Optimization Basics](06-query-optimization-basics.md).
+<!-- /nav -->

@@ -1,5 +1,9 @@
 # Exercises: 6. Designing the Date Dimension
 
+<!-- nav -->
+Curriculum: [6. Designing the Date Dimension](../../curriculum/05-master/06-designing-the-date-dimension.md). Previous: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md). Next: [7. Designing the Fact Table](07-designing-the-fact-table.md).
+<!-- /nav -->
+
 Work against `project/oakhaven.db`. Read-only — every query below is a
 `SELECT`.
 
@@ -184,3 +188,9 @@ dimension-focused module — but recognizing that the dimension itself
 requires zero changes to support it is the key insight.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [6. Designing the Date Dimension](../../curriculum/05-master/06-designing-the-date-dimension.md). Previous: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md). Next: [7. Designing the Fact Table](07-designing-the-fact-table.md).
+<!-- /nav -->

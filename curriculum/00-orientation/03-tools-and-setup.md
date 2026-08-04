@@ -1,8 +1,7 @@
 # 3. Tools and Setup
 
-
 <!-- nav -->
-Previous: [2. What Is SQL?](02-what-is-sql.md). Next: [4. Meet Oakhaven](04-meet-oakhaven.md).
+Previous: [2. What Is SQL?](02-what-is-sql.md). Next: [4. Meet Oakhaven](04-meet-oakhaven.md). Exercises: [3. Tools and Setup](../../exercises/00-orientation/03-tools-and-setup.md).
 <!-- /nav -->
 
 ## The idea
@@ -186,5 +185,5 @@ or `.venv\Scripts\activate.bat`) each time you open a new terminal.
 ---
 
 <!-- nav -->
-Previous: [2. What Is SQL?](02-what-is-sql.md). Next: [4. Meet Oakhaven](04-meet-oakhaven.md).
+Previous: [2. What Is SQL?](02-what-is-sql.md). Next: [4. Meet Oakhaven](04-meet-oakhaven.md). Exercises: [3. Tools and Setup](../../exercises/00-orientation/03-tools-and-setup.md).
 <!-- /nav -->

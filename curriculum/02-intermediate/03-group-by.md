@@ -1,8 +1,7 @@
 # GROUP BY
 
-
 <!-- nav -->
-Previous: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md). Next: [HAVING](04-having.md).
+Previous: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md). Next: [HAVING](04-having.md). Exercises: [GROUP BY](../../exercises/02-intermediate/03-group-by.md).
 <!-- /nav -->
 
 ## The idea
@@ -181,5 +180,5 @@ Grouping by `(category, channel)` together gives one row per
 ---
 
 <!-- nav -->
-Previous: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md). Next: [HAVING](04-having.md).
+Previous: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md). Next: [HAVING](04-having.md). Exercises: [GROUP BY](../../exercises/02-intermediate/03-group-by.md).
 <!-- /nav -->

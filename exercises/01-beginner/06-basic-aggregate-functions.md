@@ -1,5 +1,9 @@
 # Exercises: Basic Aggregate Functions
 
+<!-- nav -->
+Curriculum: [6. Basic Aggregate Functions](../../curriculum/01-beginner/06-basic-aggregate-functions.md). Previous: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md). Next: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md).
+<!-- /nav -->
+
 ### 1. How many employees?
 
 Write a query that counts every row in `bronze_employees`.
@@ -143,3 +147,9 @@ but both are worth keeping in mind before treating "1.9x" as a precise
 markup figure.)
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [6. Basic Aggregate Functions](../../curriculum/01-beginner/06-basic-aggregate-functions.md). Previous: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md). Next: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md).
+<!-- /nav -->

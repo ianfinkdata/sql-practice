@@ -1,5 +1,9 @@
 # Exercises: Capstone — Combining CTEs and Window Functions
 
+<!-- nav -->
+Curriculum: [10. Capstone — Combining CTEs and Window Functions](../../curriculum/03-advanced/10-combining-ctes-and-window-functions.md). Previous: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](09-correlated-subqueries-exists.md). Next: [1. DDL Basics and Type Affinity](../04-expert/01-ddl-basics-and-type-affinity.md).
+<!-- /nav -->
+
 Query `project/oakhaven.db` for all of these. Run with:
 
 ```bash
@@ -261,3 +265,9 @@ does `top_category` pick out whichever category happened to win that
 particular year.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [10. Capstone — Combining CTEs and Window Functions](../../curriculum/03-advanced/10-combining-ctes-and-window-functions.md). Previous: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](09-correlated-subqueries-exists.md). Next: [1. DDL Basics and Type Affinity](../04-expert/01-ddl-basics-and-type-affinity.md).
+<!-- /nav -->

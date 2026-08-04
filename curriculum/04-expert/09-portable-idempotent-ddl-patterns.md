@@ -1,8 +1,7 @@
 # 9. Portable, Idempotent DDL Patterns
 
-
 <!-- nav -->
-Previous: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md). Next: [Tier 5 — Master](../05-master/README.md).
+Previous: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md). Next: [Tier 5 — Master](../05-master/README.md). Exercises: [9. Portable, Idempotent DDL Patterns](../../exercises/04-expert/09-portable-idempotent-ddl-patterns.md).
 <!-- /nav -->
 
 ## The idea
@@ -214,5 +213,5 @@ already exists.
 ---
 
 <!-- nav -->
-Previous: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md). Next: [Tier 5 — Master](../05-master/README.md).
+Previous: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md). Next: [Tier 5 — Master](../05-master/README.md). Exercises: [9. Portable, Idempotent DDL Patterns](../../exercises/04-expert/09-portable-idempotent-ddl-patterns.md).
 <!-- /nav -->

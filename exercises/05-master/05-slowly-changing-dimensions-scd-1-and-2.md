@@ -1,5 +1,9 @@
 # Exercises: 5. Slowly Changing Dimensions: Type 1 and Type 2
 
+<!-- nav -->
+Curriculum: [5. Slowly Changing Dimensions: Type 1 and Type 2](../../curriculum/05-master/05-slowly-changing-dimensions-scd-1-and-2.md). Previous: [4. Designing a Dimension](04-designing-a-dimension.md). Next: [6. Designing the Date Dimension](06-designing-the-date-dimension.md).
+<!-- /nav -->
+
 Work against `project/oakhaven.db`. Read-only — every query below is a
 `SELECT`. None of these persist a new table or view; they're all
 demonstrations of the SCD Type 2 shape, run directly as queries.
@@ -201,3 +205,9 @@ time the fact happened, not whichever row currently shares the natural
 key.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [5. Slowly Changing Dimensions: Type 1 and Type 2](../../curriculum/05-master/05-slowly-changing-dimensions-scd-1-and-2.md). Previous: [4. Designing a Dimension](04-designing-a-dimension.md). Next: [6. Designing the Date Dimension](06-designing-the-date-dimension.md).
+<!-- /nav -->

@@ -1,5 +1,9 @@
 # Capstone Exercises: Build a Novel Gold View
 
+<!-- nav -->
+Curriculum: [10. Capstone: Design a Novel Gold View](../../curriculum/05-master/10-capstone-build-a-novel-gold-view.md). Previous: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md). Next: [11. Beyond SQLite: Portability Notes](11-beyond-sqlite-portability-notes.md).
+<!-- /nav -->
+
 Three original gold-style views, none of which exist in
 `project/gold/`. Each was designed and solved by hand, then verified
 against real output from `project/oakhaven.db` — grade your own
@@ -245,3 +249,9 @@ here: 2+171+14+1+206+1+5+200 = 600, the full customer base — the same
 self-check discipline as the other two views in this file.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [10. Capstone: Design a Novel Gold View](../../curriculum/05-master/10-capstone-build-a-novel-gold-view.md). Previous: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md). Next: [11. Beyond SQLite: Portability Notes](11-beyond-sqlite-portability-notes.md).
+<!-- /nav -->

@@ -1,8 +1,7 @@
 # 6. Designing the Date Dimension
 
-
 <!-- nav -->
-Previous: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md). Next: [7. Designing the Fact Table](07-designing-the-fact-table.md).
+Previous: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md). Next: [7. Designing the Fact Table](07-designing-the-fact-table.md). Exercises: [6. Designing the Date Dimension](../../exercises/05-master/06-designing-the-date-dimension.md).
 <!-- /nav -->
 
 ## The idea
@@ -240,5 +239,5 @@ dimension.
 ---
 
 <!-- nav -->
-Previous: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md). Next: [7. Designing the Fact Table](07-designing-the-fact-table.md).
+Previous: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md). Next: [7. Designing the Fact Table](07-designing-the-fact-table.md). Exercises: [6. Designing the Date Dimension](../../exercises/05-master/06-designing-the-date-dimension.md).
 <!-- /nav -->

@@ -1,5 +1,9 @@
 # Exercises: 2. Dimensions and Facts: Core Vocabulary
 
+<!-- nav -->
+Curriculum: [2. Dimensions and Facts: Core Vocabulary](../../curriculum/05-master/02-dimensions-and-facts-core-vocabulary.md). Previous: [1. Why We Model Data: OLTP vs. Analytical Schemas](01-why-model-data-oltp-vs-analytical.md). Next: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md).
+<!-- /nav -->
+
 Work against `project/oakhaven.db`. Read-only — every query below is a
 `SELECT`.
 
@@ -200,3 +204,9 @@ just labels and become entities worth describing in their own right,
 which is the signal to give them a dimension table.
 
 </details>
+
+---
+
+<!-- nav -->
+Curriculum: [2. Dimensions and Facts: Core Vocabulary](../../curriculum/05-master/02-dimensions-and-facts-core-vocabulary.md). Previous: [1. Why We Model Data: OLTP vs. Analytical Schemas](01-why-model-data-oltp-vs-analytical.md). Next: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md).
+<!-- /nav -->

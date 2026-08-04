@@ -1,5 +1,9 @@
 # Exercises: Set Operations (UNION, UNION ALL, INTERSECT, EXCEPT)
 
+<!-- nav -->
+Curriculum: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](../../curriculum/02-intermediate/09-set-operations.md). Previous: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md). Next: [1. Common Table Expressions (CTEs)](../03-advanced/01-common-table-expressions.md).
+<!-- /nav -->
+
 Use `project/oakhaven.db`. Every solution below was run against the
 real database — your output should match exactly.
 
@@ -240,3 +244,9 @@ without first needing to know the answer.
 </details>
 
 ---
+
+---
+
+<!-- nav -->
+Curriculum: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](../../curriculum/02-intermediate/09-set-operations.md). Previous: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md). Next: [1. Common Table Expressions (CTEs)](../03-advanced/01-common-table-expressions.md).
+<!-- /nav -->

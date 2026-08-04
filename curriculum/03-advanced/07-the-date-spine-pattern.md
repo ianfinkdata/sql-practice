@@ -1,8 +1,7 @@
 # 7. The Date-Spine Pattern
 
-
 <!-- nav -->
-Previous: [6. Time Intelligence](06-time-intelligence.md). Next: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md).
+Previous: [6. Time Intelligence](06-time-intelligence.md). Next: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md). Exercises: [7. The Date-Spine Pattern](../../exercises/03-advanced/07-the-date-spine-pattern.md).
 <!-- /nav -->
 
 ## The idea
@@ -182,5 +181,5 @@ value proposition, quantified.
 ---
 
 <!-- nav -->
-Previous: [6. Time Intelligence](06-time-intelligence.md). Next: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md).
+Previous: [6. Time Intelligence](06-time-intelligence.md). Next: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md). Exercises: [7. The Date-Spine Pattern](../../exercises/03-advanced/07-the-date-spine-pattern.md).
 <!-- /nav -->
