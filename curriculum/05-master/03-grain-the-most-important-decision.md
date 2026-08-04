@@ -1,5 +1,10 @@
 # 3. Grain: The Most Important Decision in Star Schema Design
 
+
+<!-- nav -->
+Previous: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md). Next: [4. Designing a Dimension](04-designing-a-dimension.md).
+<!-- /nav -->
+
 ## The idea
 
 **Grain** is the precise, one-sentence answer to: "what does a single
@@ -203,3 +208,9 @@ layer, which depends on that per-line `product_id`.
 - Coarser grain (e.g., order instead of order line) trades away detail
   you can't recover later; this is a real, permanent cost, not a free
   simplification.
+
+---
+
+<!-- nav -->
+Previous: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md). Next: [4. Designing a Dimension](04-designing-a-dimension.md).
+<!-- /nav -->

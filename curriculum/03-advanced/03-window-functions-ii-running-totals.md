@@ -1,5 +1,10 @@
 # 3. Window Functions II — Running Totals & Moving Aggregates
 
+
+<!-- nav -->
+Previous: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md). Next: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md).
+<!-- /nav -->
+
 ## The idea
 
 The previous lesson used window functions to rank rows. This lesson uses
@@ -165,3 +170,9 @@ per category here.
   ordered sequence — gaps in the underlying data (missing dates, missing
   months) will silently distort them unless you're working from a
   gap-free spine.
+
+---
+
+<!-- nav -->
+Previous: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md). Next: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md).
+<!-- /nav -->

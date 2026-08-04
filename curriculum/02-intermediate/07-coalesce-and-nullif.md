@@ -1,5 +1,10 @@
 # COALESCE and NULLIF
 
+
+<!-- nav -->
+Previous: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md). Next: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md).
+<!-- /nav -->
+
 ## The idea
 
 Two small, opposite-purposed functions for handling `NULL`:
@@ -189,3 +194,9 @@ doesn't touch; that's a `WHERE`/`CASE` problem, not a `NULLIF` one.)
   both.
 - `NULLIF(divisor, 0)` is the standard idiom for guarding against
   divide-by-zero without an error.
+
+---
+
+<!-- nav -->
+Previous: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md). Next: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md).
+<!-- /nav -->

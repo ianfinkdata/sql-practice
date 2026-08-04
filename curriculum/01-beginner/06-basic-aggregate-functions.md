@@ -1,5 +1,10 @@
 # 6. Basic Aggregate Functions
 
+
+<!-- nav -->
+Previous: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md). Next: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md).
+<!-- /nav -->
+
 ## The idea
 
 Everything so far has returned a set of individual rows — filtered,
@@ -168,3 +173,9 @@ but it's worth being deliberate about, since it can be easy to assume
   output.
 - This module only covers whole-table aggregates — summarizing *per
   group* (e.g. per category) is `GROUP BY`, coming in a later tier.
+
+---
+
+<!-- nav -->
+Previous: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md). Next: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md).
+<!-- /nav -->

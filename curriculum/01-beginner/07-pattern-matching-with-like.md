@@ -1,5 +1,10 @@
 # 7. Pattern Matching with LIKE
 
+
+<!-- nav -->
+Previous: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md). Next: [8. DISTINCT and Duplicates](08-distinct-and-duplicates.md).
+<!-- /nav -->
+
 ## The idea
 
 `=` requires an exact match. Sometimes you don't know the exact value
@@ -175,3 +180,9 @@ interchangeable.
 - `LIKE` handles casing differences; it does not handle whitespace,
   spelling, or word-order differences — full standardization of a
   column like `category` is a Tier 2 topic.
+
+---
+
+<!-- nav -->
+Previous: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md). Next: [8. DISTINCT and Duplicates](08-distinct-and-duplicates.md).
+<!-- /nav -->

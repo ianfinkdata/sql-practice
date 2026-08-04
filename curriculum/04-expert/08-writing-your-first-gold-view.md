@@ -1,5 +1,10 @@
 # 8. Writing Your First Gold View
 
+
+<!-- nav -->
+Previous: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md). Next: [9. Portable, Idempotent DDL Patterns](09-portable-idempotent-ddl-patterns.md).
+<!-- /nav -->
+
 ## The idea
 
 This is the medallion architecture's payoff module. Across this
@@ -212,3 +217,9 @@ Before you consider your own version done, ask the same questions
 - Practice by writing (and verifying with real output) a `SELECT` for
   a new gold-style aggregate not already in `project/gold/` — without
   creating an actual view against the shared database.
+
+---
+
+<!-- nav -->
+Previous: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md). Next: [9. Portable, Idempotent DDL Patterns](09-portable-idempotent-ddl-patterns.md).
+<!-- /nav -->

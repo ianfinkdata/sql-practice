@@ -1,5 +1,10 @@
 # GROUP BY
 
+
+<!-- nav -->
+Previous: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md). Next: [HAVING](04-having.md).
+<!-- /nav -->
+
 ## The idea
 
 Aggregate functions like `COUNT()`, `SUM()`, and `AVG()` collapse many
@@ -172,3 +177,9 @@ Grouping by `(category, channel)` together gives one row per
   data, and the motivating problem for Module 6.
 - Always ask "how many distinct values do I expect?" before trusting a
   `GROUP BY` result on an unfamiliar column.
+
+---
+
+<!-- nav -->
+Previous: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md). Next: [HAVING](04-having.md).
+<!-- /nav -->

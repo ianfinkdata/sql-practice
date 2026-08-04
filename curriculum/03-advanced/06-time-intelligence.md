@@ -1,5 +1,10 @@
 # 6. Time Intelligence
 
+
+<!-- nav -->
+Previous: [5. Recursive CTEs](05-recursive-ctes.md). Next: [7. The Date-Spine Pattern](07-the-date-spine-pattern.md).
+<!-- /nav -->
+
 ## The idea
 
 "Time intelligence" is the umbrella term for pulling calendar meaning out
@@ -215,3 +220,9 @@ case logic.
 - `gold/dim_date.sql` centralizes every common date derivation
   (year/month/month_name/quarter/day_name/is_weekend) exactly once — prefer
   joining to it over recomputing `strftime()` logic in every query.
+
+---
+
+<!-- nav -->
+Previous: [5. Recursive CTEs](05-recursive-ctes.md). Next: [7. The Date-Spine Pattern](07-the-date-spine-pattern.md).
+<!-- /nav -->

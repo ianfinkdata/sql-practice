@@ -1,5 +1,10 @@
 # 9. Portable, Idempotent DDL Patterns
 
+
+<!-- nav -->
+Previous: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md). Next: [Tier 5 — Master](../05-master/README.md).
+<!-- /nav -->
+
 ## The idea
 
 **Idempotent** means "running it twice has the same effect as running
@@ -205,3 +210,9 @@ already exists.
 - `CREATE TABLE/VIEW IF NOT EXISTS` is idempotent too, but preserves
   the old definition if one exists — the wrong choice when you want a
   rebuild to reflect the current `.sql` file's contents.
+
+---
+
+<!-- nav -->
+Previous: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md). Next: [Tier 5 — Master](../05-master/README.md).
+<!-- /nav -->

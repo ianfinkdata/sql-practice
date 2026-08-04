@@ -1,5 +1,10 @@
 # LEFT JOIN and Missing Data
 
+
+<!-- nav -->
+Previous: [Combining Tables with JOIN](01-combining-tables-with-join.md). Next: [GROUP BY](03-group-by.md).
+<!-- /nav -->
+
 ## The idea
 
 Module 1 showed that `INNER JOIN` drops any row that doesn't find a
@@ -178,3 +183,9 @@ orphan count.
 - Not every hypothesis pans out — checking for customers with zero
   orders here returns 0 rows, and that's a useful, verified answer,
   not a wasted query.
+
+---
+
+<!-- nav -->
+Previous: [Combining Tables with JOIN](01-combining-tables-with-join.md). Next: [GROUP BY](03-group-by.md).
+<!-- /nav -->

@@ -1,5 +1,10 @@
 # 2. Dimensions and Facts: Core Vocabulary
 
+
+<!-- nav -->
+Previous: [1. Why We Model Data: OLTP vs. Analytical Schemas](01-why-model-data-oltp-vs-analytical.md). Next: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md).
+<!-- /nav -->
+
 ## The idea
 
 Dimensional modeling has a small, precise vocabulary. Once you have
@@ -197,3 +202,9 @@ directly.
   Oakhaven's gold dimensions currently use natural keys directly
   because none of them are historized yet — a deliberate simplification
   worth noticing, not an oversight.
+
+---
+
+<!-- nav -->
+Previous: [1. Why We Model Data: OLTP vs. Analytical Schemas](01-why-model-data-oltp-vs-analytical.md). Next: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md).
+<!-- /nav -->

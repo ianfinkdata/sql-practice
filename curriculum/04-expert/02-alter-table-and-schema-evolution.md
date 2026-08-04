@@ -1,5 +1,10 @@
 # 2. ALTER TABLE and Schema Evolution
 
+
+<!-- nav -->
+Previous: [1. DDL Basics and Type Affinity](01-ddl-basics-and-type-affinity.md). Next: [3. Transactions](03-transactions.md).
+<!-- /nav -->
+
 ## The idea
 
 Real schemas change after they're deployed: a new column is needed, a
@@ -225,3 +230,9 @@ pattern), not a rebuild.
 - This is meaningfully more restrictive than Postgres/MySQL — don't
   assume a migration script written for another engine will run
   unmodified against SQLite.
+
+---
+
+<!-- nav -->
+Previous: [1. DDL Basics and Type Affinity](01-ddl-basics-and-type-affinity.md). Next: [3. Transactions](03-transactions.md).
+<!-- /nav -->

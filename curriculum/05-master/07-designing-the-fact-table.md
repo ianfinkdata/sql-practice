@@ -1,5 +1,10 @@
 # 7. Designing the Fact Table
 
+
+<!-- nav -->
+Previous: [6. Designing the Date Dimension](06-designing-the-date-dimension.md). Next: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md).
+<!-- /nav -->
+
 ## The idea
 
 A fact table records that *something happened*, at a stated grain, and
@@ -297,3 +302,9 @@ reliability is *why* they're the measures, not an accident.
 - This grain → keys → measures thinking is the same recipe whether
   you're modeling retail order lines, hospital claims, or ad
   impressions — it's portable well beyond Oakhaven.
+
+---
+
+<!-- nav -->
+Previous: [6. Designing the Date Dimension](06-designing-the-date-dimension.md). Next: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md).
+<!-- /nav -->

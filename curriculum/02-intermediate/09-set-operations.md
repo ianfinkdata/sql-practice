@@ -1,5 +1,10 @@
 # Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT
 
+
+<!-- nav -->
+Previous: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md). Next: [Tier 3 — Advanced](../03-advanced/README.md).
+<!-- /nav -->
+
 ## The idea
 
 Every clause you've used so far — `JOIN`, `GROUP BY`, `WHERE` —
@@ -271,3 +276,9 @@ there.
   aren't one of the 8 canonical spellings.
 - `ORDER BY` goes once, at the end, applying to the whole combined
   result.
+
+---
+
+<!-- nav -->
+Previous: [Subqueries and Derived Tables](08-subqueries-and-derived-tables.md). Next: [Tier 3 — Advanced](../03-advanced/README.md).
+<!-- /nav -->

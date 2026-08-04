@@ -1,5 +1,10 @@
 # 10. Capstone: Design a Novel Gold View
 
+
+<!-- nav -->
+Previous: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md). Next: [11. Beyond SQLite: Portability Notes](11-beyond-sqlite-portability-notes.md).
+<!-- /nav -->
+
 ## The idea
 
 Every gold object dissected so far in this tier already exists in
@@ -173,3 +178,9 @@ own real, verified solutions for you to check your work against.
 - This is the whole point of the tier: the specific view above is
   disposable, but the process — grain, measures, join strategy, verify
   against something independently known — is the reusable skill.
+
+---
+
+<!-- nav -->
+Previous: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md). Next: [11. Beyond SQLite: Portability Notes](11-beyond-sqlite-portability-notes.md).
+<!-- /nav -->

@@ -1,5 +1,10 @@
 # 4. Limiting with LIMIT (and OFFSET)
 
+
+<!-- nav -->
+Previous: [3. Sorting with ORDER BY](03-sorting-with-order-by.md). Next: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md).
+<!-- /nav -->
+
 ## The idea
 
 You've already used `LIMIT` in every module so far, almost in
@@ -145,3 +150,9 @@ and gives you the next — the 2nd cheapest.
   combination gives you pagination.
 - Always pair `LIMIT`/`OFFSET` with `ORDER BY` when *which* rows you
   get actually matters.
+
+---
+
+<!-- nav -->
+Previous: [3. Sorting with ORDER BY](03-sorting-with-order-by.md). Next: [5. NULL: the Absence of a Value](05-null-the-absence-of-a-value.md).
+<!-- /nav -->

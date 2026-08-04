@@ -1,5 +1,10 @@
 # 4. LEAD, LAG, and Period-over-Period Comparisons
 
+
+<!-- nav -->
+Previous: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md). Next: [5. Recursive CTEs](05-recursive-ctes.md).
+<!-- /nav -->
+
 ## The idea
 
 `LAG()` and `LEAD()` are window functions that let a row see the value of
@@ -176,3 +181,9 @@ question you're asking.
 - The first row of a partition has no `LAG()` value and the last has no
   `LEAD()` value — both are `NULL` by default unless you supply a
   `default` argument.
+
+---
+
+<!-- nav -->
+Previous: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md). Next: [5. Recursive CTEs](05-recursive-ctes.md).
+<!-- /nav -->

@@ -1,5 +1,10 @@
 # 9. The Medallion Pipeline, Start to Finish
 
+
+<!-- nav -->
+Previous: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md). Next: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md).
+<!-- /nav -->
+
 ## The idea
 
 Every lesson in this repo has been building one pipeline, one layer at
@@ -275,3 +280,9 @@ module is about the shape that survives the move to any of them.
   layer gets built differ by engine (module 11), but the shape and the
   reasoning for having three layers instead of one is portable
   everywhere.
+
+---
+
+<!-- nav -->
+Previous: [8. Star vs. Snowflake Schema](08-star-vs-snowflake-schema.md). Next: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md).
+<!-- /nav -->

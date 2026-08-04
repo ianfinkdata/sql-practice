@@ -1,5 +1,10 @@
 # 9. Correlated Subqueries, EXISTS, and NOT EXISTS
 
+
+<!-- nav -->
+Previous: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md). Next: [10. Capstone — Combining CTEs and Window Functions](10-combining-ctes-and-window-functions.md).
+<!-- /nav -->
+
 ## The idea
 
 A subquery is **correlated** when it references a column from the outer
@@ -187,3 +192,9 @@ explicitly filters the poison out) would report it correctly.
   list. `NOT EXISTS` doesn't have this failure mode.
 - When in doubt between `IN`/`NOT IN` and `EXISTS`/`NOT EXISTS`: `EXISTS`
   family is safer by default, especially for `NOT` forms.
+
+---
+
+<!-- nav -->
+Previous: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md). Next: [10. Capstone — Combining CTEs and Window Functions](10-combining-ctes-and-window-functions.md).
+<!-- /nav -->

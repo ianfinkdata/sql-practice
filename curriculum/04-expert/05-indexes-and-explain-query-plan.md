@@ -1,5 +1,10 @@
 # 5. Indexes and EXPLAIN QUERY PLAN
 
+
+<!-- nav -->
+Previous: [4. Views](04-views.md). Next: [6. Query Optimization Basics](06-query-optimization-basics.md).
+<!-- /nav -->
+
 ## The idea
 
 Without an index, finding rows that match a `WHERE` condition means
@@ -208,3 +213,9 @@ the columns `fact_sales` joins against `dim_customer` and
 - `PRAGMA index_list(table_name)` shows what indexes already exist.
 - Indexes trade write speed and disk space for read speed — index
   what you actually filter/join/sort on, not everything.
+
+---
+
+<!-- nav -->
+Previous: [4. Views](04-views.md). Next: [6. Query Optimization Basics](06-query-optimization-basics.md).
+<!-- /nav -->

@@ -1,5 +1,10 @@
 # 1. What Is a Database?
 
+
+<!-- nav -->
+Previous: [sql-practice](../../README.md). Next: [2. What Is SQL?](02-what-is-sql.md).
+<!-- /nav -->
+
 ## The idea
 
 A database is just an organized place to store information so that you
@@ -76,3 +81,9 @@ Oakhaven.
 - The rest of this course is about learning to read and write SQL
   against one real (if fictional, if intentionally messy) database:
   Oakhaven.
+
+---
+
+<!-- nav -->
+Previous: [sql-practice](../../README.md). Next: [2. What Is SQL?](02-what-is-sql.md).
+<!-- /nav -->

@@ -1,5 +1,10 @@
 # 3. Transactions
 
+
+<!-- nav -->
+Previous: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md). Next: [4. Views](04-views.md).
+<!-- /nav -->
+
 ## The idea
 
 A transaction groups one or more statements into a single unit: either
@@ -209,3 +214,9 @@ a half-populated database on disk.
   individually — explicit transactions matter once multiple writes
   need to succeed or fail as one.
 - Always demo transactions against a scratch copy of the database.
+
+---
+
+<!-- nav -->
+Previous: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md). Next: [4. Views](04-views.md).
+<!-- /nav -->

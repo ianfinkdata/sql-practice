@@ -1,5 +1,10 @@
 # 6. Query Optimization Basics
 
+
+<!-- nav -->
+Previous: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md). Next: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md).
+<!-- /nav -->
+
 ## The idea
 
 Module 5 showed *that* indexes change `SCAN` into `SEARCH`. This
@@ -203,3 +208,9 @@ Not every filter benefits from an index, even written correctly:
 - Not every filter benefits from an index — low selectivity and small
   tables are two real reasons a `SCAN` can beat a `SEARCH`. Always
   check `EXPLAIN QUERY PLAN` rather than assuming.
+
+---
+
+<!-- nav -->
+Previous: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md). Next: [7. Constraints and Data Integrity](07-constraints-and-data-integrity.md).
+<!-- /nav -->

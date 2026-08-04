@@ -1,5 +1,10 @@
 # 3. Sorting with ORDER BY
 
+
+<!-- nav -->
+Previous: [2. Filtering with WHERE](02-filtering-with-where.md). Next: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md).
+<!-- /nav -->
+
 ## The idea
 
 By default, a query returns rows in whatever order the database
@@ -172,3 +177,9 @@ first things the silver layer does (Tier 2).
 - Sorting mixed-format text dates does **not** give chronological
   order — a real trap in Oakhaven's bronze layer, and a preview of why
   the silver layer standardizes date formats.
+
+---
+
+<!-- nav -->
+Previous: [2. Filtering with WHERE](02-filtering-with-where.md). Next: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md).
+<!-- /nav -->

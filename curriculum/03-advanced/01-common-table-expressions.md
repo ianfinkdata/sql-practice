@@ -1,5 +1,10 @@
 # 1. Common Table Expressions (CTEs)
 
+
+<!-- nav -->
+Previous: [Tier 2 — Intermediate](../02-intermediate/README.md). Next: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md).
+<!-- /nav -->
+
 ## The idea
 
 A **Common Table Expression** (CTE) is a named, temporary result set that
@@ -174,3 +179,9 @@ one clear job, and the final `SELECT` just consumes the last one's output.
   defined before it.
 - A good rule of thumb: reach for a CTE whenever you catch yourself
   writing a subquery you'd want to name if you could.
+
+---
+
+<!-- nav -->
+Previous: [Tier 2 — Intermediate](../02-intermediate/README.md). Next: [2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK](02-window-functions-i-row-number-rank.md).
+<!-- /nav -->

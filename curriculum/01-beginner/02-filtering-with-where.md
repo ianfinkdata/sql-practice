@@ -1,5 +1,10 @@
 # 2. Filtering with WHERE
 
+
+<!-- nav -->
+Previous: [1. SELECT and FROM](01-select-and-from.md). Next: [3. Sorting with ORDER BY](03-sorting-with-order-by.md).
+<!-- /nav -->
+
 ## The idea
 
 `SELECT ... FROM` gets you every row in a table. Almost immediately,
@@ -208,3 +213,9 @@ another reason messy casing needs real cleaning, not just careful
 - Text comparisons with `=` are exact and case-sensitive — a fact
   that matters a lot once you're working with real, messy text
   columns like Oakhaven's `category`.
+
+---
+
+<!-- nav -->
+Previous: [1. SELECT and FROM](01-select-and-from.md). Next: [3. Sorting with ORDER BY](03-sorting-with-order-by.md).
+<!-- /nav -->

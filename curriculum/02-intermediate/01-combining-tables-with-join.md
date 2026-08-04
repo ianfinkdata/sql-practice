@@ -1,5 +1,10 @@
 # Combining Tables with JOIN
 
+
+<!-- nav -->
+Previous: [Tier 1 — Beginner](../01-beginner/README.md). Next: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md).
+<!-- /nav -->
+
 ## The idea
 
 So far every query you've written has looked at one table at a time.
@@ -177,3 +182,9 @@ LIMIT 5;
 - Always alias your tables once a query touches more than one.
 - If you need to see what an `INNER JOIN` would hide, keep reading —
   that's exactly what `LEFT JOIN` (Module 2) is for.
+
+---
+
+<!-- nav -->
+Previous: [Tier 1 — Beginner](../01-beginner/README.md). Next: [LEFT JOIN and Missing Data](02-left-join-and-missing-data.md).
+<!-- /nav -->

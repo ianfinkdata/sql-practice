@@ -1,5 +1,10 @@
 # 7. Constraints and Data Integrity
 
+
+<!-- nav -->
+Previous: [6. Query Optimization Basics](06-query-optimization-basics.md). Next: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md).
+<!-- /nav -->
+
 ## The idea
 
 A constraint is a rule the database enforces on every write, forever
@@ -243,3 +248,9 @@ problem rather than pretend it doesn't exist.
   "raw/unconstrained" (bronze) from "cleaned/validated" (silver) —
   bronze often can't add constraints (you don't control the source),
   so validation happens explicitly downstream instead.
+
+---
+
+<!-- nav -->
+Previous: [6. Query Optimization Basics](06-query-optimization-basics.md). Next: [8. Writing Your First Gold View](08-writing-your-first-gold-view.md).
+<!-- /nav -->

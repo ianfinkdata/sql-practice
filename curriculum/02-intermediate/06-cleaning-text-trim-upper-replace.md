@@ -1,5 +1,10 @@
 # Cleaning Text: TRIM, UPPER, LOWER, REPLACE
 
+
+<!-- nav -->
+Previous: [CASE Expressions](05-case-expressions.md). Next: [COALESCE and NULLIF](07-coalesce-and-nullif.md).
+<!-- /nav -->
+
 ## The idea
 
 Module 3 showed `bronze_products.category` splitting into 40 raw
@@ -224,3 +229,9 @@ thing" (abbreviation vs. full name) on their own.
 - Apply the same cleaning expression everywhere the column is
   compared — `SELECT`, `WHERE`, `GROUP BY`, and `JOIN ON` alike —  not
   just where it's displayed.
+
+---
+
+<!-- nav -->
+Previous: [CASE Expressions](05-case-expressions.md). Next: [COALESCE and NULLIF](07-coalesce-and-nullif.md).
+<!-- /nav -->

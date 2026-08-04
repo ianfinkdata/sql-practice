@@ -1,5 +1,10 @@
 # Subqueries and Derived Tables
 
+
+<!-- nav -->
+Previous: [COALESCE and NULLIF](07-coalesce-and-nullif.md). Next: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](09-set-operations.md).
+<!-- /nav -->
+
 ## The idea
 
 A subquery is a `SELECT` nested inside another query. You've already
@@ -221,3 +226,9 @@ somehow" into "step 2 of 3 is the problem."
 - Subqueries and `HAVING`/`JOIN` often solve overlapping problems;
   reach for a derived table specifically when you need to filter or
   join on something computed by an earlier step.
+
+---
+
+<!-- nav -->
+Previous: [COALESCE and NULLIF](07-coalesce-and-nullif.md). Next: [Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT](09-set-operations.md).
+<!-- /nav -->

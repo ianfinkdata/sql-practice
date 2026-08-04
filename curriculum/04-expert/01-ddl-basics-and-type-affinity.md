@@ -1,5 +1,10 @@
 # 1. DDL Basics and Type Affinity
 
+
+<!-- nav -->
+Previous: [Tier 3 — Advanced](../03-advanced/README.md). Next: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md).
+<!-- /nav -->
+
 ## The idea
 
 Every query you've written so far in this course has been DQL
@@ -252,3 +257,9 @@ contrasts this directly against a properly constrained schema.
   add them back.
 - Always demo `CREATE`/`INSERT`/`ALTER` against a scratch copy of the
   database, never the shared `project/oakhaven.db`.
+
+---
+
+<!-- nav -->
+Previous: [Tier 3 — Advanced](../03-advanced/README.md). Next: [2. ALTER TABLE and Schema Evolution](02-alter-table-and-schema-evolution.md).
+<!-- /nav -->

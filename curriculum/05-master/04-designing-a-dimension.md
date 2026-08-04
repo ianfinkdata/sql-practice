@@ -1,5 +1,10 @@
 # 4. Designing a Dimension
 
+
+<!-- nav -->
+Previous: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md). Next: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md).
+<!-- /nav -->
+
 ## The idea
 
 A well-designed dimension is a **conformed** lookup table: one row per
@@ -224,3 +229,9 @@ problem.
   `WHERE rn = 1` filter.
 - "Does it have a unique key" and "is it correctly modeled" are
   different questions — always ask the second one too.
+
+---
+
+<!-- nav -->
+Previous: [3. Grain: The Most Important Decision in Star Schema Design](03-grain-the-most-important-decision.md). Next: [5. Slowly Changing Dimensions: Type 1 and Type 2](05-slowly-changing-dimensions-scd-1-and-2.md).
+<!-- /nav -->

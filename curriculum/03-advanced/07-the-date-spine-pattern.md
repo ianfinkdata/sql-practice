@@ -1,5 +1,10 @@
 # 7. The Date-Spine Pattern
 
+
+<!-- nav -->
+Previous: [6. Time Intelligence](06-time-intelligence.md). Next: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md).
+<!-- /nav -->
+
 ## The idea
 
 If you build a sales-by-day report with a plain `GROUP BY order_date` over
@@ -173,3 +178,9 @@ value proposition, quantified.
 - This pattern generalizes beyond dates: any time you need "every X, even
   ones with no matching data," start the `FROM` clause from the complete
   list of X and `LEFT JOIN` the data onto it.
+
+---
+
+<!-- nav -->
+Previous: [6. Time Intelligence](06-time-intelligence.md). Next: [8. Writing Your First Silver View](08-writing-your-first-silver-view.md).
+<!-- /nav -->

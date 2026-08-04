@@ -1,5 +1,10 @@
 # 11. Beyond SQLite: Portability Notes
 
+
+<!-- nav -->
+Previous: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md). Next: [Portfolio](../../portfolio/README.md).
+<!-- /nav -->
+
 ## The idea
 
 Everything in this tier — grain, star schemas, medallion layering,
@@ -293,3 +298,9 @@ production engines.
   that engine's own SQL reference is the source of truth — this module
   is a map of *where* the differences are, not a substitute for each
   engine's docs.
+
+---
+
+<!-- nav -->
+Previous: [10. Capstone: Design a Novel Gold View](10-capstone-build-a-novel-gold-view.md). Next: [Portfolio](../../portfolio/README.md).
+<!-- /nav -->

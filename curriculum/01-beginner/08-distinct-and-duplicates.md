@@ -1,5 +1,10 @@
 # 8. DISTINCT and Duplicates
 
+
+<!-- nav -->
+Previous: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md). Next: [Tier 2 — Intermediate](../02-intermediate/README.md).
+<!-- /nav -->
+
 ## The idea
 
 `DISTINCT` removes duplicate rows from a result — if the same value
@@ -176,3 +181,9 @@ database.
   only 8 real categories, and `bronze_sales.payment_method` shows the
   same pattern — a direct, concrete preview of the cleanup work in
   Tier 2.
+
+---
+
+<!-- nav -->
+Previous: [7. Pattern Matching with LIKE](07-pattern-matching-with-like.md). Next: [Tier 2 — Intermediate](../02-intermediate/README.md).
+<!-- /nav -->

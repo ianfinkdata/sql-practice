@@ -1,5 +1,10 @@
 # 1. Why We Model Data: OLTP vs. Analytical Schemas
 
+
+<!-- nav -->
+Previous: [Tier 4 — Expert](../04-expert/README.md). Next: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md).
+<!-- /nav -->
+
 ## The idea
 
 Every database serves one of two very different jobs, and the shape
@@ -206,3 +211,9 @@ not re-solved by every analytical query.
   (`dim_*` + `fact_sales`) is the analytical re-modeling of it.
 - The skills in this tier — thinking in facts, dimensions, and grain —
   apply to any dataset you'll ever model, not just Oakhaven.
+
+---
+
+<!-- nav -->
+Previous: [Tier 4 — Expert](../04-expert/README.md). Next: [2. Dimensions and Facts: Core Vocabulary](02-dimensions-and-facts-core-vocabulary.md).
+<!-- /nav -->

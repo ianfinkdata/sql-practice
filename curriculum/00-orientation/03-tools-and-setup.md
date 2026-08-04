@@ -1,5 +1,10 @@
 # 3. Tools and Setup
 
+
+<!-- nav -->
+Previous: [2. What Is SQL?](02-what-is-sql.md). Next: [4. Meet Oakhaven](04-meet-oakhaven.md).
+<!-- /nav -->
+
 ## The idea
 
 Before writing any SQL, you need two things: the practice database
@@ -125,3 +130,9 @@ a different number, re-run `python project/build.py` and try again.
   (https://www.beekeeperstudio.io/) — your choice.
 - `project/docs/sqlite_cli_guide.md` is your reference for CLI-specific
   tips once you start running real queries.
+
+---
+
+<!-- nav -->
+Previous: [2. What Is SQL?](02-what-is-sql.md). Next: [4. Meet Oakhaven](04-meet-oakhaven.md).
+<!-- /nav -->

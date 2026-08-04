@@ -1,5 +1,10 @@
 # 4. Meet Oakhaven
 
+
+<!-- nav -->
+Previous: [3. Tools and Setup](03-tools-and-setup.md). Next: [Tier 1 — Beginner](../01-beginner/README.md).
+<!-- /nav -->
+
 ## The company
 
 Oakhaven is a fictional outdoor-gear retailer: think hiking boots,
@@ -165,3 +170,9 @@ above is intentional, and there's a plan for it.
 - **Bronze → silver → gold** is a medallion architecture: raw → cleaned
   → business-ready. This whole course is organized around that one
   pipeline, applied to this one small database.
+
+---
+
+<!-- nav -->
+Previous: [3. Tools and Setup](03-tools-and-setup.md). Next: [Tier 1 — Beginner](../01-beginner/README.md).
+<!-- /nav -->

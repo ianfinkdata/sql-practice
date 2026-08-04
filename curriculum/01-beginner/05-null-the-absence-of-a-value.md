@@ -1,5 +1,10 @@
 # 5. NULL: the Absence of a Value
 
+
+<!-- nav -->
+Previous: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md). Next: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md).
+<!-- /nav -->
+
 ## The idea
 
 `NULL` is SQL's way of saying "no value here." Not zero, not an empty
@@ -175,3 +180,9 @@ certainly why.
 - Oakhaven's bronze layer has real, meaningful NULLs throughout —
   `bronze_products.subcategory` and `bronze_products.unit_cost` are
   two of many you'll run into.
+
+---
+
+<!-- nav -->
+Previous: [4. Limiting with LIMIT (and OFFSET)](04-limiting-with-limit.md). Next: [6. Basic Aggregate Functions](06-basic-aggregate-functions.md).
+<!-- /nav -->

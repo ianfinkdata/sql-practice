@@ -1,5 +1,10 @@
 # 2. What Is SQL?
 
+
+<!-- nav -->
+Previous: [1. What Is a Database?](01-what-is-a-database.md). Next: [3. Tools and Setup](03-tools-and-setup.md).
+<!-- /nav -->
+
 ## The idea
 
 SQL is a language for talking to a database. Like any language, it has
@@ -65,3 +70,9 @@ that single keyword.
   that's where the vast majority of real SQL work happens.
 - You'll query the same database, Oakhaven, throughout the whole
   course, treating it as read-only.
+
+---
+
+<!-- nav -->
+Previous: [1. What Is a Database?](01-what-is-a-database.md). Next: [3. Tools and Setup](03-tools-and-setup.md).
+<!-- /nav -->

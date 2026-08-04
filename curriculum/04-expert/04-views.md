@@ -1,5 +1,10 @@
 # 4. Views
 
+
+<!-- nav -->
+Previous: [3. Transactions](03-transactions.md). Next: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md).
+<!-- /nav -->
+
 ## The idea
 
 A **view** is a saved `SELECT` statement that behaves like a table for
@@ -256,3 +261,9 @@ documents.
   `SELECT`, not just simple filtering.
 - `DROP VIEW IF EXISTS` before `CREATE VIEW` is the idempotent pattern
   used throughout `project/silver/` and `project/gold/` (Module 9).
+
+---
+
+<!-- nav -->
+Previous: [3. Transactions](03-transactions.md). Next: [5. Indexes and EXPLAIN QUERY PLAN](05-indexes-and-explain-query-plan.md).
+<!-- /nav -->

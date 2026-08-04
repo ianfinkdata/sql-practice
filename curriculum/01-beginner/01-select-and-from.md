@@ -1,5 +1,10 @@
 # 1. SELECT and FROM
 
+
+<!-- nav -->
+Previous: [Tier 0 — Orientation](../00-orientation/README.md). Next: [2. Filtering with WHERE](02-filtering-with-where.md).
+<!-- /nav -->
+
 ## The idea
 
 Almost every query you write in this course starts the same way: pick
@@ -163,3 +168,9 @@ LIMIT 3;
   explicitly is better once you know what you need.
 - The order of columns in `SELECT` controls the order in your output —
   independent of the table's actual column order.
+
+---
+
+<!-- nav -->
+Previous: [Tier 0 — Orientation](../00-orientation/README.md). Next: [2. Filtering with WHERE](02-filtering-with-where.md).
+<!-- /nav -->

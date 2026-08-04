@@ -1,5 +1,10 @@
 # HAVING
 
+
+<!-- nav -->
+Previous: [GROUP BY](03-group-by.md). Next: [CASE Expressions](05-case-expressions.md).
+<!-- /nav -->
+
 ## The idea
 
 `WHERE` filters individual rows *before* grouping happens. `HAVING`
@@ -176,3 +181,9 @@ doing their separate jobs, in one query.
 - `HAVING` is exactly the tool for "which groups clear a threshold" —
   no cleaning required first, even on a messy column like
   `bronze_products.category`.
+
+---
+
+<!-- nav -->
+Previous: [GROUP BY](03-group-by.md). Next: [CASE Expressions](05-case-expressions.md).
+<!-- /nav -->

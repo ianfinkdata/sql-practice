@@ -1,5 +1,10 @@
 # 8. Writing Your First Silver View
 
+
+<!-- nav -->
+Previous: [7. The Date-Spine Pattern](07-the-date-spine-pattern.md). Next: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](09-correlated-subqueries-exists.md).
+<!-- /nav -->
+
 ## The idea — what "silver" is for
 
 Oakhaven's database is organized as a **medallion architecture**, a common
@@ -274,3 +279,9 @@ memory of writing the `CASE` yourself, not reading someone else's.
 - The same casing-normalization technique used for `customer_segment`
   applies directly to `bronze_employees.department`/`region` — practice it
   there before checking this module's exercises.
+
+---
+
+<!-- nav -->
+Previous: [7. The Date-Spine Pattern](07-the-date-spine-pattern.md). Next: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](09-correlated-subqueries-exists.md).
+<!-- /nav -->

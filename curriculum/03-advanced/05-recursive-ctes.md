@@ -1,5 +1,10 @@
 # 5. Recursive CTEs
 
+
+<!-- nav -->
+Previous: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md). Next: [6. Time Intelligence](06-time-intelligence.md).
+<!-- /nav -->
+
 ## The idea
 
 Every CTE so far (Module 1) has been non-recursive: define it once,
@@ -195,3 +200,9 @@ other people or processes; that's true here and in production alike.)
   data directly in SQL.
 - When a recursive CTE's output looks off by one row, check the stopping
   condition's comparison operator (`<` vs `<=`) first.
+
+---
+
+<!-- nav -->
+Previous: [4. LEAD, LAG, and Period-over-Period Comparisons](04-lead-lag-period-over-period.md). Next: [6. Time Intelligence](06-time-intelligence.md).
+<!-- /nav -->

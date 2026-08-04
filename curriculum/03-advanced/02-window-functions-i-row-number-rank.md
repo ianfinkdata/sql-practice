@@ -1,5 +1,10 @@
 # 2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK
 
+
+<!-- nav -->
+Previous: [1. Common Table Expressions (CTEs)](01-common-table-expressions.md). Next: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md).
+<!-- /nav -->
+
 ## The idea
 
 Every window function you'll meet in Tier 3 does the same basic trick:
@@ -184,3 +189,9 @@ good illustration of why real dedup logic is rarely a single clean rule.
   customer_id)` is the standard email-based dedup pattern — but verify its
   output against known ground truth; it can miss cases (like a blank key)
   that a human reviewer would catch.
+
+---
+
+<!-- nav -->
+Previous: [1. Common Table Expressions (CTEs)](01-common-table-expressions.md). Next: [3. Window Functions II — Running Totals & Moving Aggregates](03-window-functions-ii-running-totals.md).
+<!-- /nav -->

@@ -1,5 +1,10 @@
 # 5. Slowly Changing Dimensions: Type 1 and Type 2
 
+
+<!-- nav -->
+Previous: [4. Designing a Dimension](04-designing-a-dimension.md). Next: [6. Designing the Date Dimension](06-designing-the-date-dimension.md).
+<!-- /nav -->
+
 ## The idea
 
 Dimensions don't stay still. A customer moves states. A product gets
@@ -218,3 +223,9 @@ protects you from this exact class of mistake.
 - You can't fabricate Type 2 history for attributes your source system
   never tracked changes for (like department) — be honest about what
   a dataset can and can't support.
+
+---
+
+<!-- nav -->
+Previous: [4. Designing a Dimension](04-designing-a-dimension.md). Next: [6. Designing the Date Dimension](06-designing-the-date-dimension.md).
+<!-- /nav -->

@@ -1,5 +1,10 @@
 # 10. Capstone — Combining CTEs and Window Functions
 
+
+<!-- nav -->
+Previous: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](09-correlated-subqueries-exists.md). Next: [Tier 4 — Expert](../04-expert/README.md).
+<!-- /nav -->
+
 ## The idea
 
 This module doesn't introduce new syntax. It's a deliberate synthesis
@@ -146,3 +151,9 @@ takes one extra line once you're comfortable with the mechanism.
   intelligence, the date spine, silver-layer cleaning, correlated
   subqueries — composes with the others. Real analytical SQL is rarely one
   technique in isolation; it's several, chained clearly.
+
+---
+
+<!-- nav -->
+Previous: [9. Correlated Subqueries, EXISTS, and NOT EXISTS](09-correlated-subqueries-exists.md). Next: [Tier 4 — Expert](../04-expert/README.md).
+<!-- /nav -->

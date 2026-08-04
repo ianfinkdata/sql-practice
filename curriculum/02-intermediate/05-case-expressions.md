@@ -1,5 +1,10 @@
 # CASE Expressions
 
+
+<!-- nav -->
+Previous: [HAVING](04-having.md). Next: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md).
+<!-- /nav -->
+
 ## The idea
 
 `CASE` is SQL's if/else-if/else, used inside a `SELECT` list (or
@@ -209,3 +214,9 @@ without needing a separate query per condition.
   unmatched rows to become `NULL`.
 - Combine with `LOWER(TRIM(...))` when comparing against text that
   might vary in case or whitespace — Module 6 goes deep on that.
+
+---
+
+<!-- nav -->
+Previous: [HAVING](04-having.md). Next: [Cleaning Text: TRIM, UPPER, LOWER, REPLACE](06-cleaning-text-trim-upper-replace.md).
+<!-- /nav -->

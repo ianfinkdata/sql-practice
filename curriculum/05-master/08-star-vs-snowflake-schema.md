@@ -1,5 +1,10 @@
 # 8. Star vs. Snowflake Schema
 
+
+<!-- nav -->
+Previous: [7. Designing the Fact Table](07-designing-the-fact-table.md). Next: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md).
+<!-- /nav -->
+
 ## The idea
 
 Once you have a fact table with foreign keys to several dimensions,
@@ -247,3 +252,9 @@ dimension almost always means "leave it flat."
   out of a dimension, check its cardinality relative to the dimension's
   row count, and ask whether any other fact table in the warehouse
   needs to share it.
+
+---
+
+<!-- nav -->
+Previous: [7. Designing the Fact Table](07-designing-the-fact-table.md). Next: [9. The Medallion Pipeline, Start to Finish](09-medallion-pipeline-recap.md).
+<!-- /nav -->
