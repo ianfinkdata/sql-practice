@@ -160,47 +160,25 @@
 </section>
 
 <section id="get-started">
-  <h2>Get started</h2>
-  <div class="steps">
-    <div class="step">
-      <div class="step-label">1. Install dependencies</div>
-      <pre><code>pip install -r project/requirements.txt</code></pre>
-      <p>
-        The only dependency is <code>faker</code>; everything else is
-        Python standard library (<code>sqlite3</code>, <code>random</code>,
-        <code>datetime</code>).
-      </p>
-    </div>
-    <div class="step">
-      <div class="step-label">2. Build the database</div>
-      <pre><code>python project/build.py</code></pre>
-      <p>
-        This creates <code>project/oakhaven.db</code> from scratch —
-        bronze, silver, and gold layers, in that order. Re-running it is
-        safe and always produces the same byte-identical database.
-      </p>
-    </div>
+  <div class="callout">
+    <h3>Get started</h3>
+    <p>
+      The first thing you do in this course is generate your own copy of
+      <code>oakhaven.db</code> — that's Tier 0 of the curriculum, not a
+      prerequisite to skip past. Full step-by-step setup (including the
+      one common pitfall on modern Debian/Ubuntu systems) lives there:
+    </p>
+    <p>
+      <a href="../curriculum/00-orientation/03-tools-and-setup.md">curriculum/00-orientation/03-tools-and-setup.md &rarr;</a>
+    </p>
+    <p>
+      Pairing with an AI coding assistant? This repo ships a
+      <code>setup-database</code> skill
+      (<code>.claude/skills/setup-database/</code>) that runs every setup
+      step for you and reports back once <code>oakhaven.db</code> is
+      built and verified.
+    </p>
   </div>
-
-  <div class="note">
-    <strong>Common error on modern Debian/Ubuntu:</strong> if
-    <code>pip install</code> fails with
-    <code>error: externally-managed-environment</code>, your system Python
-    is blocking global installs (<a href="https://peps.python.org/pep-0668/">PEP 668</a>).
-    Create a virtual environment first and the install will work
-    normally:
-    <pre><code>python3 -m venv .venv
-source .venv/bin/activate
-pip install -r project/requirements.txt</code></pre>
-  </div>
-
-  <p>
-    Once the database exists, open it with the
-    <a href="https://www.sqlite.org/cli.html"><code>sqlite3</code></a>
-    command-line tool, DB Browser for SQLite, or any SQLite-compatible
-    client, and start with
-    <a href="../curriculum/00-orientation/">curriculum/00-orientation/</a>.
-  </p>
 </section>
 
 <footer class="site-footer">
