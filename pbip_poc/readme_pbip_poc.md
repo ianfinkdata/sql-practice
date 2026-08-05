@@ -21,6 +21,7 @@ Extracting raw SQL statements after they've been shredded through Power Query M,
 sql-practice/
 └── pbip_poc/
     ├── readme_pbip_poc.md               ← You are here: Table of Contents & Architecture Guide
+    ├── ai_usage_guide.md                ← Guide on checking usage, avoiding limits & token budgeting
     ├── sql_queries/
     │   ├── 01_flat_model.sql            ← One Flat Table paradigm (Denormalized reporting)
     │   └── 02_star_schema_model.sql     ← Star Schema paradigm (Fact + 4 Dimensions)
