@@ -1,0 +1,60 @@
+table dim_customer
+	lineageTag: 1ace2605-f91c-4dba-a17c-16b7d1afa4b1
+
+	column customer_id
+		dataType: string
+		lineageTag: 2f58fa72-11f2-402b-89ee-aa2a92957236
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column full_name
+		dataType: string
+		lineageTag: a95ea06f-ed8e-4a55-ae23-0021146de55e
+		summarizeBy: none
+		sourceColumn: full_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column email
+		dataType: string
+		lineageTag: 3c667951-5567-4e51-abae-ac844a92749e
+		summarizeBy: none
+		sourceColumn: email
+
+		annotation SummarizationSetBy = Automatic
+
+	column state
+		dataType: string
+		lineageTag: 244b90ff-6173-450c-9de3-cf88d93ccc9d
+		summarizeBy: none
+		sourceColumn: state
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_segment
+		dataType: string
+		lineageTag: a11d813e-71b9-4a91-9f2a-202e09a41609
+		summarizeBy: none
+		sourceColumn: customer_segment
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_customer = m
+		mode: import
+		source = ```
+				let
+				    // 1. Execute the Python script and inject your parameters safely
+				    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT DISTINCT #(lf)    c.customer_id,#(lf)    c.full_name,#(lf)    c.email,#(lf)    c.state,#(lf)    c.customer_segment#(lf)FROM dim_customer c#(lf)WHERE c.customer_id IN (#(lf)    SELECT customer_id #(lf)    FROM fact_sales #(lf)    ORDER BY order_date DESC, order_id, order_line_id #(lf)    LIMIT 100#(lf));#(lf)"""""", conn)#(lf)conn.close()"),
+				    
+				    // 2. Extract the dataframe 'df' that Python generated
+				    DataTable = Source{[Name="df"]}[Value]
+				in
+				    DataTable
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

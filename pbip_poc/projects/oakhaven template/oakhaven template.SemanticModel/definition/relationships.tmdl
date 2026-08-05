@@ -1,0 +1,20 @@
+relationship AutoDetected_1d28b393-7c5a-472e-8bdf-bbaefdfadc47
+	fromColumn: fact_sales.customer_id
+	toColumn: dim_customer.customer_id
+
+relationship AutoDetected_de8de45f-ebb1-4d1d-a6b4-e19e17d854ac
+	fromColumn: fact_sales.datekey
+	toColumn: dim_calendar.datekey
+
+relationship cdcabb57-8502-4d1c-1ca6-c29df34d8d3e
+	fromColumn: fact_sales.employee_id
+	toColumn: dim_employee.employee_id
+
+relationship dab805ef-d296-87a4-acb2-347f07dc4199
+	fromColumn: flat_sales_all.order_date
+	toColumn: dim_calendar.date
+
+relationship defc8ca4-33ee-19ab-d42b-240fcd45be3e
+	fromColumn: flat_sales_completed.order_date
+	toColumn: dim_calendar.date
+

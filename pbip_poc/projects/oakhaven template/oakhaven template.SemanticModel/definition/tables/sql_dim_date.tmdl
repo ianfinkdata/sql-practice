@@ -1,0 +1,30 @@
+table sql_dim_date
+	isHidden
+	lineageTag: e90299e8-e196-4d64-af85-6922f6c9c57b
+
+	column sql_dim_date
+		dataType: string
+		isHidden
+		lineageTag: 5fada11d-4899-4291-abda-f4b4e14abc4d
+		summarizeBy: none
+		sourceColumn: sql_dim_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition sql_dim_date = m
+		mode: import
+		queryGroup: 'sql queries'
+		source =
+				let
+				    Source = "SELECT DISTINCT #(cr)#(lf)    d.datekey,#(cr)#(lf)    d.date,#(cr)#(lf)    d.year,#(cr)#(lf)    d.month,#(cr)#(lf)    d.month_name,#(cr)#(lf)    d.quarter,#(cr)#(lf)    d.day_name,#(cr)#(lf)    d.is_weekend#(cr)#(lf)FROM dim_date d#(cr)#(lf)WHERE d.datekey IN (#(cr)#(lf)    SELECT datekey #(cr)#(lf)    FROM fact_sales #(cr)#(lf)    ORDER BY order_date DESC, order_id, order_line_id #(cr)#(lf)    LIMIT 100#(cr)#(lf));"
+				in
+				    Source
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

@@ -1,0 +1,124 @@
+table fact_sales
+	lineageTag: a1840420-f3ab-469d-9219-ef364479ba4c
+
+	column order_id
+		dataType: string
+		lineageTag: e585b315-7ba8-425a-9f80-cc643e7bd532
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_line_id
+		dataType: string
+		lineageTag: e8432609-9629-4009-8023-6f7b2dc6fa52
+		summarizeBy: none
+		sourceColumn: order_line_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_id
+		dataType: string
+		lineageTag: 3da835b0-23ea-4ca9-8545-f8123f311563
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: string
+		lineageTag: f35baa47-9b8d-476d-856a-c30ba0ecc190
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column employee_id
+		dataType: string
+		lineageTag: 1b3a527d-2eac-4bb1-9b7e-048e1b900203
+		summarizeBy: none
+		sourceColumn: employee_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column datekey
+		dataType: string
+		lineageTag: e493d4f4-1711-4de4-beb9-ab8fe0b55f0d
+		summarizeBy: none
+		sourceColumn: datekey
+
+		annotation SummarizationSetBy = Automatic
+
+	column quantity
+		dataType: string
+		lineageTag: feed673e-bf49-4bf0-a5e9-d21bd93e509a
+		summarizeBy: none
+		sourceColumn: quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column unit_price
+		dataType: string
+		lineageTag: cdd0e504-2ce6-4df6-811c-11bcf01820e5
+		summarizeBy: none
+		sourceColumn: unit_price
+
+		annotation SummarizationSetBy = Automatic
+
+	column discount_pct
+		dataType: string
+		lineageTag: bbdd2011-c753-4721-9ae4-89e008f134a8
+		summarizeBy: none
+		sourceColumn: discount_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column net_amount
+		dataType: string
+		lineageTag: beec1224-b2f8-4dc0-ac6b-0819d90cafba
+		summarizeBy: none
+		sourceColumn: net_amount
+
+		annotation SummarizationSetBy = Automatic
+
+	column payment_method
+		dataType: string
+		lineageTag: 08c0bb93-c91f-4427-bf21-49aac67daf0f
+		summarizeBy: none
+		sourceColumn: payment_method
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_status
+		dataType: string
+		lineageTag: 195a7349-df3a-4f28-8dac-9440c7e391dc
+		summarizeBy: none
+		sourceColumn: order_status
+
+		annotation SummarizationSetBy = Automatic
+
+	column channel
+		dataType: string
+		lineageTag: 87847b9e-9070-4235-84b8-33a9f4c0517a
+		summarizeBy: none
+		sourceColumn: channel
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_sales = m
+		mode: import
+		source = ```
+				let
+				    // 1. Execute the Python script and inject your parameters safely
+				    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT #(lf)    f.order_id,#(lf)    f.order_line_id,#(lf)    f.customer_id,#(lf)    f.product_id,#(lf)    f.employee_id,#(lf)    f.datekey,#(lf)    f.quantity,#(lf)    f.unit_price,#(lf)    f.discount_pct,#(lf)    f.net_amount,#(lf)    f.payment_method,#(lf)    f.order_status,#(lf)    f.channel#(lf)FROM fact_sales f#(lf)ORDER BY f.order_date DESC, f.order_id, f.order_line_id#(lf)LIMIT 100;#(lf)"""""", conn)#(lf)conn.close()"),
+				    
+				    // 2. Extract the dataframe 'df' that Python generated
+				    DataTable = Source{[Name="df"]}[Value]
+				in
+				    DataTable
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

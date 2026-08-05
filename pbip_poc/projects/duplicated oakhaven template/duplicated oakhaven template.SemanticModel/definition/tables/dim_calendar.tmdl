@@ -1,0 +1,84 @@
+table dim_calendar
+	lineageTag: 79ef8b5a-6d15-45c7-b623-d5bc95056c91
+
+	column datekey
+		dataType: string
+		lineageTag: 9f795fc7-1acf-453e-a848-ee627b26583a
+		summarizeBy: none
+		sourceColumn: datekey
+
+		annotation SummarizationSetBy = Automatic
+
+	column date
+		dataType: string
+		lineageTag: e6673c74-1291-494f-a5fa-855f8aa4b37a
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column year
+		dataType: string
+		lineageTag: c4f8230d-cf10-4767-8424-bb094285970b
+		summarizeBy: none
+		sourceColumn: year
+
+		annotation SummarizationSetBy = Automatic
+
+	column month
+		dataType: string
+		lineageTag: d068670e-361f-4493-bf51-a6bfe6feaba5
+		summarizeBy: none
+		sourceColumn: month
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_name
+		dataType: string
+		lineageTag: 0b8519f2-f604-425c-85c6-d39a8906129d
+		summarizeBy: none
+		sourceColumn: month_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column quarter
+		dataType: string
+		lineageTag: bd07c297-97cd-4e70-978a-30781795221e
+		summarizeBy: none
+		sourceColumn: quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column day_name
+		dataType: string
+		lineageTag: 0fa83cdc-2174-4673-8074-2c1e862f49db
+		summarizeBy: none
+		sourceColumn: day_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_weekend
+		dataType: string
+		lineageTag: a5fe93e3-f859-4ecf-8b67-77e450eab306
+		summarizeBy: none
+		sourceColumn: is_weekend
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_calendar = m
+		mode: import
+		source = ```
+				let
+				    // 1. Execute the Python script and inject your parameters safely
+				    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT DISTINCT #(lf)    d.datekey,#(lf)    d.date,#(lf)    d.year,#(lf)    d.month,#(lf)    d.month_name,#(lf)    d.quarter,#(lf)    d.day_name,#(lf)    d.is_weekend#(lf)FROM dim_date d#(lf)WHERE d.datekey IN (#(lf)    SELECT datekey #(lf)    FROM fact_sales #(lf)    ORDER BY order_date DESC, order_id, order_line_id #(lf)    LIMIT 100#(lf));#(lf)"""""", conn)#(lf)conn.close()"),
+				    
+				    // 2. Extract the dataframe 'df' that Python generated
+				    DataTable = Source{[Name="df"]}[Value]
+				in
+				    DataTable
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

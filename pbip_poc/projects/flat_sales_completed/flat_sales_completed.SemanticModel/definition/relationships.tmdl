@@ -1,0 +1,4 @@
+relationship defc8ca4-33ee-19ab-d42b-240fcd45be3e
+	fromColumn: flat_sales_completed.order_date
+	toColumn: dim_calendar.date
+

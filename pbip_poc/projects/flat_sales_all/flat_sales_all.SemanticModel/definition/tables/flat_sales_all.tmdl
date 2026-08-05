@@ -1,0 +1,92 @@
+table flat_sales_all
+	lineageTag: 3ead40b5-967c-42a6-8b3a-70b6eed40bea
+
+	column order_id
+		dataType: string
+		lineageTag: be470296-6f71-4f7b-bb5d-0189a854d716
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_line_id
+		dataType: string
+		lineageTag: 028bda80-3cbe-42f4-88c7-916728962954
+		summarizeBy: none
+		sourceColumn: order_line_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_date
+		dataType: string
+		lineageTag: aa75dbc8-5c52-4994-bf4b-18a7964e0f0e
+		summarizeBy: none
+		sourceColumn: order_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_name
+		dataType: string
+		lineageTag: 0919db62-8e7d-45e6-9a71-f8e1c08650c8
+		summarizeBy: none
+		sourceColumn: customer_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_name
+		dataType: string
+		lineageTag: ea723a57-3bb6-43e1-9fdb-c01f94237584
+		summarizeBy: none
+		sourceColumn: product_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_category
+		dataType: string
+		lineageTag: 718281e7-2887-4f38-82cc-5b7764ecf206
+		summarizeBy: none
+		sourceColumn: product_category
+
+		annotation SummarizationSetBy = Automatic
+
+	column quantity
+		dataType: string
+		lineageTag: 8d6d44d3-dcbf-4226-a5c8-bce5b6863dae
+		summarizeBy: none
+		sourceColumn: quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column net_amount
+		dataType: string
+		lineageTag: 2493ed31-0ec4-4a3f-bd81-54fb31f1a99b
+		summarizeBy: none
+		sourceColumn: net_amount
+
+		annotation SummarizationSetBy = Automatic
+
+	column channel
+		dataType: string
+		lineageTag: 18965dea-86e8-45fb-b1ca-32e18c10f998
+		summarizeBy: none
+		sourceColumn: channel
+
+		annotation SummarizationSetBy = Automatic
+
+	partition flat_sales_all = m
+		mode: import
+		source = ```
+				let
+				    // 1. Execute the Python script and inject your parameters safely
+				    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")#(lf)df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;"", conn)#(lf)conn.close()"),
+				    
+				    // 2. Extract the dataframe 'df' that Python generated
+				    DataTable = Source{[Name="df"]}[Value]
+				in
+				    DataTable
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

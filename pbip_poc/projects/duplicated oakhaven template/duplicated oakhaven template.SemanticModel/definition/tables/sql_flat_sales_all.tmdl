@@ -1,0 +1,30 @@
+table sql_flat_sales_all
+	isHidden
+	lineageTag: efd15e42-7d83-4bca-b6a3-646d48ab884b
+
+	column sql_flat_sales_all
+		dataType: string
+		isHidden
+		lineageTag: 5012f4a0-c0d2-42cb-aefd-2da4dda8bc4e
+		summarizeBy: none
+		sourceColumn: sql_flat_sales_all
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition sql_flat_sales_all = m
+		mode: import
+		queryGroup: 'sql queries'
+		source =
+				let
+				    Source = "SELECT #(cr)#(lf)    f.order_id,#(cr)#(lf)    f.order_line_id,#(cr)#(lf)    f.order_date,#(cr)#(lf)    c.full_name AS customer_name,#(cr)#(lf)    c.customer_segment,#(cr)#(lf)    c.state AS customer_state,#(cr)#(lf)    p.product_name,#(cr)#(lf)    p.category AS product_category,#(cr)#(lf)    p.brand AS product_brand,#(cr)#(lf)    e.full_name AS sales_rep_name,#(cr)#(lf)    e.region AS sales_region,#(cr)#(lf)    f.quantity,#(cr)#(lf)    f.unit_price,#(cr)#(lf)    f.discount_pct,#(cr)#(lf)    -- Embedded Business Logic #1: Gross Revenue#(cr)#(lf)    ROUND(f.quantity * f.unit_price, 2) AS gross_amount,#(cr)#(lf)    -- Embedded Business Logic #2: Net Revenue#(cr)#(lf)    f.net_amount,#(cr)#(lf)    -- Embedded Business Logic #3: Categorical Bucketing#(cr)#(lf)    CASE #(cr)#(lf)        WHEN f.discount_pct >= 0.20 THEN 'High Discount (20%+)'#(cr)#(lf)        WHEN f.discount_pct > 0 THEN 'Standard Discount'#(cr)#(lf)        ELSE 'Full Price'#(cr)#(lf)    END AS discount_tier,#(cr)#(lf)    f.payment_method,#(cr)#(lf)    f.order_status,#(cr)#(lf)    f.channel#(cr)#(lf)FROM fact_sales f#(cr)#(lf)LEFT JOIN dim_customer c ON f.customer_id = c.customer_id#(cr)#(lf)LEFT JOIN dim_product p ON f.product_id = p.product_id#(cr)#(lf)LEFT JOIN dim_employee e ON f.employee_id = e.employee_id#(cr)#(lf)ORDER BY f.order_date DESC, f.order_id, f.order_line_id#(cr)#(lf)LIMIT 100;"
+				in
+				    Source
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

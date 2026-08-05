@@ -1,0 +1,30 @@
+table sql_flat_sales_completed
+	isHidden
+	lineageTag: 7751f11b-efde-485d-9bdc-b92557dcf54d
+
+	column sql_flat_sales_completed
+		dataType: string
+		isHidden
+		lineageTag: 5e987501-9ea4-48a1-9333-016b53137268
+		summarizeBy: none
+		sourceColumn: sql_flat_sales_completed
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition sql_flat_sales_completed = m
+		mode: import
+		queryGroup: 'sql queries'
+		source =
+				let
+				    Source = "SELECT #(cr)#(lf)    f.order_id,#(cr)#(lf)    f.order_line_id,#(cr)#(lf)    f.order_date,#(cr)#(lf)    c.full_name AS customer_name,#(cr)#(lf)    p.product_name,#(cr)#(lf)    p.category AS product_category,#(cr)#(lf)    f.quantity,#(cr)#(lf)    f.net_amount,#(cr)#(lf)    f.channel#(cr)#(lf)FROM fact_sales f#(cr)#(lf)LEFT JOIN dim_customer c ON f.customer_id = c.customer_id#(cr)#(lf)LEFT JOIN dim_product p ON f.product_id = p.product_id#(cr)#(lf)WHERE f.order_status = 'Completed'#(cr)#(lf)ORDER BY f.order_date DESC#(cr)#(lf)LIMIT 100;"
+				in
+				    Source
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+
