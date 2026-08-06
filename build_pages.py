@@ -214,7 +214,7 @@ def convert_link_path(url):
         return url
     
     # Map references to root README.md -> index.html
-    if url == 'README.md':
+    if url in ('README.md', './README.md'):
         return 'index.html'
     if url == '../README.md':
         return '../index.html'
@@ -222,6 +222,15 @@ def convert_link_path(url):
         return '../../index.html'
     if url == '../../../README.md':
         return '../../../index.html'
+
+    # Map references starting with docs/ (written relative to root README.md)
+    if url.startswith('docs/'):
+        rel_docs = url[5:]  # Strip 'docs/'
+        if rel_docs in ('index.html', 'README.md', 'index.md', ''):
+            return 'index.html'
+        if rel_docs.endswith('.md'):
+            return rel_docs[:-3] + '.html'
+        return rel_docs
 
     if url.endswith('.md'):
         return url[:-3] + '.html'

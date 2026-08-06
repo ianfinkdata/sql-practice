@@ -36,7 +36,7 @@ reproduces it byte-for-byte.
 | **Applied project** | Oakhaven: a fictional retailer, modeled bronze → silver → gold, as one SQLite file you generate | [`project/`](project/docs/data_dictionary.md) |
 | **Portfolio** | A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact | [`portfolio/`](portfolio/README.md) |
 | **AI assistant guide** | Tool-agnostic instructions for any AI helping in this repo | [`AGENTS.md`](AGENTS.md) |
-| **Web version** | Browsable GitHub Pages site | [`docs/`](docs/index.html) (enable Pages on your fork, or browse the source directly) |
+| **Web version** | Browsable GitHub Pages site | [`docs/`](README.md) (enable Pages on your fork, or browse the source directly) |
 
 ---
 
