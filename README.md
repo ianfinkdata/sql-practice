@@ -53,9 +53,7 @@ Six tiers, each building on the last:
 | 4 | [Expert](curriculum/04-expert/README.md) | DDL, transactions, views, indexes, query optimization |
 | 5 | [Master](curriculum/05-master/README.md) | Dimensional modeling, star schema design, and the medallion architecture, end to end |
 
-Start at [Orientation](curriculum/00-orientation/README.md) if
-you're brand new, or jump to any tier you're ready for — see
-[`curriculum/README.md`](curriculum/README.md) for the full module list.
+Start at Orientation if you're brand new or jump into any tier from the above list.
 
 Starting at Tier 3, lessons lean on the applied project below instead of
 hypothetical tables — you read the concept, then go run it against a

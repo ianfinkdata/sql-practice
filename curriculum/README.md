@@ -6,7 +6,7 @@
 [⏮️ Prev: Home](../README.md) | [📖 Table of Contents](../README.md) | [⏭️ Next: Tier 0 Orientation](00-orientation/README.md)
 <!-- /nav -->
 
-Six tiers, beginner to master, each building on the last. Start at [`00-orientation/`](00-orientation/) if you're new; jump to whichever tier matches where you are otherwise.
+Six tiers, beginner to master, each building on the last. Start at Orientation if you're brand new or jump into any tier from the list below.
 
 | Tier | Name | Focus |
 |---|---|---|
