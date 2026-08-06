@@ -53,7 +53,7 @@ Six tiers, each building on the last:
 | 4 | [Expert](curriculum/04-expert/README.md) | DDL, transactions, views, indexes, query optimization |
 | 5 | [Master](curriculum/05-master/README.md) | Dimensional modeling, star schema design, and the medallion architecture, end to end |
 
-Start at [`curriculum/00-orientation/`](curriculum/00-orientation/README.md) if
+Start at [Orientation](curriculum/00-orientation/README.md) if
 you're brand new, or jump to any tier you're ready for — see
 [`curriculum/README.md`](curriculum/README.md) for the full module list.
 
@@ -67,7 +67,7 @@ verified; nothing is invented.
 
 ## The applied project
 
-[`project/`](project/) is **Oakhaven** — a small, fictional outdoor-gear
+[`project/`](project/docs/data_dictionary.md) is **Oakhaven** — a small, fictional outdoor-gear
 retailer. You generate its database yourself, deterministically, with:
 
 ```bash
@@ -117,7 +117,7 @@ an entity-relationship diagram.
 
 ## The portfolio
 
-[`portfolio/`](portfolio/) is the repo's explicit takeaway: a standalone
+[`portfolio/`](portfolio/README.md) is the repo's explicit takeaway: a standalone
 library of annotated, engine-agnostic SQL patterns — deduplication,
 orphan-FK detection, silver-style cleaning, recursive-CTE calendars,
 SCD Type 1/2, star-schema fact tables, cohort analysis, LTV, and more —
@@ -131,7 +131,7 @@ for building most medallion lakehouses."
 ## How to use this repo
 
 ### If you're learning on your own
-1. Read [`curriculum/00-orientation/`](curriculum/00-orientation/README.md).
+1. Read [Orientation](curriculum/00-orientation/README.md).
    `oakhaven.db` is already sitting in [`project/`](project/docs/data_dictionary.md), or
    generate your own copy as the Tier 0 exercise.
 2. Work tier by tier. Each module ends with matching exercises.
@@ -144,7 +144,7 @@ No Python, no Claude Code, no CLI. Download or clone the repo, then
 open [`project/oakhaven.db`](project/oakhaven.db) directly in
 [DB Browser for SQLite](https://sqlitebrowser.org/) or
 [Beekeeper Studio](https://www.beekeeperstudio.io/) and start
-querying against [`exercises/`](exercises/) and
+querying against [`exercises/`](exercises/README.md) and
 [`project/docs/data_dictionary.md`](project/docs/data_dictionary.md).
 
 ### If you want the web version

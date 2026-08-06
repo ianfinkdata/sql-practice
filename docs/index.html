@@ -63,7 +63,7 @@ reproduces it byte-for-byte.</p>
 <p>Six tiers, each building on the last:</p>
 
 <div class="table-container"><table class="styled-table"><thead><tr><th>Tier</th><th>Name</th><th>Focus</th></tr></thead><tbody><tr><td>0</td><td><a href="curriculum/00-orientation/README.html">Orientation</a></td><td>What a database is, no code required; generating the practice database</td></tr><tr><td>1</td><td><a href="curriculum/01-beginner/README.html">Beginner</a></td><td>Asking a database simple questions</td></tr><tr><td>2</td><td><a href="curriculum/02-intermediate/README.html">Intermediate</a></td><td>Combining tables, summarizing, cleaning messy real-world data</td></tr><tr><td>3</td><td><a href="curriculum/03-advanced/README.html">Advanced</a></td><td>Window functions, CTEs, recursive CTEs, time intelligence — the medallion thread begins</td></tr><tr><td>4</td><td><a href="curriculum/04-expert/README.html">Expert</a></td><td>DDL, transactions, views, indexes, query optimization</td></tr><tr><td>5</td><td><a href="curriculum/05-master/README.html">Master</a></td><td>Dimensional modeling, star schema design, and the medallion architecture, end to end</td></tr></tbody></table></div>
-Start at [`curriculum/00-orientation/`](curriculum/00-orientation/README.md) if
+Start at [Orientation](curriculum/00-orientation/README.md) if
 you're brand new, or jump to any tier you're ready for — see
 [`curriculum/README.md`](curriculum/README.md) for the full module list.
 
@@ -77,7 +77,7 @@ verified; nothing is invented.</p>
 
 <h2 id="the-applied-project">The applied project</h2>
 
-<p><a href="project/README.html"><code class="inline-code">project/</code></a> is <strong>Oakhaven</strong> — a small, fictional outdoor-gear
+<p><a href="project/docs/data_dictionary.html"><code class="inline-code">project/</code></a> is <strong>Oakhaven</strong> — a small, fictional outdoor-gear
 retailer. You generate its database yourself, deterministically, with:</p>
 
 <div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">python3 -m venv .venv &amp;&amp; source .venv/bin/activate   # see note below
@@ -135,7 +135,7 @@ for building most medallion lakehouses."</p>
 <h2 id="how-to-use-this-repo">How to use this repo</h2>
 
 <h3 id="if-youre-learning-on-your-own">If you're learning on your own</h3>
-1. Read [`curriculum/00-orientation/`](curriculum/00-orientation/README.md).
+1. Read [Orientation](curriculum/00-orientation/README.md).
    `oakhaven.db` is already sitting in [`project/`](project/docs/data_dictionary.md), or
    generate your own copy as the Tier 0 exercise.
 2. Work tier by tier. Each module ends with matching exercises.
@@ -148,7 +148,7 @@ No Python, no Claude Code, no CLI. Download or clone the repo, then
 open [`project/oakhaven.db`](project/oakhaven.db) directly in
 [DB Browser for SQLite](https://sqlitebrowser.org/) or
 [Beekeeper Studio](https://www.beekeeperstudio.io/) and start
-querying against [`exercises/`](exercises/) and
+querying against [`exercises/`](exercises/README.md) and
 [`project/docs/data_dictionary.md`](project/docs/data_dictionary.md).
 
 <h3 id="if-you-want-the-web-version">If you want the web version</h3>
