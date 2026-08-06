@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: What Is a Database? | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-what-is-a-database">Exercises: What Is a Database?</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/00-orientation/01-what-is-a-database.html" class="nav-btn">1. What Is a Database?</a>. Previous: <a href="../README.html" class="nav-btn">All Exercises</a>. Next: <a href="02-what-is-sql.html" class="nav-btn">2. What Is SQL?</a>.</nav>
+
+<p>No SQL yet — just a few questions to make sure the mental model stuck
+before you start writing queries. Jot down your own answers (in your
+head, on paper, wherever) before checking the solution notes.</p>
+
+<h3 id="1-spreadsheet-vs-database">1. Spreadsheet vs. database</h3>
+
+<p>Name one thing a spreadsheet does reasonably well, and one thing that
+gets painful once you have many related spreadsheets (e.g. one for
+customers, one for orders, one for products) that a database handles
+better.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>There's no single right answer, but a solid one: spreadsheets are
+great for quick, small, visual, single-table data — you can eyeball a
+few hundred rows and see patterns immediately. They get painful once
+you need to reliably cross-reference <em>multiple</em> related sheets (which
+customer bought which product on which order?) at any real volume —
+that's manual, slow, and error-prone by hand, whereas a database can
+answer that kind of cross-table question precisely and instantly via
+SQL.</p>
+
+<p></details></p>
+
+<h3 id="2-rows-and-columns">2. Rows and columns</h3>
+
+<p>In the Oakhaven database, <code class="inline-code">bronze_products</code> is a table with columns
+including <code class="inline-code">product_name</code>, <code class="inline-code">category</code>, and <code class="inline-code">unit_price</code>. If Oakhaven
+starts selling a new product tomorrow, does that create a new <strong>row</strong>
+or a new <strong>column</strong> in <code class="inline-code">bronze_products</code>? What about if Oakhaven
+decides it wants to start tracking each product's <em>weight</em> — is that a
+new row or a new column?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>A new product is a new <strong>row</strong> — one more record with the same set of
+existing columns. Tracking a new attribute like weight for every
+product is a new <strong>column</strong> — every existing row would need a value
+(or NULL) in that column. (In fact, <code class="inline-code">bronze_products</code> really does have
+a <code class="inline-code">weight_kg</code> column — you'll meet it directly in later modules.)</p>
+
+<p></details></p>
+
+<h3 id="3-why-not-just-one-big-table">3. Why not just one big table?</h3>
+
+<p>Oakhaven keeps customers, products, employees, and sales in four
+separate tables instead of cramming everything into one giant table
+(e.g. repeating the customer's full name and email on every single
+sales row). Take a guess at why that might be a bad idea, even before
+you know any SQL.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>A few reasons worth having in mind, even loosely: it would repeat the
+same customer info (name, email, etc.) on every one of that customer's
+sales rows — wasteful, and if the customer's email ever needs
+correcting, you'd have to fix it in <em>every</em> row instead of one. It
+also mixes concerns that don't belong together (a "product" fact
+shouldn't live inside a "sale" record). Splitting related data into
+separate tables and then <em>joining</em> them back together only when needed
+is a core relational database idea — you'll get hands-on with joins in
+a later tier.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/00-orientation/01-what-is-a-database.html" class="nav-btn">1. What Is a Database?</a>. Previous: <a href="../README.html" class="nav-btn">All Exercises</a>. Next: <a href="02-what-is-sql.html" class="nav-btn">2. What Is SQL?</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

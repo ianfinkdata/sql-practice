@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Constraints and Data Integrity | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-constraints-and-data-integrity">Exercises: Constraints and Data Integrity</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/07-constraints-and-data-integrity.html" class="nav-btn">7. Constraints and Data Integrity</a>. Previous: <a href="06-query-optimization-basics.html" class="nav-btn">6. Query Optimization Basics</a>. Next: <a href="08-writing-your-first-gold-view.html" class="nav-btn">8. Writing Your First Gold View</a>.</nav>
+
+<p>Exercise 1 is read-only. All others create tables/indexes and must run
+against your own scratch copy:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/my_scratch.db
+sqlite3 /tmp/my_scratch.db</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-confirm-the-real-orphan-fk-counts-yourself">1. Confirm the real orphan-FK counts yourself</h3>
+
+<p>Don't take the facts sheet's word for it — run the two <code class="inline-code">NOT EXISTS</code>
+checks yourself against the real, shared database and confirm you get
+103 orphan <code class="inline-code">customer_id</code> rows and 122 orphan <code class="inline-code">product_id</code> rows in
+<code class="inline-code">bronze_sales</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales s
+WHERE NOT EXISTS (SELECT 1 FROM bronze_customers c WHERE c.customer_id = s.customer_id);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">103</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales s
+WHERE NOT EXISTS (SELECT 1 FROM bronze_products p WHERE p.product_id = s.product_id);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">122</code></pre></div>
+
+<p>Both match the facts sheet exactly.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-build-a-minimal-fk-constrained-pair-and-prove-it-blocks-an-orphan">2. Build a minimal FK-constrained pair, and prove it blocks an orphan</h3>
+
+<p>On your scratch copy, create <code class="inline-code">ex_cust (id INTEGER PRIMARY KEY)</code> and
+<code class="inline-code">ex_orders (id INTEGER PRIMARY KEY, cust_id INTEGER, FOREIGN KEY
+(cust_id) REFERENCES ex_cust(id))</code>. Insert one valid customer.
+Enable <code class="inline-code">PRAGMA foreign_keys = ON;</code>, then try to insert an order
+referencing a <code class="inline-code">cust_id</code> that doesn't exist. What happens?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE ex_cust (id INTEGER PRIMARY KEY);
+CREATE TABLE ex_orders (id INTEGER PRIMARY KEY, cust_id INTEGER, FOREIGN KEY (cust_id) REFERENCES ex_cust(id));
+INSERT INTO ex_cust VALUES (1);
+
+<p>PRAGMA foreign_keys = ON;
+INSERT INTO ex_orders VALUES (101, 888);</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Runtime error near line 2: FOREIGN KEY constraint failed (19)</code></pre></div>
+
+<p>Rejected immediately — <code class="inline-code">cust_id = 888</code> doesn't exist in <code class="inline-code">ex_cust</code>.
+Exactly the class of write that produced 103 orphan rows in the real
+<code class="inline-code">bronze_sales</code> table, which has no such constraint.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-prove-pragma-foreign_keys-has-to-be-explicitly-turned-on">3. Prove <code class="inline-code">PRAGMA foreign_keys</code> has to be explicitly turned on</h3>
+
+<p>Repeat Exercise 2's setup, but this time run <code class="inline-code">PRAGMA foreign_keys =
+OFF;</code> (SQLite's actual default) before the orphan insert. Does it
+succeed? What does this tell you about a schema that <em>declares</em> a
+<code class="inline-code">FOREIGN KEY</code> but whose application never sets this pragma?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE ex_cust2 (id INTEGER PRIMARY KEY);
+CREATE TABLE ex_orders2 (id INTEGER PRIMARY KEY, cust_id INTEGER, FOREIGN KEY (cust_id) REFERENCES ex_cust2(id));
+INSERT INTO ex_cust2 VALUES (1);
+
+<p>PRAGMA foreign_keys = OFF;
+INSERT INTO ex_orders2 VALUES (100, 999);
+SELECT * FROM ex_orders2;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">id   cust_id
+---  -------
+100  999</code></pre></div>
+
+<p>The insert succeeds even though <code class="inline-code">cust_id = 999</code> doesn't exist in
+<code class="inline-code">ex_cust2</code> — with <code class="inline-code">PRAGMA foreign_keys = OFF;</code> (or simply never set,
+since <code class="inline-code">OFF</code> is SQLite's default), the <code class="inline-code">FOREIGN KEY</code> clause is parsed
+and stored in the schema but never actually checked. A schema that
+<em>declares</em> foreign keys gives you no real protection unless every
+connection that writes to it also enables <code class="inline-code">PRAGMA foreign_keys = ON;</code>
+— declaring the constraint and enforcing it are two separate steps in
+SQLite, unlike most other engines where declaring it is enough.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-tie-a-check-constraint-to-a-real-bronze-problem">4. Tie a CHECK constraint to a real bronze problem</h3>
+
+<p>Per the facts sheet, <code class="inline-code">bronze_sales.quantity</code> has 359 negative rows and
+212 zero rows (out of 12,000) — neither should logically be possible
+for a normal sale (returns aside, which this dataset represents with
+negative quantities on purpose, but a stricter production system might
+model returns as a separate flag instead of a raw negative number).
+On your scratch copy, build a <code class="inline-code">demo_line_items(quantity INTEGER CHECK
+(quantity > 0))</code> table and confirm it rejects both a negative and a
+zero quantity.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE demo_line_items (quantity INTEGER CHECK (quantity &gt; 0));
+INSERT INTO demo_line_items VALUES (-3);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: stepping, CHECK constraint failed: quantity &gt; 0 (19)</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">INSERT INTO demo_line_items VALUES (0);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: stepping, CHECK constraint failed: quantity &gt; 0 (19)</code></pre></div>
+
+<p>Both rejected. Every one of the 359 + 212 = 571 problematic rows in
+real <code class="inline-code">bronze_sales</code> would have been refused at insert time by this
+single-line constraint.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-try-to-add-a-unique-index-directly-to-already-messy-real-data">5. Try to add a UNIQUE index directly to already-messy real data</h3>
+
+<p>This is the trickiest and most realistic exercise in this set. On
+your scratch copy, try to create a <code class="inline-code">UNIQUE</code> index directly on
+<code class="inline-code">bronze_customers(email)</code> — no cleaning first. Does it succeed? If
+not, use the error to find the actual duplicate email(s) causing the
+failure.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE UNIQUE INDEX idx_unique_email_raw ON bronze_customers(email);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: stepping, UNIQUE constraint failed: bronze_customers.email (19)</code></pre></div>
+
+<p>It fails immediately — bronze_customers already has real, exact
+(case-identical) duplicate emails, independent of the intentional
+near-duplicate customers (571–600) the data dictionary describes.
+Find them:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT email, COUNT(*) FROM bronze_customers
+WHERE email IS NOT NULL AND email != &#x27;&#x27;
+GROUP BY email HAVING COUNT(*) &gt; 1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">email                              COUNT(*)
+---------------------------------  --------
+christopher.harris@hotmail.com     2
+erica.reed@outlook.com             2
+logan.williams@oakmail.com         2
+theodore.davis@outlook.com         2
+tyrone.larsen@oakmail.com          2</code></pre></div>
+
+<p>This is the central lesson of constraints applied to <em>existing</em> messy
+data: a <code class="inline-code">UNIQUE</code> constraint can't be bolted onto a table that already
+violates it — SQLite (like every engine) refuses to create it until
+the underlying duplicates are resolved. In a real migration, you'd
+have to decide what "resolved" means (merge the rows? keep the
+newest? flag both?) <em>before</em> the constraint can be added — a
+constraint enforces going forward, it doesn't retroactively clean up
+what's already there (this echoes the lesson's point directly).</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="6-an-expression-based-unique-index-catches-even-more-duplicates">6. An expression-based UNIQUE index catches even more duplicates</h3>
+
+<p>Exercise 5 only found <em>exact</em>-string duplicates. The data dictionary
+also documents 30 <em>near</em>-duplicate customers (IDs 571–600) whose
+emails differ only in casing/whitespace but are equal after
+<code class="inline-code">LOWER(TRIM(email))</code>. Try creating a <code class="inline-code">UNIQUE</code> index on
+<code class="inline-code">LOWER(TRIM(email))</code> instead of the raw column, and use the error (or
+a direct query) to find one specific near-duplicate pair.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE UNIQUE INDEX idx_unique_email_norm ON bronze_customers(LOWER(TRIM(email)));</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: stepping, UNIQUE constraint failed: index &#x27;idx_unique_email_norm&#x27; (19)</code></pre></div>
+
+<p>Still fails — and would keep failing even after fixing Exercise 5's
+exact-match duplicates, because normalized duplicates are a superset
+of exact-string duplicates. Find a specific pair directly:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT c1.customer_id AS orig_id, c1.email AS orig_email,
+       c2.customer_id AS dup_id, c2.email AS dup_email
+FROM bronze_customers c1
+JOIN bronze_customers c2
+  ON LOWER(TRIM(c1.email)) = LOWER(TRIM(c2.email))
+ AND c1.customer_id &lt; c2.customer_id
+WHERE c2.customer_id BETWEEN 571 AND 600
+LIMIT 3;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">orig_id  orig_email                  dup_id  dup_email
+-------  --------------------------  ------  --------------------------
+9        cathy.romero@oakmail.com    571     CATHY.ROMERO@OAKMAIL.COM
+17       john.ramsey@icloud.com      573     JOHN.RAMSEY@ICLOUD.COM
+19       sharon.green@yahoo.com      574     SHARON.GREEN@YAHOO.COM</code></pre></div>
+
+<p>Customer 9 and customer 571 are the same real person, entered twice —
+exactly the "signed up twice" scenario the data dictionary describes.
+An expression-based <code class="inline-code">UNIQUE</code> index on the <em>normalized</em> email would
+have refused the second signup outright, at the moment it was
+inserted — a stronger, earlier-acting version of the deduplication
+work a <code class="inline-code">ROW_NUMBER()</code>-based query has to do after the fact (a
+technique covered elsewhere in this course). This is the clearest
+illustration in this whole module of the tier's central theme: every
+constraint you've practiced here is a rule that, applied from the
+start, would have made an entire category of bronze's messiness
+structurally impossible to create.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/07-constraints-and-data-integrity.html" class="nav-btn">7. Constraints and Data Integrity</a>. Previous: <a href="06-query-optimization-basics.html" class="nav-btn">6. Query Optimization Basics</a>. Next: <a href="08-writing-your-first-gold-view.html" class="nav-btn">8. Writing Your First Gold View</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cleaning Text: TRIM, UPPER, LOWER, REPLACE | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="cleaning-text-trim-upper-lower-replace">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</h1>
+
+<nav class="book-nav">Previous: <a href="05-case-expressions.html" class="nav-btn">CASE Expressions</a>. Next: <a href="07-coalesce-and-nullif.html" class="nav-btn">COALESCE and NULLIF</a>. Exercises: <a href="../../exercises/02-intermediate/06-cleaning-text-trim-upper-replace.html" class="nav-btn">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Module 3 showed <code class="inline-code">bronze_products.category</code> splitting into 40 raw
+groups where only 8 real categories exist. That wasn't a <code class="inline-code">GROUP BY</code>
+bug — <code class="inline-code">GROUP BY</code> was working correctly on dirty input. The fix lives
+one layer earlier: clean the text <em>before</em> you group, filter, or join
+on it. Four small functions do almost all of that work:
+<ul class="styled-list"><li><code class="inline-code">TRIM(text)</code> — strips leading/trailing whitespace (a stray trailing</li></ul>  space is invisible in most result viewers but very real to <code class="inline-code">=</code>).
+<ul class="styled-list"><li><code class="inline-code">UPPER(text)</code> / <code class="inline-code">LOWER(text)</code> — normalizes casing.</li><li><code class="inline-code">REPLACE(text, find, replacement)</code> — swaps every occurrence of one</li></ul>  substring for another.</p>
+
+<p>None of these are exotic. The skill here is chaining them in the
+right order and recognizing what they can't fix on their own.</p>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>This directly resolves Module 3's pain. <code class="inline-code">bronze_products.category</code>
+has 40 raw string variants for 8 real categories — different casing,
+trailing spaces, <code class="inline-code">and</code> vs <code class="inline-code">&</code>, and one split compound word (<code class="inline-code">Foot
+Wear</code> vs <code class="inline-code">Footwear</code>). <code class="inline-code">bronze_customers.state</code> is worse: full state
+names, 2-letter abbreviations, lowercase versions of both, dotted
+abbreviations (<code class="inline-code">Calif.</code>, <code class="inline-code">Fla.</code>) — 190 distinct raw strings for what
+should be at most 50-something real states. Any report grouped or
+filtered on either raw column, as-is, is wrong. You're about to fix
+one of them completely and make real, measured progress on the other.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">TRIM(text)                      -- strip leading/trailing whitespace
+UPPER(text)                     -- to uppercase
+LOWER(text)                     -- to lowercase
+REPLACE(text, find, replacement) -- swap substrings</code></pre></div>
+
+<p>Chain them by nesting — inside out, the innermost function runs
+first:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">REPLACE(UPPER(TRIM(text)), &#x27;find&#x27;, &#x27;replacement&#x27;)</code></pre></div>
+
+<p><strong>Order matters.</strong> <code class="inline-code">REPLACE</code> matches substrings case-sensitively.
+<code class="inline-code">REPLACE(category, 'AND', '&')</code> will not touch <code class="inline-code">"and"</code> — you need
+<code class="inline-code">UPPER</code> (or <code class="inline-code">LOWER</code>) applied <em>before</em> the <code class="inline-code">REPLACE</code> that depends on a
+particular case, not after.</p>
+
+<h2 id="try-it">Try it</h2>
+
+<p><strong>1. See the raw damage on <code class="inline-code">category</code></strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT category) FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT category)</th></tr></thead><tbody><tr><td>40</td></tr></tbody></table></div>
+**2. Step 1 of the fix: TRIM + UPPER collapses casing/spacing noise**
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT TRIM(UPPER(category))) FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT TRIM(UPPER(category)))</th></tr></thead><tbody><tr><td>11</td></tr></tbody></table></div>
+40 → 11 just from stripping whitespace and normalizing case. Not done
+yet — 11 groups remain for 8 real categories, because `AND` vs `&` and
+`FOOT WEAR` vs `FOOTWEAR` are still different *substrings*, not just
+different casing.
+
+<p><strong>3. Step 2: REPLACE ' AND ' with ' & ' — done in the right order</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT REPLACE(TRIM(UPPER(category)), &#x27; AND &#x27;, &#x27; &amp; &#x27;))
+FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(...)</th></tr></thead><tbody><tr><td>9</td></tr></tbody></table></div>
+11 → 9. `UPPER` ran first (inside the parentheses), so by the time
+`REPLACE` looks for `' AND '` it's guaranteed to be uppercase already
+— `Camping and Hiking`, `camping and hiking`, and `CAMPING AND HIKING`
+all became `CAMPING AND HIKING` before `REPLACE` ever touched them.
+Get the nesting order backwards — `REPLACE` before `UPPER` — and
+lowercase `and` slips through untouched, because `REPLACE` only ever
+matched the literal uppercase `AND`.
+
+<p><strong>4. Step 3: one more REPLACE for the split compound word</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT
+  REPLACE(REPLACE(TRIM(UPPER(category)), &#x27; AND &#x27;, &#x27; &amp; &#x27;), &#x27;FOOT WEAR&#x27;, &#x27;FOOTWEAR&#x27;)
+) FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(...)</th></tr></thead><tbody><tr><td>8</td></tr></tbody></table></div>
+9 → 8. Exactly the 8 canonical categories from the data dictionary.
+Full chain, and the cleaned `GROUP BY` it enables:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+  REPLACE(REPLACE(TRIM(UPPER(p.category)), &#x27; AND &#x27;, &#x27; &amp; &#x27;), &#x27;FOOT WEAR&#x27;, &#x27;FOOTWEAR&#x27;) AS clean_category,
+  COUNT(*) AS line_count,
+  ROUND(SUM(s.quantity * s.unit_price), 2) AS rough_total
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id
+GROUP BY clean_category
+ORDER BY rough_total DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>clean_category</th><th>line_count</th><th>rough_total</th></tr></thead><tbody><tr><td>CLIMBING</td><td>1858</td><td>1565035.72</td></tr><tr><td>WINTER SPORTS</td><td>1834</td><td>1408463.1</td></tr><tr><td>APPAREL</td><td>1556</td><td>1398826.64</td></tr><tr><td>NUTRITION & HYDRATION</td><td>1548</td><td>1327851.74</td></tr><tr><td>FOOTWEAR</td><td>1402</td><td>1211249.52</td></tr><tr><td>ACCESSORIES</td><td>1543</td><td>1068475.68</td></tr><tr><td>CAMPING & HIKING</td><td>1277</td><td>1024156.04</td></tr><tr><td>WATER SPORTS</td><td>860</td><td>818393.7</td></tr></tbody></table></div>
+Eight real rows. Compare this to Module 3's version of the same
+query — 25+ rows, revenue scattered across duplicate spellings of the
+same category.
+
+<p><strong>5. <code class="inline-code">state</code> — real, partial progress, and an honest limit</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT state) FROM bronze_customers;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT state)</th></tr></thead><tbody><tr><td>190</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT TRIM(UPPER(state))) FROM bronze_customers;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT TRIM(UPPER(state)))</th></tr></thead><tbody><tr><td>105</td></tr></tbody></table></div>
+190 → 105 from `TRIM(UPPER(...))` alone — real progress, but nowhere
+near "one row per state." Here's why, spelled out for California
+specifically:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT state, TRIM(UPPER(state)) AS cleaned
+FROM bronze_customers
+WHERE state IN (&#x27;CA&#x27;, &#x27;ca&#x27;, &#x27;Calif.&#x27;, &#x27;California&#x27;, &#x27;california&#x27;)
+ORDER BY state;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>state</th><th>cleaned</th></tr></thead><tbody><tr><td>CA</td><td>CA</td></tr><tr><td>Calif.</td><td>CALIF.</td></tr><tr><td>California</td><td>CALIFORNIA</td></tr><tr><td>ca</td><td>CA</td></tr><tr><td>california</td><td>CALIFORNIA</td></tr></tbody></table></div>
+`TRIM`/`UPPER` correctly merges `CA` and `ca` into one group, and
+`California`/`california` into another — but `CA`, `Calif.`, and
+`California` are three *different substrings* referring to the same
+state, and no amount of case/whitespace normalization can merge them.
+That needs an explicit mapping (a `CASE` expression with one branch
+per state, or a lookup table) — reasonable groundwork for later tiers,
+not a today problem. The honest takeaway: `TRIM`/`UPPER`/`REPLACE`
+solve whitespace-and-casing messiness completely, and *substring*
+messiness (`&` vs `and`, split words) partially, with targeted
+`REPLACE` calls — but they don't solve "different words for the same
+thing" (abbreviation vs. full name) on their own.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Wrong nesting order for case-sensitive <code class="inline-code">REPLACE</code>.</strong> As shown</li></ul>  above: normalize case *first*, then `REPLACE` a case-specific
+  substring. `REPLACE(category, ' and ', ' & ')` alone misses
+  `' AND '` and `' And '` variants entirely.
+<ul class="styled-list"><li><strong>Trimming only one side, or forgetting to trim at all.</strong> A string</li></ul>  that "looks" identical in a table viewer (`'ACCESSORIES'` vs
+  `'ACCESSORIES '`) will not `=`-match or `GROUP BY`-merge without
+  `TRIM`. This is invisible until you specifically check `LENGTH()` or
+  count distinct values.
+<ul class="styled-list"><li>**Assuming <code class="inline-code">UPPER</code>/<code class="inline-code">LOWER</code>/<code class="inline-code">TRIM</code>/<code class="inline-code">REPLACE</code> are a complete cleaning</li></ul>  solution.** They fix casing, whitespace, and known substring swaps —
+  they cannot merge `CA` and `California`, or catch a typo. Know where
+  the boundary is (see the `state` example above) rather than trusting
+  a chain of these functions to fully normalize everything.
+<ul class="styled-list"><li>**Cleaning in the <code class="inline-code">SELECT</code> list but forgetting to also clean in</li></ul>  `WHERE`/`GROUP BY`/`JOIN ON`.** If you filter `WHERE category =
+  'Climbing'` against the raw column, you'll only match one of the 6+
+  raw variants that mean "Climbing" — the same cleaning expression
+  needs to be applied wherever the column is compared, not just where
+  it's displayed.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">TRIM</code>, <code class="inline-code">UPPER</code>/<code class="inline-code">LOWER</code>, and <code class="inline-code">REPLACE</code> chain together (nested,</li></ul>  innermost-first) to progressively normalize messy text.
+<ul class="styled-list"><li><code class="inline-code">REPLACE</code> is case-sensitive — normalize case before replacing a</li></ul>  case-specific substring, or the replacement silently misses variants.
+<ul class="styled-list"><li>On Oakhaven's <code class="inline-code">category</code>: 40 raw variants → 11 after</li></ul>  `TRIM(UPPER(...))` → 9 after fixing `AND`/`&` → 8 (fully clean) after
+  fixing the split `FOOT WEAR` compound.
+<ul class="styled-list"><li>On <code class="inline-code">state</code>: 190 → 105 with the same technique — real progress, but</li></ul>  abbreviation-vs-full-name pairs (`CA` / `California`) need an
+  explicit mapping these functions alone can't provide.
+<ul class="styled-list"><li>Apply the same cleaning expression everywhere the column is</li></ul>  compared — `SELECT`, `WHERE`, `GROUP BY`, and `JOIN ON` alike —  not
+  just where it's displayed.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="05-case-expressions.html" class="nav-btn">CASE Expressions</a>. Next: <a href="07-coalesce-and-nullif.html" class="nav-btn">COALESCE and NULLIF</a>. Exercises: <a href="../../exercises/02-intermediate/06-cleaning-text-trim-upper-replace.html" class="nav-btn">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

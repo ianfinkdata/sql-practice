@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>7. Constraints and Data Integrity | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="7-constraints-and-data-integrity">7. Constraints and Data Integrity</h1>
+
+<nav class="book-nav">Previous: <a href="06-query-optimization-basics.html" class="nav-btn">6. Query Optimization Basics</a>. Next: <a href="08-writing-your-first-gold-view.html" class="nav-btn">8. Writing Your First Gold View</a>. Exercises: <a href="../../exercises/04-expert/07-constraints-and-data-integrity.html" class="nav-btn">7. Constraints and Data Integrity</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>A constraint is a rule the database enforces on every write, forever
+— not a rule you hope application code remembers to check. <code class="inline-code">PRIMARY
+KEY</code>, <code class="inline-code">FOREIGN KEY</code>, <code class="inline-code">UNIQUE</code>, and <code class="inline-code">CHECK</code> are the four workhorse
+constraint types, and they're the single biggest structural difference
+between Oakhaven's bronze layer and a "real" production schema.</p>
+
+<p>Reread the note at the top of <code class="inline-code">project/docs/data_dictionary.md</code>:</p>
+
+<blockquote class="custom-blockquote">Bronze tables are the raw, as-ingested layer: no primary keys, no<br>foreign keys, no CHECK constraints. That absence is deliberate...</blockquote>
+
+<p>Every category of messiness you've cleaned up in Tiers 2–3 —
+duplicate near-people, orphan <code class="inline-code">customer_id</code>/<code class="inline-code">product_id</code> values in
+<code class="inline-code">bronze_sales</code>, negative quantities, mixed-boolean text instead of
+real booleans — is messiness that constraints exist specifically to
+prevent <em>at write time</em>, before it ever becomes a downstream cleaning
+problem.</p>
+
+<h2 id="the-four-constraint-types">The four constraint types</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE demo_customers (
+    customer_id INTEGER PRIMARY KEY,              -- unique, non-null, identifies each row
+    email       TEXT UNIQUE,                       -- no two rows may share a value
+    is_active   INTEGER CHECK (is_active IN (0, 1)) -- only these values allowed
+);
+
+<p>CREATE TABLE demo_sales (
+    order_id      INTEGER,
+    order_line_id INTEGER,
+    customer_id   INTEGER NOT NULL,
+    quantity      INTEGER CHECK (quantity &gt; 0),
+    PRIMARY KEY (order_id, order_line_id),          -- composite PK
+    FOREIGN KEY (customer_id) REFERENCES demo_customers(customer_id)
+);</code></pre></div>
+<ul class="styled-list"><li><strong><code class="inline-code">PRIMARY KEY</code></strong> — uniquely identifies each row; implicitly <code class="inline-code">NOT</li></ul>  NULL</code> and <code class="inline-code">UNIQUE</code>. Can be a single column or, as above, a
+  composite of multiple columns (mirroring <code class="inline-code">bronze_sales</code>'s real grain
+  of <code class="inline-code">(order_id, order_line_id)</code>).
+<ul class="styled-list"><li><strong><code class="inline-code">FOREIGN KEY</code></strong> — requires a value to exist as a <code class="inline-code">PRIMARY KEY</code> (or</li></ul>  <code class="inline-code">UNIQUE</code>) value in another table, or be <code class="inline-code">NULL</code>. This is what
+  guarantees referential integrity between tables.
+<ul class="styled-list"><li><strong><code class="inline-code">UNIQUE</code></strong> — no two rows may share the same value in that column</li></ul>  (or column combination), but unlike <code class="inline-code">PRIMARY KEY</code>, <code class="inline-code">NULL</code>s are
+  allowed and multiple <code class="inline-code">NULL</code>s don't count as duplicates of each
+  other.
+<ul class="styled-list"><li><strong><code class="inline-code">CHECK</code></strong> — an arbitrary boolean expression that must be true (or</li></ul>  <code class="inline-code">NULL</code>) for every row; the general-purpose "custom rule" constraint.</p>
+
+<p><strong>Important SQLite-specific gotcha:</strong> foreign keys are <strong>off by
+default</strong> in SQLite, for backward-compatibility reasons. You must run
+<code class="inline-code">PRAGMA foreign_keys = ON;</code> per connection for <code class="inline-code">FOREIGN KEY</code> clauses
+to actually be enforced — declaring them in <code class="inline-code">CREATE TABLE</code> alone does
+nothing without this pragma. (<code class="inline-code">project/build.py</code> explicitly sets
+<code class="inline-code">PRAGMA foreign_keys = OFF;</code> before creating bronze — a deliberate,
+documented choice, not an oversight.)</p>
+
+<h2 id="verified-examples">Verified examples</h2>
+
+<p>All against a <strong>scratch copy</strong> — every example here is a write:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/scratch_expert.db
+sqlite3 /tmp/scratch_expert.db</code></pre></div>
+
+<h3 id="example-1--the-real-orphan-fk-problem-bronze-actually-has">Example 1 — the real orphan-FK problem bronze actually has</h3>
+
+<p><code class="inline-code">bronze_sales</code> has no <code class="inline-code">FOREIGN KEY</code> on <code class="inline-code">customer_id</code> or <code class="inline-code">product_id</code>.
+Per <code class="inline-code">project/docs/facts_sheet.md</code>, that absence let real orphan rows
+accumulate:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales s
+WHERE NOT EXISTS (SELECT 1 FROM bronze_customers c WHERE c.customer_id = s.customer_id);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">103</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales s
+WHERE NOT EXISTS (SELECT 1 FROM bronze_products p WHERE p.product_id = s.product_id);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">122</code></pre></div>
+
+<p>103 order lines reference a <code class="inline-code">customer_id</code> that doesn't exist anywhere
+in <code class="inline-code">bronze_customers</code>; 122 reference a nonexistent <code class="inline-code">product_id</code>. These
+aren't hypothetical — they're real rows in the actual database,
+exactly matching the facts sheet. <code class="inline-code">silver_sales.sql</code> has to surface
+them defensively via <code class="inline-code">is_customer_orphan</code>/<code class="inline-code">is_product_orphan</code> columns
+(computed with <code class="inline-code">NOT EXISTS</code>) precisely <em>because</em> nothing stopped them
+from being written in the first place.</p>
+
+<h3 id="example-2--a-foreign-key-would-have-rejected-every-one-of-them">Example 2 — a foreign key would have rejected every one of them</h3>
+
+<p>Build a small, properly-constrained analog:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE demo_customers (
+    customer_id INTEGER PRIMARY KEY,
+    email TEXT UNIQUE,
+    is_active INTEGER CHECK (is_active IN (0, 1))
+);
+CREATE TABLE demo_sales (
+    order_id INTEGER,
+    order_line_id INTEGER,
+    customer_id INTEGER NOT NULL,
+    quantity INTEGER CHECK (quantity &gt; 0),
+    PRIMARY KEY (order_id, order_line_id),
+    FOREIGN KEY (customer_id) REFERENCES demo_customers(customer_id)
+);
+INSERT INTO demo_customers (customer_id, email, is_active) VALUES (1, &#x27;a@x.com&#x27;, 1), (2, &#x27;b@x.com&#x27;, 0);
+
+<p>PRAGMA foreign_keys = ON;
+INSERT INTO demo_sales VALUES (100, 1, 1, 3);
+SELECT * FROM demo_sales;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">order_id  order_line_id  customer_id  quantity
+--------  -------------  -----------  --------
+100       1              1            3</code></pre></div>
+
+<p>A valid row, referencing <code class="inline-code">customer_id = 1</code>, which really exists.
+Now the exact class of write that produced 103 orphan rows in bronze:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">INSERT INTO demo_sales VALUES (101, 1, 9999, 2);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Runtime error near line 2: FOREIGN KEY constraint failed (19)</code></pre></div>
+
+<p>Rejected immediately, at insert time — <code class="inline-code">customer_id = 9999</code> doesn't
+exist in <code class="inline-code">demo_customers</code>. This is the entire point of a foreign key:
+it makes an orphan reference structurally impossible to write, instead
+of something you discover later via a <code class="inline-code">NOT EXISTS</code> cleanup query.</p>
+
+<h3 id="example-3--check-unique-and-primary-key-each-catching-a-real-bronze-problem">Example 3 — CHECK, UNIQUE, and PRIMARY KEY, each catching a real bronze problem</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- CHECK: bronze_sales.quantity has 359 negative rows and 212 zero rows (facts sheet)
+INSERT INTO demo_sales VALUES (102, 1, 1, -5);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: stepping, CHECK constraint failed: quantity &gt; 0 (19)</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- UNIQUE: bronze_products has 4 rows sharing 2 duplicated SKUs (facts sheet)
+INSERT INTO demo_customers (customer_id, email, is_active) VALUES (3, &#x27;a@x.com&#x27;, 1);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: stepping, UNIQUE constraint failed: demo_customers.email (19)</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- PRIMARY KEY: nothing stops a duplicate (order_id, order_line_id) in bronze
+INSERT INTO demo_sales VALUES (100, 1, 2, 1);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: stepping, UNIQUE constraint failed: demo_sales.order_id, demo_sales.order_line_id (19)</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- CHECK: bronze_customers.is_active is free-text (&#x27;Y&#x27;,&#x27;n&#x27;,&#x27;true&#x27;,&#x27;0&#x27;,...) instead of a real boolean
+INSERT INTO demo_customers (customer_id, email, is_active) VALUES (4, &#x27;d@x.com&#x27;, 5);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: stepping, CHECK constraint failed: is_active IN (0, 1) (19)</code></pre></div>
+
+<p>Four constraint violations, four real bronze messiness patterns each
+one would have caught at the moment of insertion rather than requiring
+a cleanup view downstream.</p>
+
+<h2 id="why-bronze-still-doesnt-have-them">Why bronze still doesn't have them</h2>
+
+<p>It's worth being explicit about <em>why</em> this project's bronze layer
+deliberately omits constraints, rather than treating it as a mistake
+to fix: bronze exists to model <strong>raw, as-ingested data from systems
+you don't control</strong> — a legacy application's export, a third-party
+feed, a spreadsheet upload. In the real world, you frequently don't
+get to add constraints to the <em>source</em> system. The medallion
+architecture's answer isn't "reject bad data on the way in" (bronze
+can't, by definition) — it's "capture it as-is, then clean and
+validate it explicitly in silver," which is exactly what
+<code class="inline-code">silver_sales.is_customer_orphan</code>/<code class="inline-code">is_product_orphan</code> do: surface the
+problem rather than pretend it doesn't exist.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">PRAGMA foreign_keys = ON;</code>.</strong> Without it, SQLite</li></ul>  parses and stores `FOREIGN KEY` clauses but never enforces them —
+  orphan inserts will silently succeed. This is the single most common
+  "why didn't my constraint work" surprise in SQLite specifically.
+<ul class="styled-list"><li><strong>Assuming constraints "clean up" existing bad data.</strong> They don't —</li></ul>  a constraint only stops *future* writes that would violate it. If
+  `bronze_sales` already had constraints added retroactively, the 103
+  existing orphan rows wouldn't be deleted or fixed; the `ALTER
+  TABLE`/rebuild adding the constraint would likely just fail outright
+  until the bad rows were dealt with first.
+<ul class="styled-list"><li><strong>Adding an FK without an index on the referencing column.</strong> SQLite</li></ul>  doesn't automatically index foreign key columns (some other engines
+  do) — pair a `FOREIGN KEY` with `CREATE INDEX` on that column if
+  you'll be joining or filtering on it often (Module 5).
+<ul class="styled-list"><li><strong>Confusing <code class="inline-code">CHECK</code> with application-level validation.</strong> A <code class="inline-code">CHECK</code></li></ul>  constraint runs inside the database, on every write, regardless of
+  which application or script performs it — a strictly stronger
+  guarantee than "our app's form validation checks this."
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">PRIMARY KEY</code>, <code class="inline-code">FOREIGN KEY</code>, <code class="inline-code">UNIQUE</code>, and <code class="inline-code">CHECK</code> enforce rules at</li></ul>  write time — the database refuses invalid writes rather than
+  accepting them and requiring cleanup later.
+<ul class="styled-list"><li>Bronze's <em>actual</em> orphan-FK counts — 103 orphan <code class="inline-code">customer_id</code>, 122</li></ul>  orphan `product_id` in `bronze_sales` — are real consequences of
+  having no `FOREIGN KEY` constraints; verified above, a constrained
+  table would have rejected every one of those inserts.
+<ul class="styled-list"><li>SQLite requires <code class="inline-code">PRAGMA foreign_keys = ON;</code> per connection — `FOREIGN</li></ul>  KEY` clauses alone are not enough.
+<ul class="styled-list"><li>Constraints prevent <em>future</em> bad writes; they don't retroactively</li></ul>  fix data already in a table.
+<ul class="styled-list"><li>This is precisely why the medallion architecture separates</li></ul>  "raw/unconstrained" (bronze) from "cleaned/validated" (silver) —
+  bronze often can't add constraints (you don't control the source),
+  so validation happens explicitly downstream instead.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="06-query-optimization-basics.html" class="nav-btn">6. Query Optimization Basics</a>. Next: <a href="08-writing-your-first-gold-view.html" class="nav-btn">8. Writing Your First Gold View</a>. Exercises: <a href="../../exercises/04-expert/07-constraints-and-data-integrity.html" class="nav-btn">7. Constraints and Data Integrity</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

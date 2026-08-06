@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>7. Pattern Matching with LIKE | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="7-pattern-matching-with-like">7. Pattern Matching with LIKE</h1>
+
+<nav class="book-nav">Previous: <a href="06-basic-aggregate-functions.html" class="nav-btn">6. Basic Aggregate Functions</a>. Next: <a href="08-distinct-and-duplicates.html" class="nav-btn">8. DISTINCT and Duplicates</a>. Exercises: <a href="../../exercises/01-beginner/07-pattern-matching-with-like.html" class="nav-btn">7. Pattern Matching with LIKE</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p><code class="inline-code">=</code> requires an exact match. Sometimes you don't know the exact value
+— you want "anything starting with Canyon," or "anything containing
+the word Boot," or "any 4-character code." <code class="inline-code">LIKE</code> lets you match text
+against a <em>pattern</em> instead of an exact string, using two wildcard
+characters.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WHERE column_name LIKE &#x27;pattern&#x27;</code></pre></div>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>Free-text columns rarely have values you can predict exactly.
+Oakhaven's <code class="inline-code">product_name</code> values are things like "Canyon Hiking
+Boots," "Cascade Hiking Boots," "Ironpeak Hiking Boot" — related, but
+not identical. <code class="inline-code">LIKE</code> is how you search for "anything about boots"
+without listing every exact product name. It's also your first
+introduction to a genuinely useful quirk: <code class="inline-code">LIKE</code> is one of the only
+places in standard SQL where text comparison is case-insensitive by
+default — which matters a lot against a column as messy as
+<code class="inline-code">bronze_products.category</code>.</p>
+
+<h2 id="syntax-the-two-wildcards">Syntax: the two wildcards</h2>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Wildcard</th><th>Matches</th></tr></thead><tbody><tr><td><code class="inline-code">%</code></td><td>Any sequence of characters (zero or more)</td></tr><tr><td><code class="inline-code">_</code></td><td>Exactly one character</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WHERE column_name LIKE &#x27;Canyon%&#x27;    -- starts with &quot;Canyon&quot;
+WHERE column_name LIKE &#x27;%Boot%&#x27;     -- contains &quot;Boot&quot; anywhere
+WHERE column_name LIKE &#x27;%Boots&#x27;     -- ends with &quot;Boots&quot;
+WHERE column_name LIKE &#x27;FOO-000_&#x27;   -- &quot;FOO-000&quot; plus exactly one more character</code></pre></div>
+
+<h2 id="try-it">Try it</h2>
+
+<h3 id="starts-with">Starts with</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name
+FROM bronze_products
+WHERE product_name LIKE &#x27;Canyon%&#x27;
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th></tr></thead><tbody><tr><td>Canyon Hiking Boots</td></tr><tr><td>Canyon Life Jackets</td></tr><tr><td>Canyon Backpack</td></tr><tr><td>Canyon Water Filters</td></tr><tr><td>Canyon Trekking Poles</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE product_name LIKE &#x27;Canyon%&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>9</td></tr></tbody></table></div>
+<h3 id="contains">Contains</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name
+FROM bronze_products
+WHERE product_name LIKE &#x27;%Boot%&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th></tr></thead><tbody><tr><td>Canyon Hiking Boots</td></tr><tr><td>Cascade Hiking Boots</td></tr><tr><td>Ironpeak Hiking Boot</td></tr><tr><td>Alpine Hiking Boots</td></tr><tr><td>Foothill Hiking Boot</td></tr></tbody></table></div>
+`%Boot%` finds "Boot" anywhere in the string — beginning, middle, or
+end — including both the singular ("Boot") and plural ("Boots") forms,
+since the trailing `%` absorbs whatever comes after.
+
+<h3 id="like-is-case-insensitive-for-ascii--unlike-">LIKE is case-insensitive (for ASCII) — unlike <code class="inline-code">=</code></h3>
+
+<p>This is the big one. Recall from module 2 that <code class="inline-code">=</code> is exact and
+case-sensitive:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE category = &#x27;footwear&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>4</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE category LIKE &#x27;footwear&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>8</td></tr></tbody></table></div>
+Same literal pattern, `'footwear'`, no wildcards even used — but `=`
+found only the 4 rows spelled exactly `footwear` (lowercase), while
+`LIKE` found 8, because it also matched `FOOTWEAR` and `Footwear` and
+any other casing of that exact same sequence of letters. This is a
+genuinely useful trick for casing-messy data — but notice it *still*
+doesn't catch every variant: it won't match `'Footwear '` (trailing
+space) or `'Foot Wear'` (split into two words), since those aren't the
+same sequence of characters, just differently-cased. `LIKE` fixes the
+casing problem specifically; it doesn't fix spacing or spelling
+differences. Full normalization of a column like this is Tier 2's job.
+
+<h3 id="the-underscore-wildcard-exactly-one-character">The underscore wildcard: exactly one character</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT sku
+FROM bronze_products
+WHERE sku LIKE &#x27;FOO-00__&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>sku</th></tr></thead><tbody><tr><td>FOO-0001</td></tr><tr><td>FOO-0016</td></tr><tr><td>FOO-0019</td></tr><tr><td>FOO-0020</td></tr><tr><td>FOO-0023</td></tr><tr><td>FOO-0025</td></tr><tr><td>FOO-0029</td></tr><tr><td>FOO-0044</td></tr><tr><td>FOO-0062</td></tr><tr><td>FOO-0065</td></tr><tr><td>FOO-0069</td></tr><tr><td>FOO-0087</td></tr><tr><td>FOO-0099</td></tr></tbody></table></div>
+13 rows total. `FOO-00__` matches `FOO-00` followed by exactly two
+more characters — so `FOO-0001` and `FOO-0099` both match (2 digits
+after `FOO-00`), but a hypothetical `FOO-00123` (3 digits) would not,
+since `_` matches *exactly* one character each, no more, no less.
+Compare this to `FOO-00%`, which would match any number of trailing
+characters — `_` and `%` are both wildcards, but they're not
+interchangeable.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Forgetting the wildcard entirely.</strong> `WHERE product_name LIKE</li></ul>  'Canyon'` (no `%`) behaves just like `=` — an exact match, just
+  case-insensitive. If you meant "starts with Canyon," you need
+  `'Canyon%'`.
+<ul class="styled-list"><li><strong>Confusing <code class="inline-code">%</code> and <code class="inline-code">_</code>.</strong> <code class="inline-code">%</code> is "any number of characters</li></ul>  (including zero)"; `_` is "exactly one character." Swapping them
+  gives you a pattern that's too loose or too strict.
+<ul class="styled-list"><li><strong>Assuming LIKE fixes all messiness.</strong> As shown above, LIKE only</li></ul>  smooths over *case* differences — it does nothing about extra
+  whitespace, spelled-out `and` vs `&`, or split words like `Foot
+  Wear`. Those need real string cleaning, coming in Tier 2.
+<ul class="styled-list"><li><strong>Forgetting quotes.</strong> Like any text literal, <code class="inline-code">LIKE</code> patterns need</li></ul>  single quotes: `LIKE 'Canyon%'`, not `LIKE Canyon%`.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">LIKE</code> matches text against a pattern using <code class="inline-code">%</code> (any number of</li></ul>  characters) and `_` (exactly one character).
+<ul class="styled-list"><li><code class="inline-code">LIKE</code> is case-insensitive for ASCII text, unlike <code class="inline-code">=</code> — a genuinely</li></ul>  useful tool against messy casing, but not a substitute for real
+  cleaning.
+<ul class="styled-list"><li><code class="inline-code">LIKE</code> handles casing differences; it does not handle whitespace,</li></ul>  spelling, or word-order differences — full standardization of a
+  column like `category` is a Tier 2 topic.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="06-basic-aggregate-functions.html" class="nav-btn">6. Basic Aggregate Functions</a>. Next: <a href="08-distinct-and-duplicates.html" class="nav-btn">8. DISTINCT and Duplicates</a>. Exercises: <a href="../../exercises/01-beginner/07-pattern-matching-with-like.html" class="nav-btn">7. Pattern Matching with LIKE</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

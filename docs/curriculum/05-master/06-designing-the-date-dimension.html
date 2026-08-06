@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6. Designing the Date Dimension | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="6-designing-the-date-dimension">6. Designing the Date Dimension</h1>
+
+<nav class="book-nav">Previous: <a href="05-slowly-changing-dimensions-scd-1-and-2.html" class="nav-btn">5. Slowly Changing Dimensions: Type 1 and Type 2</a>. Next: <a href="07-designing-the-fact-table.html" class="nav-btn">7. Designing the Fact Table</a>. Exercises: <a href="../../exercises/05-master/06-designing-the-date-dimension.html" class="nav-btn">6. Designing the Date Dimension</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Every other dimension in this tier has been shaped by the messiness of
+its source data: <code class="inline-code">dim_customer</code> inherits near-duplicate people,
+<code class="inline-code">dim_employee</code> inherits an SCD-shaped hire/termination pattern,
+<code class="inline-code">dim_product</code> inherits SKU collisions. <code class="inline-code">dim_date</code> is different, and
+that difference is the whole lesson.</p>
+
+<p>A date dimension isn't extracted from a messy operational system at
+all — it's <strong>manufactured</strong>, once, from pure calendar math. There's
+nothing to deduplicate (a calendar date can't have a near-duplicate).
+There's nothing to historize with SCD logic (October 12th, 2024 will
+never need a "corrected" version of itself). And critically, a
+well-built date dimension doesn't depend on which fact rows happen to
+exist — it should be complete and correct for its entire declared
+range <em>before</em> a single fact row is loaded, and stay complete even for
+dates where nothing happened.</p>
+
+<p>This makes <code class="inline-code">dim_date</code> one of the most reusable objects you will ever
+build in a data warehousing career. The exact pattern shown here —
+an integer <code class="inline-code">YYYYMMDD</code> key plus a view deriving year/month/quarter/
+day-of-week/weekend attributes from it — works, nearly unchanged, in
+Snowflake, BigQuery, Databricks, Postgres, or any other SQL engine.
+Swap <code class="inline-code">strftime()</code> for that engine's date functions
+(<code class="inline-code">DATE_TRUNC</code>/<code class="inline-code">EXTRACT</code> in Postgres, <code class="inline-code">FORMAT_DATE</code> in BigQuery, etc.)
+and the design survives completely intact. Very little else in this
+tier travels that cleanly across ecosystems — build a good date
+dimension once and you'll recognize it (and rebuild variants of it)
+for the rest of your career.</p>
+
+<h2 id="dissecting-dim_date">Dissecting <code class="inline-code">dim_date</code></h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- project/gold/dim_date.sql
+CREATE VIEW dim_date AS
+SELECT
+    datekey,
+    date,
+    CAST(strftime(&#x27;%Y&#x27;, date) AS INTEGER) AS year,
+    CAST(strftime(&#x27;%m&#x27;, date) AS INTEGER) AS month,
+    CASE CAST(strftime(&#x27;%m&#x27;, date) AS INTEGER)
+        WHEN 1 THEN &#x27;January&#x27; ... WHEN 12 THEN &#x27;December&#x27;
+    END AS month_name,
+    ((CAST(strftime(&#x27;%m&#x27;, date) AS INTEGER) - 1) / 3) + 1 AS quarter,
+    CAST(strftime(&#x27;%d&#x27;, date) AS INTEGER) AS day_of_month,
+    CAST(strftime(&#x27;%w&#x27;, date) AS INTEGER) AS day_of_week,  -- 0=Sunday .. 6=Saturday
+    CASE CAST(strftime(&#x27;%w&#x27;, date) AS INTEGER)
+        WHEN 0 THEN &#x27;Sunday&#x27; ... WHEN 6 THEN &#x27;Saturday&#x27;
+    END AS day_name,
+    CASE WHEN CAST(strftime(&#x27;%w&#x27;, date) AS INTEGER) IN (0, 6) THEN 1 ELSE 0 END AS is_weekend
+FROM silver_calendar;</code></pre></div>
+
+<p>Structurally it's simple on purpose: one <code class="inline-code">SELECT</code> over
+<code class="inline-code">silver_calendar</code> (itself a thin pass-through over <code class="inline-code">bronze_calendar</code>,
+which is built by a <code class="inline-code">WITH RECURSIVE</code> date-spine INSERT, not scraped
+from any messy source). Every derived column — <code class="inline-code">year</code>, <code class="inline-code">month</code>,
+<code class="inline-code">month_name</code>, <code class="inline-code">quarter</code>, <code class="inline-code">day_of_month</code>, <code class="inline-code">day_of_week</code>, <code class="inline-code">day_name</code>,
+<code class="inline-code">is_weekend</code> — is computed once, in one place, from <code class="inline-code">date</code>. That's the
+core value proposition: without this view, <em>every</em> query that needed
+"is this a weekend" or "which quarter" would have to repeat that
+<code class="inline-code">strftime</code> logic inline, and any inconsistency between two analysts'
+inline definitions becomes a silent reporting discrepancy. Centralize
+it once, in the dimension, and every query downstream inherits the
+same correct definition for free.</p>
+
+<p><code class="inline-code">datekey</code> — an <code class="inline-code">INTEGER</code> in <code class="inline-code">YYYYMMDD</code> form (e.g. <code class="inline-code">20260630</code>) — is the
+join key <code class="inline-code">fact_sales.datekey</code> references, rather than joining on the
+<code class="inline-code">TEXT</code> <code class="inline-code">date</code> column directly. An integer key is smaller, indexes and
+joins faster than a text/date type in most engines, and sorts
+correctly as a plain number — another detail that generalizes well
+beyond SQLite.</p>
+
+<h2 id="examples">Examples</h2>
+
+<h3 id="1-full-span-and-row-count">1. Full span and row count</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total_days, MIN(date) AS min_date, MAX(date) AS max_date
+FROM dim_date;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_days</th><th>min_date</th><th>max_date</th></tr></thead><tbody><tr><td>7670</td><td>2018-01-01</td><td>2038-12-31</td></tr></tbody></table></div>
+`dim_date` covers **every day from 2018-01-01 through 2038-12-31** —
+7,670 rows, no gaps. Compare that to the actual range of dates
+appearing in `fact_sales.order_date`: **2021-01-01 through
+2026-06-30** (from `project/docs/facts_sheet.md`). The date dimension
+is deliberately built far wider than any fact table currently needs.
+That's the point: a date dimension is built once for a generously wide
+range and then just... sits there, ready, regardless of how the fact
+tables around it grow. You never want a warehouse to break because
+someone loaded a fact row for a date the calendar dimension "forgot"
+to include.
+
+<h3 id="2-one-row-fully-decoded">2. One row, fully decoded</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT datekey, date, year, month, month_name, quarter,
+       day_of_month, day_of_week, day_name, is_weekend
+FROM dim_date
+WHERE date = &#x27;2026-06-30&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>datekey</th><th>date</th><th>year</th><th>month</th><th>month_name</th><th>quarter</th><th>day_of_month</th><th>day_of_week</th><th>day_name</th><th>is_weekend</th></tr></thead><tbody><tr><td>20260630</td><td>2026-06-30</td><td>2026</td><td>6</td><td>June</td><td>2</td><td>30</td><td>2</td><td>Tuesday</td><td>0</td></tr></tbody></table></div>
+Every attribute a typical BI report needs — fiscal-style quarter
+grouping, human-readable month/day names, a weekend flag for filtering
+out non-business days — is a plain column lookup, not a computed
+expression re-run per query.
+
+<h3 id="3-weekend-flag-correctness-checked-across-the-whole-calendar">3. Weekend flag correctness, checked across the whole calendar</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT day_name, is_weekend, COUNT(*)
+FROM dim_date
+GROUP BY day_name, is_weekend
+ORDER BY is_weekend, day_name;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>day_name</th><th>is_weekend</th><th>COUNT(*)</th></tr></thead><tbody><tr><td>Friday</td><td>0</td><td>1096</td></tr><tr><td>Monday</td><td>0</td><td>1096</td></tr><tr><td>Thursday</td><td>0</td><td>1096</td></tr><tr><td>Tuesday</td><td>0</td><td>1096</td></tr><tr><td>Wednesday</td><td>0</td><td>1096</td></tr><tr><td>Saturday</td><td>1</td><td>1095</td></tr><tr><td>Sunday</td><td>1</td><td>1095</td></tr></tbody></table></div>
+Every `Saturday`/`Sunday` row has `is_weekend = 1`; every weekday row
+has `is_weekend = 0` — no exceptions, across all 7,670 days. This kind
+of exhaustive check is cheap to run against a date dimension precisely
+*because* it's small, complete, and has no messiness to account for —
+a rare property compared to every other dimension in this tier.
+
+<h3 id="4-why-complete-regardless-of-facts-matters-the-zero-sales-day-pattern">4. Why "complete regardless of facts" matters: the zero-sales-day pattern</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM agg_daily_sales WHERE order_line_count = 0;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>54</td></tr></tbody></table></div>
+`agg_daily_sales` (`project/gold/agg_daily_sales.sql`) is built with a
+`LEFT JOIN dim_date ... fact_sales` — starting from every date in
+`dim_date` and attaching whatever `fact_sales` rows exist for it, not
+the other way around. That LEFT JOIN direction is only meaningful
+because `dim_date` is guaranteed complete: 54 days between
+2021-01-01 and 2026-06-30 had *zero* order lines, and thanks to this
+pattern they still appear as real rows in `agg_daily_sales`, with
+`order_line_count = 0` and `total_net_amount = 0.0`, instead of
+silently vanishing from the report. If you started from `fact_sales`
+and joined *out* to `dim_date` instead, every zero-activity day would
+simply never appear — a classic, easy-to-miss reporting bug that a
+complete date dimension protects you from by construction.
+
+<h2 id="beyond-oakhaven-what-real-date-dimensions-add">Beyond Oakhaven: what real date dimensions add</h2>
+
+<p>Oakhaven's <code class="inline-code">dim_date</code> is intentionally simple. Production date
+dimensions in real warehouses commonly extend the same pattern with:
+<ul class="styled-list"><li><strong>Fiscal calendar columns</strong> (<code class="inline-code">fiscal_year</code>, <code class="inline-code">fiscal_quarter</code>) when a</li></ul>  company's fiscal year doesn't align with the calendar year — computed
+  once here instead of recomputed per report.
+<ul class="styled-list"><li><strong>Holiday flags</strong> (<code class="inline-code">is_holiday</code>, <code class="inline-code">holiday_name</code>) for business-day</li></ul>  calculations.
+<ul class="styled-list"><li><strong>Prior-period keys</strong> (e.g., <code class="inline-code">prior_year_datekey</code>) to make</li></ul>  period-over-period comparisons a join instead of date arithmetic in
+  every query.
+<ul class="styled-list"><li><strong>Role-playing reuse</strong>: the same <code class="inline-code">dim_date</code> table joined multiple</li></ul>  times in one query under different aliases for different date roles
+  on a single fact row. Oakhaven's <code class="inline-code">fact_sales</code> actually has two dates
+  per row — <code class="inline-code">order_date</code> and <code class="inline-code">ship_date</code> — but only <code class="inline-code">order_date</code> is
+  converted to a <code class="inline-code">datekey</code> and joined to <code class="inline-code">dim_date</code>; <code class="inline-code">ship_date</code> isn't
+  wired up the same way. That asymmetry is worth noticing as a natural
+  extension point: the <em>same</em> <code class="inline-code">dim_date</code> table could answer "orders by
+  ship date" just as well as "orders by order date," by joining it a
+  second time on a second date key. (Building that fact-table wiring
+  is out of scope here — it's fact design, not dimension design — but
+  recognizing the reuse opportunity is squarely a dimension-design
+  insight.)</p>
+
+<p>None of these require rethinking the core design — they're columns
+added to the same pre-built, complete, dependency-free table. That
+extensibility without redesign is the real mark of a well-built date
+dimension.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li>**Building the date dimension only for the fact table's current</li></ul>  min/max range.** This looks fine until new data arrives outside that
+  range (next year's orders) or until you need a "days with zero
+  activity" report — both break immediately if the calendar isn't
+  built wider than currently strictly necessary.
+<ul class="styled-list"><li><strong>Deriving date parts ad hoc in every query</strong> (<code class="inline-code">strftime('%Y', ...)</code></li></ul>  scattered across dozens of reports) instead of centralizing them in
+  one dimension. Guarantees inconsistency the first time someone
+  writes the logic slightly differently.
+<ul class="styled-list"><li><strong>Using the raw date/text column as the join key</strong> instead of an</li></ul>  integer surrogate like `datekey`. Works, but is slower to join/index
+  in most engines and behaves inconsistently across date/text type
+  handling between database systems.
+<ul class="styled-list"><li><strong>Joining fact → dim_date instead of dim_date → fact</strong> when the</li></ul>  report's purpose is to show a complete time series. The join
+  direction determines whether zero-activity periods appear or
+  silently disappear — see Example 4.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">dim_date</code> is fundamentally different from Oakhaven's other</li></ul>  dimensions: it's manufactured from calendar math, not extracted from
+  messy source data, so it has no dedup or SCD concerns.
+<ul class="styled-list"><li>A good date dimension is built complete for a wide range up front</li></ul>  (Oakhaven: 2018-01-01 through 2038-12-31, 7,670 rows) and stays
+  correct regardless of what fact data currently exists — proven by
+  the 54 zero-order days that still surface correctly in
+  `agg_daily_sales` via a `LEFT JOIN dim_date → fact_sales`.
+<ul class="styled-list"><li>Centralizing date-part derivation (<code class="inline-code">year</code>, <code class="inline-code">quarter</code>, <code class="inline-code">day_name</code>,</li></ul>  `is_weekend`, etc.) in one dimension, computed once, is strictly
+  better than recomputing it per query.
+<ul class="styled-list"><li>This is one of the most portable patterns in all of data</li></ul>  warehousing — the same integer-datekey-plus-derived-attributes
+  design works essentially unchanged in any SQL engine, Oakhaven and
+  SQLite included.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="05-slowly-changing-dimensions-scd-1-and-2.html" class="nav-btn">5. Slowly Changing Dimensions: Type 1 and Type 2</a>. Next: <a href="07-designing-the-fact-table.html" class="nav-btn">7. Designing the Fact Table</a>. Exercises: <a href="../../exercises/05-master/06-designing-the-date-dimension.html" class="nav-btn">6. Designing the Date Dimension</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

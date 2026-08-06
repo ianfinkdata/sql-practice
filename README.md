@@ -1,5 +1,11 @@
 # SQL Practice
 
+> **BLUF (Bottom Line Up Front):** SQL Practice is a zero-dependency, self-paced curriculum (Beginner → Master) built around **Oakhaven**, a real 3-tier medallion SQLite pipeline (`bronze → silver → gold`) you can query directly or build deterministically with one command.
+
+<!-- nav -->
+[📖 Table of Contents](README.md) | [⏭️ Next: Tier 0 Orientation](curriculum/00-orientation/README.md)
+<!-- /nav -->
+
 > A complete, self-paced path from your very first `SELECT` to designing
 > warehouse-scale dimensional models — paired with a small, real
 > **bronze → silver → gold** SQLite project you generate yourself with
@@ -215,3 +221,9 @@ a real database, not made up for the sake of a tidy example.
 ---
 
 *Contributions and corrections welcome.*
+
+---
+
+<!-- nav -->
+[📖 Table of Contents](README.md) | [⏭️ Next: Tier 0 Orientation](curriculum/00-orientation/README.md)
+<!-- /nav -->

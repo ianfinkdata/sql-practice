@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>7. Designing the Fact Table | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="7-designing-the-fact-table">7. Designing the Fact Table</h1>
+
+<nav class="book-nav">Previous: <a href="06-designing-the-date-dimension.html" class="nav-btn">6. Designing the Date Dimension</a>. Next: <a href="08-star-vs-snowflake-schema.html" class="nav-btn">8. Star vs. Snowflake Schema</a>. Exercises: <a href="../../exercises/05-master/07-designing-the-fact-table.html" class="nav-btn">7. Designing the Fact Table</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>A fact table records that <em>something happened</em>, at a stated grain, and
+holds two kinds of columns: <strong>foreign keys</strong> that connect each event to
+the dimensions that describe it (who, what, when, where), and
+<strong>measures</strong> — the numbers you actually want to aggregate. Everything
+else the previous modules covered (dimension design, grain, SCD, the
+date dimension) exists in service of this one table. It's the thing a
+BI tool queries.</p>
+
+<p>Designing a fact table is really three decisions, made in order:</p>
+
+<p>1. <strong>Grain</strong> — what does one row mean? ("One row per order line" is
+   Oakhaven's answer — you can't change your mind about this later
+   without rebuilding the table.)
+2. <strong>Foreign keys</strong> — which dimensions does each row connect to, and
+   what happens when a key doesn't resolve?
+3. <strong>Measures</strong> — which numeric columns get summed/averaged, and does
+   that aggregation even make sense?</p>
+
+<p>This module dissects <code class="inline-code">project/gold/fact_sales.sql</code> as the concrete
+answer Oakhaven gives to all three.</p>
+
+<h2 id="grain-the-contract-everything-else-depends-on">Grain: the contract everything else depends on</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS rows, COUNT(DISTINCT order_id || &#x27;-&#x27; || order_line_id) AS distinct_grain
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>rows</th><th>distinct_grain</th></tr></thead><tbody><tr><td>12000</td><td>12000</td></tr></tbody></table></div>
+Every row count matches its distinct-grain-key count: `fact_sales` has
+exactly one row per `(order_id, order_line_id)` pair, no more, no
+fewer. That's the grain statement made verifiable — "one row per order
+line" isn't a comment, it's a property you can check with `COUNT(*) =
+COUNT(DISTINCT grain_key)`. If those two numbers ever diverged, the
+fact table would be silently double-counting or dropping order lines,
+and every downstream `SUM()` would be wrong. Always run this check
+before trusting a fact table (yours or someone else's).
+
+<h2 id="foreign-keys-connect-dont-validate">Foreign keys: connect, don't validate</h2>
+
+<p>Here's the full view:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE VIEW fact_sales AS
+SELECT
+    s.order_id,
+    s.order_line_id,
+    s.customer_id,
+    s.product_id,
+    s.employee_id,
+    CAST(strftime(&#x27;%Y%m%d&#x27;, s.order_date) AS INTEGER) AS datekey,
+    s.order_date,
+    s.ship_date,
+    s.quantity,
+    s.unit_price,
+    s.discount_pct,
+    s.net_amount,
+    s.payment_method,
+    s.order_status,
+    s.channel,
+    s.is_customer_orphan,
+    s.is_product_orphan
+FROM silver_sales s;</code></pre></div>
+
+<p>Four foreign keys, one per dimension: <code class="inline-code">customer_id</code> → <code class="inline-code">dim_customer</code>,
+<code class="inline-code">product_id</code> → <code class="inline-code">dim_product</code>, <code class="inline-code">employee_id</code> → <code class="inline-code">dim_employee</code>, <code class="inline-code">datekey</code>
+→ <code class="inline-code">dim_date</code>. Notice what's <em>not</em> here: no <code class="inline-code">JOIN</code> to any of those
+dimensions, and no <code class="inline-code">WHERE</code> clause filtering out rows whose keys don't
+resolve. <code class="inline-code">fact_sales</code> is built straight off <code class="inline-code">silver_sales</code> — it carries
+the keys, it does not validate them.</p>
+
+<p>That's deliberate, and it's the same discipline Tier 4's constraints
+lesson taught for bronze: don't silently drop bad data, surface it so
+someone downstream can decide what to do with it. Four things are
+passed through instead of fixed or filtered:
+<ul class="styled-list"><li><strong><code class="inline-code">is_customer_orphan</code></strong> — <code class="inline-code">1</code> when <code class="inline-code">customer_id</code> doesn't exist in</li></ul>  <code class="inline-code">bronze_customers</code>. Computed in <code class="inline-code">silver_sales</code>, carried through
+  unchanged.
+<ul class="styled-list"><li><strong><code class="inline-code">is_product_orphan</code></strong> — same idea for <code class="inline-code">product_id</code>.</li><li><strong>NULL <code class="inline-code">employee_id</code></strong> — not an error. It means an online/no-rep</li></ul>  sale (see the data dictionary: ~10% of bronze rows have this by
+  design).
+<ul class="styled-list"><li><strong>NULL <code class="inline-code">datekey</code></strong> — happens when <code class="inline-code">order_date</code> couldn't be parsed</li></ul>  (missing in bronze), so there's nothing to <code class="inline-code">strftime()</code> into a key.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    SUM(is_customer_orphan) AS customer_orphans,
+    SUM(is_product_orphan) AS product_orphans,
+    SUM(CASE WHEN employee_id IS NULL THEN 1 ELSE 0 END) AS null_employee_id,
+    SUM(CASE WHEN datekey IS NULL THEN 1 ELSE 0 END) AS null_datekey
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_orphans</th><th>product_orphans</th><th>null_employee_id</th><th>null_datekey</th></tr></thead><tbody><tr><td>103</td><td>122</td><td>1243</td><td>58</td></tr></tbody></table></div>
+12,103 rows (about 10%) have at least one of these conditions, and
+every one of them still made it into `fact_sales`. If the view had
+inner-joined to the dimensions instead, all 12,103 would have vanished
+without a trace — and nobody querying `fact_sales` would ever know
+data was missing. Instead, an analyst can write `WHERE
+is_customer_orphan = 0` to exclude bad rows *when they choose to*, or
+`WHERE is_customer_orphan = 1` to go investigate them. That choice
+belongs to the query, not the pipeline. (`agg_customer_ltv` and
+`agg_monthly_sales_by_category`, covered in later modules, make their
+own different choices about how to handle this — LEFT JOIN vs. INNER
+JOIN — which is exactly the point: the fact table stays neutral, and
+each downstream aggregate decides for itself.)
+
+<h2 id="measures-additive-semi-additive-non-additive">Measures: additive, semi-additive, non-additive</h2>
+
+<p>Not every number in a fact table can be summed the same way. Getting
+this wrong is one of the most common real-world dimensional-modeling
+mistakes, so it's worth naming the three categories explicitly.</p>
+
+<p><strong>Additive measures</strong> can be summed across <em>any</em> dimension — customer,
+product, date, all of them — and the sum still means something.
+<code class="inline-code">quantity</code> and <code class="inline-code">net_amount</code> are Oakhaven's additive measures: "total
+units sold" and "total revenue" are meaningful whether you're summing
+across one customer, one day, or the whole table. This is the easy,
+default case, and most measures in most fact tables are additive.</p>
+
+<p><strong>Semi-additive measures</strong> can be summed across <em>some</em> dimensions but
+not others — typically not across time. Oakhaven's <code class="inline-code">fact_sales</code>
+doesn't literally carry one (order-line revenue is fully additive), but
+the pattern shows up the moment you compute a running/cumulative total,
+which behaves like a balance snapshot:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_date, total_net_amount,
+       ROUND(SUM(total_net_amount) OVER (ORDER BY order_date), 2) AS running_total_net_amount
+FROM agg_daily_sales
+ORDER BY order_date
+LIMIT 8;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_date</th><th>total_net_amount</th><th>running_total_net_amount</th></tr></thead><tbody><tr><td>2021-01-01</td><td>2318.71</td><td>2318.71</td></tr><tr><td>2021-01-02</td><td>3381.01</td><td>5699.72</td></tr><tr><td>2021-01-03</td><td>1914.65</td><td>7614.37</td></tr><tr><td>2021-01-04</td><td>3594.94</td><td>11209.31</td></tr><tr><td>2021-01-05</td><td>3059.74</td><td>14269.05</td></tr><tr><td>2021-01-06</td><td>7591.42</td><td>21860.47</td></tr><tr><td>2021-01-07</td><td>8585.33</td><td>30445.8</td></tr><tr><td>2021-01-08</td><td>0.0</td><td>30445.8</td></tr></tbody></table></div>
+`running_total_net_amount` is valid to *read* at any single row — on
+2021-01-07, cumulative revenue to date was $30,445.80. But it is
+**not** valid to `SUM()` across rows: adding the running totals for
+2021-01-06 and 2021-01-07 together (21860.47 + 30445.80) produces a
+meaningless number that double-counts everything before 01-06. This is
+exactly how a real semi-additive measure behaves — an account balance,
+an inventory-on-hand snapshot, a headcount at end-of-month: correct to
+sum across products/stores/departments *at a point in time*, wrong to
+sum across time itself.
+
+<p><strong>Non-additive measures</strong> can't be meaningfully summed across <em>any</em>
+dimension — usually because they're ratios or averages, not counts of
+things. <code class="inline-code">discount_pct</code> is Oakhaven's non-additive measure:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    ROUND(SUM(discount_pct), 2) AS meaningless_sum,
+    ROUND(AVG(discount_pct), 4) AS naive_avg_discount,
+    ROUND(1 - SUM(net_amount) * 1.0 / SUM(quantity * unit_price), 4) AS true_weighted_avg_discount
+FROM fact_sales
+WHERE quantity &gt; 0 AND net_amount IS NOT NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>meaningless_sum</th><th>naive_avg_discount</th><th>true_weighted_avg_discount</th></tr></thead><tbody><tr><td>1284.8</td><td>0.1144</td><td>0.1151</td></tr></tbody></table></div>
+`SUM(discount_pct)` (1284.8) is nonsense — "the sum of a bunch of
+percentages" isn't a business quantity anyone asked for. Even the naive
+`AVG(discount_pct)` (0.1144, an unweighted average of every line's
+discount rate) is subtly wrong: it treats a $5 line and a $5,000 line
+as equally important. The correct answer, `true_weighted_avg_discount`
+(0.1151), is recomputed from the two *additive* components that make
+it up — `SUM(net_amount)` and `SUM(quantity * unit_price)` — and only
+divided at the very end. The lesson generalizes: when a measure isn't
+additive, don't aggregate it directly; decompose it into additive
+pieces, aggregate those, and recombine.
+
+<h2 id="examples">Examples</h2>
+
+<h3 id="1-confirm-the-grain-holds-with-no-duplicates-or-gaps">1. Confirm the grain holds with no duplicates or gaps</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_line_id, COUNT(*)
+FROM fact_sales
+GROUP BY order_id, order_line_id
+HAVING COUNT(*) &gt; 1;</code></pre></div>
+
+<p>Zero rows returned — no <code class="inline-code">(order_id, order_line_id)</code> pair repeats. This
+is the same grain check as above, phrased as a "prove me wrong" query
+instead of a count comparison; either style is a good habit to keep in
+your back pocket for any fact table you build.</p>
+
+<h3 id="2-see-the-orphan-flags-in-action">2. See the orphan flags in action</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_line_id, customer_id, is_customer_orphan
+FROM fact_sales
+WHERE is_customer_orphan = 1
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>customer_id</th><th>is_customer_orphan</th></tr></thead><tbody><tr><td>97</td><td>1</td><td>9318</td><td>1</td></tr><tr><td>97</td><td>2</td><td>9318</td><td>1</td></tr><tr><td>190</td><td>1</td><td>4124</td><td>1</td></tr><tr><td>190</td><td>2</td><td>4124</td><td>1</td></tr><tr><td>190</td><td>3</td><td>4124</td><td>1</td></tr></tbody></table></div>
+Orphan `customer_id`s like `9318` and `4124` are well outside the real
+1–600 range, which makes them easy to eyeball as fake. Every line of
+order 97 shares the same bad `customer_id`, and so does every line of
+order 190 — a reminder that `bronze_sales` generates order-level
+attributes once per order and repeats them, so a corrupt `customer_id`
+corrupts the whole order, not just one line.
+
+<h3 id="3-additive-measures-roll-up-correctly-at-any-grain">3. Additive measures roll up correctly at any grain</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT channel, COUNT(*) AS lines, SUM(quantity) AS total_units, ROUND(SUM(net_amount), 2) AS total_net_amount
+FROM fact_sales
+GROUP BY channel
+ORDER BY total_net_amount DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>channel</th><th>lines</th><th>total_units</th><th>total_net_amount</th></tr></thead><tbody><tr><td>In-Store</td><td>5960</td><td>16440</td><td>4380739.06</td></tr><tr><td>Online</td><td>6040</td><td>16509</td><td>4361549.98</td></tr></tbody></table></div>
+`quantity` and `net_amount` sum cleanly no matter how you group them —
+by channel here, by category or by day elsewhere in this repo. That
+reliability is *why* they're the measures, not an accident.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Filtering orphans/NULLs out of the fact table itself.</strong> That</li></ul>  decision belongs to each downstream query or aggregate, not to the
+  fact table. Baking a `WHERE is_customer_orphan = 0` into
+  `fact_sales` would silently delete evidence that ~1% of orders
+  reference nonexistent customers — evidence someone needs to see to
+  fix the upstream system.
+<ul class="styled-list"><li><strong>Picking a grain, then quietly violating it.</strong> If <code class="inline-code">fact_sales</code> ever</li></ul>  gained a second row per order line (say, one row per line per
+  discount-code-applied), `COUNT(*) = COUNT(DISTINCT grain_key)` would
+  break, and every `SUM()` written against the old assumption would
+  silently overcount. Re-check the grain invariant after any schema
+  change.
+<ul class="styled-list"><li><strong>Summing a non-additive measure because it's numeric.</strong> <code class="inline-code">discount_pct</code>,</li></ul>  `unit_price`, any percentage, ratio, or rate — SQL will happily
+  compute `SUM()` on these, and the result will be wrong every time.
+  If a measure is a ratio, decompose it into its additive numerator and
+  denominator instead.
+<ul class="styled-list"><li><strong>Summing a semi-additive measure across the "wrong" dimension</strong> —</li></ul>  usually time. Running totals, balances, and point-in-time snapshots
+  are real, useful measures; they just can't be added to each other
+  across the dimension they're already cumulative over.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>Fact table design is grain, then foreign keys, then measures — in</li></ul>  that order, because the grain decision constrains everything after
+  it.
+<ul class="styled-list"><li><code class="inline-code">COUNT(*) = COUNT(DISTINCT grain_key)</code> is a cheap, mechanical way to</li></ul>  verify a stated grain actually holds.
+<ul class="styled-list"><li>Foreign keys in a fact table connect to dimensions; they don't</li></ul>  validate against them. `fact_sales` passes through
+  `is_customer_orphan`, `is_product_orphan`, NULL `employee_id`, and
+  NULL `datekey` by design, so bad data is visible and query-able
+  instead of silently vanishing — the same "surface, don't hide"
+  discipline as Tier 4's constraints lesson, just applied at the gold
+  layer instead of the DDL layer.
+<ul class="styled-list"><li>Measures split into three kinds: additive (<code class="inline-code">quantity</code>, <code class="inline-code">net_amount</code> —</li></ul>  sum across anything), semi-additive (running totals/balances — sum
+  across some dimensions, not time), and non-additive (`discount_pct` —
+  never sum directly; decompose into additive parts and recombine).
+<ul class="styled-list"><li>This grain → keys → measures thinking is the same recipe whether</li></ul>  you're modeling retail order lines, hospital claims, or ad
+  impressions — it's portable well beyond Oakhaven.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="06-designing-the-date-dimension.html" class="nav-btn">6. Designing the Date Dimension</a>. Next: <a href="08-star-vs-snowflake-schema.html" class="nav-btn">8. Star vs. Snowflake Schema</a>. Exercises: <a href="../../exercises/05-master/07-designing-the-fact-table.html" class="nav-btn">7. Designing the Fact Table</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

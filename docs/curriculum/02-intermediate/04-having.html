@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HAVING | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="having">HAVING</h1>
+
+<nav class="book-nav">Previous: <a href="03-group-by.html" class="nav-btn">GROUP BY</a>. Next: <a href="05-case-expressions.html" class="nav-btn">CASE Expressions</a>. Exercises: <a href="../../exercises/02-intermediate/04-having.html" class="nav-btn">HAVING</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p><code class="inline-code">WHERE</code> filters individual rows <em>before</em> grouping happens. <code class="inline-code">HAVING</code>
+filters <em>groups</em>, after <code class="inline-code">GROUP BY</code> has already collapsed rows and
+computed aggregates. They look similar and sit close together in a
+query, but they operate at different stages — that's the whole
+concept.</p>
+
+<p>Rule of thumb: if your filter mentions a raw column (<code class="inline-code">channel =
+'Online'</code>, <code class="inline-code">order_date > '2024-01-01'</code>), it's a <code class="inline-code">WHERE</code>. If it
+mentions an aggregate (<code class="inline-code">COUNT(*) > 10</code>, <code class="inline-code">SUM(quantity) < 0</code>), it's a
+<code class="inline-code">HAVING</code>.</p>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>"Which categories have more than 500 order lines?" and "which
+customers have placed more than 30 orders?" are both questions about
+<em>groups</em>, not individual rows — you can't answer them until after
+<code class="inline-code">GROUP BY</code> has run. Oakhaven's messy <code class="inline-code">category</code> column (40 raw
+variants, from Module 3) makes a great <code class="inline-code">HAVING</code> example precisely
+because the groups are lopsided: a few variants dominate, most are
+small. <code class="inline-code">HAVING</code> lets you filter straight to the ones that matter for a
+given question, without pre-cleaning anything.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT grouping_column, AGG_FUNC(some_column) AS agg_alias
+FROM table
+WHERE row_level_condition
+GROUP BY grouping_column
+HAVING aggregate_condition
+ORDER BY agg_alias;</code></pre></div>
+
+<p>Clause order in the query is fixed: <code class="inline-code">WHERE</code> → <code class="inline-code">GROUP BY</code> → <code class="inline-code">HAVING</code> →
+<code class="inline-code">ORDER BY</code>. That's also the logical order of execution — SQLite
+filters rows, then groups them, then filters groups, then sorts.</p>
+
+<h2 id="try-it">Try it</h2>
+
+<p><strong>1. WHERE fails on an aggregate — see the error yourself</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, COUNT(*)
+FROM bronze_sales
+WHERE COUNT(*) &gt; 30
+GROUP BY customer_id;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: in prepare, misuse of aggregate: COUNT()</code></pre></div>
+
+<p>SQLite is telling you exactly what's wrong: <code class="inline-code">COUNT()</code> isn't allowed in
+<code class="inline-code">WHERE</code> because <code class="inline-code">WHERE</code> runs before any grouping/aggregating happens —
+there's no count to compare yet at that stage.</p>
+
+<p><strong>2. Fix it with HAVING</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, COUNT(*) AS order_lines
+FROM bronze_sales
+GROUP BY customer_id
+HAVING COUNT(*) &gt; 30
+ORDER BY order_lines DESC
+LIMIT 10;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>order_lines</th></tr></thead><tbody><tr><td>41</td><td>43</td></tr><tr><td>408</td><td>41</td></tr><tr><td>67</td><td>40</td></tr><tr><td>572</td><td>39</td></tr><tr><td>343</td><td>39</td></tr><tr><td>318</td><td>37</td></tr><tr><td>173</td><td>37</td></tr><tr><td>402</td><td>36</td></tr><tr><td>344</td><td>36</td></tr><tr><td>174</td><td>36</td></tr></tbody></table></div>
+Same shape of question as Module 3's top-10, but now filtered to only
+the customers clearing a specific threshold, computed with the
+threshold applied at the group level.
+
+<p><strong>3. Which raw category variants have more than 500 lines?</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.category, COUNT(*) AS line_count
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id
+GROUP BY p.category
+HAVING COUNT(*) &gt; 500
+ORDER BY line_count DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>line_count</th></tr></thead><tbody><tr><td>Winter Sports</td><td>838</td></tr><tr><td>Apparel</td><td>766</td></tr><tr><td>Climbing</td><td>717</td></tr><tr><td>Accessories</td><td>690</td></tr><tr><td>WINTER SPORTS</td><td>567</td></tr><tr><td>climbing</td><td>557</td></tr><tr><td>Water Sports</td><td>534</td></tr></tbody></table></div>
+Seven of the 40 raw variants clear 500 lines each — the rest are
+scattered across dozens of much smaller groups. `HAVING` cut straight
+to "the ones that matter for this question" without needing to clean
+anything first.
+
+<p><strong>4. Combine WHERE and HAVING in the same query</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.category, COUNT(*) AS line_count,
+       ROUND(SUM(s.quantity * s.unit_price), 2) AS rough_total
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id
+WHERE s.channel IN (&#x27;Online&#x27;, &#x27;online&#x27;)
+GROUP BY p.category
+HAVING COUNT(*) &gt; 100
+ORDER BY rough_total DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>line_count</th><th>rough_total</th></tr></thead><tbody><tr><td>Apparel</td><td>373</td><td>340488.16</td></tr><tr><td>Climbing</td><td>370</td><td>275824.19</td></tr><tr><td>climbing</td><td>297</td><td>272878.21</td></tr><tr><td>Winter Sports</td><td>424</td><td>263070.58</td></tr><tr><td>WINTER SPORTS</td><td>278</td><td>236817.67</td></tr><tr><td>Nutrition & Hydration</td><td>232</td><td>234442.91</td></tr><tr><td>Water Sports</td><td>265</td><td>226684.84</td></tr><tr><td>FOOTWEAR</td><td>214</td><td>217963.79</td></tr><tr><td>CLIMBING</td><td>164</td><td>196336.01</td></tr><tr><td>Accessories</td><td>330</td><td>191214.68</td></tr><tr><td>CAMPING & HIKING</td><td>167</td><td>190833.14</td></tr><tr><td>footwear</td><td>144</td><td>190264.52</td></tr><tr><td>Camping & Hiking</td><td>201</td><td>180905.62</td></tr></tbody></table></div>
+`WHERE s.channel IN (...)` throws out non-online rows *before*
+grouping (row-level filter); `HAVING COUNT(*) > 100` then throws out
+small groups *after* grouping (group-level filter). Both clauses,
+doing their separate jobs, in one query.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Using <code class="inline-code">HAVING</code> for a row-level condition.</strong> `HAVING channel =</li></ul>  'Online'` technically might work in SQLite in some cases, but it's
+  the wrong tool and can behave unexpectedly once aggregates are
+  involved — filter individual rows with `WHERE`, always, when the
+  condition doesn't involve an aggregate.
+<ul class="styled-list"><li><strong>Using <code class="inline-code">WHERE</code> for a group-level condition</strong> — produces the exact</li></ul>  error shown above. If you're comparing against `COUNT()`, `SUM()`,
+  `AVG()`, etc., it belongs in `HAVING`.
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">HAVING</code> runs after <code class="inline-code">GROUP BY</code>, not instead of <code class="inline-code">WHERE</code>.</strong></li></ul>  You can — and often should — use both in the same query; they're not
+  alternatives to each other.
+<ul class="styled-list"><li>**Referring to a <code class="inline-code">SELECT</code>-list alias inside <code class="inline-code">HAVING</code> and assuming</li></ul>  it's guaranteed to work everywhere.** SQLite generally allows
+  `HAVING order_lines > 30` if `order_lines` is aliased in `SELECT`,
+  but writing out the full aggregate expression (`HAVING COUNT(*) >
+  30`) is more portable and avoids surprises in stricter databases.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">WHERE</code> filters rows before grouping; <code class="inline-code">HAVING</code> filters groups after</li></ul>  aggregation.
+<ul class="styled-list"><li>Putting an aggregate function in <code class="inline-code">WHERE</code> is a hard error in SQLite.</li><li>Clause order is fixed: <code class="inline-code">WHERE</code> → <code class="inline-code">GROUP BY</code> → <code class="inline-code">HAVING</code> → <code class="inline-code">ORDER BY</code>.</li><li><code class="inline-code">WHERE</code> and <code class="inline-code">HAVING</code> combine naturally in one query — row-level</li></ul>  filtering, then group-level filtering.
+<ul class="styled-list"><li><code class="inline-code">HAVING</code> is exactly the tool for "which groups clear a threshold" —</li></ul>  no cleaning required first, even on a messy column like
+  `bronze_products.category`.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="03-group-by.html" class="nav-btn">GROUP BY</a>. Next: <a href="05-case-expressions.html" class="nav-btn">CASE Expressions</a>. Exercises: <a href="../../exercises/02-intermediate/04-having.html" class="nav-btn">HAVING</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

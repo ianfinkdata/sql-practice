@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: SELECT and FROM | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-select-and-from">Exercises: SELECT and FROM</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/01-select-and-from.html" class="nav-btn">1. SELECT and FROM</a>. Previous: <a href="../00-orientation/04-meet-oakhaven.html" class="nav-btn">4. Meet Oakhaven</a>. Next: <a href="02-filtering-with-where.html" class="nav-btn">2. Filtering with WHERE</a>.</nav>
+
+<h3 id="1-everything-a-few-rows">1. Everything, a few rows</h3>
+
+<p>Write a query that returns every column of <code class="inline-code">bronze_employees</code>, limited
+to 5 rows.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM bronze_employees LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>first_name</th><th>last_name</th><th>department</th><th>region</th><th>hire_date</th><th>termination_date</th><th>is_manager</th><th>email</th></tr></thead><tbody><tr><td>1</td><td>Alexa</td><td>garcia</td><td>Management</td><td>West</td><td>04/09/2024</td><td></td><td>N</td><td>alexa.garcia@oakhaven.com</td></tr><tr><td>2</td><td>sandra</td><td>Thompson</td><td>WAREHOUSE</td><td>NORTHEAST</td><td>05/25/2018</td><td></td><td>false</td><td>sandra.thompson@oakhaven.com</td></tr><tr><td>3</td><td>Alexandria</td><td>CUNNINGHAM</td><td>management</td><td>East</td><td>2018-12-07</td><td>2021-05-01 06:37:09</td><td>false</td><td>alexandria.cunningham@oakhaven.com</td></tr><tr><td>4</td><td>Laura</td><td>williams</td><td>Support</td><td>EAST</td><td>2020-05-28</td><td></td><td>1</td><td>laura.williams@oakhaven.com</td></tr><tr><td>5</td><td>stephanie</td><td>REID</td><td>Warehouse</td><td>CENTRAL</td><td>2023-08-10 03:22:34</td><td></td><td>y</td><td>(blank)</td></tr></tbody></table></div>
+</details>
+
+<h3 id="2-three-columns">2. Three columns</h3>
+
+<p>Write a query that shows just <code class="inline-code">product_name</code>, <code class="inline-code">category</code>, and
+<code class="inline-code">unit_price</code> for the first 5 rows of <code class="inline-code">bronze_products</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, category, unit_price
+FROM bronze_products
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>category</th><th>unit_price</th></tr></thead><tbody><tr><td>Canyon Hiking Boots</td><td>footwear</td><td>649.26</td></tr><tr><td>Ridge Jackets</td><td>APPAREL</td><td>348.55</td></tr><tr><td>Trailhead Trekking Pole</td><td>CAMPING & HIKING</td><td>286.86</td></tr><tr><td>Meridian Chalk Bags</td><td>Climbing</td><td>155.94</td></tr><tr><td>Canyon Life Jackets</td><td>Water Sports</td><td>310.93</td></tr></tbody></table></div>
+</details>
+
+<h3 id="3-just-enough-to-send-an-email-blast">3. Just enough to send an email blast</h3>
+
+<p>You need a mailing list of employee emails paired with their
+department, so you can filter by department later. Write a query for
+just those two columns, first 5 rows of <code class="inline-code">bronze_employees</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT email, department
+FROM bronze_employees
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>email</th><th>department</th></tr></thead><tbody><tr><td>alexa.garcia@oakhaven.com</td><td>Management</td></tr><tr><td>sandra.thompson@oakhaven.com</td><td>WAREHOUSE</td></tr><tr><td>alexandria.cunningham@oakhaven.com</td><td>management</td></tr><tr><td>laura.williams@oakhaven.com</td><td>Support</td></tr><tr><td>(blank)</td><td>Warehouse</td></tr></tbody></table></div>
+Notice row 5's email is blank — a preview of the NULL/missing-data
+topics coming up in module 5.
+
+<p></details></p>
+
+<h3 id="4-reorder-on-purpose">4. Reorder on purpose</h3>
+
+<p>Write a query on <code class="inline-code">bronze_products</code> that shows <code class="inline-code">weight_kg</code> <em>before</em>
+<code class="inline-code">sku</code> in the output (first 5 rows) — deliberately not matching the
+table's actual column order.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT weight_kg, sku
+FROM bronze_products
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>weight_kg</th><th>sku</th></tr></thead><tbody><tr><td>24.7 kg</td><td>FOO-0001</td></tr><tr><td>5.3</td><td>APP-0002</td></tr><tr><td>3.43 kg</td><td>CAM-0003</td></tr><tr><td>18.5 kg</td><td>CLI-0004</td></tr><tr><td>9.01</td><td>WAT-0005</td></tr></tbody></table></div>
+The output column order always follows the order you list them in
+`SELECT`, regardless of how they're defined in the table.
+
+<p></details></p>
+
+<h3 id="5-spot-the-error">5. Spot the error</h3>
+
+<p>What's wrong with this query, and what error would you expect from
+running it?</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name brand, FROM bronze_products;</code></pre></div>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>Two things: <code class="inline-code">product_name brand</code> (with no comma between them) would
+actually be parsed as <code class="inline-code">product_name</code> aliased to the name <code class="inline-code">brand</code> — not
+an error by itself, but almost certainly not what was intended, and
+easy to mistake for a typo of <code class="inline-code">product_name, brand</code>. The real syntax
+error is the trailing comma right before <code class="inline-code">FROM</code> — SQLite expects
+another column name after a comma, not the <code class="inline-code">FROM</code> keyword, and will
+raise a syntax error. The fix:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, brand FROM bronze_products;</code></pre></div>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/01-select-and-from.html" class="nav-btn">1. SELECT and FROM</a>. Previous: <a href="../00-orientation/04-meet-oakhaven.html" class="nav-btn">4. Meet Oakhaven</a>. Next: <a href="02-filtering-with-where.html" class="nav-btn">2. Filtering with WHERE</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

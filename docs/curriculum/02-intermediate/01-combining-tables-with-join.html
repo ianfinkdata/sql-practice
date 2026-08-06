@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combining Tables with JOIN | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="combining-tables-with-join">Combining Tables with JOIN</h1>
+
+<nav class="book-nav">Previous: <a href="../01-beginner/README.html" class="nav-btn">Tier 1 — Beginner</a>. Next: <a href="02-left-join-and-missing-data.html" class="nav-btn">LEFT JOIN and Missing Data</a>. Exercises: <a href="../../exercises/02-intermediate/01-combining-tables-with-join.html" class="nav-btn">Combining Tables with JOIN</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>So far every query you've written has looked at one table at a time.
+Real questions rarely stay inside one table. "What did Lisa Phelps
+buy?" needs <code class="inline-code">bronze_customers</code> (who Lisa is) <em>and</em> <code class="inline-code">bronze_sales</code>
+(what got sold) <em>and</em> <code class="inline-code">bronze_products</code> (what the product was called).
+A <code class="inline-code">JOIN</code> is how you glue rows from two tables together, matched on a
+shared value — usually an id column that appears in both.</p>
+
+<p><code class="inline-code">INNER JOIN</code> (often just written <code class="inline-code">JOIN</code>) keeps only the rows where a
+match was found on <strong>both</strong> sides. If a row on either side has no
+partner, it's silently dropped from the result. That word
+"silently" is the whole lesson for today — it's convenient until it
+isn't.</p>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>Oakhaven's <code class="inline-code">bronze_sales</code> table stores <code class="inline-code">customer_id</code> and <code class="inline-code">product_id</code>
+as bare integers — there's no name, no product title, nothing
+readable. To answer "which customer bought which product," you have
+to join <code class="inline-code">bronze_sales</code> to <code class="inline-code">bronze_customers</code> and to <code class="inline-code">bronze_products</code>
+using those id columns.</p>
+
+<p>But here's the catch, straight from <code class="inline-code">bronze_sales</code>'s design: about 1%
+of rows carry a <code class="inline-code">customer_id</code> or <code class="inline-code">product_id</code> that doesn't exist in
+the matching table (an intentional "orphan" foreign key, simulating
+bad upstream data — see <code class="inline-code">project/docs/data_dictionary.md</code>). An
+<code class="inline-code">INNER JOIN</code> will quietly drop every one of those rows from your
+result with no warning. Your <code class="inline-code">COUNT(*)</code> will just be a little smaller
+than you expected, and unless you go looking, you'll never know why.
+We'll measure exactly how many rows disappear below, and Module 2
+(<code class="inline-code">LEFT JOIN</code>) shows you how to catch them instead of losing them.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT columns
+FROM table_a AS a
+JOIN table_b AS b
+  ON a.shared_column = b.shared_column;</code></pre></div>
+<ul class="styled-list"><li><code class="inline-code">JOIN</code> and <code class="inline-code">INNER JOIN</code> are the same thing in SQLite; either is fine.</li><li>The <code class="inline-code">ON</code> clause says which columns must be equal for two rows to be</li></ul>  considered a match.
+<ul class="styled-list"><li>Table aliases (<code class="inline-code">AS a</code>, <code class="inline-code">AS b</code>, or just <code class="inline-code">a</code>, <code class="inline-code">b</code>) let you write short</li></ul>  prefixes (`a.column`) instead of repeating the full table name —
+  essential once a query touches 2+ tables with overlapping column
+  names like `customer_id`.
+<ul class="styled-list"><li>You can chain multiple <code class="inline-code">JOIN</code>s in one query to pull in a third,</li></ul>  fourth, etc. table.
+
+<h2 id="try-it">Try it</h2>
+
+<p><strong>1. Join sales to customers to get readable names</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT s.order_id, s.order_line_id, c.first_name, c.last_name,
+       s.quantity, s.unit_price
+FROM bronze_sales s
+JOIN bronze_customers c ON s.customer_id = c.customer_id
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>first_name</th><th>last_name</th><th>quantity</th><th>unit_price</th></tr></thead><tbody><tr><td>1</td><td>1</td><td>Lisa</td><td>Phelps</td><td>4</td><td>306.83</td></tr><tr><td>1</td><td>2</td><td>Lisa</td><td>Phelps</td><td>5</td><td>241.65</td></tr><tr><td>2</td><td>1</td><td>Jessica</td><td>simpson</td><td>1</td><td>325.89</td></tr><tr><td>2</td><td>2</td><td>Jessica</td><td>simpson</td><td>2</td><td>216.68</td></tr><tr><td>3</td><td>1</td><td>robin</td><td>Spencer</td><td>1</td><td>106.14</td></tr></tbody></table></div>
+(Notice `simpson` and `robin` are lowercase — `bronze_customers` names
+are messy too. That's Module 6's problem, not today's.)
+
+<p><strong>2. Chain a second JOIN to add product names</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT s.order_id, c.first_name || &#x27; &#x27; || c.last_name AS customer,
+       p.product_name, s.quantity, s.unit_price
+FROM bronze_sales s
+JOIN bronze_customers c ON s.customer_id = c.customer_id
+JOIN bronze_products p ON s.product_id = p.product_id
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>customer</th><th>product_name</th><th>quantity</th><th>unit_price</th></tr></thead><tbody><tr><td>1</td><td>Lisa Phelps</td><td>Trailhead Trekking Pole</td><td>4</td><td>306.83</td></tr><tr><td>1</td><td>Lisa Phelps</td><td>Alpine Water Filters</td><td>5</td><td>241.65</td></tr><tr><td>2</td><td>Jessica simpson</td><td>Switchback Trail Running Shoes</td><td>1</td><td>325.89</td></tr><tr><td>2</td><td>Jessica simpson</td><td>Ironpeak Fleece</td><td>2</td><td>216.68</td></tr><tr><td>3</td><td>robin Spencer</td><td>Canyon Backpack</td><td>1</td><td>106.14</td></tr></tbody></table></div>
+**3. Watch rows disappear — the orphan problem, measured**
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>12000</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales s
+JOIN bronze_customers c ON s.customer_id = c.customer_id;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>11897</td></tr></tbody></table></div>
+12000 − 11897 = **103 rows vanished**, exactly matching the "~1%
+orphan `customer_id`" note in the data dictionary. Do the same join
+against `bronze_products` instead:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>11878</td></tr></tbody></table></div>
+Another 122 rows gone (12000 − 11878), this time from orphan
+`product_id` values. Join to *both* tables in the same query and both
+kinds of loss stack up — you'd be down to roughly 11,780-ish rows
+without ever writing a `WHERE` clause that meant to exclude anything.
+
+<p><strong>4. Filter after joining, same as any other query</strong></p>
+
+<p>Once tables are joined, <code class="inline-code">WHERE</code>, <code class="inline-code">ORDER BY</code>, and <code class="inline-code">LIMIT</code> all work
+exactly as before — they just see the combined, wider row.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT s.order_id, p.product_name, p.category, s.quantity
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id
+WHERE p.category = &#x27;Climbing&#x27;
+ORDER BY s.order_id
+LIMIT 5;</code></pre></div>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li>**Forgetting the <code class="inline-code">ON</code> clause (or writing <code class="inline-code">JOIN</code> with a comma and no</li></ul>  `ON`).** SQLite will happily compute the *cross join* — every row of
+  table A paired with every row of table B. On `bronze_sales`
+  (12,000 rows) × `bronze_customers` (600 rows) that's 7.2 million
+  rows. If a join result looks enormous, this is almost always why.
+<ul class="styled-list"><li><strong>Joining on the wrong pair of columns</strong>, e.g.</li></ul>  `ON s.customer_id = c.employee_id`. SQLite won't error — it'll just
+  return zero or nonsense rows, because the values don't line up
+  semantically even if the types match.
+<ul class="styled-list"><li><strong>Assuming <code class="inline-code">INNER JOIN</code> returns "all the data."</strong> As shown above, it</li></ul>  returns only the *matched* data. If you need to know what didn't
+  match, `INNER JOIN` is the wrong tool — that's Module 2.
+<ul class="styled-list"><li><strong>Not aliasing tables once you have two or more.</strong> <code class="inline-code">customer_id</code></li></ul>  exists in both `bronze_sales` and `bronze_customers`; write
+  `s.customer_id` or `c.customer_id`, not a bare `customer_id`, once
+  there's any ambiguity.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">JOIN</code> (= <code class="inline-code">INNER JOIN</code>) combines rows from two tables where the <code class="inline-code">ON</code></li></ul>  condition matches on both sides.
+<ul class="styled-list"><li>Unmatched rows on <em>either</em> side are dropped silently — no error, no</li></ul>  warning.
+<ul class="styled-list"><li>In Oakhaven, joining <code class="inline-code">bronze_sales</code> to <code class="inline-code">bronze_customers</code> drops 103</li></ul>  rows (orphan `customer_id`); joining to `bronze_products` drops 122
+  rows (orphan `product_id`) — both exactly the "~1%" documented in
+  `project/docs/data_dictionary.md`.
+<ul class="styled-list"><li>Always alias your tables once a query touches more than one.</li><li>If you need to see what an <code class="inline-code">INNER JOIN</code> would hide, keep reading —</li></ul>  that's exactly what `LEFT JOIN` (Module 2) is for.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="../01-beginner/README.html" class="nav-btn">Tier 1 — Beginner</a>. Next: <a href="02-left-join-and-missing-data.html" class="nav-btn">LEFT JOIN and Missing Data</a>. Exercises: <a href="../../exercises/02-intermediate/01-combining-tables-with-join.html" class="nav-btn">Combining Tables with JOIN</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

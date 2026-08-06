@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: HAVING | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-having">Exercises: HAVING</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/04-having.html" class="nav-btn">HAVING</a>. Previous: <a href="03-group-by.html" class="nav-btn">GROUP BY</a>. Next: <a href="05-case-expressions.html" class="nav-btn">CASE Expressions</a>.</nav>
+
+<p>Use <code class="inline-code">project/oakhaven.db</code>. Every solution below was run against the
+real database — your output should match exactly.</p>
+
+<hr class="divider">
+
+<p><strong>1. Payment methods with more than 1,200 order lines</strong></p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT payment_method, COUNT(*) AS n
+FROM bronze_sales
+GROUP BY payment_method
+HAVING COUNT(*) &gt; 1200
+ORDER BY n DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>payment_method</th><th>n</th></tr></thead><tbody><tr><td>CC</td><td>1265</td></tr><tr><td>Debit Card</td><td>1233</td></tr><tr><td>cash</td><td>1232</td></tr><tr><td>Gift Card</td><td>1232</td></tr><tr><td>paypal</td><td>1208</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<p><strong>2. The one product with more than 100 order lines</strong></p>
+
+<p>Group <code class="inline-code">bronze_sales</code> by <code class="inline-code">product_id</code> and find any product with more
+than 100 order lines.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, COUNT(*) AS n
+FROM bronze_sales
+GROUP BY product_id
+HAVING COUNT(*) &gt; 100
+ORDER BY n DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>n</th></tr></thead><tbody><tr><td>101</td><td>104</td></tr></tbody></table></div>
+Only one product clears 100 lines — `HAVING` doesn't require multiple
+matches to be useful; sometimes the answer to "who clears this bar"
+is a single row, and that's a fine result too.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>3. Employees with more than 250 sales lines attributed to them</strong></p>
+
+<p>Group <code class="inline-code">bronze_sales</code> by <code class="inline-code">employee_id</code> (excluding <code class="inline-code">NULL</code>, since that
+represents no-rep online sales, not a real employee) and find everyone
+above 250 lines.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT employee_id, COUNT(*) AS n
+FROM bronze_sales
+WHERE employee_id IS NOT NULL
+GROUP BY employee_id
+HAVING COUNT(*) &gt; 250
+ORDER BY n DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>n</th></tr></thead><tbody><tr><td>2</td><td>365</td></tr><tr><td>12</td><td>354</td></tr><tr><td>22</td><td>353</td></tr><tr><td>29</td><td>338</td></tr><tr><td>4</td><td>336</td></tr><tr><td>28</td><td>331</td></tr><tr><td>5</td><td>327</td></tr><tr><td>34</td><td>325</td></tr><tr><td>24</td><td>321</td></tr><tr><td>18</td><td>317</td></tr></tbody></table></div>
+10 of the 35 employees clear 250 lines each — `WHERE employee_id IS
+NOT NULL` filters rows before grouping (removing the ~1,243 no-rep
+sales), `HAVING COUNT(*) > 250` filters groups after.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>4. Brands whose average product price exceeds $400</strong></p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT brand, ROUND(AVG(unit_price), 2) AS avg_price, COUNT(*) AS n
+FROM bronze_products
+GROUP BY brand
+HAVING AVG(unit_price) &gt; 400
+ORDER BY avg_price DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>brand</th><th>avg_price</th><th>n</th></tr></thead><tbody><tr><td>Pinepack</td><td>467.02</td><td>5</td></tr><tr><td>Stonepine Gear</td><td>429.75</td><td>5</td></tr></tbody></table></div>
+Only two brands clear that bar, out of the ~25 in the pool — a
+reminder that `HAVING` conditions can be as selective as you need.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>5. Raw state spellings with 6 or more customers</strong></p>
+
+<p>Exclude <code class="inline-code">NULL</code> and empty-string states first (<code class="inline-code">WHERE</code>), then group and
+filter for spellings with at least 6 customers.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT state, COUNT(*) AS n
+FROM bronze_customers
+WHERE state IS NOT NULL AND state != &#x27;&#x27;
+GROUP BY state
+HAVING COUNT(*) &gt;= 6
+ORDER BY n DESC
+LIMIT 10;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>state</th><th>n</th></tr></thead><tbody><tr><td>de</td><td>9</td></tr><tr><td>Rhode Island</td><td>8</td></tr><tr><td>oklahoma</td><td>7</td></tr><tr><td>VA</td><td>7</td></tr><tr><td>New York</td><td>7</td></tr><tr><td>virginia</td><td>6</td></tr><tr><td>tennessee</td><td>6</td></tr><tr><td>sc</td><td>6</td></tr><tr><td>ny</td><td>6</td></tr><tr><td>nc</td><td>6</td></tr></tbody></table></div>
+`state` has 190 distinct raw spellings across only 600 customers —
+most groups have just 1 or 2 rows. Very few clear even a low bar like
+6, which itself tells you something about how thin this column is
+sliced by messiness alone.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>6. WHERE + GROUP BY + HAVING together: online-channel categories over 200 lines</strong></p>
+
+<p>Restrict to online sales (<code class="inline-code">channel</code> in <code class="inline-code">('Online', 'online')</code>) first,
+then find raw <code class="inline-code">category</code> spellings with more than 200 order lines
+within that filtered set.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.category, COUNT(*) AS n
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id
+WHERE s.channel IN (&#x27;Online&#x27;, &#x27;online&#x27;)
+GROUP BY p.category
+HAVING COUNT(*) &gt; 200
+ORDER BY n DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>n</th></tr></thead><tbody><tr><td>Winter Sports</td><td>424</td></tr><tr><td>Apparel</td><td>373</td></tr><tr><td>Climbing</td><td>370</td></tr><tr><td>Accessories</td><td>330</td></tr><tr><td>climbing</td><td>297</td></tr><tr><td>WINTER SPORTS</td><td>278</td></tr><tr><td>Water Sports</td><td>265</td></tr><tr><td>Nutrition & Hydration</td><td>232</td></tr><tr><td>FOOTWEAR</td><td>214</td></tr><tr><td>Camping & Hiking</td><td>201</td></tr></tbody></table></div>
+All three clauses working together: `WHERE` drops non-online rows
+before anything is grouped, `GROUP BY` collapses to one row per raw
+category spelling, `HAVING` keeps only the spellings with meaningful
+volume. Notice `Climbing` and `climbing` both appear as separate rows
+here — a live reminder that `HAVING` operates on whatever `GROUP BY`
+handed it, messy spellings and all.
+
+<p></details></p>
+
+<hr class="divider">
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/04-having.html" class="nav-btn">HAVING</a>. Previous: <a href="03-group-by.html" class="nav-btn">GROUP BY</a>. Next: <a href="05-case-expressions.html" class="nav-btn">CASE Expressions</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

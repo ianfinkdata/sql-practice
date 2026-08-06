@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Window Functions II — Running Totals &amp; Moving Aggregates | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-window-functions-ii--running-totals--moving-aggregates">Exercises: Window Functions II — Running Totals & Moving Aggregates</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/03-window-functions-ii-running-totals.html" class="nav-btn">3. Window Functions II — Running Totals & Moving Aggregates</a>. Previous: <a href="02-window-functions-i-row-number-rank.html" class="nav-btn">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</a>. Next: <a href="04-lead-lag-period-over-period.html" class="nav-btn">4. LEAD, LAG, and Period-over-Period Comparisons</a>.</nav>
+
+<p>Query <code class="inline-code">project/oakhaven.db</code> for all of these. Run with:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT ...;&quot; -header -column</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-running-total-for-one-category-one-year">1. Running total for one category, one year</h3>
+
+<p>Using <code class="inline-code">agg_monthly_sales_by_category</code>, compute the running total of
+<code class="inline-code">total_net_amount</code> for the <code class="inline-code">Footwear</code> category across all 12 months of
+2021, ordered by month.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT year, month, total_net_amount,
+       ROUND(SUM(total_net_amount) OVER (ORDER BY month), 2) AS running_total
+FROM agg_monthly_sales_by_category
+WHERE category = &#x27;Footwear&#x27; AND year = 2021
+ORDER BY month;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>year</th><th>month</th><th>total_net_amount</th><th>running_total</th></tr></thead><tbody><tr><td>2021</td><td>1</td><td>12737.88</td><td>12737.88</td></tr><tr><td>2021</td><td>2</td><td>21705.37</td><td>34443.25</td></tr><tr><td>2021</td><td>3</td><td>29118.96</td><td>63562.21</td></tr><tr><td>2021</td><td>4</td><td>17083.32</td><td>80645.53</td></tr><tr><td>2021</td><td>5</td><td>19004.43</td><td>99649.96</td></tr><tr><td>2021</td><td>6</td><td>12691.06</td><td>112341.02</td></tr><tr><td>2021</td><td>7</td><td>17003.66</td><td>129344.68</td></tr><tr><td>2021</td><td>8</td><td>18667.92</td><td>148012.60</td></tr><tr><td>2021</td><td>9</td><td>12876.26</td><td>160888.86</td></tr><tr><td>2021</td><td>10</td><td>10817.23</td><td>171706.09</td></tr><tr><td>2021</td><td>11</td><td>20537.81</td><td>192243.90</td></tr><tr><td>2021</td><td>12</td><td>24480.65</td><td>216724.55</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="2-3-day-moving-average-end-of-window">2. 3-day moving average, end of window</h3>
+
+<p>Using <code class="inline-code">agg_daily_sales</code>, compute a 3-day trailing moving average of
+<code class="inline-code">total_net_amount</code> (current day plus the 2 before it) for 2026-06-20
+through 2026-06-30.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_date, total_net_amount,
+       ROUND(AVG(total_net_amount) OVER (
+           ORDER BY order_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+       ), 2) AS moving_avg_3d
+FROM agg_daily_sales
+WHERE order_date BETWEEN &#x27;2026-06-20&#x27; AND &#x27;2026-06-30&#x27;
+ORDER BY order_date;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_date</th><th>total_net_amount</th><th>moving_avg_3d</th></tr></thead><tbody><tr><td>2026-06-20</td><td>102.53</td><td>102.53</td></tr><tr><td>2026-06-21</td><td>2238.61</td><td>1170.57</td></tr><tr><td>2026-06-22</td><td>3234.82</td><td>1858.65</td></tr><tr><td>2026-06-23</td><td>2258.85</td><td>2577.43</td></tr><tr><td>2026-06-24</td><td>5856.69</td><td>3783.45</td></tr><tr><td>2026-06-25</td><td>2657.89</td><td>3591.14</td></tr><tr><td>2026-06-26</td><td>1022.67</td><td>3179.08</td></tr><tr><td>2026-06-27</td><td>2749.61</td><td>2143.39</td></tr><tr><td>2026-06-28</td><td>5564.41</td><td>3112.23</td></tr><tr><td>2026-06-29</td><td>2635.42</td><td>3649.81</td></tr><tr><td>2026-06-30</td><td>7203.72</td><td>5134.52</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="3-running-maximum">3. Running maximum</h3>
+
+<p>Using <code class="inline-code">agg_daily_sales</code>, find the running maximum <code class="inline-code">total_net_amount</code>
+observed so far, day by day, for 2021-01-01 through 2021-01-15. (i.e. "the
+best single day so far, as of each day.")</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_date, total_net_amount,
+       ROUND(MAX(total_net_amount) OVER (ORDER BY order_date), 2) AS running_max
+FROM agg_daily_sales
+WHERE order_date BETWEEN &#x27;2021-01-01&#x27; AND &#x27;2021-01-15&#x27;
+ORDER BY order_date;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_date</th><th>total_net_amount</th><th>running_max</th></tr></thead><tbody><tr><td>2021-01-01</td><td>2318.71</td><td>2318.71</td></tr><tr><td>2021-01-02</td><td>3381.01</td><td>3381.01</td></tr><tr><td>2021-01-03</td><td>1914.65</td><td>3381.01</td></tr><tr><td>2021-01-04</td><td>3594.94</td><td>3594.94</td></tr><tr><td>2021-01-05</td><td>3059.74</td><td>3594.94</td></tr><tr><td>2021-01-06</td><td>7591.42</td><td>7591.42</td></tr><tr><td>2021-01-07</td><td>8585.33</td><td>8585.33</td></tr><tr><td>2021-01-08</td><td>0.0</td><td>8585.33</td></tr><tr><td>2021-01-09</td><td>4533.02</td><td>8585.33</td></tr><tr><td>2021-01-10</td><td>6908.29</td><td>8585.33</td></tr><tr><td>2021-01-11</td><td>4136.28</td><td>8585.33</td></tr><tr><td>2021-01-12</td><td>1388.51</td><td>8585.33</td></tr><tr><td>2021-01-13</td><td>3262.90</td><td>8585.33</td></tr><tr><td>2021-01-14</td><td>6909.98</td><td>8585.33</td></tr><tr><td>2021-01-15</td><td>1104.92</td><td>8585.33</td></tr></tbody></table></div>
+Note 2021-01-08 has `total_net_amount = 0.0` — a zero-order day (the
+date-spine pattern, covered fully in Module 7) — and the running max
+correctly holds steady rather than dropping.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-running-total-partitioned-by-category">4. Running total, partitioned by category</h3>
+
+<p>Using <code class="inline-code">agg_monthly_sales_by_category</code>, compute the running total of
+<code class="inline-code">total_net_amount</code> for the <code class="inline-code">Climbing</code> category across the first half of
+2021 (months 1–6), partitioned so the running total is scoped to that
+category alone (even though this particular query only touches one
+category, write it as if it might see more than one — i.e. include
+<code class="inline-code">PARTITION BY category</code>).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT category, year, month, total_net_amount,
+       ROUND(SUM(total_net_amount) OVER (PARTITION BY category ORDER BY year, month), 2)
+           AS category_running_total
+FROM agg_monthly_sales_by_category
+WHERE category = &#x27;Climbing&#x27; AND year = 2021 AND month &lt;= 6
+ORDER BY month;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>year</th><th>month</th><th>total_net_amount</th><th>category_running_total</th></tr></thead><tbody><tr><td>Climbing</td><td>2021</td><td>1</td><td>17972.83</td><td>17972.83</td></tr><tr><td>Climbing</td><td>2021</td><td>2</td><td>33663.09</td><td>51635.92</td></tr><tr><td>Climbing</td><td>2021</td><td>3</td><td>28847.21</td><td>80483.13</td></tr><tr><td>Climbing</td><td>2021</td><td>4</td><td>14295.57</td><td>94778.70</td></tr><tr><td>Climbing</td><td>2021</td><td>5</td><td>22400.84</td><td>117179.54</td></tr><tr><td>Climbing</td><td>2021</td><td>6</td><td>22866.67</td><td>140046.21</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="5-which-day-pushed-the-running-total-over-30000">5. Which day pushed the running total over $30,000?</h3>
+
+<p>Using the running-total query from Exercise 1's pattern but applied to
+<code class="inline-code">agg_daily_sales</code> for January 2021, find the first <code class="inline-code">order_date</code> where the
+running total (from 2021-01-01 onward) exceeds $30,000. (Hint: compute the
+running total in a CTE, then filter and take the earliest date where it
+crosses the threshold.)</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH running AS (
+    SELECT order_date, total_net_amount,
+           SUM(total_net_amount) OVER (ORDER BY order_date) AS running_total
+    FROM agg_daily_sales
+    WHERE order_date BETWEEN &#x27;2021-01-01&#x27; AND &#x27;2021-01-31&#x27;
+)
+SELECT order_date, ROUND(running_total, 2) AS running_total
+FROM running
+WHERE running_total &gt; 30000
+ORDER BY order_date
+LIMIT 1;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_date</th><th>running_total</th></tr></thead><tbody><tr><td>2021-01-07</td><td>30445.80</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/03-window-functions-ii-running-totals.html" class="nav-btn">3. Window Functions II — Running Totals & Moving Aggregates</a>. Previous: <a href="02-window-functions-i-row-number-rank.html" class="nav-btn">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</a>. Next: <a href="04-lead-lag-period-over-period.html" class="nav-btn">4. LEAD, LAG, and Period-over-Period Comparisons</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

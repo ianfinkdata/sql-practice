@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2. Filtering with WHERE | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="2-filtering-with-where">2. Filtering with WHERE</h1>
+
+<nav class="book-nav">Previous: <a href="01-select-and-from.html" class="nav-btn">1. SELECT and FROM</a>. Next: <a href="03-sorting-with-order-by.html" class="nav-btn">3. Sorting with ORDER BY</a>. Exercises: <a href="../../exercises/01-beginner/02-filtering-with-where.html" class="nav-btn">2. Filtering with WHERE</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p><code class="inline-code">SELECT ... FROM</code> gets you every row in a table. Almost immediately,
+that's too much — you rarely want <em>every</em> product or <em>every</em>
+employee, you want the ones that match some condition: products over
+$500, employees in the Sales department, orders placed after a certain
+date. <code class="inline-code">WHERE</code> is how you say "only rows where this is true."</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT columns
+FROM table_name
+WHERE condition;</code></pre></div>
+
+<p>SQLite checks the condition against every row and keeps only the ones
+where it evaluates to true. Everything else is dropped before it ever
+reaches your output.</p>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>Oakhaven has 150 products and 12,000 sales rows. Almost no real
+question you'd ask ("what climbing gear do we sell," "which orders
+were cancelled," "which employees are managers") wants <em>all</em> of that —
+it wants a slice of it. <code class="inline-code">WHERE</code> is the tool that carves out that
+slice. You'll use it in essentially every query from here on, often
+combined with several conditions at once.</p>
+
+<h2 id="syntax-comparison-operators">Syntax: comparison operators</h2>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Operator</th><th>Meaning</th></tr></thead><tbody><tr><td><code class="inline-code">=</code></td><td>equal to</td></tr><tr><td><code class="inline-code">!=</code> or <code class="inline-code"><></code></td><td>not equal to</td></tr><tr><td><code class="inline-code">></code></td><td>greater than</td></tr><tr><td><code class="inline-code"><</code></td><td>less than</td></tr><tr><td><code class="inline-code">>=</code></td><td>greater than or equal to</td></tr><tr><td><code class="inline-code"><=</code></td><td>less than or equal to</td></tr></tbody></table></div>
+Text values go in single quotes (`'Climbing'`); numbers don't
+(`unit_price > 500`).
+
+<h2 id="syntax-combining-conditions">Syntax: combining conditions</h2>
+<ul class="styled-list"><li><code class="inline-code">AND</code> — both conditions must be true.</li><li><code class="inline-code">OR</code> — at least one condition must be true.</li><li><code class="inline-code">NOT</code> — flips a condition's truth.</li><li><code class="inline-code">IN (...)</code> — shorthand for "equals any of these values" (avoids a</li></ul>  long chain of `OR category = ... OR category = ...`).
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT columns FROM table_name
+WHERE condition_a AND condition_b;
+
+<p>SELECT columns FROM table_name
+WHERE condition_a OR condition_b;</p>
+
+<p>SELECT columns FROM table_name
+WHERE column_name IN (&#x27;value_a&#x27;, &#x27;value_b&#x27;);</code></pre></div></p>
+
+<h2 id="try-it">Try it</h2>
+
+<h3 id="a-single-equality-condition">A single equality condition</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, category, unit_price
+FROM bronze_products
+WHERE category = &#x27;Climbing&#x27;
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>category</th><th>unit_price</th></tr></thead><tbody><tr><td>Meridian Chalk Bags</td><td>Climbing</td><td>155.94</td></tr><tr><td>Backcountry Chalk Bags</td><td>Climbing</td><td>141.92</td></tr><tr><td>Glacier Carabiners</td><td>Climbing</td><td>113.71</td></tr><tr><td>Trailhead Ropes</td><td>Climbing</td><td>87.28</td></tr><tr><td>Meridian Chalk Bags</td><td>Climbing</td><td>669.02</td></tr></tbody></table></div>
+Note this only matches rows spelled exactly `Climbing` — 9 rows, all
+told:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE category = &#x27;Climbing&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>9</td></tr></tbody></table></div>
+But recall from Tier 0 that `category` has messy variants — `CLIMBING`,
+`climbing`, `Climbing `. Text comparisons with `=` are exact and
+case-sensitive by default, so this query *misses* every other-cased
+climbing product. That's not a bug in your query — it's a preview of
+exactly why Tier 2 exists. (Module 7 of this tier covers a
+case-insensitive alternative, `LIKE`.)
+
+<h3 id="a-numeric-comparison">A numeric comparison</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+WHERE unit_price &gt; 500
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Canyon Hiking Boots</td><td>649.26</td></tr><tr><td>Switchback Hat</td><td>525.42</td></tr><tr><td>Highline Backpacks</td><td>812.71</td></tr><tr><td>Ironpeak Hiking Boot</td><td>553.01</td></tr><tr><td>Foothill Electrolyte Mixes</td><td>782.32</td></tr></tbody></table></div>
+22 products in total are over $500:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE unit_price &gt; 500;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>22</td></tr></tbody></table></div>
+<h3 id="combining-conditions-with-and">Combining conditions with AND</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, category, unit_price
+FROM bronze_products
+WHERE category = &#x27;Climbing&#x27; AND unit_price &gt; 200;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>category</th><th>unit_price</th></tr></thead><tbody><tr><td>Meridian Chalk Bags</td><td>Climbing</td><td>669.02</td></tr><tr><td>Cascade Harnesse</td><td>Climbing</td><td>379.33</td></tr><tr><td>Alpine Harnesse</td><td>Climbing</td><td>640.45</td></tr></tbody></table></div>
+Only 3 of the 9 exact-cased `Climbing` products clear $200 — `AND`
+narrows the results down from either condition alone.
+
+<h3 id="combining-conditions-with-or-and-in">Combining conditions with OR and IN</h3>
+
+<p>These two queries are equivalent — <code class="inline-code">IN</code> is just cleaner to read once
+you have more than one or two alternatives:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products
+WHERE category = &#x27;Climbing&#x27; OR category = &#x27;Water Sports&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products
+WHERE category IN (&#x27;Climbing&#x27;, &#x27;Water Sports&#x27;);</code></pre></div>
+
+<p>Both return:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>16</td></tr></tbody></table></div>
+<h3 id="not--not-equal">NOT / not-equal</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_employees WHERE department != &#x27;Sales&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>30</td></tr></tbody></table></div>
+Out of 35 total employees, 30 have a `department` that isn't exactly
+`Sales` (5 do — try `WHERE department = 'Sales'` yourself to confirm).
+Same caveat as above: `!=` is exact-match, so this also picks up
+`SALES`/`sales` as "not equal to `Sales`," which is arguably wrong —
+another reason messy casing needs real cleaning, not just careful
+`WHERE` clauses, in the long run.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Using <code class="inline-code">=</code> for text and expecting case-insensitivity.</strong> `WHERE</li></ul>  category = 'climbing'` will *not* match `'Climbing'` — SQL string
+  comparison is exact by default. (There is an exception you'll meet
+  in module 7: `LIKE` is case-insensitive for ASCII text.)
+<ul class="styled-list"><li><strong>Forgetting quotes around text values.</strong> `WHERE category =</li></ul>  Climbing` (no quotes) is interpreted as comparing to a column named
+  `Climbing`, which doesn't exist — you'll get an error, not silently
+  wrong results.
+<ul class="styled-list"><li><strong><code class="inline-code">AND</code> vs <code class="inline-code">OR</code> confusion.</strong> `WHERE category = 'Climbing' AND</li></ul>  category = 'Footwear'` returns *nothing* — a single row's `category`
+  can't equal both values at once. If you mean "either of these," you
+  want `OR` (or `IN`).
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">WHERE</code> filters before aggregating.</strong> This isn't</li></ul>  relevant yet (aggregates are module 6), but it's worth flagging
+  early: `WHERE` filters *individual rows*, before any grouping or
+  summarizing happens.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">WHERE</code> filters rows to only the ones matching a condition — it's</li></ul>  evaluated per-row, before the results are returned.
+<ul class="styled-list"><li>Comparison operators: <code class="inline-code">=</code>, <code class="inline-code">!=</code>/<code class="inline-code"><></code>, <code class="inline-code">></code>, <code class="inline-code"><</code>, <code class="inline-code">>=</code>, <code class="inline-code"><=</code>.</li><li>Combine conditions with <code class="inline-code">AND</code> (all must hold), <code class="inline-code">OR</code> (any can hold),</li></ul>  and use `IN (...)` as shorthand for "equals one of these."
+<ul class="styled-list"><li>Text comparisons with <code class="inline-code">=</code> are exact and case-sensitive — a fact</li></ul>  that matters a lot once you're working with real, messy text
+  columns like Oakhaven's `category`.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="01-select-and-from.html" class="nav-btn">1. SELECT and FROM</a>. Next: <a href="03-sorting-with-order-by.html" class="nav-btn">3. Sorting with ORDER BY</a>. Exercises: <a href="../../exercises/01-beginner/02-filtering-with-where.html" class="nav-btn">2. Filtering with WHERE</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

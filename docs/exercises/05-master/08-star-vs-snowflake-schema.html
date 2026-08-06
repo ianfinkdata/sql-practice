@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Star vs. Snowflake Schema | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-star-vs-snowflake-schema">Exercises: Star vs. Snowflake Schema</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/08-star-vs-snowflake-schema.html" class="nav-btn">8. Star vs. Snowflake Schema</a>. Previous: <a href="07-designing-the-fact-table.html" class="nav-btn">7. Designing the Fact Table</a>. Next: <a href="09-medallion-pipeline-recap.html" class="nav-btn">9. The Medallion Pipeline, Start to Finish</a>.</nav>
+
+<p>All solutions verified against <code class="inline-code">project/oakhaven.db</code>.</p>
+
+<h2 id="1-one-hop-rollup-by-subcategory">1. One-hop rollup by subcategory</h2>
+
+<p><code class="inline-code">dim_product.subcategory</code> is a flat text column, just like <code class="inline-code">category</code>.
+Write a one-join query that returns net sales by <code class="inline-code">subcategory</code> for
+non-NULL subcategories, top 5 by revenue.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.subcategory, COUNT(*) AS lines, ROUND(SUM(f.net_amount), 2) AS net
+FROM fact_sales f
+JOIN dim_product p ON p.product_id = f.product_id
+WHERE p.subcategory IS NOT NULL
+GROUP BY p.subcategory
+ORDER BY net DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>subcategory</th><th>lines</th><th>net</th></tr></thead><tbody><tr><td>Jackets</td><td>515</td><td>471010.47</td></tr><tr><td>Harnesses</td><td>389</td><td>417394.11</td></tr><tr><td>Energy Bars</td><td>494</td><td>385550.16</td></tr><tr><td>Backpacks</td><td>322</td><td>384378.22</td></tr><tr><td>Chalk Bags</td><td>553</td><td>367798.19</td></tr></tbody></table></div>
+Same star-schema shape as the category rollup in the lesson: one join,
+`GROUP BY` a flat column.
+
+<p></details></p>
+
+<h2 id="2-check-dim_employees-cardinality-before-deciding">2. Check <code class="inline-code">dim_employee</code>'s cardinality before deciding</h2>
+
+<p>Before deciding whether <code class="inline-code">department</code> or <code class="inline-code">region</code> on <code class="inline-code">dim_employee</code>
+deserve their own sub-dimension tables, check the numbers. Write a
+query returning the employee count, distinct department count, and
+distinct region count.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS employees, COUNT(DISTINCT department) AS depts, COUNT(DISTINCT region) AS regions
+FROM dim_employee;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employees</th><th>depts</th><th>regions</th></tr></thead><tbody><tr><td>35</td><td>4</td><td>5</td></tr></tbody></table></div>
+4 departments and 5 regions across only 35 employees — far too low a
+cardinality, and far too small a dimension, to justify snowflaking
+either one out. Leave them flat.
+
+<p></details></p>
+
+<h2 id="3-one-hop-rollup-by-employee-region">3. One-hop rollup by employee region</h2>
+
+<p>Prove the same one-join pattern works identically for <code class="inline-code">dim_employee</code>
+as it does for <code class="inline-code">dim_product</code>. Return total net sales by <code class="inline-code">region</code>,
+highest first. (Remember <code class="inline-code">employee_id</code> can be NULL for online/no-rep
+sales — an inner join naturally excludes those rows here, which is
+fine for this exercise.)</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT e.region, COUNT(*) AS lines, ROUND(SUM(f.net_amount), 2) AS net
+FROM fact_sales f
+JOIN dim_employee e ON e.employee_id = f.employee_id
+GROUP BY e.region
+ORDER BY net DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>region</th><th>lines</th><th>net</th></tr></thead><tbody><tr><td>West</td><td>3382</td><td>2568537.23</td></tr><tr><td>South</td><td>2119</td><td>1560580.8</td></tr><tr><td>East</td><td>1917</td><td>1357036.81</td></tr><tr><td>Central</td><td>1834</td><td>1294425.26</td></tr><tr><td>Northeast</td><td>1505</td><td>1085647.03</td></tr></tbody></table></div>
+</details>
+
+<h2 id="4-quantify-the-storage-trade-off">4. Quantify the storage trade-off</h2>
+
+<p>Snowflaking <code class="inline-code">category</code> out of <code class="inline-code">dim_product</code> would store each of the 8
+category strings exactly once instead of once per product. Write two
+queries: the total character length of <code class="inline-code">category</code> values as currently
+stored (star, one copy per product), and the total character length if
+only the 8 distinct values were stored once each (snowflaked). How
+much would actually be saved?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    (SELECT SUM(LENGTH(category)) FROM dim_product) AS star_bytes,
+    (SELECT SUM(LENGTH(category)) FROM (SELECT DISTINCT category FROM dim_product)) AS snowflake_bytes;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>star_bytes</th><th>snowflake_bytes</th></tr></thead><tbody><tr><td>1790</td><td>96</td></tr></tbody></table></div>
+Snowflaking would "save" 1,694 bytes — over the entire `dim_product`
+table. That's an irrelevant amount of storage on any real system, and
+it's the concrete version of the cardinality argument from module 8:
+low-cardinality attributes on small dimensions essentially never
+justify the extra join.
+
+<p></details></p>
+
+<h2 id="5-build-the-snowflaked-version-yourself-and-hit-the-classic-bug">5. Build the snowflaked version yourself, and hit the classic bug</h2>
+
+<p>Simulate what a snowflaked <code class="inline-code">dim_category</code> would look like using CTEs,
+then join <code class="inline-code">fact_sales</code> through it two hops (<code class="inline-code">fact_sales</code> →
+simulated <code class="inline-code">dim_product</code> → simulated <code class="inline-code">dim_category</code>) to reproduce the
+category rollup from module 8's lesson. Use <code class="inline-code">ROW_NUMBER()</code> to mint a
+<code class="inline-code">category_id</code> for each distinct category.</p>
+
+<p><strong>Watch out</strong>: if you write <code class="inline-code">SELECT DISTINCT category, ROW_NUMBER()
+OVER (ORDER BY category) FROM dim_product</code> directly, <code class="inline-code">DISTINCT</code> is
+applied <em>after</em> the window function computes a row number per
+underlying row — so you get one "distinct" row per product, not per
+category, and the category_id you minted isn't actually 1:1 with
+category text. Get the distinct list in its own CTE first.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH cat_list AS (
+    SELECT DISTINCT category FROM dim_product
+),
+sim_dim_category AS (
+    SELECT category, ROW_NUMBER() OVER (ORDER BY category) AS category_id
+    FROM cat_list
+),
+sim_dim_product AS (
+    SELECT p.product_id, c.category_id
+    FROM dim_product p
+    JOIN sim_dim_category c ON c.category = p.category
+)
+SELECT sc.category, COUNT(*) AS lines, ROUND(SUM(f.net_amount), 2) AS net
+FROM fact_sales f
+JOIN sim_dim_product sp ON sp.product_id = f.product_id
+JOIN sim_dim_category sc ON sc.category_id = sp.category_id
+GROUP BY sc.category
+ORDER BY net DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>lines</th><th>net</th></tr></thead><tbody><tr><td>Climbing</td><td>1858</td><td>1389650.95</td></tr><tr><td>Winter Sports</td><td>1834</td><td>1249691.54</td></tr><tr><td>Apparel</td><td>1556</td><td>1237729.99</td></tr><tr><td>Nutrition & Hydration</td><td>1548</td><td>1164289.69</td></tr><tr><td>Footwear</td><td>1402</td><td>1077941.52</td></tr><tr><td>Accessories</td><td>1543</td><td>938846.45</td></tr><tr><td>Camping & Hiking</td><td>1277</td><td>911945.48</td></tr><tr><td>Water Sports</td><td>860</td><td>722662.14</td></tr></tbody></table></div>
+Identical numbers to the one-hop star version in the lesson — as they
+should be, since it's the same data reshaped. Compare the query length
+and hop count to the one-liner join in exercise 1: this is the real
+cost of snowflaking, paid on every single query, for a dimension that
+didn't need it.
+
+<p>(If you hit the <code class="inline-code">DISTINCT</code>-before-window-function bug first, you'd
+have seen wildly inflated <code class="inline-code">lines</code>/<code class="inline-code">net</code> numbers — many thousands of
+lines instead of 12,000 total across all categories — because every
+product joined to several duplicate <code class="inline-code">category_id</code>s instead of one.
+That's worth remembering any time <code class="inline-code">DISTINCT</code> and a window function
+appear in the same <code class="inline-code">SELECT</code>.)</p>
+
+<p></details></p>
+
+<h2 id="6-reasoning-when-would-you-actually-snowflake-here">6. Reasoning: when would you actually snowflake here?</h2>
+
+<p>No query for this one — answer in your own words first, then compare.
+Oakhaven's <code class="inline-code">dim_product</code> has a <code class="inline-code">brand</code> column (24 distinct values, no
+further attributes tracked). Suppose the business wanted to start
+tracking, per brand: headquarters country, founding year, and a
+sustainability rating — and suppose three <em>other</em> fact tables in the
+warehouse (returns, supplier invoices, marketing spend) all also need
+to look up brand attributes. Would you snowflake <code class="inline-code">brand</code> out into its
+own <code class="inline-code">dim_brand</code> table now? Why or why not?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>Yes — this scenario flips both of the conditions from the lesson that
+argue against it. <code class="inline-code">brand</code> would now have real attributes beyond a
+label (headquarters, founding year, rating), and multiple <em>other</em> fact
+tables need to share the exact same values consistently — the
+conformed-dimension case. Splitting it into <code class="inline-code">dim_brand(brand_id,
+brand_name, hq_country, founded_year, sustainability_rating)</code> and
+having <code class="inline-code">dim_product</code> (and the other three fact-adjacent dimensions)
+reference <code class="inline-code">brand_id</code> means the sustainability rating is maintained in
+exactly one place and stays consistent everywhere it's used — versus
+either duplicating those new attributes onto every fact-adjacent
+dimension separately (risking drift) or awkwardly re-joining back to
+<code class="inline-code">dim_product</code> from unrelated fact tables just to reach brand
+attributes. Cardinality alone (24 values) still wouldn't justify it —
+it's the combination of "has its own attributes" and "genuinely shared
+across multiple fact tables" that does.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/08-star-vs-snowflake-schema.html" class="nav-btn">8. Star vs. Snowflake Schema</a>. Previous: <a href="07-designing-the-fact-table.html" class="nav-btn">7. Designing the Fact Table</a>. Next: <a href="09-medallion-pipeline-recap.html" class="nav-btn">9. The Medallion Pipeline, Start to Finish</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

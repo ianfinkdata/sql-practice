@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Pattern Matching with LIKE | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-pattern-matching-with-like">Exercises: Pattern Matching with LIKE</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/07-pattern-matching-with-like.html" class="nav-btn">7. Pattern Matching with LIKE</a>. Previous: <a href="06-basic-aggregate-functions.html" class="nav-btn">6. Basic Aggregate Functions</a>. Next: <a href="08-distinct-and-duplicates.html" class="nav-btn">8. DISTINCT and Duplicates</a>.</nav>
+
+<h3 id="1-contains-a-word">1. Contains a word</h3>
+
+<p>Write a query for every product whose <code class="inline-code">product_name</code> contains the
+word "Jacket" anywhere in it.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name
+FROM bronze_products
+WHERE product_name LIKE &#x27;%Jacket%&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th></tr></thead><tbody><tr><td>Ridge Jackets</td></tr><tr><td>Canyon Life Jackets</td></tr><tr><td>Northbound Jackets</td></tr><tr><td>Ridge Jackets</td></tr><tr><td>Wayfinder Jacket</td></tr><tr><td>Backcountry Jackets</td></tr><tr><td>Ridge Jackets</td></tr><tr><td>Glacier Jackets</td></tr><tr><td>Northbound Life Jacket</td></tr><tr><td>Ironpeak Life Jackets</td></tr><tr><td>Basecamp Life Jackets</td></tr></tbody></table></div>
+11 rows — note `%Jacket%` catches both "Jacket" and "Jackets" since
+the trailing `%` absorbs the extra "s".
+
+<p></details></p>
+
+<h3 id="2-starts-with-a-letter-case-insensitively">2. Starts with a letter, case-insensitively</h3>
+
+<p>Write a query for employees whose <code class="inline-code">last_name</code> starts with "H" — and
+notice whether it catches lowercase-starting names too.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT first_name, last_name
+FROM bronze_employees
+WHERE last_name LIKE &#x27;H%&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>first_name</th><th>last_name</th></tr></thead><tbody><tr><td>Carol</td><td>Harrison</td></tr><tr><td>Keith</td><td>HUNT</td></tr><tr><td>Scott</td><td>henderson</td></tr><tr><td>Ashlee</td><td>Hall</td></tr></tbody></table></div>
+4 rows — including `henderson` (lowercase h), because `LIKE` is
+case-insensitive. A `WHERE last_name LIKE 'h%'` (lowercase pattern)
+would return the exact same 4 rows.
+
+<p></details></p>
+
+<h3 id="3-contains-on-a-different-column">3. Contains, on a different column</h3>
+
+<p>Write a query for the distinct brand names that contain "gear"
+anywhere, in any casing.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT brand
+FROM bronze_products
+WHERE brand LIKE &#x27;%gear%&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>brand</th></tr></thead><tbody><tr><td>Stonepine Gear</td></tr><tr><td>Windrow Gear</td></tr><tr><td>Ambervale Gear</td></tr><tr><td>Bramblewood Gear</td></tr></tbody></table></div>
+(`DISTINCT` here is a preview of module 8 — it just removes duplicate
+brand names from the output, since several products can share the
+same brand.)
+
+<p></details></p>
+
+<h3 id="4-ends-with-a-domain">4. Ends with a domain</h3>
+
+<p>Write a query for every employee email ending in <code class="inline-code">oakhaven.com</code>. How
+many are there, and does that match what you'd expect given how many
+employees have a non-NULL email at all?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_employees WHERE email LIKE &#x27;%oakhaven.com&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>31</td></tr></tbody></table></div>
+31 — exactly matching the `COUNT(email)` result from module 6's
+exercises. That makes sense: every non-NULL employee email in this
+dataset follows the `first.last@oakhaven.com` pattern, so "has an
+email" and "email ends in oakhaven.com" describe the same 31 rows.
+
+<p></details></p>
+
+<h3 id="5-underscore-wildcard">5. Underscore wildcard</h3>
+
+<p>Write a query for products whose <code class="inline-code">sku</code> matches the pattern
+<code class="inline-code">CLI-000_</code> — "CLI-000" followed by exactly one more character.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT sku FROM bronze_products WHERE sku LIKE &#x27;CLI-000_&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>sku</th></tr></thead><tbody><tr><td>CLI-0004</td></tr></tbody></table></div>
+Just one row in this range — `CLI-0004` (the 4th digit is the one
+`_` character). If Oakhaven had a `CLI-00010` or higher, it would *not*
+match this pattern (too many trailing characters for a single `_`) —
+you'd need `CLI-000%` or `CLI-00__` to catch those.
+
+<p></details></p>
+
+<h3 id="6-like-vs--on-a-messy-column">6. LIKE vs = on a messy column</h3>
+
+<p>Compare exact match against <code class="inline-code">LIKE</code> for <code class="inline-code">category = 'CLIMBING'</code> — count
+both ways.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE category = &#x27;CLIMBING&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>4</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE category LIKE &#x27;CLIMBING&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>20</td></tr></tbody></table></div>
+`=` only finds the 4 rows spelled exactly `CLIMBING` (all caps).
+`LIKE` finds 20 — all rows spelled `CLIMBING`, `Climbing`, or
+`climbing` (4 + 9 + 7), since `LIKE` ignores case entirely. It still
+wouldn't catch a hypothetical `CLIMBING ` (trailing space) as a
+*different* value from `CLIMBING` — `LIKE` fixes casing, not
+whitespace.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/07-pattern-matching-with-like.html" class="nav-btn">7. Pattern Matching with LIKE</a>. Previous: <a href="06-basic-aggregate-functions.html" class="nav-btn">6. Basic Aggregate Functions</a>. Next: <a href="08-distinct-and-duplicates.html" class="nav-btn">8. DISTINCT and Duplicates</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

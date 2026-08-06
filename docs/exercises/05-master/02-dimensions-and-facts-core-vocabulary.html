@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: 2. Dimensions and Facts: Core Vocabulary | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-2-dimensions-and-facts-core-vocabulary">Exercises: 2. Dimensions and Facts: Core Vocabulary</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/02-dimensions-and-facts-core-vocabulary.html" class="nav-btn">2. Dimensions and Facts: Core Vocabulary</a>. Previous: <a href="01-why-model-data-oltp-vs-analytical.html" class="nav-btn">1. Why We Model Data: OLTP vs. Analytical Schemas</a>. Next: <a href="03-grain-the-most-important-decision.html" class="nav-btn">3. Grain: The Most Important Decision in Star Schema Design</a>.</nav>
+
+<p>Work against <code class="inline-code">project/oakhaven.db</code>. Read-only — every query below is a
+<code class="inline-code">SELECT</code>.</p>
+
+<hr class="divider">
+
+<h3 id="1-classify-dim_employees-columns">1. Classify <code class="inline-code">dim_employee</code>'s columns</h3>
+
+<p>List <code class="inline-code">dim_employee</code>'s columns and classify each one as: the natural
+key, or an attribute.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">PRAGMA table_info(dim_employee);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>column</th><th>role</th></tr></thead><tbody><tr><td><code class="inline-code">employee_id</code></td><td>natural key (join target for <code class="inline-code">fact_sales.employee_id</code>)</td></tr><tr><td><code class="inline-code">first_name</code>, <code class="inline-code">last_name</code>, <code class="inline-code">full_name</code></td><td>attributes</td></tr><tr><td><code class="inline-code">department</code>, <code class="inline-code">region</code></td><td>attributes</td></tr><tr><td><code class="inline-code">hire_date</code>, <code class="inline-code">termination_date</code></td><td>attributes (and — as module 5 covers — a naturally SCD-Type-2-shaped pair)</td></tr><tr><td><code class="inline-code">is_manager</code></td><td>attribute (boolean-style flag)</td></tr><tr><td><code class="inline-code">email</code></td><td>attribute</td></tr></tbody></table></div>
+There are no measures here at all — `dim_employee` is a pure
+dimension. Nothing on it is meant to be summed; every column exists to
+describe, filter, or group by an employee.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-a-measure-built-by-combining-a-fact-measure-with-a-dimension-attribute">2. A measure built by combining a fact measure with a dimension attribute</h3>
+
+<p><code class="inline-code">fact_sales.net_amount</code> is revenue. <code class="inline-code">dim_product.unit_cost</code> is the
+product's cost, which lives on the dimension (it describes the
+product, not a specific sale). Compute <strong>gross margin</strong> (revenue minus
+cost) by category, for the top 5 categories by margin. This requires
+combining a fact measure (<code class="inline-code">net_amount</code>, plus <code class="inline-code">quantity</code> to scale the
+per-unit cost) with a dimension attribute (<code class="inline-code">unit_cost</code>) via a join.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.category,
+       ROUND(SUM(f.net_amount), 2) AS total_revenue,
+       ROUND(SUM(f.quantity * p.unit_cost), 2) AS total_cost,
+       ROUND(SUM(f.net_amount) - SUM(f.quantity * p.unit_cost), 2) AS gross_margin
+FROM fact_sales f
+JOIN dim_product p ON f.product_id = p.product_id
+WHERE p.unit_cost IS NOT NULL
+GROUP BY p.category
+ORDER BY gross_margin DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>total_revenue</th><th>total_cost</th><th>gross_margin</th></tr></thead><tbody><tr><td>Climbing</td><td>1389650.95</td><td>783500.86</td><td>606150.09</td></tr><tr><td>Winter Sports</td><td>1227987.61</td><td>698400.13</td><td>529587.48</td></tr><tr><td>Nutrition & Hydration</td><td>1164289.69</td><td>719385.17</td><td>444904.52</td></tr><tr><td>Apparel</td><td>1146455.86</td><td>717276.4</td><td>429179.46</td></tr><tr><td>Footwear</td><td>1052643.36</td><td>645169.6</td><td>407473.76</td></tr></tbody></table></div>
+The `WHERE p.unit_cost IS NOT NULL` matters: `dim_product.unit_cost`
+is ~3% `NULL` and ~1% negative per the data dictionary — a real
+dimension attribute with its own messiness, which is exactly why you
+join to it rather than trusting every fact row has a clean cost
+automatically.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-prove-unit_price-isnt-a-safe-measure-to-sum-directly">3. Prove <code class="inline-code">unit_price</code> isn't a safe measure to sum directly</h3>
+
+<p><code class="inline-code">fact_sales.unit_price</code> is numeric and lives on the fact table — does
+that make it a safe measure? Compare <code class="inline-code">SUM(unit_price)</code> across all rows
+to the real total revenue (<code class="inline-code">SUM(net_amount)</code>), and explain the gap.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT ROUND(SUM(unit_price), 2) AS nonsense_sum_unit_price,
+       ROUND(SUM(net_amount), 2) AS real_total_revenue
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>nonsense_sum_unit_price</th><th>real_total_revenue</th></tr></thead><tbody><tr><td>3584232.51</td><td>8742289.04</td></tr></tbody></table></div>
+Wildly different, and `SUM(unit_price)` isn't meaningful at all: it
+adds together per-unit prices without accounting for `quantity` (an
+order of 5 units and an order of 1 unit contribute the same amount to
+this sum) or `discount_pct`. `unit_price` is an *input* to the real
+measure, not a measure itself — `net_amount` (already computed as
+`quantity * unit_price * (1 - discount_pct)` in `silver_sales`) is the
+column actually safe to `SUM`. This is the same lesson as
+`discount_pct` in the lesson text, applied to a different column:
+"numeric and on the fact table" is not sufficient to make something a
+measure.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-is-sku-a-usable-natural-key-for-dim_product">4. Is <code class="inline-code">sku</code> a usable natural key for <code class="inline-code">dim_product</code>?</h3>
+
+<p>Check whether <code class="inline-code">sku</code> uniquely identifies a product in <code class="inline-code">dim_product</code>.
+(Hint: <code class="inline-code">sku_is_duplicate</code> already flags this.)</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT sku_is_duplicate, COUNT(*) FROM dim_product GROUP BY sku_is_duplicate;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>sku_is_duplicate</th><th>COUNT(*)</th></tr></thead><tbody><tr><td>0</td><td>146</td></tr><tr><td>1</td><td>4</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, sku, sku_is_duplicate
+FROM dim_product
+WHERE sku_is_duplicate = 1
+ORDER BY sku;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>sku</th><th>sku_is_duplicate</th></tr></thead><tbody><tr><td>85</td><td>WAT-0095</td><td>1</td></tr><tr><td>95</td><td>WAT-0095</td><td>1</td></tr><tr><td>129</td><td>WIN-0129</td><td>1</td></tr><tr><td>144</td><td>WIN-0129</td><td>1</td></tr></tbody></table></div>
+`sku` is **not** a reliable natural key: 4 of 150 products (2 pairs)
+share a duplicated SKU value with a completely different product.
+`product_id` is the trustworthy natural key here; `sku` is just
+another attribute (a real-world catalog code, prone to the exact kind
+of data-entry collisions catalog codes have in practice).
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-find-the-degenerate-dimensions-and-reason-about-when-theyd-need-to-become-real-ones">5. Find the degenerate dimensions and reason about when they'd need to become real ones</h3>
+
+<p>List the distinct values of <code class="inline-code">fact_sales.channel</code> and
+<code class="inline-code">fact_sales.payment_method</code> — two attributes with no dedicated
+dimension table of their own. What would have to be true about these
+columns before it made sense to break them out into <code class="inline-code">dim_channel</code> /
+<code class="inline-code">dim_payment_method</code> tables?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT channel FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>channel</th></tr></thead><tbody><tr><td>Online</td></tr><tr><td>In-Store</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT payment_method FROM fact_sales ORDER BY payment_method;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>payment_method</th></tr></thead><tbody><tr><td>Cash</td></tr><tr><td>Credit Card</td></tr><tr><td>Debit Card</td></tr><tr><td>Gift Card</td></tr><tr><td>PayPal</td></tr></tbody></table></div>
+Both are small, closed sets of plain text values with nothing further
+to describe about each value — there's no "channel manager," "channel
+launch date," or "payment processor fee rate" attribute waiting to be
+attached. That's exactly when a degenerate dimension (an attribute
+living directly on the fact row) is the right call: it avoids an
+unnecessary tiny lookup table for a 2- or 5-value set.
+
+<p>It would be worth promoting one of these to a real dimension the
+moment you needed to attach <em>more attributes</em> to the value itself —
+for example, if <code class="inline-code">payment_method</code> needed a <code class="inline-code">processing_fee_pct</code> or
+<code class="inline-code">is_digital</code> attribute, or if <code class="inline-code">channel</code> needed a <code class="inline-code">channel_owner</code> or
+<code class="inline-code">launch_date</code>. At that point, "channel"/"payment_method" stop being
+just labels and become entities worth describing in their own right,
+which is the signal to give them a dimension table.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/02-dimensions-and-facts-core-vocabulary.html" class="nav-btn">2. Dimensions and Facts: Core Vocabulary</a>. Previous: <a href="01-why-model-data-oltp-vs-analytical.html" class="nav-btn">1. Why We Model Data: OLTP vs. Analytical Schemas</a>. Next: <a href="03-grain-the-most-important-decision.html" class="nav-btn">3. Grain: The Most Important Decision in Star Schema Design</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>9. The Medallion Pipeline, Start to Finish | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="9-the-medallion-pipeline-start-to-finish">9. The Medallion Pipeline, Start to Finish</h1>
+
+<nav class="book-nav">Previous: <a href="08-star-vs-snowflake-schema.html" class="nav-btn">8. Star vs. Snowflake Schema</a>. Next: <a href="10-capstone-build-a-novel-gold-view.html" class="nav-btn">10. Capstone: Design a Novel Gold View</a>. Exercises: <a href="../../exercises/05-master/09-medallion-pipeline-recap.html" class="nav-btn">9. The Medallion Pipeline, Start to Finish</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Every lesson in this repo has been building one pipeline, one layer at
+a time: <strong>bronze</strong> (raw, as-ingested, unclean, unconstrained) → <strong>silver</strong>
+(cleaned, standardized, conformed to consistent types and values) →
+<strong>gold</strong> (business-ready, star-schema-shaped, what BI tools and
+analysts actually query). This is the <strong>medallion architecture</strong>, and
+it's not an Oakhaven invention or a SQLite trick — it's the standard
+pattern for building lakehouses on Databricks, Snowflake, BigQuery, and
+just about every modern data platform. The names differ occasionally
+(some shops say "raw / clean / curated," Databricks popularized
+"bronze / silver / gold" specifically), but the three-layer shape and
+the reasoning behind it are the same everywhere.</p>
+
+<p>This module doesn't teach a new technique. It walks the <em>entire</em>
+pipeline end to end, using two concrete threads — sales and customers —
+so the whole shape clicks into place at once, right before the
+capstone asks you to extend it yourself.</p>
+
+<h2 id="why-three-layers-not-one">Why three layers, not one</h2>
+
+<p>You could, in principle, write one enormous query that goes straight
+from <code class="inline-code">bronze_sales</code> to a finished revenue-by-category report. Nobody
+who has actually tried this at scale does it that way, for the same
+reasons this repo doesn't:
+<ul class="styled-list"><li><strong>Bronze exists to be an honest, auditable copy of what arrived.</strong></li></ul>  No cleaning, no filtering, no constraints (<code class="inline-code">project/bronze/schema.sql</code>
+  declares plain column types with no <code class="inline-code">PRIMARY KEY</code>/<code class="inline-code">FOREIGN
+  KEY</code>/<code class="inline-code">CHECK</code>). If a downstream number ever looks wrong, you can
+  always go back to bronze and see exactly what the source system
+  handed you, untouched. Skip this layer and you lose your ability to
+  audit — "clean" data with no raw copy behind it can't be checked
+  against reality.
+<ul class="styled-list"><li><strong>Silver exists to make one decision about each kind of messiness,</li></ul>  once, in one place.</strong> <code class="inline-code">silver_sales</code> parses three different date
+  formats, fixes the <code class="inline-code">discount_pct</code> whole-number bug, and recomputes a
+  trustworthy <code class="inline-code">net_amount</code> — all one time, in one view. Skip this layer
+  and every downstream query has to re-solve "which of these three date
+  formats is this row in" for itself, inconsistently, forever.
+<ul class="styled-list"><li><strong>Gold exists to be shaped for the question, not the source system.</strong></li></ul>  <code class="inline-code">fact_sales</code> and the <code class="inline-code">dim_*</code> views aren't "silver, but renamed" — they
+  add a grain declaration, foreign keys resolved (or explicitly flagged
+  as unresolved), and measures ready to aggregate. Skip this layer and
+  every analyst reinvents "how do I get net sales by category" from
+  scratch, joining raw-ish tables by hand each time.</p>
+
+<p>Each layer earns its keep by doing one job well, so the layer after it
+doesn't have to redo that job.</p>
+
+<h2 id="thread-1-sales-bronze--silver--gold">Thread 1: sales, bronze → silver → gold</h2>
+
+<p>Follow order 99, line 1, through all three layers.</p>
+
+<p><strong>Bronze</strong> — raw, as generated, <code class="inline-code">order_total</code> deliberately untrustworthy:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_line_id, quantity, unit_price, discount_pct, order_total
+FROM bronze_sales
+WHERE order_id = 99 AND order_line_id = 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>quantity</th><th>unit_price</th><th>discount_pct</th><th>order_total</th></tr></thead><tbody><tr><td>99</td><td>1</td><td>1</td><td>536.26</td><td>0.0</td><td>TBD</td></tr></tbody></table></div>
+`order_total` is the literal string `"TBD"` — one of the deliberate
+placeholder values the data dictionary documents (~0.3% of rows).
+Bronze doesn't fix this. It's not bronze's job to fix anything.
+
+<p><strong>Silver</strong> — cleaned, and critically, <code class="inline-code">net_amount</code> is <em>recomputed</em> from
+<code class="inline-code">quantity <em> unit_price </em> (1 - discount_pct)</code> rather than trusting the
+untrustworthy <code class="inline-code">order_total</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_line_id, quantity, unit_price, discount_pct, net_amount, order_total_raw
+FROM silver_sales
+WHERE order_id = 99 AND order_line_id = 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>quantity</th><th>unit_price</th><th>discount_pct</th><th>net_amount</th><th>order_total_raw</th></tr></thead><tbody><tr><td>99</td><td>1</td><td>1</td><td>536.26</td><td>0.0</td><td>536.26</td><td>TBD</td></tr></tbody></table></div>
+`order_total_raw` is carried along (renamed, not deleted — you can
+still see bronze said "TBD" if you need to), but `net_amount` is now a
+number you can trust and sum, computed once, correctly, in this one
+view. Every downstream query gets this for free instead of re-deriving
+it.
+
+<p><strong>Gold</strong> — <code class="inline-code">fact_sales</code> takes <code class="inline-code">net_amount</code> as-is from silver, adds the
+FK scaffolding (grain, <code class="inline-code">datekey</code>, orphan flags — covered in module 7),
+and does nothing further to this measure:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_line_id, net_amount
+FROM fact_sales
+WHERE order_id = 99 AND order_line_id = 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>net_amount</th></tr></thead><tbody><tr><td>99</td><td>1</td><td>536.26</td></tr></tbody></table></div>
+Same number, three layers later — because by the time gold sees it,
+the hard work (recomputing a trustworthy value from a deliberately
+unreliable source column) is already done. Gold's job here isn't
+cleaning, it's *shaping*.
+
+<h2 id="thread-2-customers-bronze--silver--gold">Thread 2: customers, bronze → silver → gold</h2>
+
+<p>Same idea, different messiness. Customer 6's <code class="inline-code">state</code> and <code class="inline-code">is_active</code>:</p>
+
+<p><strong>Bronze:</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, first_name, last_name, state, is_active
+FROM bronze_customers
+WHERE customer_id = 6;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>first_name</th><th>last_name</th><th>state</th><th>is_active</th></tr></thead><tbody><tr><td>6</td><td>ANTHONY</td><td>Reed</td><td>Calif.</td><td>Y</td></tr></tbody></table></div>
+`ANTHONY` is all-caps, `state` is the dotted abbreviation `Calif.`, and
+`is_active` is the letter `Y` — one of eleven different spellings of
+"true" the bronze layer might produce for this column.
+
+<p><strong>Silver:</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, first_name, last_name, state, is_active
+FROM silver_customers
+WHERE customer_id = 6;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>first_name</th><th>last_name</th><th>state</th><th>is_active</th></tr></thead><tbody><tr><td>6</td><td>Anthony</td><td>Reed</td><td>CA</td><td>1</td></tr></tbody></table></div>
+Name title-cased, `state` mapped to its canonical 2-letter code via the
+`state_map` lookup, `is_active` coalesced from the 11-value mixed-boolean
+text pool down to a real `0`/`1` integer.
+
+<p><strong>Gold:</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, first_name, last_name, state, is_active
+FROM dim_customer
+WHERE customer_id = 6;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>first_name</th><th>last_name</th><th>state</th><th>is_active</th></tr></thead><tbody><tr><td>6</td><td>Anthony</td><td>Reed</td><td>CA</td><td>1</td></tr></tbody></table></div>
+Identical to silver. `dim_customer` is a thin pass-through
+(`SELECT ... FROM silver_customers`, no additional transformation) —
+because by the time you're two layers into a well-designed pipeline,
+"clean" and "business-ready" are often the same thing for a dimension
+this simple. Gold's contribution here is conceptual, not
+computational: this view is what a `JOIN`s against `fact_sales`, not
+`silver_customers` — the naming and role (a *dimension*, not a
+*cleaned table*) is gold's whole value-add for this particular object.
+
+<h2 id="layers-clean-and-reshape-mostly-they-dont-filter">Layers clean and reshape; mostly, they don't filter</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT &#x27;sales&#x27; AS thread,
+       (SELECT COUNT(*) FROM bronze_sales) AS bronze,
+       (SELECT COUNT(*) FROM silver_sales) AS silver,
+       (SELECT COUNT(*) FROM fact_sales) AS gold
+UNION ALL
+SELECT &#x27;customers&#x27;,
+       (SELECT COUNT(*) FROM bronze_customers),
+       (SELECT COUNT(*) FROM silver_customers),
+       (SELECT COUNT(*) FROM dim_customer);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>thread</th><th>bronze</th><th>silver</th><th>gold</th></tr></thead><tbody><tr><td>sales</td><td>12000</td><td>12000</td><td>12000</td></tr><tr><td>customers</td><td>600</td><td>600</td><td>600</td></tr></tbody></table></div>
+Same row count, all three layers, both threads. That's not a
+coincidence — it's the same discipline module 7 covered for
+`fact_sales`'s orphans and NULLs: bad rows are *flagged*, not
+*dropped*, all the way from bronze through gold. (`agg_*` views are the
+exception, and deliberately so — `agg_monthly_sales_by_category` inner
+joins and does lose rows, but that's a downstream aggregate making an
+explicit choice, not silver or the fact table hiding data by default.)
+A pipeline that quietly shrinks row counts between layers, with no
+explicit filter or documented reason, is usually a pipeline losing
+data nobody meant to lose — always compare row counts across layers as
+a sanity check.
+
+<h2 id="examples">Examples</h2>
+
+<h3 id="1-the-full-thread-one-query-sales">1. The full thread, one query, sales</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT b.order_total AS bronze_order_total, s.net_amount AS silver_net_amount, f.net_amount AS gold_net_amount
+FROM bronze_sales b
+JOIN silver_sales s ON s.order_id = b.order_id AND s.order_line_id = b.order_line_id
+JOIN fact_sales f ON f.order_id = b.order_id AND f.order_line_id = b.order_line_id
+WHERE b.order_id = 99 AND b.order_line_id = 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>bronze_order_total</th><th>silver_net_amount</th><th>gold_net_amount</th></tr></thead><tbody><tr><td>TBD</td><td>536.26</td><td>536.26</td></tr></tbody></table></div>
+All three layers, one query, one row — the whole pipeline compressed
+into a single self-join across the layer boundary, which is a handy way
+to spot-check any specific row's journey when debugging.
+
+<h3 id="2-this-pattern-is-engine-agnostic">2. This pattern is engine-agnostic</h3>
+
+<p>The exact same three-layer reasoning shows up whether the underlying
+tables are SQLite views (as here), Delta tables in a Databricks
+lakehouse, materialized views in Snowflake, or scheduled <code class="inline-code">dbt</code> models
+building tables in BigQuery. What changes across engines is the
+<em>mechanics</em> — how you schedule the bronze ingestion, whether silver is
+a view or a materialized table, how gold gets refreshed — not the
+<em>shape</em>. Module 11 covers those mechanical differences directly; this
+module is about the shape that survives the move to any of them.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Skipping straight to gold.</strong> Writing gold views directly against</li></ul>  bronze (instead of against silver) means re-solving every messiness
+  problem — mixed date formats, the discount bug, mixed booleans — in
+  every gold object that needs it, inconsistently. Oakhaven's gold
+  layer is built entirely on `silver_*`, never on `bronze_*` directly,
+  for exactly this reason.
+  <div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT sql FROM sqlite_master WHERE name = &#x27;fact_sales&#x27;;</code></pre></div>
+  confirms this: `fact_sales` selects `FROM silver_sales`, not `FROM
+  bronze_sales`.
+<ul class="styled-list"><li><strong>Treating bronze as disposable.</strong> Bronze is the audit trail. If</li></ul>  silver's cleaning logic ever has a bug, bronze is how you prove what
+  the source system actually sent, and re-derive silver correctly.
+  Deleting or overwriting bronze after silver is built removes your
+  ability to ever check that.
+<ul class="styled-list"><li>**Expecting row counts to shrink layer over layer as a matter of</li></ul>  course.** A shrinking count between bronze and silver (or silver and
+  gold, for a dimension or a passthrough fact) usually means a bug
+  (an accidental `INNER JOIN`, an over-aggressive `WHERE`), not
+  "cleaning working as intended." Cleaning changes values; it's the
+  *aggregate* layer's job to intentionally drop rows, and it should do
+  so visibly (via `JOIN` choice) and for a stated reason.
+<ul class="styled-list"><li><strong>Assuming this is a small-data/SQLite-only pattern.</strong> The medallion</li></ul>  shape is exactly how production lakehouses handling terabytes are
+  built. The scale changes; the three-layer reasoning doesn't.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>Bronze = raw and auditable, silver = cleaned and conformed, gold =</li></ul>  business-ready and star-schema-shaped. Each layer solves one problem
+  once so later layers and every downstream query don't have to.
+<ul class="styled-list"><li>Following one row (or one customer) through all three layers — as</li></ul>  this module did for order 99's `net_amount` and customer 6's `state`
+  — is a good habit for understanding *or debugging* any medallion
+  pipeline, not just this one.
+<ul class="styled-list"><li>Row counts should stay stable across bronze → silver → gold (both</li></ul>  threads here: 12000 → 12000 → 12000 and 600 → 600 → 600); shrinkage
+  belongs to explicit, visible choices in aggregate views, not to
+  silver or the fact/dimension layer.
+<ul class="styled-list"><li>This is the exact pattern used to build medallion lakehouses on</li></ul>  Databricks, Snowflake, and BigQuery — the mechanics of *how* each
+  layer gets built differ by engine (module 11), but the shape and the
+  reasoning for having three layers instead of one is portable
+  everywhere.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="08-star-vs-snowflake-schema.html" class="nav-btn">8. Star vs. Snowflake Schema</a>. Next: <a href="10-capstone-build-a-novel-gold-view.html" class="nav-btn">10. Capstone: Design a Novel Gold View</a>. Exercises: <a href="../../exercises/05-master/09-medallion-pipeline-recap.html" class="nav-btn">9. The Medallion Pipeline, Start to Finish</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

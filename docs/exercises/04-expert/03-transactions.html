@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Transactions | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-transactions">Exercises: Transactions</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/03-transactions.html" class="nav-btn">3. Transactions</a>. Previous: <a href="02-alter-table-and-schema-evolution.html" class="nav-btn">2. ALTER TABLE and Schema Evolution</a>. Next: <a href="04-views.html" class="nav-btn">4. Views</a>.</nav>
+
+<p>Every exercise here writes data — work against your own scratch copy
+for all of them, never <code class="inline-code">project/oakhaven.db</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/my_scratch.db
+sqlite3 /tmp/my_scratch.db</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-baseline-count">1. Baseline count</h3>
+
+<p>Before touching anything, count how many <code class="inline-code">bronze_sales</code> rows have
+<code class="inline-code">order_status = 'Cancelled'</code>. You'll use this number to verify a
+rollback in the next exercise.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales WHERE order_status = &#x27;Cancelled&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">1031</code></pre></div>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-delete-inside-a-transaction-then-undo-it">2. Delete inside a transaction, then undo it</h3>
+
+<p>Start a transaction, delete every <code class="inline-code">bronze_sales</code> row with
+<code class="inline-code">order_status = 'Cancelled'</code>, confirm (mid-transaction) that they're
+gone, then <code class="inline-code">ROLLBACK</code> and confirm they're back.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">BEGIN;
+DELETE FROM bronze_sales WHERE order_status = &#x27;Cancelled&#x27;;
+SELECT COUNT(*) AS remaining_cancelled FROM bronze_sales WHERE order_status = &#x27;Cancelled&#x27;;
+ROLLBACK;
+SELECT COUNT(*) AS after_rollback FROM bronze_sales WHERE order_status = &#x27;Cancelled&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">remaining_cancelled
+--------------------
+0
+
+<p>after_rollback
+--------------
+1031</code></pre></div></p>
+
+<p>Mid-transaction, all 1031 rows are gone (<code class="inline-code">remaining_cancelled = 0</code>).
+After <code class="inline-code">ROLLBACK</code>, all 1031 are back — matching Exercise 1's baseline
+exactly.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-commit-an-update-and-confirm-its-permanent">3. Commit an update and confirm it's permanent</h3>
+
+<p>Start a transaction, set <code class="inline-code">is_discontinued = 'Y'</code> for products 1, 2,
+and 3, commit, then query again (as if in a brand-new session) to
+confirm the change persisted.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">BEGIN;
+UPDATE bronze_products SET is_discontinued = &#x27;Y&#x27; WHERE product_id IN (1,2,3);
+SELECT product_id, is_discontinued FROM bronze_products WHERE product_id IN (1,2,3);
+COMMIT;
+SELECT product_id, is_discontinued FROM bronze_products WHERE product_id IN (1,2,3);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">product_id  is_discontinued
+----------  ---------------
+1           Y
+2           Y
+3           Y
+
+<p>product_id  is_discontinued
+----------  ---------------
+1           Y
+2           Y
+3           Y</code></pre></div></p>
+
+<p>Same result before and after <code class="inline-code">COMMIT</code> in this case (nothing else
+touched these rows in between) — the point is that after <code class="inline-code">COMMIT</code>,
+there's no <code class="inline-code">ROLLBACK</code> that could undo it anymore; the change is final.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-undo-a-mistaken-update-with-rollback">4. Undo a mistaken update with ROLLBACK</h3>
+
+<p>Create a small <code class="inline-code">ex_inventory</code> table (<code class="inline-code">product_id INTEGER, qty INTEGER
+CHECK (qty >= 0)</code>) with two rows: <code class="inline-code">(1, 10)</code> and <code class="inline-code">(2, 5)</code>. Inside a
+transaction, subtract 3 from product 1's quantity, confirm the change,
+then decide it was a mistake and <code class="inline-code">ROLLBACK</code>. Confirm product 1 is back
+to 10.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE ex_inventory (product_id INTEGER, qty INTEGER CHECK (qty &gt;= 0));
+INSERT INTO ex_inventory VALUES (1, 10), (2, 5);
+BEGIN;
+UPDATE ex_inventory SET qty = qty - 3 WHERE product_id = 1;
+SELECT * FROM ex_inventory;
+ROLLBACK;
+SELECT * FROM ex_inventory;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">product_id  qty
+----------  ---
+1           7
+2           5
+
+<p>product_id  qty
+----------  ---
+1           10
+2           5</code></pre></div></p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-a-check-failure-does-not-automatically-roll-back-the-whole-transaction--verify-it-yourself">5. A CHECK failure does NOT automatically roll back the whole transaction — verify it yourself</h3>
+
+<p>This is a genuine SQLite gotcha, worth seeing firsthand rather than
+taking on faith. Using the same <code class="inline-code">ex_inventory</code>-shaped table (fresh
+copy, both rows back at their original values), start a transaction,
+make one <strong>valid</strong> update (subtract 3 from product 1 — leaves it at
+7, still <code class="inline-code">>= 0</code>), then attempt one <strong>invalid</strong> update in the <em>same</em>
+transaction (subtract 100 from product 2 — would leave it at -95,
+violating the <code class="inline-code">CHECK</code>). Does the invalid statement's failure
+automatically discard the valid one too? Try <code class="inline-code">COMMIT</code> afterward and
+see what actually gets persisted.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE ex_inventory3 (product_id INTEGER, qty INTEGER CHECK (qty &gt;= 0));
+INSERT INTO ex_inventory3 VALUES (1, 10), (2, 5);
+BEGIN;
+UPDATE ex_inventory3 SET qty = qty - 3 WHERE product_id = 1;
+UPDATE ex_inventory3 SET qty = qty - 100 WHERE product_id = 2;
+SELECT * FROM ex_inventory3;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Runtime error near line 5: CHECK constraint failed: qty &gt;= 0 (19)
+product_id  qty
+----------  ---
+1           7
+2           5</code></pre></div>
+
+<p>The second <code class="inline-code">UPDATE</code> failed, as expected — but the transaction is
+<strong>still open</strong>, and product 1's change (<code class="inline-code">qty = 7</code>) is still sitting
+there, uncommitted but not discarded either. SQLite's default
+behavior on a <code class="inline-code">CHECK</code> violation aborts <em>only that one statement</em>, not
+the entire transaction. If you now run:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">COMMIT;
+SELECT * FROM ex_inventory3;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">product_id  qty
+----------  ---
+1           7
+2           5</code></pre></div>
+
+<p>The <code class="inline-code">COMMIT</code> succeeds, and product 1's partial change is now
+permanent — even though the transaction <em>also</em> contained a statement
+that failed. This is a real trap: don't assume a single failed
+statement means "the whole transaction will be safely discarded."
+SQLite leaves it up to you to notice the error and explicitly issue
+<code class="inline-code">ROLLBACK</code> if you want the transaction's earlier successful statements
+undone too. Checking each statement's result (or your application's
+error handling) matters — the database won't protect you from a
+partial commit by default.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="6-nested-checkpoints-with-savepoint">6. Nested checkpoints with SAVEPOINT</h3>
+
+<p><code class="inline-code">SAVEPOINT</code> lets you set an undo point <em>inside</em> an already-open
+transaction, and <code class="inline-code">ROLLBACK TO savepoint_name</code> undoes only the changes
+since that savepoint — without ending the outer transaction. On a
+fresh <code class="inline-code">ex_savepoint (id INTEGER, val TEXT)</code> table seeded with <code class="inline-code">(1,
+'original')</code>: begin a transaction, update <code class="inline-code">val</code> to <code class="inline-code">'first change'</code>,
+create a savepoint, update <code class="inline-code">val</code> again to <code class="inline-code">'second change'</code>, then
+<code class="inline-code">ROLLBACK TO</code> the savepoint. What value survives? Then <code class="inline-code">COMMIT</code> and
+confirm what's actually persisted.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE ex_savepoint (id INTEGER, val TEXT);
+INSERT INTO ex_savepoint VALUES (1, &#x27;original&#x27;);
+BEGIN;
+UPDATE ex_savepoint SET val = &#x27;first change&#x27; WHERE id = 1;
+SAVEPOINT sp1;
+UPDATE ex_savepoint SET val = &#x27;second change&#x27; WHERE id = 1;
+SELECT * FROM ex_savepoint;
+ROLLBACK TO sp1;
+SELECT * FROM ex_savepoint;
+COMMIT;
+SELECT * FROM ex_savepoint;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">id  val
+--  -------------
+1   second change
+
+<p>id  val
+--  ------------
+1   first change</p>
+
+<p>id  val
+--  ------------
+1   first change</code></pre></div></p>
+
+<p><code class="inline-code">ROLLBACK TO sp1</code> undid only the second update, restoring <code class="inline-code">'first
+change'</code> — it did <strong>not</strong> undo the first update or end the outer
+transaction (unlike a plain <code class="inline-code">ROLLBACK</code>, which would have thrown away
+both changes and closed the transaction entirely). The subsequent
+<code class="inline-code">COMMIT</code> then persists <code class="inline-code">'first change'</code> as the final value.
+<code class="inline-code">SAVEPOINT</code> is the tool for "undo just this part" inside a larger
+transaction that should otherwise still go through.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/03-transactions.html" class="nav-btn">3. Transactions</a>. Previous: <a href="02-alter-table-and-schema-evolution.html" class="nav-btn">2. ALTER TABLE and Schema Evolution</a>. Next: <a href="04-views.html" class="nav-btn">4. Views</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

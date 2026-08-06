@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Beyond SQLite — Portability Notes | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-beyond-sqlite--portability-notes">Exercises: Beyond SQLite — Portability Notes</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/11-beyond-sqlite-portability-notes.html" class="nav-btn">11. Beyond SQLite: Portability Notes</a>. Previous: <a href="10-capstone-build-a-novel-gold-view.html" class="nav-btn">10. Capstone: Design a Novel Gold View</a>. Next: <a href="../../portfolio/README.html" class="nav-btn">Portfolio</a>.</nav>
+
+<p>All solutions verified against <code class="inline-code">project/oakhaven.db</code> (or, for
+syntax-only checks, an in-memory SQLite database — noted where used).</p>
+
+<h2 id="1-rewrite-a-strftime-date-trunc-as-date-modifiers">1. Rewrite a <code class="inline-code">strftime</code> date-trunc as <code class="inline-code">date()</code> modifiers</h2>
+
+<p><code class="inline-code">dim_date</code> computes <code class="inline-code">year</code>/<code class="inline-code">month</code>/<code class="inline-code">month_name</code> using <code class="inline-code">strftime()</code>.
+Using <code class="inline-code">date()</code> with modifiers instead (the pattern you'd translate
+toward <code class="inline-code">DATE_TRUNC</code> on a production engine), write a query that returns
+the start-of-month and end-of-month dates for <code class="inline-code">'2026-06-30'</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    date(&#x27;2026-06-30&#x27;, &#x27;start of month&#x27;) AS start_of_month,
+    date(&#x27;2026-06-30&#x27;, &#x27;start of month&#x27;, &#x27;+1 month&#x27;, &#x27;-1 day&#x27;) AS end_of_month;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>start_of_month</th><th>end_of_month</th></tr></thead><tbody><tr><td>2026-06-01</td><td>2026-06-30</td></tr></tbody></table></div>
+On Snowflake/Postgres/Databricks this collapses to a single
+`DATE_TRUNC('month', d)` call for the start-of-month value; there's no
+direct equivalent modifier chain needed. This is the general pattern:
+SQLite's date arithmetic tends to need more explicit modifier chaining
+than a dedicated `DATE_TRUNC` function does.
+
+<p></details></p>
+
+<h2 id="2-reproduce-the-qualify-equivalent-cte-pattern">2. Reproduce the <code class="inline-code">QUALIFY</code>-equivalent CTE pattern</h2>
+
+<p>Write a query that deduplicates <code class="inline-code">dim_customer</code> down to one row per
+distinct <code class="inline-code">LOWER(TRIM(email))</code>, keeping the lowest <code class="inline-code">customer_id</code> in each
+group, using the CTE + <code class="inline-code">ROW_NUMBER()</code> + outer-<code class="inline-code">WHERE rn = 1</code> pattern
+that SQLite requires in place of <code class="inline-code">QUALIFY</code>. Return just the count of
+deduplicated rows.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH ranked AS (
+    SELECT customer_id, email,
+           ROW_NUMBER() OVER (PARTITION BY LOWER(TRIM(email)) ORDER BY customer_id) AS rn
+    FROM dim_customer
+)
+SELECT COUNT(*) AS deduped_count
+FROM ranked
+WHERE rn = 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>deduped_count</th></tr></thead><tbody><tr><td>537</td></tr></tbody></table></div>
+On Snowflake/BigQuery/Databricks, the exact same result is reachable
+in a single `SELECT`:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+    SELECT customer_id
+    FROM dim_customer
+    QUALIFY ROW_NUMBER() OVER (PARTITION BY LOWER(TRIM(email)) ORDER BY customer_id) = 1
+);</code></pre></div>
+
+<p>(This second query does <strong>not</strong> run on SQLite — <code class="inline-code">QUALIFY</code> isn't
+supported there. It's shown for comparison, not to execute against
+<code class="inline-code">oakhaven.db</code>.)</p>
+
+<p>Note this count (537) is smaller than you might expect from "600
+customers minus 30 known near-duplicates = 570" — that's because rows
+with a NULL or empty <code class="inline-code">email</code> all collapse into a single <code class="inline-code">LOWER(TRIM(email))</code>
+= NULL partition together (SQL window functions treat NULL as one
+group for partitioning purposes), which is a real limitation of this
+naive dedup approach worth knowing about, not a bug in the count.</p>
+
+<p></details></p>
+
+<h2 id="3-upsert-syntax-sqlite-vs-a-merge-shaped-mental-model">3. Upsert syntax: SQLite vs. a <code class="inline-code">MERGE</code>-shaped mental model</h2>
+
+<p>Using an in-memory SQLite database (<code class="inline-code">sqlite3 :memory:</code>, since this
+doesn't touch <code class="inline-code">oakhaven.db</code>), create a two-column table, seed it with
+2 rows, then run a single <code class="inline-code">INSERT ... ON CONFLICT ... DO UPDATE</code>
+statement that updates row <code class="inline-code">id = 1</code>'s value and inserts a brand-new row
+<code class="inline-code">id = 3</code> in the same statement.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE t (id INTEGER PRIMARY KEY, v TEXT);
+INSERT INTO t VALUES (1, &#x27;a&#x27;), (2, &#x27;x&#x27;);
+INSERT INTO t (id, v) VALUES (1, &#x27;b&#x27;), (3, &#x27;c&#x27;)
+    ON CONFLICT(id) DO UPDATE SET v = excluded.v;
+SELECT * FROM t ORDER BY id;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>id</th><th>v</th></tr></thead><tbody><tr><td>1</td><td>b</td></tr><tr><td>2</td><td>x</td></tr><tr><td>3</td><td>c</td></tr></tbody></table></div>
+Row 1 updated (`'a'` → `'b'`), row 2 untouched, row 3 newly inserted —
+all from one statement. This is SQLite's row-at-a-time upsert
+primitive; a production `MERGE` statement generalizes this same
+match/update/insert logic to operate across an entire incoming batch
+of rows at once (e.g. loading a day's worth of new/changed silver rows
+into a gold dimension table), rather than one explicit row list.
+
+<p></details></p>
+
+<h2 id="4-reproduce-the-create-or-replace-view-failure">4. Reproduce the <code class="inline-code">CREATE OR REPLACE VIEW</code> failure</h2>
+
+<p>Confirm for yourself that SQLite rejects <code class="inline-code">CREATE OR REPLACE VIEW</code>, and
+explain why every file in <code class="inline-code">project/gold/</code> and <code class="inline-code">project/silver/</code>
+instead opens with <code class="inline-code">DROP VIEW IF EXISTS ...;</code> followed by a separate
+<code class="inline-code">CREATE VIEW ...;</code> statement.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE OR REPLACE VIEW ex_test AS SELECT 1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: in prepare, near &quot;OR&quot;: syntax error</code></pre></div>
+
+<p>SQLite's <code class="inline-code">CREATE VIEW</code> statement has no <code class="inline-code">OR REPLACE</code> option, so
+<code class="inline-code">project/gold/<em>.sql</code> and <code class="inline-code">project/silver/</em>.sql</code> each use the two-statement
+<code class="inline-code">DROP VIEW IF EXISTS</code> + <code class="inline-code">CREATE VIEW</code> pattern to achieve the same
+"replace this view if it already exists" behavior. On Snowflake,
+BigQuery, Databricks, or Postgres, <code class="inline-code">CREATE OR REPLACE VIEW</code> works as a
+single statement, and the leading <code class="inline-code">DROP</code> becomes unnecessary (though
+harmless) if you port one of these files over.</p>
+
+<p></details></p>
+
+<h2 id="5-find-a-different-dynamic-typing-example-than-the-lessons">5. Find a different dynamic-typing example than the lesson's</h2>
+
+<p>Module 11's lesson used <code class="inline-code">bronze_products.weight_kg</code> (declared <code class="inline-code">TEXT</code>,
+storing both <code class="inline-code">"1.2"</code> and <code class="inline-code">"1.2 kg"</code>) as its dynamic-typing example.
+Find a different column in <code class="inline-code">bronze_sales</code> that shows the same
+"declared as one type, actually holds mixed underlying values" pattern,
+using <code class="inline-code">typeof()</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT typeof(order_total) FROM bronze_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>typeof(order_total)</th></tr></thead><tbody><tr><td>text</td></tr><tr><td>null</td></tr></tbody></table></div>
+`bronze_sales.order_total` is declared `TEXT` in `project/bronze/schema.sql`,
+and — matching the data dictionary's description of it as "deliberately
+untrustworthy" — actually stores a mix of plain numeric-looking strings
+(`"536.26"`), `$`-prefixed strings (`"$411.30"`), and literal
+placeholder text (`"TBD"`, `"N/A"`), plus NULLs. All of it lives happily
+in one `TEXT` column because SQLite only ever suggests a type per
+column, never enforces one. On a strictly-typed engine, a column meant
+to eventually hold a decimal amount would need to be declared as a
+string type at the bronze layer specifically so it *can* hold `"TBD"`
+without the load failing — exactly the same design implication the
+lesson drew from `weight_kg`.
+
+<p></details></p>
+
+<h2 id="6-reasoning-porting-fact_sales-to-snowflake">6. Reasoning: porting <code class="inline-code">fact_sales</code> to Snowflake</h2>
+
+<p>No new SQL for this one. Suppose you're porting <code class="inline-code">project/gold/fact_sales.sql</code>
+to run on Snowflake instead of SQLite. List every change you'd need to
+make to the view definition itself (not the underlying tables) based on
+what this module covered, and briefly say why each one is needed.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>Looking at the actual <code class="inline-code">fact_sales.sql</code> definition:</p>
+
+<p>1. <strong><code class="inline-code">DROP VIEW IF EXISTS fact_sales; CREATE VIEW fact_sales AS ...</code></strong>
+   becomes a single <code class="inline-code">CREATE OR REPLACE VIEW fact_sales AS ...</code> —
+   Snowflake supports the one-statement form directly, so the separate
+   <code class="inline-code">DROP</code> is no longer needed (though leaving it wouldn't break
+   anything if you kept both statements).
+2. <strong><code class="inline-code">CAST(strftime('%Y%m%d', s.order_date) AS INTEGER) AS datekey</code></strong>
+   needs to become Snowflake's date-formatting equivalent, e.g.
+   <code class="inline-code">TO_NUMBER(TO_CHAR(s.order_date::DATE, 'YYYYMMDD'))</code> — <code class="inline-code">strftime()</code>
+   doesn't exist outside SQLite.
+3. Everything else in the view — the plain column selections, no
+   <code class="inline-code">QUALIFY</code>, no <code class="inline-code">MERGE</code>, no surrogate key generation — needs <strong>no
+   change</strong>. <code class="inline-code">fact_sales</code> is a simple <code class="inline-code">SELECT ... FROM silver_sales</code>
+   with one date-formatting expression; the vast majority of its logic
+   is standard SQL that runs unmodified on any engine. That's worth
+   noticing: most of a well-written gold-layer view is portable by
+   default, and only the handful of syntax areas this module covered
+   need translation.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/11-beyond-sqlite-portability-notes.html" class="nav-btn">11. Beyond SQLite: Portability Notes</a>. Previous: <a href="10-capstone-build-a-novel-gold-view.html" class="nav-btn">10. Capstone: Design a Novel Gold View</a>. Next: <a href="../../portfolio/README.html" class="nav-btn">Portfolio</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

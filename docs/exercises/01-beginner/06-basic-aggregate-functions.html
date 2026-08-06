@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Basic Aggregate Functions | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-basic-aggregate-functions">Exercises: Basic Aggregate Functions</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/06-basic-aggregate-functions.html" class="nav-btn">6. Basic Aggregate Functions</a>. Previous: <a href="05-null-the-absence-of-a-value.html" class="nav-btn">5. NULL: the Absence of a Value</a>. Next: <a href="07-pattern-matching-with-like.html" class="nav-btn">7. Pattern Matching with LIKE</a>.</nav>
+
+<h3 id="1-how-many-employees">1. How many employees?</h3>
+
+<p>Write a query that counts every row in <code class="inline-code">bronze_employees</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_employees;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>35</td></tr></tbody></table></div>
+</details>
+
+<h3 id="2-how-many-have-an-email-on-file">2. How many have an email on file?</h3>
+
+<p>Write a query counting how many employees have a non-NULL <code class="inline-code">email</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(email) FROM bronze_employees;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(email)</th></tr></thead><tbody><tr><td>31</td></tr></tbody></table></div>
+35 total employees, 31 with an email — matching the 4 missing emails
+from the previous module's exercises.
+
+<p></details></p>
+
+<h3 id="3-price-range-within-a-category">3. Price range within a category</h3>
+
+<p>Write a query showing the minimum, maximum, and (rounded to 2 decimal
+places) average <code class="inline-code">unit_price</code> for <code class="inline-code">Climbing</code>-category products.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    MIN(unit_price) AS min_p,
+    MAX(unit_price) AS max_p,
+    ROUND(AVG(unit_price), 2) AS avg_p
+FROM bronze_products
+WHERE category = &#x27;Climbing&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>min_p</th><th>max_p</th><th>avg_p</th></tr></thead><tbody><tr><td>77.97</td><td>669.02</td><td>273.74</td></tr></tbody></table></div>
+Notice `WHERE` runs first, narrowing to the 9 exact-cased `Climbing`
+rows, and only *then* do the aggregates summarize that filtered set.
+
+<p></details></p>
+
+<h3 id="4-count-and-total-together">4. Count and total, together</h3>
+
+<p>Write a query that shows both how many products cost less than $100,
+and the (rounded) total of their prices combined.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    COUNT(*) AS n,
+    ROUND(SUM(unit_price), 2) AS total
+FROM bronze_products
+WHERE unit_price &lt; 100;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>n</th><th>total</th></tr></thead><tbody><tr><td>21</td><td>1097.07</td></tr></tbody></table></div>
+</details>
+
+<h3 id="5-count-vs-countcolumn">5. COUNT(*) vs COUNT(column)</h3>
+
+<p>Write a single query with two columns: the total number of products,
+and the number of products that have a non-NULL <code class="inline-code">subcategory</code>. What's
+the difference between the two numbers, and what does that difference
+represent?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    COUNT(*) AS total,
+    COUNT(subcategory) AS with_subcat
+FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total</th><th>with_subcat</th></tr></thead><tbody><tr><td>150</td><td>123</td></tr></tbody></table></div>
+The difference, 150 − 123 = 27, is exactly the number of products with
+a `NULL` subcategory (matching the `subcategory IS NULL` count from
+the previous module).
+
+<p></details></p>
+
+<h3 id="6-cost-vs-price">6. Cost vs. price</h3>
+
+<p>Oakhaven marks products up from cost to price. Write a query showing
+the (rounded) average <code class="inline-code">unit_cost</code> and average <code class="inline-code">unit_price</code> across all
+products, side by side, and eyeball roughly how big the markup looks.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    ROUND(AVG(unit_cost), 2) AS avg_cost,
+    ROUND(AVG(unit_price), 2) AS avg_price
+FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>avg_cost</th><th>avg_price</th></tr></thead><tbody><tr><td>159.05</td><td>300.37</td></tr></tbody></table></div>
+Average price is roughly 1.9x average cost. (Two things worth
+noticing if you want to think harder about this: `avg_cost` only
+averages over the 143 non-NULL-cost rows while `avg_price` averages
+over all 150 rows with a price, so these two averages aren't computed
+over quite the same set of rows — and a handful of negative
+`unit_cost` values, seen in the previous module's exercises, are
+pulling `avg_cost` down slightly too. Neither invalidates the query,
+but both are worth keeping in mind before treating "1.9x" as a precise
+markup figure.)
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/06-basic-aggregate-functions.html" class="nav-btn">6. Basic Aggregate Functions</a>. Previous: <a href="05-null-the-absence-of-a-value.html" class="nav-btn">5. NULL: the Absence of a Value</a>. Next: <a href="07-pattern-matching-with-like.html" class="nav-btn">7. Pattern Matching with LIKE</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

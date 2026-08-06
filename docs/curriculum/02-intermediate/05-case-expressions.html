@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CASE Expressions | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="case-expressions">CASE Expressions</h1>
+
+<nav class="book-nav">Previous: <a href="04-having.html" class="nav-btn">HAVING</a>. Next: <a href="06-cleaning-text-trim-upper-replace.html" class="nav-btn">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</a>. Exercises: <a href="../../exercises/02-intermediate/05-case-expressions.html" class="nav-btn">CASE Expressions</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p><code class="inline-code">CASE</code> is SQL's if/else-if/else, used inside a <code class="inline-code">SELECT</code> list (or
+<code class="inline-code">WHERE</code>, or <code class="inline-code">ORDER BY</code>, or almost anywhere an expression is allowed).
+It checks a list of conditions top to bottom and returns the value
+tied to the first one that's true — like a chain of <code class="inline-code">if / elif / elif
+/ else</code> in Python, but as an expression that produces a value per row.</p>
+
+<p>Two shapes:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- &quot;searched&quot; form: each WHEN has its own condition
+CASE
+  WHEN condition1 THEN result1
+  WHEN condition2 THEN result2
+  ELSE fallback
+END
+
+<p>-- &quot;simple&quot; form: compares one expression against a list of values
+CASE column
+  WHEN &#x27;a&#x27; THEN result1
+  WHEN &#x27;b&#x27; THEN result2
+  ELSE fallback
+END</code></pre></div></p>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>Two everyday jobs <code class="inline-code">CASE</code> is built for, both real Oakhaven needs:</p>
+
+<p>1. <strong>Bucketing a continuous number into readable tiers</strong> — "was this a
+   small, medium, or large order line?" There's no column for that; you
+   derive it.
+2. <strong>Standardizing a messy value into a small, known set of outputs</strong>
+   — <code class="inline-code">bronze_customers.is_active</code> stores eleven different raw text
+   values (<code class="inline-code">Y</code>, <code class="inline-code">y</code>, <code class="inline-code">yes</code>, <code class="inline-code">true</code>, <code class="inline-code">1</code>, <code class="inline-code">N</code>, <code class="inline-code">n</code>, <code class="inline-code">no</code>, <code class="inline-code">false</code>, <code class="inline-code">0</code>,
+   and <code class="inline-code">NULL</code>) that really only mean three things: active, inactive,
+   or unknown. <code class="inline-code">CASE</code> is how you collapse eleven strings down to three
+   meaningful buckets in one expression.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT column,
+  CASE
+    WHEN condition1 THEN &#x27;label1&#x27;
+    WHEN condition2 THEN &#x27;label2&#x27;
+    ELSE &#x27;label_default&#x27;
+  END AS derived_column
+FROM table;</code></pre></div>
+<ul class="styled-list"><li>Conditions are checked <strong>in order</strong>; the first match wins, later</li></ul>  `WHEN`s are never evaluated once one matches.
+<ul class="styled-list"><li><code class="inline-code">ELSE</code> is optional — if you omit it and no <code class="inline-code">WHEN</code> matches, the</li></ul>  result is `NULL`. Usually safer to include an explicit `ELSE`.
+<ul class="styled-list"><li><code class="inline-code">CASE</code> produces one value per row; it's an expression, not a</li></ul>  standalone statement, so it can be used anywhere a column can:
+  `SELECT`, `WHERE`, `ORDER BY`, even inside `SUM(CASE WHEN ... THEN 1
+  ELSE 0 END)` for conditional counting.
+
+<h2 id="try-it">Try it</h2>
+
+<p><strong>1. Bucket order-line amounts into size tiers</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_line_id,
+       ROUND(quantity * unit_price, 2) AS line_amount,
+       CASE
+         WHEN quantity * unit_price &lt; 50 THEN &#x27;Small&#x27;
+         WHEN quantity * unit_price &lt; 200 THEN &#x27;Medium&#x27;
+         ELSE &#x27;Large&#x27;
+       END AS size_bucket
+FROM bronze_sales
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>line_amount</th><th>size_bucket</th></tr></thead><tbody><tr><td>1</td><td>1</td><td>1227.32</td><td>Large</td></tr><tr><td>1</td><td>2</td><td>1208.25</td><td>Large</td></tr><tr><td>2</td><td>1</td><td>325.89</td><td>Large</td></tr><tr><td>2</td><td>2</td><td>433.36</td><td>Large</td></tr><tr><td>3</td><td>1</td><td>106.14</td><td>Medium</td></tr></tbody></table></div>
+**2. Combine CASE with GROUP BY to count each bucket**
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+  CASE
+    WHEN quantity * unit_price &lt; 50 THEN &#x27;Small&#x27;
+    WHEN quantity * unit_price &lt; 200 THEN &#x27;Medium&#x27;
+    ELSE &#x27;Large&#x27;
+  END AS size_bucket,
+  COUNT(*) AS n
+FROM bronze_sales
+GROUP BY size_bucket
+ORDER BY n DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>size_bucket</th><th>n</th></tr></thead><tbody><tr><td>Large</td><td>9755</td></tr><tr><td>Medium</td><td>1408</td></tr><tr><td>Small</td><td>837</td></tr></tbody></table></div>
+`GROUP BY` can group directly on a `CASE` expression, not just a raw
+column — the derived label becomes the grouping key.
+
+<p><strong>3. Standardize <code class="inline-code">is_active</code>'s eleven raw values into three buckets</strong></p>
+
+<p>First, the raw mess (already seen in the data dictionary, confirmed
+live):</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT is_active, COUNT(*) AS n
+FROM bronze_customers
+GROUP BY is_active
+ORDER BY is_active;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>is_active</th><th>n</th></tr></thead><tbody><tr><td><em>(NULL)</em></td><td>31</td></tr><tr><td>0</td><td>18</td></tr><tr><td>1</td><td>103</td></tr><tr><td>N</td><td>29</td></tr><tr><td>Y</td><td>101</td></tr><tr><td>false</td><td>9</td></tr><tr><td>n</td><td>21</td></tr><tr><td>no</td><td>14</td></tr><tr><td>true</td><td>93</td></tr><tr><td>y</td><td>92</td></tr><tr><td>yes</td><td>89</td></tr></tbody></table></div>
+Eleven groups for a value that's fundamentally yes/no/unknown. `CASE`
+collapses it:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+  CASE
+    WHEN LOWER(TRIM(is_active)) IN (&#x27;y&#x27;, &#x27;yes&#x27;, &#x27;true&#x27;, &#x27;1&#x27;) THEN &#x27;Active&#x27;
+    WHEN LOWER(TRIM(is_active)) IN (&#x27;n&#x27;, &#x27;no&#x27;, &#x27;false&#x27;, &#x27;0&#x27;) THEN &#x27;Inactive&#x27;
+    ELSE &#x27;Unknown&#x27;
+  END AS status,
+  COUNT(*) AS n
+FROM bronze_customers
+GROUP BY status
+ORDER BY n DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>status</th><th>n</th></tr></thead><tbody><tr><td>Active</td><td>478</td></tr><tr><td>Inactive</td><td>91</td></tr><tr><td>Unknown</td><td>31</td></tr></tbody></table></div>
+478 + 91 + 31 = 600 — every customer accounted for. Note the `ELSE
+'Unknown'` catch-all: it's what turns the 31 `NULL` rows (and any
+future unexpected value) into a labeled bucket instead of vanishing or
+erroring.
+
+<p><strong>4. CASE inside an aggregate — conditional counting</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+  SUM(CASE WHEN channel IN (&#x27;Online&#x27;, &#x27;online&#x27;) THEN 1 ELSE 0 END) AS online_lines,
+  SUM(CASE WHEN channel IN (&#x27;In-Store&#x27;, &#x27;in store&#x27;) THEN 1 ELSE 0 END) AS instore_lines,
+  COUNT(*) AS total_lines
+FROM bronze_sales;</code></pre></div>
+
+<p>This is a common pattern: <code class="inline-code">CASE</code> turns a condition into a 1-or-0 per
+row, and <code class="inline-code">SUM()</code> adds those up — effectively a conditional <code class="inline-code">COUNT</code>
+without needing a separate query per condition.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Relying on WHEN order when conditions overlap.</strong> <code class="inline-code">CASE</code> uses the</li></ul>  *first* matching `WHEN`, top to bottom. If your ranges aren't
+  written in the order you think (e.g. checking `> 200` after already
+  checking `> 50`), you can get silently wrong buckets. Write ranges
+  narrowest/most-specific first if there's any ambiguity.
+<ul class="styled-list"><li><strong>Omitting <code class="inline-code">ELSE</code> and being surprised by <code class="inline-code">NULL</code>.</strong> Without an</li></ul>  `ELSE`, any row matching no `WHEN` becomes `NULL` in the result —
+  which then often disappears from `GROUP BY` output or fails
+  comparisons downstream. Default to writing an explicit `ELSE`.
+<ul class="styled-list"><li><strong>Forgetting to normalize case/whitespace before comparing.</strong></li></ul>  `WHEN is_active = 'Y'` alone misses `'y'`. That's why the example
+  above wraps the column in `LOWER(TRIM(is_active))` before comparing
+  — Module 6 covers those functions in depth.
+<ul class="styled-list"><li><strong>Using <code class="inline-code">CASE</code> where a simple boolean expression would do.</strong> `CASE</li></ul>  WHEN quantity > 0 THEN 1 ELSE 0 END` is fine, but sometimes you
+  don't need the label at all — know when a plain `WHERE quantity > 0`
+  answers the actual question more directly.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">CASE WHEN ... THEN ... ELSE ... END</code> is an expression that returns</li></ul>  one value per row based on the first matching condition.
+<ul class="styled-list"><li>It works anywhere an expression is valid: <code class="inline-code">SELECT</code>, <code class="inline-code">WHERE</code>, `ORDER</li></ul>  BY`, inside aggregates.
+<ul class="styled-list"><li>Great for bucketing continuous values (order amounts into size</li></ul>  tiers) and for standardizing messy categorical text
+  (`is_active`'s 11 raw values into Active/Inactive/Unknown).
+<ul class="styled-list"><li>Always include an explicit <code class="inline-code">ELSE</code> unless you deliberately want</li></ul>  unmatched rows to become `NULL`.
+<ul class="styled-list"><li>Combine with <code class="inline-code">LOWER(TRIM(...))</code> when comparing against text that</li></ul>  might vary in case or whitespace — Module 6 goes deep on that.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="04-having.html" class="nav-btn">HAVING</a>. Next: <a href="06-cleaning-text-trim-upper-replace.html" class="nav-btn">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</a>. Exercises: <a href="../../exercises/02-intermediate/05-case-expressions.html" class="nav-btn">CASE Expressions</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

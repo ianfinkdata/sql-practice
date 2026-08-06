@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Common Table Expressions | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-common-table-expressions">Exercises: Common Table Expressions</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/01-common-table-expressions.html" class="nav-btn">1. Common Table Expressions (CTEs)</a>. Previous: <a href="../02-intermediate/09-set-operations.html" class="nav-btn">Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT</a>. Next: <a href="02-window-functions-i-row-number-rank.html" class="nav-btn">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</a>.</nav>
+
+<p>Query <code class="inline-code">project/oakhaven.db</code> for all of these. Run with:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT ...;&quot; -header -column</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-categories-over-a-million">1. Categories over a million</h3>
+
+<p>Using a CTE, find every product category whose total net revenue (summed
+across all months, from <code class="inline-code">agg_monthly_sales_by_category</code>) exceeds
+$1,000,000. Return <code class="inline-code">category</code> and <code class="inline-code">total_revenue</code>, highest first.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH category_totals AS (
+    SELECT category, ROUND(SUM(total_net_amount), 2) AS total_revenue
+    FROM agg_monthly_sales_by_category
+    GROUP BY category
+)
+SELECT category, total_revenue
+FROM category_totals
+WHERE total_revenue &gt; 1000000
+ORDER BY total_revenue DESC;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>total_revenue</th></tr></thead><tbody><tr><td>Climbing</td><td>1382563.66</td></tr><tr><td>Winter Sports</td><td>1238465.41</td></tr><tr><td>Apparel</td><td>1232915.57</td></tr><tr><td>Nutrition & Hydration</td><td>1158785.06</td></tr><tr><td>Footwear</td><td>1077329.56</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="2-high-volume-managers">2. High-volume managers</h3>
+
+<p>Using a CTE, find all employees who (a) are managers (<code class="inline-code">dim_employee.is_manager
+= 1</code>) and (b) have processed more than 300 order lines (rows in
+<code class="inline-code">fact_sales</code> where <code class="inline-code">fact_sales.employee_id</code> matches theirs). Return
+<code class="inline-code">employee_id</code>, <code class="inline-code">full_name</code>, <code class="inline-code">department</code>, and <code class="inline-code">line_count</code>, highest count
+first.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH employee_sales AS (
+    SELECT e.employee_id, e.full_name, e.department, e.is_manager, COUNT(*) AS line_count
+    FROM dim_employee e
+    JOIN fact_sales f ON f.employee_id = e.employee_id
+    GROUP BY e.employee_id, e.full_name, e.department, e.is_manager
+)
+SELECT employee_id, full_name, department, line_count
+FROM employee_sales
+WHERE is_manager = 1 AND line_count &gt; 300
+ORDER BY line_count DESC;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>full_name</th><th>department</th><th>line_count</th></tr></thead><tbody><tr><td>4</td><td>Laura Williams</td><td>Support</td><td>336</td></tr><tr><td>5</td><td>Stephanie Reid</td><td>Warehouse</td><td>327</td></tr><tr><td>34</td><td>Nicholas Morris</td><td>Management</td><td>325</td></tr><tr><td>6</td><td>Christy Lee</td><td>Sales</td><td>316</td></tr><tr><td>7</td><td>Mary Boyd</td><td>Management</td><td>314</td></tr><tr><td>13</td><td>Sharon Robinson</td><td>Sales</td><td>301</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="3-big-spenders-relative-to-everyone">3. Big spenders, relative to everyone</h3>
+
+<p>Using a CTE to compute the overall average <code class="inline-code">lifetime_net_amount</code> across
+<em>all</em> of <code class="inline-code">agg_customer_ltv</code> (not per segment), find every customer whose
+own lifetime value is more than <strong>2x</strong> that overall average. Return
+<code class="inline-code">customer_id</code>, <code class="inline-code">full_name</code>, <code class="inline-code">lifetime_net_amount</code>, and the overall average
+for reference, ordered by lifetime value descending.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH overall AS (
+    SELECT AVG(lifetime_net_amount) AS avg_ltv FROM agg_customer_ltv
+)
+SELECT c.customer_id, c.full_name, c.lifetime_net_amount,
+       ROUND(o.avg_ltv, 2) AS overall_avg
+FROM agg_customer_ltv c, overall o
+WHERE c.lifetime_net_amount &gt; 2 * o.avg_ltv
+ORDER BY c.lifetime_net_amount DESC;</code></pre></div>
+
+<p>Verified output (10 rows total; first 8 shown):</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>full_name</th><th>lifetime_net_amount</th><th>overall_avg</th></tr></thead><tbody><tr><td>41</td><td>Shannon Strong</td><td>37544.43</td><td>14431.64</td></tr><tr><td>343</td><td>Jennifer Howard</td><td>35024.55</td><td>14431.64</td></tr><tr><td>597</td><td>Jessica Simpson</td><td>33636.42</td><td>14431.64</td></tr><tr><td>173</td><td>Ryan Bonilla</td><td>31159.38</td><td>14431.64</td></tr><tr><td>67</td><td>Derek Roberts</td><td>30799.93</td><td>14431.64</td></tr><tr><td>195</td><td>Elizabeth Casey</td><td>29704.83</td><td>14431.64</td></tr><tr><td>406</td><td>James Johns</td><td>29601.91</td><td>14431.64</td></tr><tr><td>572</td><td>Cindy Robinson</td><td>29434.89</td><td>14431.64</td></tr></tbody></table></div>
+(This CTE joins to `agg_customer_ltv` with a plain comma-join since
+`overall` produces exactly one row — a scalar-like CTE used as a constant
+in every outer row's comparison.)
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-rewrite-this-nested-subquery-as-a-cte">4. Rewrite this nested subquery as a CTE</h3>
+
+<p>Here's a working but hard-to-read nested-subquery query. Rewrite it using
+one or more CTEs so it reads top-to-bottom, and confirm it produces
+identical output:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT c.customer_id, c.full_name, c.customer_segment, c.lifetime_net_amount
+FROM agg_customer_ltv c
+WHERE c.customer_segment = &#x27;Wholesale&#x27;
+  AND c.lifetime_net_amount &gt; (
+        SELECT AVG(lifetime_net_amount) FROM agg_customer_ltv c2
+        WHERE c2.customer_segment = c.customer_segment
+  )
+ORDER BY c.lifetime_net_amount DESC
+LIMIT 5;</code></pre></div>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH segment_avg AS (
+    SELECT customer_segment, AVG(lifetime_net_amount) AS avg_ltv
+    FROM agg_customer_ltv
+    WHERE customer_segment IS NOT NULL
+    GROUP BY customer_segment
+)
+SELECT c.customer_id, c.full_name, c.customer_segment, c.lifetime_net_amount
+FROM agg_customer_ltv c
+JOIN segment_avg sa ON sa.customer_segment = c.customer_segment
+WHERE c.customer_segment = &#x27;Wholesale&#x27; AND c.lifetime_net_amount &gt; sa.avg_ltv
+ORDER BY c.lifetime_net_amount DESC
+LIMIT 5;</code></pre></div>
+
+<p>Verified output (identical for both versions):</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>full_name</th><th>customer_segment</th><th>lifetime_net_amount</th></tr></thead><tbody><tr><td>597</td><td>Jessica Simpson</td><td>Wholesale</td><td>33636.42</td></tr><tr><td>128</td><td>Angela Barnes</td><td>Wholesale</td><td>24623.53</td></tr><tr><td>273</td><td>Nicole Rogers</td><td>Wholesale</td><td>22752.36</td></tr><tr><td>431</td><td>Randy Kaiser</td><td>Wholesale</td><td>22453.13</td></tr><tr><td>260</td><td>Cody Wood</td><td>Wholesale</td><td>21739.32</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="5-best-category-per-year-multi-cte-chain">5. Best category per year (multi-CTE chain)</h3>
+
+<p>Using two chained CTEs — the first rolling <code class="inline-code">agg_monthly_sales_by_category</code>
+up to one row per <code class="inline-code">(year, category)</code>, the second ranking categories within
+each year by that total — find the single best-selling category for every
+year in the data. (This previews <code class="inline-code">RANK()</code>/window functions from the next
+module; try using <code class="inline-code">ORDER BY total DESC LIMIT 1</code> per year with a
+correlated subquery instead if you haven't covered window functions yet,
+then compare the two approaches once you have.)</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>Window-function version (cleanest once you've seen Module 2):</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH category_year AS (
+    SELECT year, category, ROUND(SUM(total_net_amount), 2) AS year_revenue
+    FROM agg_monthly_sales_by_category
+    GROUP BY year, category
+),
+ranked AS (
+    SELECT year, category, year_revenue,
+           RANK() OVER (PARTITION BY year ORDER BY year_revenue DESC) AS rnk
+    FROM category_year
+)
+SELECT year, category, year_revenue
+FROM ranked
+WHERE rnk = 1
+ORDER BY year;</code></pre></div>
+
+<p>Correlated-subquery version (CTE-only, no window functions):</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH category_year AS (
+    SELECT year, category, ROUND(SUM(total_net_amount), 2) AS year_revenue
+    FROM agg_monthly_sales_by_category
+    GROUP BY year, category
+)
+SELECT cy.year, cy.category, cy.year_revenue
+FROM category_year cy
+WHERE cy.year_revenue = (
+    SELECT MAX(cy2.year_revenue) FROM category_year cy2 WHERE cy2.year = cy.year
+)
+ORDER BY cy.year;</code></pre></div>
+
+<p>Verified output (both versions):</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>year</th><th>category</th><th>year_revenue</th></tr></thead><tbody><tr><td>2021</td><td>Climbing</td><td>243934.82</td></tr><tr><td>2022</td><td>Nutrition & Hydration</td><td>268912.10</td></tr><tr><td>2023</td><td>Climbing</td><td>253598.69</td></tr><tr><td>2024</td><td>Climbing</td><td>264295.25</td></tr><tr><td>2025</td><td>Climbing</td><td>242061.82</td></tr><tr><td>2026</td><td>Climbing</td><td>113911.92</td></tr></tbody></table></div>
+(2026 is a partial year — Oakhaven's data ends 2026-06-30 — so its total is
+naturally lower than a full year's.)
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/01-common-table-expressions.html" class="nav-btn">1. Common Table Expressions (CTEs)</a>. Previous: <a href="../02-intermediate/09-set-operations.html" class="nav-btn">Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT</a>. Next: <a href="02-window-functions-i-row-number-rank.html" class="nav-btn">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

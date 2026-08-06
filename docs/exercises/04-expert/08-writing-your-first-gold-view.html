@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Writing Your First Gold View | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-writing-your-first-gold-view">Exercises: Writing Your First Gold View</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/08-writing-your-first-gold-view.html" class="nav-btn">8. Writing Your First Gold View</a>. Previous: <a href="07-constraints-and-data-integrity.html" class="nav-btn">7. Constraints and Data Integrity</a>. Next: <a href="09-portable-idempotent-ddl-patterns.html" class="nav-btn">9. Portable, Idempotent DDL Patterns</a>.</nav>
+
+<p>Every exercise here is a plain, read-only <code class="inline-code">SELECT</code> — verify each one
+against the real, shared <code class="inline-code">project/oakhaven.db</code>. None of these should
+be persisted as an actual <code class="inline-code">CREATE VIEW</code>; you're practicing designing
+and verifying gold-style aggregate logic, not modifying the database.</p>
+
+<hr class="divider">
+
+<h3 id="1-confirm-the-grain-of-the-existing-monthly-rollup">1. Confirm the grain of the existing monthly rollup</h3>
+
+<p>Confirm <code class="inline-code">agg_monthly_sales_by_category</code> really does have exactly one
+row per (year, month, category) combination — no duplicates at that
+grain — and that its total row count matches the facts sheet (528).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM agg_monthly_sales_by_category;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">528</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT year, month, category, COUNT(*)
+FROM agg_monthly_sales_by_category
+GROUP BY year, month, category
+HAVING COUNT(*) &gt; 1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">(no rows returned)</code></pre></div>
+
+<p>528 total rows, and zero groups with more than one row at the
+(year, month, category) grain — confirms the view really is one row
+per combination, as its <code class="inline-code">GROUP BY</code> promises.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-write-a-quarterly-version-of-the-category-rollup">2. Write a quarterly version of the category rollup</h3>
+
+<p>Write a <code class="inline-code">SELECT</code> that rolls sales up to (year, quarter, category)
+instead of (year, month, category), using <code class="inline-code">dim_date.quarter</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT d.year, d.quarter, p.category,
+       COUNT(*) AS order_line_count,
+       ROUND(SUM(f.net_amount), 2) AS total_net_amount
+FROM fact_sales f
+JOIN dim_date d ON d.datekey = f.datekey
+JOIN dim_product p ON p.product_id = f.product_id
+GROUP BY d.year, d.quarter, p.category
+ORDER BY d.year, d.quarter, p.category;</code></pre></div>
+
+<p>First 5 rows, real output:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">year  quarter  category          order_line_count  total_net_amount
+----  -------  ----------------  ----------------  ----------------
+2021  1        Accessories       53                32432.45
+2021  1        Apparel           92                76345.55
+2021  1        Camping &amp; Hiking  54                29662.28
+2021  1        Climbing          89                80483.13
+2021  1        Footwear          78                63562.21</code></pre></div>
+
+<p>Same inner-join structure as <code class="inline-code">agg_monthly_sales_by_category</code> — the
+only change is <code class="inline-code">d.quarter</code> in place of <code class="inline-code">d.month</code>/<code class="inline-code">d.month_name</code>.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-sales-by-employee-region--a-question-about-whos-included">3. Sales by employee region — a question about who's included</h3>
+
+<p>Write a <code class="inline-code">SELECT</code> giving total net sales and order-line count by
+<code class="inline-code">dim_employee.region</code>. Since <code class="inline-code">fact_sales.employee_id</code> is <code class="inline-code">NULL</code> for
+~10.4% of rows (online/no-rep sales, per the data dictionary), decide
+deliberately: should this rollup use an inner or a left join against
+<code class="inline-code">dim_employee</code>? Justify your choice in a comment, then verify.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>An <strong>inner</strong> join against <code class="inline-code">dim_employee</code> is the right call here: the
+whole point of this rollup is "sales attributed to a rep in a given
+region" — a <code class="inline-code">NULL</code> <code class="inline-code">employee_id</code> has no region to attribute to, so it
+should be excluded, not forced into some artificial "unknown region"
+bucket via a <code class="inline-code">LEFT JOIN</code>. (A <code class="inline-code">LEFT JOIN</code> would make sense if the
+question were instead "total sales, broken down by region where
+known, with online sales as their own bucket" — a different, also
+valid question, just not this one.)</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT e.region,
+       COUNT(*) AS order_line_count,
+       ROUND(SUM(f.net_amount), 2) AS total_net_amount
+FROM fact_sales f
+JOIN dim_employee e ON e.employee_id = f.employee_id
+GROUP BY e.region
+ORDER BY total_net_amount DESC;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">region     order_line_count  total_net_amount
+---------  ----------------  ----------------
+West       3382              2568537.23
+South      2119              1560580.80
+East       1917              1357036.81
+Central    1834              1294425.26
+Northeast  1505              1085647.03</code></pre></div>
+
+<p>Row counts sum to 3382+2119+1917+1834+1505 = 10,757 — matching the
+facts sheet's <code class="inline-code">fact_sales JOIN dim_employee</code> match count exactly
+(12,000 − 1,243 NULL <code class="inline-code">employee_id</code> = 10,757).</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-top-5-brands-by-lifetime-net-sales">4. Top 5 brands by lifetime net sales</h3>
+
+<p><code class="inline-code">dim_product.brand</code> isn't used in any existing gold view. Write a
+<code class="inline-code">SELECT</code> ranking brands by total net sales, limited to the top 5.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.brand, ROUND(SUM(f.net_amount), 2) AS total_net_amount
+FROM fact_sales f
+JOIN dim_product p ON p.product_id = f.product_id
+GROUP BY p.brand
+ORDER BY total_net_amount DESC
+LIMIT 5;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">brand           total_net_amount
+--------------  ----------------
+Foghorn Supply  633719.91
+Tundraworks     514288.21
+Ridgeway Co.    510918.96
+Northfell       487175.42
+Marrowpeak      434031.88</code></pre></div>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-measure-exactly-what-an-inner-join-silently-excludes">5. Measure exactly what an inner join silently excludes</h3>
+
+<p><code class="inline-code">agg_monthly_sales_by_category</code> inner-joins <code class="inline-code">fact_sales</code> to both
+<code class="inline-code">dim_date</code> and <code class="inline-code">dim_product</code>. Quantify exactly how many order lines
+that inner-join design drops, two ways: (a) compare <code class="inline-code">fact_sales</code>'s
+total row count against the sum of <code class="inline-code">order_line_count</code> across all of
+<code class="inline-code">agg_monthly_sales_by_category</code>; (b) directly count rows in
+<code class="inline-code">fact_sales</code> with a <code class="inline-code">NULL datekey</code> or an orphan product.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM fact_sales;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">12000</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT SUM(order_line_count) FROM agg_monthly_sales_by_category;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">11821</code></pre></div>
+
+<p><code class="inline-code">12000 - 11821 = 179</code> order lines are missing from the rollup.
+Confirm directly:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM fact_sales
+WHERE datekey IS NULL OR is_product_orphan = 1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">179</code></pre></div>
+
+<p>Exact match. This is the real, quantified cost of the documented
+<code class="inline-code">INNER JOIN</code> decision in <code class="inline-code">agg_monthly_sales_by_category.sql</code> — 179
+order lines (about 1.5% of all sales) simply don't appear anywhere in
+that view, because they can't be placed on a calendar month or into a
+category. A stakeholder reading only the rollup's totals would never
+know these 179 lines exist unless someone ran exactly this kind of
+reconciliation check.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="6-design-your-own-gold-aggregate-with-a-documented-business-decision">6. Design your own gold aggregate with a documented business decision</h3>
+
+<p>Write a <code class="inline-code">SELECT</code> for "net sales by channel, excluding cancelled and
+returned orders" — a realistic ask ("show me <em>real</em>, kept revenue, not
+gross including refunds"). Decide explicitly how to handle
+<code class="inline-code">order_status IS NULL</code> (per the data dictionary, ~10% of
+<code class="inline-code">bronze_sales</code> rows have a <code class="inline-code">NULL</code> <code class="inline-code">order_status</code>) — include or exclude
+them? — and state your reasoning before writing the query.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>Decision: treat <code class="inline-code">NULL</code> <code class="inline-code">order_status</code> as "unknown, not confirmed
+cancelled/returned" and <strong>include</strong> it in the "real sales" total,
+rather than dropping it. The alternative (excluding unknown-status
+rows) would understate revenue for a reason that has nothing to do
+with whether the sale was actually cancelled — the status is simply
+missing, not negative. This mirrors the kind of explicit,
+documented trade-off <code class="inline-code">agg_monthly_sales_by_category.sql</code>'s own comment
+makes about excluding orphans.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT f.channel,
+       COUNT(*) AS order_line_count,
+       ROUND(SUM(f.net_amount), 2) AS total_net_amount
+FROM fact_sales f
+WHERE f.order_status NOT IN (&#x27;Cancelled&#x27;, &#x27;Returned&#x27;) OR f.order_status IS NULL
+GROUP BY f.channel
+ORDER BY total_net_amount DESC;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">channel   order_line_count  total_net_amount
+--------  ----------------  ----------------
+In-Store  4198              3030192.63
+Online    4150              2972070.73</code></pre></div>
+
+<p>Compare this against the facts sheet's unfiltered channel totals
+(In-Store: 5,960 lines / $4,380,739.06; Online: 6,040 lines /
+$4,361,549.98) — filtering out cancelled/returned orders removes
+roughly 30% of order lines and a proportional chunk of net amount
+from each channel, which makes sense as a sanity check: cancellations
+and returns shouldn't be wildly more common in one channel than the
+other unless something in the business genuinely differs between
+online and in-store fulfillment.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/08-writing-your-first-gold-view.html" class="nav-btn">8. Writing Your First Gold View</a>. Previous: <a href="07-constraints-and-data-integrity.html" class="nav-btn">7. Constraints and Data Integrity</a>. Next: <a href="09-portable-idempotent-ddl-patterns.html" class="nav-btn">9. Portable, Idempotent DDL Patterns</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

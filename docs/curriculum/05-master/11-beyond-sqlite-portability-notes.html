@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11. Beyond SQLite: Portability Notes | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="11-beyond-sqlite-portability-notes">11. Beyond SQLite: Portability Notes</h1>
+
+<nav class="book-nav">Previous: <a href="10-capstone-build-a-novel-gold-view.html" class="nav-btn">10. Capstone: Design a Novel Gold View</a>. Next: <a href="../../portfolio/README.html" class="nav-btn">Portfolio</a>. Exercises: <a href="../../exercises/05-master/11-beyond-sqlite-portability-notes.html" class="nav-btn">11. Beyond SQLite: Portability Notes</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Everything in this tier — grain, star schemas, medallion layering,
+building a novel gold view — is dimensional-modeling knowledge that
+transfers directly to Snowflake, BigQuery, Databricks, and Postgres.
+What <em>doesn't</em> transfer directly is SQLite-specific syntax. This module
+is a practical translation reference: the handful of places where the
+SQL you've been writing in this repo needs to change shape to run on a
+production warehouse engine, and why those differences exist.</p>
+
+<p>Treat this as a reference to come back to, not something to memorize.
+The goal is knowing these differences exist and where to look them up
+— not having every dialect's syntax memorized.</p>
+
+<h2 id="date-truncation">Date truncation</h2>
+
+<p>SQLite has no <code class="inline-code">DATE_TRUNC</code>. This repo has been using <code class="inline-code">strftime()</code> and
+<code class="inline-code">date()</code> with modifiers instead — patterns like <code class="inline-code">fact_sales</code>'s
+<code class="inline-code">CAST(strftime('%Y%m%d', s.order_date) AS INTEGER) AS datekey</code> or
+<code class="inline-code">dim_date</code>'s <code class="inline-code">CAST(strftime('%Y', date) AS INTEGER) AS year</code>.</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Task</th><th>SQLite</th><th>Snowflake / Postgres / Databricks</th><th>BigQuery</th></tr></thead><tbody><tr><td>Truncate to month</td><td><code class="inline-code">date(d, 'start of month')</code></td><td><code class="inline-code">DATE_TRUNC('month', d)</code></td><td><code class="inline-code">DATE_TRUNC(d, MONTH)</code></td></tr><tr><td>Extract year</td><td><code class="inline-code">CAST(strftime('%Y', d) AS INTEGER)</code></td><td><code class="inline-code">EXTRACT(YEAR FROM d)</code></td><td><code class="inline-code">EXTRACT(YEAR FROM d)</code></td></tr><tr><td>Format as <code class="inline-code">YYYY-MM</code></td><td><code class="inline-code">strftime('%Y-%m', d)</code></td><td><code class="inline-code">TO_CHAR(d, 'YYYY-MM')</code> (Snowflake/Postgres)</td><td><code class="inline-code">FORMAT_DATE('%Y-%m', d)</code></td></tr><tr><td>Date-key integer (<code class="inline-code">YYYYMMDD</code>)</td><td><code class="inline-code">CAST(strftime('%Y%m%d', d) AS INTEGER)</code></td><td><code class="inline-code">TO_NUMBER(TO_CHAR(d, 'YYYYMMDD'))</code></td><td><code class="inline-code">CAST(FORMAT_DATE('%Y%m%d', d) AS INT64)</code></td></tr></tbody></table></div>
+`DATE_TRUNC` is the pattern to reach for once you leave SQLite — it's
+supported (with minor argument-order differences) on Snowflake,
+Postgres, Databricks, and BigQuery, and it's generally clearer than
+chaining `strftime`/`date` modifiers.
+
+<h2 id="qualify-window-function-filtering"><code class="inline-code">QUALIFY</code>: window-function filtering</h2>
+
+<p>SQLite has no <code class="inline-code">QUALIFY</code> clause — confirmed by running one against
+<code class="inline-code">project/oakhaven.db</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id FROM dim_customer QUALIFY ROW_NUMBER() OVER (ORDER BY customer_id) = 1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: in prepare, near &quot;ROW_NUMBER&quot;: syntax error</code></pre></div>
+
+<p><code class="inline-code">QUALIFY</code> (available on Snowflake, BigQuery, and Databricks — not
+standard Postgres) lets you filter on a window function's result
+directly in the <code class="inline-code">WHERE</code>-clause position, instead of wrapping the whole
+query in a subquery/CTE just to filter on a column computed by
+<code class="inline-code">ROW_NUMBER()</code>/<code class="inline-code">RANK()</code>/etc. The <code class="inline-code">ROW_NUMBER()</code>-based deduplication
+pattern from earlier in this tier (deduping the near-duplicate
+customers 571–600 by <code class="inline-code">LOWER(TRIM(email))</code>) needs a CTE wrapper in
+SQLite for exactly this reason:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- SQLite: needs an outer query/CTE to filter on a window function
+WITH ranked AS (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY LOWER(TRIM(email)) ORDER BY customer_id) AS rn
+    FROM dim_customer
+)
+SELECT * FROM ranked WHERE rn = 1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- Snowflake/BigQuery/Databricks: QUALIFY does it in one query, no CTE needed
+SELECT *
+FROM dim_customer
+QUALIFY ROW_NUMBER() OVER (PARTITION BY LOWER(TRIM(email)) ORDER BY customer_id) = 1;</code></pre></div>
+
+<p>Both produce the same result. <code class="inline-code">QUALIFY</code> is strictly a convenience —
+know the CTE-wrapper version works everywhere (including SQLite), and
+reach for <code class="inline-code">QUALIFY</code> as a shortcut on engines that support it.</p>
+
+<h2 id="merge--upsert-syntax"><code class="inline-code">MERGE</code> / upsert syntax</h2>
+
+<p>SQLite has no <code class="inline-code">MERGE</code> statement. It has <code class="inline-code">INSERT ... ON CONFLICT ... DO
+UPDATE</code> (SQLite 3.24+), which handles the same single-row-at-a-time
+upsert case:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">INSERT INTO some_table (id, v) VALUES (1, &#x27;b&#x27;)
+ON CONFLICT(id) DO UPDATE SET v = excluded.v;</code></pre></div>
+
+<p>Production warehouses use a <code class="inline-code">MERGE</code> statement that can match/update/insert
+across an entire <em>set</em> at once — the pattern you'd actually use to load
+an incremental batch into a silver or gold table:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- Snowflake / Databricks / Postgres 15+ (syntax varies slightly by engine)
+MERGE INTO dim_customer AS target
+USING staged_customers AS source
+ON target.customer_id = source.customer_id
+WHEN MATCHED THEN UPDATE SET target.state = source.state, target.is_active = source.is_active
+WHEN NOT MATCHED THEN INSERT (customer_id, state, is_active) VALUES (source.customer_id, source.state, source.is_active);</code></pre></div>
+
+<p>This repo never needed <code class="inline-code">MERGE</code> because every silver/gold object here is
+a <code class="inline-code">DROP VIEW IF EXISTS ...; CREATE VIEW ...;</code> (rebuilt fresh from bronze
+every run — see module 9). Real production pipelines are usually
+<em>incremental</em>: only new/changed bronze rows arrive each run, and silver
+or gold tables are updated in place with <code class="inline-code">MERGE</code> rather than fully
+rebuilt. That's a real difference in mechanics between a learning repo
+and a production pipeline worth knowing about even though it's outside
+this repo's scope.</p>
+
+<h2 id="create-or-replace-view"><code class="inline-code">CREATE OR REPLACE VIEW</code></h2>
+
+<p>SQLite doesn't support it — confirmed directly:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE OR REPLACE VIEW test_v AS SELECT 1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: in prepare, near &quot;OR&quot;: syntax error</code></pre></div>
+
+<p>This is exactly why every file in <code class="inline-code">project/gold/</code> and <code class="inline-code">project/silver/</code>
+follows the same two-statement pattern instead:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">DROP VIEW IF EXISTS fact_sales;
+CREATE VIEW fact_sales AS
+SELECT ...</code></pre></div>
+
+<p>Snowflake, BigQuery, Databricks, and Postgres all support <code class="inline-code">CREATE OR
+REPLACE VIEW</code> directly as one statement — you can drop the
+<code class="inline-code">DROP...IF EXISTS</code> line entirely on those engines. If you ever port one
+of this repo's <code class="inline-code">gold/*.sql</code> files to a real warehouse, this is the
+first line in every file you'll simplify.</p>
+
+<h2 id="surrogate-key-generation">Surrogate key generation</h2>
+
+<p>This repo's dimensions reuse their natural keys as surrogate keys
+(<code class="inline-code">dim_customer.customer_id</code> is just <code class="inline-code">bronze_customers.customer_id</code>,
+passed straight through) — reasonable for a single-source teaching
+database, but production dimensional models usually mint their <em>own</em>
+surrogate keys, independent of any source system's ID, especially once
+a dimension has more than one source feeding it or needs SCD Type 2
+history (covered earlier in this tier).</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Engine</th><th>Mechanism</th></tr></thead><tbody><tr><td>SQLite</td><td><code class="inline-code">INTEGER PRIMARY KEY</code> column is an alias for <code class="inline-code">rowid</code> and auto-increments; <code class="inline-code">AUTOINCREMENT</code> keyword available but rarely needed</td></tr><tr><td>Postgres</td><td><code class="inline-code">GENERATED ALWAYS AS IDENTITY</code> (modern) or <code class="inline-code">SERIAL</code> (legacy)</td></tr><tr><td>Snowflake</td><td><code class="inline-code">IDENTITY</code> column property, or a <code class="inline-code">SEQUENCE</code> object referenced explicitly</td></tr><tr><td>Databricks (Delta)</td><td><code class="inline-code">GENERATED ALWAYS AS IDENTITY</code> on Delta tables</td></tr><tr><td>BigQuery</td><td>No native auto-increment — generate surrogate keys explicitly, typically <code class="inline-code">ROW_NUMBER() OVER (...)</code> in a batch load, or a hash of the natural key (<code class="inline-code">FARM_FINGERPRINT</code>)</td></tr></tbody></table></div>
+`ROW_NUMBER() OVER (ORDER BY ...)` — already used in this tier's dedup
+lesson — is the one surrogate-key technique that works identically on
+every engine in this table, including SQLite, which is why it's the
+most portable option to reach for when a native `IDENTITY`/sequence
+mechanism isn't available or convenient.
+
+<h2 id="dynamic-typing-vs-strict-typing">Dynamic typing vs. strict typing</h2>
+
+<p>This is the deepest difference, and it's the one that quietly shapes
+almost every silver-layer transformation in this repo. Tier 4 module 1
+covered SQLite's dynamic typing directly; here's the callback with a
+live example from <code class="inline-code">project/bronze/schema.sql</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE bronze_products (
+    ...
+    unit_cost  REAL,
+    weight_kg  TEXT,
+    ...
+);</code></pre></div>
+
+<p><code class="inline-code">weight_kg</code> is declared <code class="inline-code">TEXT</code>, and SQLite's <em>type affinity</em> system
+lets it hold genuinely mixed content — proven by querying the real
+data:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT typeof(weight_kg) FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>typeof(weight_kg)</th></tr></thead><tbody><tr><td>text</td></tr><tr><td>null</td></tr></tbody></table></div>
+Values like `"1.2"` and `"1.2 kg"` both live happily in that column
+because SQLite only ever *suggests* a type per column — it doesn't
+enforce one. This is exactly what makes bronze's manufactured messiness
+(mixed date formats as TEXT, mixed-boolean text pools, `weight_kg`
+strings with or without a unit suffix) possible to generate and store
+in the first place.
+
+<p>Snowflake, BigQuery, Databricks, and Postgres are all <strong>strictly
+typed</strong>: a column declared <code class="inline-code">NUMERIC</code>/<code class="inline-code">FLOAT64</code>/<code class="inline-code">DOUBLE</code> will reject
+<code class="inline-code">"1.2 kg"</code> outright at insert/load time, not silently store it. This
+has a real, practical consequence for porting this repo's approach: on
+a strictly-typed engine, <code class="inline-code">bronze_<em></code> tables holding "dirty" values like
+<code class="inline-code">weight_kg</code> would need to be declared with </em>every<em> column as a string
+type (<code class="inline-code">VARCHAR</code>/<code class="inline-code">STRING</code>) regardless of what the value conceptually is
+— exactly mirroring what a raw, unvalidated file-based ingestion (CSV,
+JSON) typically lands as anyway. The cleaning work silver performs (in
+this repo, entirely via SQL string functions and <code class="inline-code">CASE</code> expressions)
+is the same work, engine to engine; only </em>where* type errors would
+surface — silently accepted in SQLite, loudly rejected at ingest time
+on a strict engine unless bronze is deliberately typed as all-strings —
+changes.</p>
+
+<h2 id="examples">Examples</h2>
+
+<h3 id="1-row_number-itself-is-fully-portable">1. <code class="inline-code">ROW_NUMBER()</code> itself is fully portable</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, ROW_NUMBER() OVER (ORDER BY customer_id) AS rn
+FROM dim_customer
+LIMIT 3;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>rn</th></tr></thead><tbody><tr><td>1</td><td>1</td></tr><tr><td>2</td><td>2</td></tr><tr><td>3</td><td>3</td></tr></tbody></table></div>
+Window functions (`ROW_NUMBER`, `RANK`, `SUM() OVER`, `LAG`/`LEAD`) are
+one of the few areas where syntax barely differs across SQLite,
+Postgres, Snowflake, BigQuery, and Databricks — they're all standard
+SQL:2003 window function syntax. This is genuinely engine-agnostic
+knowledge, unlike most of what's in the tables above.
+
+<h3 id="2-sqlites-upsert-syntax-confirmed-working">2. SQLite's upsert syntax, confirmed working</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE t(id INTEGER PRIMARY KEY, v TEXT);
+INSERT INTO t VALUES (1, &#x27;a&#x27;);
+INSERT INTO t (id, v) VALUES (1, &#x27;b&#x27;) ON CONFLICT(id) DO UPDATE SET v = excluded.v;
+SELECT * FROM t;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>id</th><th>v</th></tr></thead><tbody><tr><td>1</td><td>b</td></tr></tbody></table></div>
+The second insert conflicts on `id = 1` and updates `v` to `'b'` instead
+of erroring — SQLite's single-row upsert primitive, and the direct
+ancestor of the `MERGE` statement's `WHEN MATCHED THEN UPDATE` clause on
+production engines.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li>**Assuming a warehouse will silently coerce bad data the way SQLite</li></ul>  does.** A load or `INSERT` that would succeed (storing a mangled
+  value) in SQLite can outright fail on a strictly-typed engine. Plan
+  bronze-layer ingestion accordingly — usually by typing every raw
+  column as a string and doing all real type conversion explicitly in
+  silver, which is exactly the discipline this repo already models.
+<ul class="styled-list"><li><strong>Porting <code class="inline-code">strftime()</code> calls verbatim.</strong> They don't exist outside</li></ul>  SQLite; every one needs to become the target engine's date-truncation
+  or extraction function.
+<ul class="styled-list"><li>**Reaching for <code class="inline-code">QUALIFY</code> and being surprised it's missing on</li></ul>  Postgres.** It's a Snowflake/BigQuery/Databricks convenience, not
+  ANSI SQL — the CTE-wrapper pattern is the portable fallback
+  everywhere, including Postgres and SQLite.
+<ul class="styled-list"><li>**Forgetting <code class="inline-code">CREATE OR REPLACE VIEW</code> needs <code class="inline-code">DROP...IF EXISTS</code></li></ul>  simulated on SQLite specifically.** Copying a two-statement
+  SQLite-style view definition to Snowflake/BigQuery/Databricks/Postgres
+  still works (an unnecessary `DROP` before a `CREATE` is harmless) —
+  but going the other direction, from a warehouse's single-statement
+  `CREATE OR REPLACE VIEW` back to SQLite, will fail until it's split
+  into two statements.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>The dimensional-modeling <em>thinking</em> in this tier — grain, star vs.</li></ul>  snowflake, medallion layering, measure classification — is fully
+  portable. The *syntax* is what needs translation, and it's a short,
+  learnable list: date truncation, `QUALIFY`, `MERGE`/upsert,
+  `CREATE OR REPLACE VIEW`, and surrogate key generation.
+<ul class="styled-list"><li><code class="inline-code">ROW_NUMBER()</code> and window functions generally are the most portable</li></ul>  piece of advanced SQL syntax across engines — lean on them when in
+  doubt.
+<ul class="styled-list"><li>SQLite's dynamic typing (declared types are hints, not enforced) is</li></ul>  what makes this repo's bronze-layer messiness possible to store at
+  all; strictly-typed production engines require raw/bronze columns to
+  be typed as strings deliberately, with real typing happening
+  explicitly in silver — the same cleaning work, just forced to happen
+  in the right place instead of being optional.
+<ul class="styled-list"><li>When in doubt about a specific engine's syntax for any of these,</li></ul>  that engine's own SQL reference is the source of truth — this module
+  is a map of *where* the differences are, not a substitute for each
+  engine's docs.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="10-capstone-build-a-novel-gold-view.html" class="nav-btn">10. Capstone: Design a Novel Gold View</a>. Next: <a href="../../portfolio/README.html" class="nav-btn">Portfolio</a>. Exercises: <a href="../../exercises/05-master/11-beyond-sqlite-portability-notes.html" class="nav-btn">11. Beyond SQLite: Portability Notes</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

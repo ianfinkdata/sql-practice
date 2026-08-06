@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="2-window-functions-i--row_number-rank-dense_rank">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</h1>
+
+<nav class="book-nav">Previous: <a href="01-common-table-expressions.html" class="nav-btn">1. Common Table Expressions (CTEs)</a>. Next: <a href="03-window-functions-ii-running-totals.html" class="nav-btn">3. Window Functions II — Running Totals & Moving Aggregates</a>. Exercises: <a href="../../exercises/03-advanced/02-window-functions-i-row-number-rank.html" class="nav-btn">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Every window function you'll meet in Tier 3 does the same basic trick:
+it lets a query look <em>across a group of related rows</em> to compute something
+— a rank, a running total, a comparison to a neighboring row — <strong>without
+collapsing those rows down into one</strong>, the way <code class="inline-code">GROUP BY</code> would.</p>
+
+<p>That's the core distinction to hold onto:
+<ul class="styled-list"><li><code class="inline-code">GROUP BY</code> takes many rows and produces <em>fewer</em> rows (one per group).</li><li>A window function takes many rows and returns the <em>same number of rows</em></li></ul>  — it just adds a new column computed by looking at a "window" of related
+  rows for each one.</p>
+
+<p><code class="inline-code">ROW_NUMBER()</code>, <code class="inline-code">RANK()</code>, and <code class="inline-code">DENSE_RANK()</code> are the simplest window
+functions: they each assign a rank/position number to rows, based on some
+ordering, optionally restarting within groups.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ROW_NUMBER() OVER (
+    PARTITION BY grouping_column   -- optional: restart numbering per group
+    ORDER BY sort_column [DESC]    -- required: what defines &quot;first&quot;, &quot;second&quot;, ...
+)</code></pre></div>
+<ul class="styled-list"><li><strong><code class="inline-code">PARTITION BY</code></strong> splits the rows into independent groups — like</li></ul>  `GROUP BY`, but without collapsing rows. Ranking restarts at 1 for each
+  partition. Omit it and the whole result set is one partition.
+<ul class="styled-list"><li><strong><code class="inline-code">ORDER BY</code></strong> (inside the <code class="inline-code">OVER (...)</code>) defines the ranking order. This</li></ul>  is completely independent of any `ORDER BY` at the end of the query.
+
+<p>The three functions differ only in how they handle <strong>ties</strong>:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Function</th><th>Ties</th><th>Next value after a tie</th></tr></thead><tbody><tr><td><code class="inline-code">ROW_NUMBER()</code></td><td>Never ties — arbitrarily breaks ties by row order</td><td>Always increments by 1</td></tr><tr><td><code class="inline-code">RANK()</code></td><td>Ties share the same rank</td><td>Skips ranks (leaves a gap)</td></tr><tr><td><code class="inline-code">DENSE_RANK()</code></td><td>Ties share the same rank</td><td>Never skips — no gaps</td></tr></tbody></table></div>
+<h2 id="example-1-ranking-with-real-ties">Example 1: ranking with real ties</h2>
+
+<p><code class="inline-code">agg_customer_ltv.order_count</code> is a plain integer, so ties happen. Ranking
+Retail customers by <code class="inline-code">order_count</code> within their segment shows all three
+functions side by side:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, full_name, customer_segment, order_count,
+       ROW_NUMBER() OVER (PARTITION BY customer_segment ORDER BY order_count DESC) AS row_num,
+       RANK()       OVER (PARTITION BY customer_segment ORDER BY order_count DESC) AS rnk,
+       DENSE_RANK() OVER (PARTITION BY customer_segment ORDER BY order_count DESC) AS dense_rnk
+FROM agg_customer_ltv
+WHERE customer_segment = &#x27;Retail&#x27;
+ORDER BY order_count DESC
+LIMIT 8;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>full_name</th><th>order_count</th><th>row_num</th><th>rnk</th><th>dense_rnk</th></tr></thead><tbody><tr><td>41</td><td>Shannon Strong</td><td>22</td><td>1</td><td>1</td><td>1</td></tr><tr><td>67</td><td>Derek Roberts</td><td>21</td><td>2</td><td>2</td><td>2</td></tr><tr><td>195</td><td>Elizabeth Casey</td><td>21</td><td>3</td><td>2</td><td>2</td></tr><tr><td>197</td><td>Mary Miller</td><td>20</td><td>4</td><td>4</td><td>3</td></tr><tr><td>59</td><td>Jasmine Ball</td><td>19</td><td>5</td><td>5</td><td>4</td></tr><tr><td>158</td><td>Dylan Powell</td><td>19</td><td>6</td><td>5</td><td>4</td></tr><tr><td>340</td><td>Shannon Haynes</td><td>19</td><td>7</td><td>5</td><td>4</td></tr><tr><td>80</td><td>Tiffany Taylor</td><td>18</td><td>8</td><td>8</td><td>5</td></tr></tbody></table></div>
+Read the tie at `order_count = 21` closely: `ROW_NUMBER()` breaks it
+arbitrarily (2 and 3), `RANK()` gives both rank 2 and then *skips* to rank
+4, `DENSE_RANK()` gives both rank 2 and continues at 3 with no gap. This
+is the entire lesson in one table — memorize this example over memorizing
+the definitions.
+
+<h2 id="example-2-the-top-n-per-group-pattern">Example 2: the "top N per group" pattern</h2>
+
+<p>The single most common use of <code class="inline-code">ROW_NUMBER()</code> is finding the top (or most
+recent) row per group. Wrap it in a CTE and filter on <code class="inline-code">rn = 1</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH ranked_orders AS (
+    SELECT customer_id, order_id, order_date,
+           ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) AS rn
+    FROM (SELECT DISTINCT customer_id, order_id, order_date FROM fact_sales WHERE order_date IS NOT NULL)
+)
+SELECT customer_id, order_id, order_date
+FROM ranked_orders
+WHERE rn = 1 AND customer_id IN (41, 343, 67)
+ORDER BY customer_id;</code></pre></div>
+
+<p>Verified output — each customer's single most recent order:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>order_id</th><th>order_date</th></tr></thead><tbody><tr><td>41</td><td>529</td><td>2026-03-17</td></tr><tr><td>67</td><td>6287</td><td>2026-06-05</td></tr><tr><td>343</td><td>3898</td><td>2026-06-25</td></tr></tbody></table></div>
+You cannot filter on a window function result directly in `WHERE`
+(`WHERE rn = 1` in the same query as the `ROW_NUMBER()` call is a SQL
+error — window functions are evaluated *after* `WHERE`). That's exactly
+why this pattern always needs a CTE or subquery wrapper: compute the rank
+inside, filter on it outside.
+
+<h2 id="example-3-the-near-duplicate-customer-dedup-pattern">Example 3: the near-duplicate customer dedup pattern</h2>
+
+<p>This is Oakhaven's signature <code class="inline-code">ROW_NUMBER()</code> use case. Recall from the data
+dictionary: <code class="inline-code">bronze_customers</code> has 600 rows, but <code class="inline-code">customer_id</code> 571–600 (30
+rows) are intentional near-duplicates of 30 of the base 1–570 rows — the
+same person, signed up "twice," with the email as the one field that
+survives normalization intact (<code class="inline-code">LOWER(TRIM(email))</code> matches even when
+casing/whitespace differs).</p>
+
+<p>The standard dedup pattern: partition by the normalized email, order by
+<code class="inline-code">customer_id</code>, and keep only <code class="inline-code">rn = 1</code> (the earliest/canonical row):</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH ranked AS (
+    SELECT customer_id, first_name, last_name, email,
+           ROW_NUMBER() OVER (PARTITION BY LOWER(TRIM(email)) ORDER BY customer_id) AS rn
+    FROM bronze_customers
+    WHERE email IS NOT NULL AND TRIM(email) != &#x27;&#x27;
+)
+SELECT rn, COUNT(*) FROM ranked GROUP BY rn;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>rn</th><th>COUNT(*)</th></tr></thead><tbody><tr><td>1</td><td>536</td></tr><tr><td>2</td><td>29</td></tr></tbody></table></div>
+**Stop and check this against the data dictionary before moving on.** The
+data dictionary says there are 30 intentional near-duplicate pairs — but
+this query only catches **29** rows at `rn = 2`. That one-row gap is a real
+finding, not a mistake in this lesson, and it's worth chasing down because
+it teaches something the tidy definition doesn't: dedup heuristics have
+edge cases.
+
+<p>Digging in: <code class="inline-code">customer_id = 572</code> (<code class="inline-code">CINDY.ROBINSON@ICLOUD.COM</code>) has no email
+match anywhere in <code class="inline-code">customer_id</code> 1–570. Its actual base counterpart turns
+out to be <code class="inline-code">customer_id = 14</code> ("Cindy ROBINSON") — but that row's <code class="inline-code">email</code> is
+an <strong>empty string</strong>, one of the ~2% empty-string emails documented in the
+data dictionary. The <code class="inline-code">WHERE email IS NOT NULL AND TRIM(email) != ''</code> filter
+correctly excludes it (you can't dedup on a blank key), which means this
+one near-duplicate pair is invisible to an email-only dedup strategy. A
+name-based or name+state secondary pass would be needed to catch it — a
+good illustration of why real dedup logic is rarely a single clean rule.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Using <code class="inline-code">ROW_NUMBER()</code> when you want to keep ties.</strong> If two rows</li></ul>  genuinely tie for first place and you only want `rn = 1`, `ROW_NUMBER()`
+  will arbitrarily keep one and drop the other. Use `RANK()` (or
+  `DENSE_RANK()`) and filter on `rnk = 1` instead if ties should all count.
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">PARTITION BY</code> entirely</strong> when you meant to rank within</li></ul>  groups — without it, the whole result set is one partition, and rank 1
+  appears only once, not once per group.
+<ul class="styled-list"><li>**Filtering on the window function in the same <code class="inline-code">SELECT</code>'s <code class="inline-code">WHERE</code></li></ul>  clause.** `SELECT ..., ROW_NUMBER() OVER (...) AS rn FROM t WHERE rn = 1`
+  fails — window functions run after `WHERE`. Wrap in a CTE/subquery and
+  filter in the outer query.
+<ul class="styled-list"><li><strong>Trusting a dedup query's row count blindly.</strong> As shown above, the</li></ul>  "obviously correct" pattern caught 29 of 30 known duplicates. Always
+  check derived counts against ground truth when you have it.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>Window functions add a column computed over a <em>window</em> of related rows,</li></ul>  without collapsing the row count — the opposite of `GROUP BY`.
+<ul class="styled-list"><li><code class="inline-code">ROW_NUMBER()</code> always increments uniquely; <code class="inline-code">RANK()</code> ties and skips;</li></ul>  `DENSE_RANK()` ties and doesn't skip.
+<ul class="styled-list"><li>The "top N per group" pattern — `ROW_NUMBER() OVER (PARTITION BY ...</li></ul>  ORDER BY ...)` wrapped in a CTE, filtered on `rn <= N` — is one of the
+  most common patterns in real SQL.
+<ul class="styled-list"><li>`ROW_NUMBER() OVER (PARTITION BY LOWER(TRIM(email)) ORDER BY</li></ul>  customer_id)` is the standard email-based dedup pattern — but verify its
+  output against known ground truth; it can miss cases (like a blank key)
+  that a human reviewer would catch.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="01-common-table-expressions.html" class="nav-btn">1. Common Table Expressions (CTEs)</a>. Next: <a href="03-window-functions-ii-running-totals.html" class="nav-btn">3. Window Functions II — Running Totals & Moving Aggregates</a>. Exercises: <a href="../../exercises/03-advanced/02-window-functions-i-row-number-rank.html" class="nav-btn">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

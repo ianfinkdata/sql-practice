@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10. Capstone: Design a Novel Gold View | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="10-capstone-design-a-novel-gold-view">10. Capstone: Design a Novel Gold View</h1>
+
+<nav class="book-nav">Previous: <a href="09-medallion-pipeline-recap.html" class="nav-btn">9. The Medallion Pipeline, Start to Finish</a>. Next: <a href="11-beyond-sqlite-portability-notes.html" class="nav-btn">11. Beyond SQLite: Portability Notes</a>. Exercises: <a href="../../exercises/05-master/10-capstone-build-a-novel-gold-view.html" class="nav-btn">10. Capstone: Design a Novel Gold View</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Every gold object dissected so far in this tier already exists in
+<code class="inline-code">project/gold/</code>. This module is different: it asks you to design a
+gold-style view that <strong>isn't</strong> in this repo — one you invent, grain and
+all, to answer a real business question — and then verify it the same
+way this whole curriculum has verified everything: run it, look at
+real output, sanity-check the numbers.</p>
+
+<p>This is the actual point of the tier. <code class="inline-code">fact_sales</code>, <code class="inline-code">dim_customer</code>, the
+<code class="inline-code">agg_<em></code> rollups — those are worked examples. The skill being taught is
+</em>designing* a new one from scratch: pick a grain, decide what measures
+matter, decide how to join, and defend the result with real numbers.
+That's the job, on any dataset, in any warehouse, for the rest of your
+career.</p>
+
+<h2 id="the-brief">The brief</h2>
+
+<p>You'll build a <strong>customer order-frequency segmentation view</strong>: for
+each customer, bucket them into a frequency tier based on how many
+distinct orders they've placed, then roll that up by <code class="inline-code">customer_segment</code>
+to see how order frequency distributes across Retail/Wholesale/VIP.
+This is a genuinely novel gold-style object — nothing in
+<code class="inline-code">project/gold/</code> buckets customers by activity level, and it's exactly
+the kind of view a real BI team would build to feed a "customer
+engagement" dashboard.</p>
+
+<p><strong>Grain:</strong> one row per <code class="inline-code">(customer_segment, frequency_tier)</code> pair.</p>
+
+<p><strong>Tiers</strong>, based on distinct <code class="inline-code">order_id</code> count in <code class="inline-code">fact_sales</code>:
+<ul class="styled-list"><li><code class="inline-code">No Orders</code> — 0 orders</li><li><code class="inline-code">Light (1-8 orders)</code> — 1 to 8 orders</li><li><code class="inline-code">Regular (9-14 orders)</code> — 9 to 14 orders</li><li><code class="inline-code">Frequent (15+ orders)</code> — 15 or more orders</li></ul>
+<strong>Measures:</strong> count of customers in each <code class="inline-code">(segment, tier)</code> bucket, and
+their average order count.</p>
+
+<p>Start from <code class="inline-code">dim_customer</code> (not <code class="inline-code">fact_sales</code>) and <code class="inline-code">LEFT JOIN</code> order
+counts on — the same "start from the dimension so zero-activity rows
+still appear" pattern <code class="inline-code">agg_customer_ltv</code> and <code class="inline-code">agg_daily_sales</code> both use
+elsewhere in this repo. Customers with a NULL <code class="inline-code">customer_segment</code>
+should appear under a literal <code class="inline-code">'Unknown'</code> bucket rather than vanishing
+from the <code class="inline-code">GROUP BY</code>.</p>
+
+<p>Write this as a plain runnable <code class="inline-code">SELECT</code> (a CTE chain is fine) — it does
+not need to be a persisted <code class="inline-code">CREATE VIEW</code>.</p>
+
+<h2 id="solve-it-yourself-first">Solve it yourself first</h2>
+
+<p>Try building the query before reading further. When you're ready, here
+is a verified solution and its real output, run against
+<code class="inline-code">project/oakhaven.db</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH orders_per_customer AS (
+    SELECT customer_id, COUNT(DISTINCT order_id) AS order_count
+    FROM fact_sales
+    GROUP BY customer_id
+),
+tiered AS (
+    SELECT
+        c.customer_id,
+        COALESCE(c.customer_segment, &#x27;Unknown&#x27;) AS customer_segment,
+        COALESCE(o.order_count, 0) AS order_count,
+        CASE
+            WHEN COALESCE(o.order_count, 0) = 0 THEN &#x27;No Orders&#x27;
+            WHEN o.order_count &lt;= 8 THEN &#x27;Light (1-8 orders)&#x27;
+            WHEN o.order_count &lt;= 14 THEN &#x27;Regular (9-14 orders)&#x27;
+            ELSE &#x27;Frequent (15+ orders)&#x27;
+        END AS frequency_tier
+    FROM dim_customer c
+    LEFT JOIN orders_per_customer o ON o.customer_id = c.customer_id
+)
+SELECT
+    customer_segment,
+    frequency_tier,
+    COUNT(*) AS num_customers,
+    ROUND(AVG(order_count), 2) AS avg_orders
+FROM tiered
+GROUP BY customer_segment, frequency_tier
+ORDER BY customer_segment,
+    CASE frequency_tier
+        WHEN &#x27;No Orders&#x27; THEN 0
+        WHEN &#x27;Light (1-8 orders)&#x27; THEN 1
+        WHEN &#x27;Regular (9-14 orders)&#x27; THEN 2
+        ELSE 3
+    END;</code></pre></div>
+
+<p><strong>Expected result (real, verified output — 12 rows):</strong></p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_segment</th><th>frequency_tier</th><th>num_customers</th><th>avg_orders</th></tr></thead><tbody><tr><td>Retail</td><td>Light (1-8 orders)</td><td>30</td><td>6.73</td></tr><tr><td>Retail</td><td>Regular (9-14 orders)</td><td>105</td><td>11.6</td></tr><tr><td>Retail</td><td>Frequent (15+ orders)</td><td>38</td><td>17.05</td></tr><tr><td>Unknown</td><td>Light (1-8 orders)</td><td>2</td><td>6.0</td></tr><tr><td>Unknown</td><td>Regular (9-14 orders)</td><td>9</td><td>11.78</td></tr><tr><td>Unknown</td><td>Frequent (15+ orders)</td><td>3</td><td>15.33</td></tr><tr><td>VIP</td><td>Light (1-8 orders)</td><td>31</td><td>7.06</td></tr><tr><td>VIP</td><td>Regular (9-14 orders)</td><td>130</td><td>11.42</td></tr><tr><td>VIP</td><td>Frequent (15+ orders)</td><td>46</td><td>17.11</td></tr><tr><td>Wholesale</td><td>Light (1-8 orders)</td><td>31</td><td>6.87</td></tr><tr><td>Wholesale</td><td>Regular (9-14 orders)</td><td>133</td><td>11.34</td></tr><tr><td>Wholesale</td><td>Frequent (15+ orders)</td><td>42</td><td>16.52</td></tr></tbody></table></div>
+Notice there's no `No Orders` row at all — every one of the 600
+customers in `dim_customer` has placed at least 3 orders (you can
+verify this yourself: `MIN(order_count)` across real, non-orphan
+customers is 3). That's a genuine, interesting finding this view
+surfaces: Oakhaven's customer base, as generated, has no dormant
+customers — worth knowing before you build a "win back inactive
+customers" dashboard on top of this data and find it empty. This is
+exactly the kind of thing you only discover by actually running the
+query against real data, not by reasoning about the schema in the
+abstract — the entire reason this curriculum insists on verified,
+real output at every step.
+
+<p><strong>Row-count check</strong> (grade yourself against this if the row-by-row
+result above doesn't match exactly): the full result has <strong>12 rows</strong>,
+and <code class="inline-code">SUM(num_customers)</code> across all of them equals <strong>600</strong> — matching
+<code class="inline-code">dim_customer</code>'s exact row count from the facts sheet.</p>
+
+<h2 id="the-exercise-file-has-more">The exercise file has more</h2>
+
+<p><code class="inline-code">exercises/05-master/10-capstone-build-a-novel-gold-view.md</code> grades you
+against the exact table above, plus two more novel-view prompts (cohort
+activation rate, and cross-category purchase breadth) each with their
+own real, verified solutions for you to check your work against.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Starting from <code class="inline-code">fact_sales</code> instead of <code class="inline-code">dim_customer</code>.</strong> Starting</li></ul>  from the fact table and `GROUP BY customer_id` silently drops every
+  customer with zero orders — which happens not to matter for *this*
+  particular dataset (there are none), but would silently produce a
+  wrong answer on a dataset that does have dormant customers. Always
+  start from the dimension when the question is "how do all entities
+  in this dimension behave," including the ones with no activity.
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">COALESCE</code> on <code class="inline-code">customer_segment</code>.</strong> `GROUP BY</li></ul>  customer_segment` alone would put every customer with a NULL segment
+  into their own ungrouped-looking `NULL` bucket instead of a visible,
+  named `'Unknown'` category — technically correct, but easy to miss
+  when eyeballing results.
+<ul class="styled-list"><li>**Hardcoding tier boundaries without checking the actual</li></ul>  distribution first.** The 8/14 breakpoints used here were chosen
+  after looking at the real `MIN`/`MAX`/`AVG` order-count distribution
+  (3 to 25, averaging ~10.9) — arbitrary boundaries picked without
+  looking at the data tend to produce one enormous bucket and several
+  empty ones.
+<ul class="styled-list"><li><strong>Skipping verification because "the SQL looks right."</strong> SQL that</li></ul>  parses and runs without error is not the same as SQL that answers the
+  question correctly. Always check the output against a sanity check
+  you can compute independently — here, that `SUM(num_customers) = 600`
+  and matches `dim_customer`'s known row count.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>Designing a novel gold view is the same three-step process as any</li></ul>  fact/dimension design: pick the grain, decide the measures, decide
+  the join strategy (and specifically, whether you're joining to keep
+  zero-activity rows or to drop them).
+<ul class="styled-list"><li>Verify against a real, independently-checkable number whenever</li></ul>  possible — here, `SUM(num_customers) = 600` ties back to a fact
+  already established in the facts sheet, which makes an accidental
+  bug (a dropped customer, a double-counted one) immediately visible.
+<ul class="styled-list"><li>A verified query can surprise you — "no dormant customers in this</li></ul>  dataset" is a finding, not an assumption, and it only shows up once
+  you actually run the query against real data.
+<ul class="styled-list"><li>This is the whole point of the tier: the specific view above is</li></ul>  disposable, but the process — grain, measures, join strategy, verify
+  against something independently known — is the reusable skill.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="09-medallion-pipeline-recap.html" class="nav-btn">9. The Medallion Pipeline, Start to Finish</a>. Next: <a href="11-beyond-sqlite-portability-notes.html" class="nav-btn">11. Beyond SQLite: Portability Notes</a>. Exercises: <a href="../../exercises/05-master/10-capstone-build-a-novel-gold-view.html" class="nav-btn">10. Capstone: Design a Novel Gold View</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

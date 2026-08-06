@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1. SELECT and FROM | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="1-select-and-from">1. SELECT and FROM</h1>
+
+<nav class="book-nav">Previous: <a href="../00-orientation/README.html" class="nav-btn">Tier 0 — Orientation</a>. Next: <a href="02-filtering-with-where.html" class="nav-btn">2. Filtering with WHERE</a>. Exercises: <a href="../../exercises/01-beginner/01-select-and-from.html" class="nav-btn">1. SELECT and FROM</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Almost every query you write in this course starts the same way: pick
+a table, pick some columns. <code class="inline-code">SELECT</code> says <em>what columns you want to
+see</em>. <code class="inline-code">FROM</code> says <em>which table to get them from</em>. Everything else in
+SQL — filtering, sorting, grouping, joining — is extra machinery bolted
+onto this basic shape.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT column_list
+FROM table_name;</code></pre></div>
+
+<p>That's genuinely most of it. The rest of Tier 1 is about refining what
+<code class="inline-code">SELECT ... FROM</code> gives you back.</p>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>You'll be tempted, especially early on, to always type <code class="inline-code">SELECT <em></code> —
+"give me everything" — because it's less to type and you don't have to
+remember column names. It's a fine habit while exploring a table for
+the first time (you did exactly this in Tier 0). But once you know
+what a table contains, naming specific columns is almost always
+better:
+<ul class="styled-list"><li><strong>Readability.</strong> <code class="inline-code">SELECT product_name, unit_price FROM</li></ul>  bronze_products;</code> tells a reader exactly what you care about.
+  <code class="inline-code">SELECT </em></code> tells them nothing except "everything, I guess."
+<ul class="styled-list"><li><strong>Performance.</strong> On a real production database, pulling columns you</li></ul>  don't need wastes work, especially on wide tables or over a network.
+  It rarely matters on a small practice database like Oakhaven, but
+  the habit is worth building now.
+<ul class="styled-list"><li><strong>Stability.</strong> If someone adds a new column to a table later, code</li></ul>  that named its columns explicitly keeps working unchanged. Code that
+  did <code class="inline-code">SELECT <em></code> and depended on column </em>order<em> or </em>count* can quietly
+  break.</p>
+
+<p>A good default: use <code class="inline-code">SELECT *</code> to explore a table you don't know yet,
+then switch to naming columns once you know what you actually need.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT *
+FROM table_name;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT column_a, column_b, column_c
+FROM table_name;</code></pre></div>
+
+<p>Column names are separated by commas. There's no comma after the last
+one, and no comma before <code class="inline-code">FROM</code>. SQL keywords (<code class="inline-code">SELECT</code>, <code class="inline-code">FROM</code>) are
+conventionally written in uppercase and table/column names in
+lowercase — this is a style convention, not a rule SQLite enforces, but
+it's what this course uses throughout, since it makes queries easier
+to scan.</p>
+
+<h2 id="try-it">Try it</h2>
+
+<h3 id="every-column-a-handful-of-rows">Every column, a handful of rows</h3>
+
+<p>You already did this in Tier 0, but it's worth repeating as the
+baseline to compare against:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM bronze_products LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>product_name</th><th>category</th><th>subcategory</th><th>brand</th><th>unit_cost</th><th>unit_price</th><th>is_discontinued</th><th>sku</th><th>weight_kg</th><th>created_at</th></tr></thead><tbody><tr><td>1</td><td>Canyon Hiking Boots</td><td>footwear</td><td>Hiking Boots</td><td>Stonepine Gear</td><td>269.63</td><td>649.26</td><td>true</td><td>FOO-0001</td><td>24.7 kg</td><td>2019-12-09</td></tr><tr><td>2</td><td>Ridge Jackets</td><td>APPAREL</td><td>Jackets</td><td>Northfell</td><td>231.98</td><td>348.55</td><td>false</td><td>APP-0002</td><td>5.3</td><td>2024-01-30 06:07:49</td></tr><tr><td>3</td><td>Trailhead Trekking Pole</td><td>CAMPING & HIKING</td><td>Trekking Poles</td><td>Kestrel Outdoor</td><td>136.25</td><td>286.86</td><td>n</td><td>CAM-0003</td><td>3.43 kg</td><td>2022-01-18 09:54:16</td></tr><tr><td>4</td><td>Meridian Chalk Bags</td><td>Climbing</td><td>Chalk Bags</td><td>Highmark Supply Co.</td><td>72.33</td><td>155.94</td><td>false</td><td>CLI-0004</td><td>18.5 kg</td><td>03/04/2024</td></tr><tr><td>5</td><td>Canyon Life Jackets</td><td>Water Sports</td><td></td><td>Thistledown Outfitters</td><td>193.92</td><td>310.93</td><td>N</td><td>WAT-0005</td><td>9.01</td><td>2023-08-18</td></tr></tbody></table></div>
+Eleven columns, most of which you don't care about if all you want is
+"what does this product cost."
+
+<h3 id="naming-just-the-columns-you-want">Naming just the columns you want</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, brand, unit_price
+FROM bronze_products
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>brand</th><th>unit_price</th></tr></thead><tbody><tr><td>Canyon Hiking Boots</td><td>Stonepine Gear</td><td>649.26</td></tr><tr><td>Ridge Jackets</td><td>Northfell</td><td>348.55</td></tr><tr><td>Trailhead Trekking Pole</td><td>Kestrel Outdoor</td><td>286.86</td></tr><tr><td>Meridian Chalk Bags</td><td>Highmark Supply Co.</td><td>155.94</td></tr><tr><td>Canyon Life Jackets</td><td>Thistledown Outfitters</td><td>310.93</td></tr></tbody></table></div>
+Same underlying rows, much easier to read at a glance. Note the column
+order in the output follows the order you listed them in `SELECT` —
+not their order in the table.
+
+<h3 id="a-different-table-a-different-handful-of-columns">A different table, a different handful of columns</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT first_name, last_name, department
+FROM bronze_employees
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>first_name</th><th>last_name</th><th>department</th></tr></thead><tbody><tr><td>Alexa</td><td>garcia</td><td>Management</td></tr><tr><td>sandra</td><td>Thompson</td><td>WAREHOUSE</td></tr><tr><td>Alexandria</td><td>CUNNINGHAM</td><td>management</td></tr><tr><td>Laura</td><td>williams</td><td>Support</td></tr><tr><td>stephanie</td><td>REID</td><td>Warehouse</td></tr></tbody></table></div>
+(You'll deal with that casing inconsistency in `department` — and in
+`first_name`/`last_name` — starting in Tier 2. For now, just notice
+it's there.)
+
+<h3 id="reordering-columns">Reordering columns</h3>
+
+<p>The output order is entirely up to you — it doesn't have to match the
+table's column order:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT brand, product_name
+FROM bronze_products
+LIMIT 3;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>brand</th><th>product_name</th></tr></thead><tbody><tr><td>Stonepine Gear</td><td>Canyon Hiking Boots</td></tr><tr><td>Northfell</td><td>Ridge Jackets</td></tr><tr><td>Kestrel Outdoor</td><td>Trailhead Trekking Pole</td></tr></tbody></table></div>
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Forgetting the semicolon.</strong> Most SQL clients (including</li></ul>  `sqlite3`) expect a `;` to know a statement is finished. Leaving it
+  off at the interactive prompt will just leave you hanging, waiting
+  for more input.
+<ul class="styled-list"><li><strong>Misspelling a column name.</strong> `SELECT product_nam FROM</li></ul>  bronze_products;` will error with something like `no such column:
+  product_nam`. SQLite won't guess what you meant.
+<ul class="styled-list"><li><strong>Trailing comma.</strong> `SELECT product_name, brand, FROM</li></ul>  bronze_products;` — that extra comma before `FROM` is a syntax
+  error. Only put commas *between* column names.
+<ul class="styled-list"><li>*<em>Assuming <code class="inline-code">SELECT </em></code> column order is meaningful/stable.** It</li></ul>  reflects the table's `CREATE TABLE` definition order, which is fine
+  to rely on for exploring, but don't build logic that depends on
+  position (like "the 3rd column") instead of name.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">SELECT columns FROM table;</code> is the skeleton of nearly every query</li></ul>  you'll write.
+<ul class="styled-list"><li><code class="inline-code">SELECT *</code> is great for first-look exploration; naming columns</li></ul>  explicitly is better once you know what you need.
+<ul class="styled-list"><li>The order of columns in <code class="inline-code">SELECT</code> controls the order in your output —</li></ul>  independent of the table's actual column order.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="../00-orientation/README.html" class="nav-btn">Tier 0 — Orientation</a>. Next: <a href="02-filtering-with-where.html" class="nav-btn">2. Filtering with WHERE</a>. Exercises: <a href="../../exercises/01-beginner/01-select-and-from.html" class="nav-btn">1. SELECT and FROM</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

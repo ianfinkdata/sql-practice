@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Designing the Fact Table | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-designing-the-fact-table">Exercises: Designing the Fact Table</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/07-designing-the-fact-table.html" class="nav-btn">7. Designing the Fact Table</a>. Previous: <a href="06-designing-the-date-dimension.html" class="nav-btn">6. Designing the Date Dimension</a>. Next: <a href="08-star-vs-snowflake-schema.html" class="nav-btn">8. Star vs. Snowflake Schema</a>.</nav>
+
+<p>All solutions verified against <code class="inline-code">project/oakhaven.db</code>. Try each query
+yourself before expanding the solution.</p>
+
+<h2 id="1-verify-the-grain-the-hard-way">1. Verify the grain, the hard way</h2>
+
+<p><code class="inline-code">fact_sales</code>'s grain is "one row per order line," i.e. one row per
+<code class="inline-code">(order_id, order_line_id)</code> pair. Write a query that returns any
+<code class="inline-code">(order_id, order_line_id)</code> pairs that appear <strong>more than once</strong> — if
+the grain genuinely holds, it should return zero rows.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+    SELECT order_id, order_line_id
+    FROM fact_sales
+    GROUP BY order_id, order_line_id
+    HAVING COUNT(*) &gt; 1
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>0</td></tr></tbody></table></div>
+Zero duplicate grain keys — the stated grain holds.
+
+<p></details></p>
+
+<h2 id="2-reproduce-the-orphannull-counts-with-percentages">2. Reproduce the orphan/NULL counts, with percentages</h2>
+
+<p>Write one query that returns, for all of <code class="inline-code">fact_sales</code>: the count and
+percentage of rows with <code class="inline-code">is_customer_orphan = 1</code>, the count and
+percentage with <code class="inline-code">is_product_orphan = 1</code>, and the count and percentage
+with a NULL <code class="inline-code">employee_id</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    SUM(is_customer_orphan) AS cust_orphans,
+    ROUND(100.0 * SUM(is_customer_orphan) / COUNT(*), 2) AS cust_orphan_pct,
+    SUM(is_product_orphan) AS prod_orphans,
+    ROUND(100.0 * SUM(is_product_orphan) / COUNT(*), 2) AS prod_orphan_pct,
+    SUM(CASE WHEN employee_id IS NULL THEN 1 ELSE 0 END) AS null_emp,
+    ROUND(100.0 * SUM(CASE WHEN employee_id IS NULL THEN 1 ELSE 0 END) / COUNT(*), 2) AS null_emp_pct
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>cust_orphans</th><th>cust_orphan_pct</th><th>prod_orphans</th><th>prod_orphan_pct</th><th>null_emp</th><th>null_emp_pct</th></tr></thead><tbody><tr><td>103</td><td>0.86</td><td>122</td><td>1.02</td><td>1243</td><td>10.36</td></tr></tbody></table></div>
+These match the facts sheet's ground-truth counts exactly — if your
+number differs, double-check you're querying `fact_sales` (which
+passes these through) and not accidentally filtering somewhere.
+
+<p></details></p>
+
+<h2 id="3-non-additive-measures-weighted-average-discount-by-channel">3. Non-additive measures: weighted average discount by channel</h2>
+
+<p><code class="inline-code">discount_pct</code> is non-additive — you can't just <code class="inline-code">AVG()</code> it and trust
+the result, because that treats every order line as equally important
+regardless of its dollar size. For each <code class="inline-code">channel</code>, compute both the
+naive <code class="inline-code">AVG(discount_pct)</code> and the correct dollar-weighted average
+discount (recomputed as <code class="inline-code">1 - SUM(net_amount) / SUM(quantity *
+unit_price)</code>), restricted to rows where <code class="inline-code">quantity > 0</code> and <code class="inline-code">net_amount
+IS NOT NULL</code>. Do the two numbers agree?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    channel,
+    ROUND(AVG(discount_pct), 4) AS naive_avg,
+    ROUND(1 - SUM(net_amount) * 1.0 / SUM(quantity * unit_price), 4) AS weighted_avg
+FROM fact_sales
+WHERE quantity &gt; 0 AND net_amount IS NOT NULL
+GROUP BY channel
+ORDER BY channel;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>channel</th><th>naive_avg</th><th>weighted_avg</th></tr></thead><tbody><tr><td>In-Store</td><td>0.1152</td><td>0.1169</td></tr><tr><td>Online</td><td>0.1136</td><td>0.1134</td></tr></tbody></table></div>
+Close, but not identical — In-Store's naive average (0.1152) actually
+*understates* the true dollar-weighted discount rate (0.1169), meaning
+higher-dollar In-Store lines tend to carry slightly bigger discounts
+than lower-dollar ones. That's exactly the kind of distortion a naive
+`AVG()` on a non-additive measure can hide.
+
+<p></details></p>
+
+<h2 id="4-semi-additive-pattern-a-monthly-running-total">4. Semi-additive pattern: a monthly running total</h2>
+
+<p>Build a monthly net-revenue running total across the whole date range:
+for each <code class="inline-code">(year, month)</code>, show that month's net sales and a cumulative
+running total up through that month. (Hint: aggregate to monthly
+totals in a CTE first, then apply <code class="inline-code">SUM() OVER (ORDER BY year, month)</code>
+to that.) Show the first 6 months.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH monthly AS (
+    SELECT d.year, d.month, ROUND(SUM(f.net_amount), 2) AS monthly_net
+    FROM fact_sales f
+    JOIN dim_date d ON d.datekey = f.datekey
+    GROUP BY d.year, d.month
+)
+SELECT year, month, monthly_net,
+       ROUND(SUM(monthly_net) OVER (ORDER BY year, month), 2) AS running_total
+FROM monthly
+ORDER BY year, month
+LIMIT 6;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>year</th><th>month</th><th>monthly_net</th><th>running_total</th></tr></thead><tbody><tr><td>2021</td><td>1</td><td>140828.03</td><td>140828.03</td></tr><tr><td>2021</td><td>2</td><td>129779.17</td><td>270607.2</td></tr><tr><td>2021</td><td>3</td><td>166732.05</td><td>437339.25</td></tr><tr><td>2021</td><td>4</td><td>116531.74</td><td>553870.99</td></tr><tr><td>2021</td><td>5</td><td>125472.53</td><td>679343.52</td></tr><tr><td>2021</td><td>6</td><td>135276.19</td><td>814619.71</td></tr></tbody></table></div>
+`running_total` is a semi-additive-style measure: correct to read at
+any one row, wrong to `SUM()` across rows.
+
+<p></details></p>
+
+<h2 id="5-quantify-the-business-impact-of-orphan-rows">5. Quantify the business impact of orphan rows</h2>
+
+<p>The fact table doesn't drop orphan-customer rows — it flags them. Put
+a number on what's at stake: for rows where <code class="inline-code">is_customer_orphan = 1</code>,
+how many total units (<code class="inline-code">quantity</code>) and how much total <code class="inline-code">net_amount</code> do
+they represent?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT SUM(quantity) AS qty_at_risk, ROUND(SUM(net_amount), 2) AS net_at_risk
+FROM fact_sales
+WHERE is_customer_orphan = 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>qty_at_risk</th><th>net_at_risk</th></tr></thead><tbody><tr><td>267</td><td>83303.47</td></tr></tbody></table></div>
+Over $83,000 in recorded net sales is attached to a `customer_id` that
+doesn't exist in `dim_customer` — a real, quantifiable data-quality
+issue that would have been invisible if `fact_sales` had silently
+inner-joined it away.
+
+<p></details></p>
+
+<h2 id="6-hardest-a-one-row-data-quality-scorecard">6. Hardest: a one-row data-quality scorecard</h2>
+
+<p>Combine what you've built above into a single query that returns one
+row summarizing <code class="inline-code">fact_sales</code>'s overall health: <code class="inline-code">total_rows</code>, and the
+percentage of rows affected by each of the four conditions module 7
+covered (<code class="inline-code">is_customer_orphan</code>, <code class="inline-code">is_product_orphan</code>, NULL
+<code class="inline-code">employee_id</code>, NULL <code class="inline-code">datekey</code>).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    COUNT(*) AS total_rows,
+    ROUND(100.0 * SUM(is_customer_orphan) / COUNT(*), 2) AS pct_customer_orphan,
+    ROUND(100.0 * SUM(is_product_orphan) / COUNT(*), 2) AS pct_product_orphan,
+    ROUND(100.0 * SUM(CASE WHEN employee_id IS NULL THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_null_employee,
+    ROUND(100.0 * SUM(CASE WHEN datekey IS NULL THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_null_datekey
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_rows</th><th>pct_customer_orphan</th><th>pct_product_orphan</th><th>pct_null_employee</th><th>pct_null_datekey</th></tr></thead><tbody><tr><td>12000</td><td>0.86</td><td>1.02</td><td>10.36</td><td>0.48</td></tr></tbody></table></div>
+This is the kind of single-row summary a real data-quality dashboard
+would surface on top of a fact table like this one — and it only
+works because the fact table chose to carry these flags through
+instead of hiding the rows that triggered them.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/07-designing-the-fact-table.html" class="nav-btn">7. Designing the Fact Table</a>. Previous: <a href="06-designing-the-date-dimension.html" class="nav-btn">6. Designing the Date Dimension</a>. Next: <a href="08-star-vs-snowflake-schema.html" class="nav-btn">8. Star vs. Snowflake Schema</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

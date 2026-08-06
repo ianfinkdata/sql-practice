@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="set-operations-union-union-all-intersect-except">Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT</h1>
+
+<nav class="book-nav">Previous: <a href="08-subqueries-and-derived-tables.html" class="nav-btn">Subqueries and Derived Tables</a>. Next: <a href="../03-advanced/README.html" class="nav-btn">Tier 3 — Advanced</a>. Exercises: <a href="../../exercises/02-intermediate/09-set-operations.html" class="nav-btn">Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Every clause you've used so far — <code class="inline-code">JOIN</code>, <code class="inline-code">GROUP BY</code>, <code class="inline-code">WHERE</code> —
+combines or filters <em>columns</em>. Set operations work differently: they
+combine the <strong>row results of two separate <code class="inline-code">SELECT</code> statements</strong>,
+stacked or compared like mathematical sets.
+<ul class="styled-list"><li><strong><code class="inline-code">UNION</code></strong> — rows from either query, duplicates removed.</li><li><strong><code class="inline-code">UNION ALL</code></strong> — rows from either query, duplicates kept (and</li></ul>  faster, since it skips the dedup work).
+<ul class="styled-list"><li><strong><code class="inline-code">INTERSECT</code></strong> — only rows that appear in <em>both</em> query results.</li><li><strong><code class="inline-code">EXCEPT</code></strong> — rows from the first query that do <em>not</em> appear in the</li></ul>  second.</p>
+
+<p>All four require both <code class="inline-code">SELECT</code>s to return the <strong>same number of
+columns</strong>, in compatible types. Column names come from the first
+<code class="inline-code">SELECT</code>.</p>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>"What are all the distinct text values used across <code class="inline-code">payment_method</code>
+and <code class="inline-code">channel</code>?" — stack two single-column queries with <code class="inline-code">UNION</code>. "Which
+customers are both VIP <em>and</em> have bought Climbing gear?" — that's two
+independent lists of <code class="inline-code">customer_id</code>, combined with <code class="inline-code">INTERSECT</code>. "Which
+raw <code class="inline-code">category</code> strings in <code class="inline-code">bronze_products</code> are <em>not</em> one of the 8
+exact canonical spellings?" — <code class="inline-code">EXCEPT</code> answers that in one query,
+which is a genuinely useful way to audit exactly how messy a column
+is, tying directly back to Module 3 and Module 6.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT col FROM table_a
+UNION            -- or UNION ALL, INTERSECT, EXCEPT
+SELECT col FROM table_b;</code></pre></div>
+<ul class="styled-list"><li>Both <code class="inline-code">SELECT</code>s must return the same number of columns.</li><li>Column names in the result come from the first <code class="inline-code">SELECT</code>.</li><li><code class="inline-code">ORDER BY</code> goes once, at the very end, and applies to the combined</li></ul>  result — not to either `SELECT` individually.
+<ul class="styled-list"><li><code class="inline-code">UNION</code>/<code class="inline-code">INTERSECT</code>/<code class="inline-code">EXCEPT</code> all deduplicate their result by</li></ul>  default; only `UNION ALL` keeps duplicates.
+<ul class="styled-list"><li>Mixing operators in one statement evaluates left to right unless you</li></ul>  use parentheses to force a specific grouping — parenthesize a
+  sub-part if you're combining more than two of these.
+
+<h2 id="try-it">Try it</h2>
+
+<p><strong>1. UNION ALL vs UNION — see the duplicate-removal cost directly</strong></p>
+
+<p><code class="inline-code">bronze_sales.payment_method</code> and <code class="inline-code">bronze_sales.channel</code> are two
+different messy text columns, each 12,000 rows long:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+  SELECT payment_method FROM bronze_sales
+  UNION ALL
+  SELECT channel FROM bronze_sales
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>24000</td></tr></tbody></table></div>
+`UNION ALL` just stacks both — 12,000 + 12,000 = 24,000 rows, no
+dedup, nothing surprising.
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+  SELECT payment_method FROM bronze_sales
+  UNION
+  SELECT channel FROM bronze_sales
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>14</td></tr></tbody></table></div>
+`UNION` collapses those 24,000 rows down to the **14 distinct raw
+text values** that appear across both columns combined:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT payment_method AS value FROM bronze_sales
+UNION
+SELECT channel FROM bronze_sales
+ORDER BY value;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>value</th></tr></thead><tbody><tr><td>CC</td></tr><tr><td>Cash</td></tr><tr><td>Credit Card</td></tr><tr><td>Debit Card</td></tr><tr><td>Gift Card</td></tr><tr><td>In-Store</td></tr><tr><td>Online</td></tr><tr><td>PayPal</td></tr><tr><td>cash</td></tr><tr><td>credit card</td></tr><tr><td>debit card</td></tr><tr><td>in store</td></tr><tr><td>online</td></tr><tr><td>paypal</td></tr></tbody></table></div>
+**2. INTERSECT — customers who are both VIP and bought Climbing gear**
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_customers WHERE customer_segment = &#x27;VIP&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>110</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id FROM bronze_customers WHERE customer_segment = &#x27;VIP&#x27;
+INTERSECT
+SELECT customer_id FROM bronze_sales
+  WHERE product_id IN (SELECT product_id FROM bronze_products WHERE category = &#x27;Climbing&#x27;)
+ORDER BY customer_id
+LIMIT 10;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th></tr></thead><tbody><tr><td>11</td></tr><tr><td>16</td></tr><tr><td>20</td></tr><tr><td>22</td></tr><tr><td>25</td></tr><tr><td>29</td></tr><tr><td>32</td></tr><tr><td>40</td></tr><tr><td>44</td></tr><tr><td>46</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+  SELECT customer_id FROM bronze_customers WHERE customer_segment = &#x27;VIP&#x27;
+  INTERSECT
+  SELECT customer_id FROM bronze_sales
+    WHERE product_id IN (SELECT product_id FROM bronze_products WHERE category = &#x27;Climbing&#x27;)
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>74</td></tr></tbody></table></div>
+74 of the 110 VIP customers bought at least one product from the
+exact-cased `'Climbing'` variant. (Same caveat as Module 8's example:
+this only catches the one exact spelling of "Climbing" — a fully
+correct version would clean `category` first, per Module 6.)
+
+<p><strong>3. EXCEPT — auditing exactly how messy <code class="inline-code">category</code> is</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT category FROM bronze_products
+EXCEPT
+SELECT * FROM (
+  SELECT &#x27;Footwear&#x27; AS category
+  UNION ALL SELECT &#x27;Apparel&#x27;
+  UNION ALL SELECT &#x27;Camping &amp; Hiking&#x27;
+  UNION ALL SELECT &#x27;Climbing&#x27;
+  UNION ALL SELECT &#x27;Water Sports&#x27;
+  UNION ALL SELECT &#x27;Winter Sports&#x27;
+  UNION ALL SELECT &#x27;Accessories&#x27;
+  UNION ALL SELECT &#x27;Nutrition &amp; Hydration&#x27;
+)
+ORDER BY category
+LIMIT 10;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th></tr></thead><tbody><tr><td>ACCESSORIES</td></tr><tr><td>ACCESSORIES</td></tr><tr><td>APPAREL</td></tr><tr><td>APPAREL</td></tr><tr><td>CAMPING & HIKING</td></tr><tr><td>CAMPING & HIKING</td></tr><tr><td>CAMPING AND HIKING</td></tr><tr><td>CLIMBING</td></tr><tr><td>CLIMBING</td></tr><tr><td>Camping and Hiking</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+  SELECT DISTINCT category FROM bronze_products
+  EXCEPT
+  SELECT * FROM (
+    SELECT &#x27;Footwear&#x27; AS category
+    UNION ALL SELECT &#x27;Apparel&#x27;
+    UNION ALL SELECT &#x27;Camping &amp; Hiking&#x27;
+    UNION ALL SELECT &#x27;Climbing&#x27;
+    UNION ALL SELECT &#x27;Water Sports&#x27;
+    UNION ALL SELECT &#x27;Winter Sports&#x27;
+    UNION ALL SELECT &#x27;Accessories&#x27;
+    UNION ALL SELECT &#x27;Nutrition &amp; Hydration&#x27;
+  )
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>32</td></tr></tbody></table></div>
+40 total distinct raw `category` strings, minus the 8 that exactly
+match a canonical name, leaves 32 "wrong" spellings — `EXCEPT` counted
+them in one query, no manual comparison needed. (Notice `ACCESSORIES`
+appears to repeat in the sample above — those two rows are byte-different:
+one has a trailing space and one doesn't, invisible in a rendered
+table but very real to `EXCEPT`'s exact-match comparison. A good
+reminder that `TRIM` from Module 6 matters here too.)
+
+<p><strong>4. Same pattern, <code class="inline-code">UNION</code> version — which categories exist that shouldn't</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+  SELECT DISTINCT category FROM bronze_products
+  UNION
+  SELECT * FROM (
+    SELECT &#x27;Footwear&#x27; AS category UNION ALL SELECT &#x27;Apparel&#x27;
+  )
+);</code></pre></div>
+
+<p>Combining <code class="inline-code">UNION</code>'s "all distinct values from either side" with a
+small reference list is a quick way to sanity-check whether a known
+value is even present in your data — if the combined count doesn't
+grow versus the raw distinct count, the reference value was already
+there.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Mismatched column counts.</strong> `SELECT a, b FROM t1 UNION SELECT c</li></ul>  FROM t2` errors immediately — both sides need the same number of
+  columns.
+<ul class="styled-list"><li><strong>Reaching for <code class="inline-code">UNION</code> when <code class="inline-code">UNION ALL</code> is what you meant.</strong> <code class="inline-code">UNION</code></li></ul>  does a full dedup pass across potentially large result sets — if you
+  know there are no duplicates (or don't care), `UNION ALL` is faster
+  and clearer about intent.
+<ul class="styled-list"><li>*<em>Forgetting set operations deduplicate on the </em>combined* row, not</li></ul>  per input query.** `UNION` between two queries that individually
+  have no internal duplicates can still produce fewer rows than
+  `count(query1) + count(query2)` if the same row appears in both.
+<ul class="styled-list"><li>**Putting <code class="inline-code">ORDER BY</code> on the first <code class="inline-code">SELECT</code> instead of at the very</li></ul>  end.** `ORDER BY` belongs once, after the last `SELECT` in the
+  chain, and sorts the whole combined result — attaching it earlier is
+  usually a syntax error or silently ignored depending on the
+  database.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">UNION</code>/<code class="inline-code">UNION ALL</code> stack two result sets vertically; <code class="inline-code">INTERSECT</code></li></ul>  keeps only rows in both; `EXCEPT` keeps rows in the first but not
+  the second.
+<ul class="styled-list"><li><code class="inline-code">UNION</code> and friends deduplicate; <code class="inline-code">UNION ALL</code> doesn't (and is</li></ul>  cheaper when you don't need dedup).
+<ul class="styled-list"><li>Both <code class="inline-code">SELECT</code>s need matching column counts/types; the result's</li></ul>  column names come from the first `SELECT`.
+<ul class="styled-list"><li><code class="inline-code">EXCEPT</code> against a small canonical list is a fast, precise way to</li></ul>  audit exactly which raw values in a messy column don't match what
+  you expect — 32 of `bronze_products.category`'s 40 raw variants
+  aren't one of the 8 canonical spellings.
+<ul class="styled-list"><li><code class="inline-code">ORDER BY</code> goes once, at the end, applying to the whole combined</li></ul>  result.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="08-subqueries-and-derived-tables.html" class="nav-btn">Subqueries and Derived Tables</a>. Next: <a href="../03-advanced/README.html" class="nav-btn">Tier 3 — Advanced</a>. Exercises: <a href="../../exercises/02-intermediate/09-set-operations.html" class="nav-btn">Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

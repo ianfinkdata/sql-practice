@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Recursive CTEs | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-recursive-ctes">Exercises: Recursive CTEs</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/05-recursive-ctes.html" class="nav-btn">5. Recursive CTEs</a>. Previous: <a href="04-lead-lag-period-over-period.html" class="nav-btn">4. LEAD, LAG, and Period-over-Period Comparisons</a>. Next: <a href="06-time-intelligence.html" class="nav-btn">6. Time Intelligence</a>.</nav>
+
+<p>Query <code class="inline-code">project/oakhaven.db</code> for all of these. Run with:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT ...;&quot; -header -column</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-count-to-10-the-recursive-way">1. Count to 10, the recursive way</h3>
+
+<p>Write a <code class="inline-code">WITH RECURSIVE</code> CTE that generates the integers 1 through 10, one
+per row.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH RECURSIVE nums(n) AS (
+    SELECT 1
+    UNION ALL
+    SELECT n + 1 FROM nums WHERE n &lt; 10
+)
+SELECT * FROM nums;</code></pre></div>
+
+<p>Verified output: <code class="inline-code">n</code> = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 (10 rows).</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-first-of-month-dates-for-the-second-half-of-2026">2. First-of-month dates for the second half of 2026</h3>
+
+<p>Write a <code class="inline-code">WITH RECURSIVE</code> CTE that generates the first day of each month
+from July 2026 through December 2026 (6 rows), using <code class="inline-code">date(d, '+1
+month')</code> as the step.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH RECURSIVE month_starts(d) AS (
+    SELECT date(&#x27;2026-07-01&#x27;)
+    UNION ALL
+    SELECT date(d, &#x27;+1 month&#x27;) FROM month_starts WHERE d &lt; date(&#x27;2026-12-01&#x27;)
+)
+SELECT d FROM month_starts;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>d</th></tr></thead><tbody><tr><td>2026-07-01</td></tr><tr><td>2026-08-01</td></tr><tr><td>2026-09-01</td></tr><tr><td>2026-10-01</td></tr><tr><td>2026-11-01</td></tr><tr><td>2026-12-01</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="3-powers-of-2">3. Powers of 2</h3>
+
+<p>Write a <code class="inline-code">WITH RECURSIVE</code> CTE with two columns (<code class="inline-code">n</code>, <code class="inline-code">val</code>) that generates
+powers of 2, starting at <code class="inline-code">n=1, val=2</code>, stopping once <code class="inline-code">val</code> would exceed
+1024 (i.e. the last row should have <code class="inline-code">val = 1024</code>).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH RECURSIVE powers(n, val) AS (
+    SELECT 1, 2
+    UNION ALL
+    SELECT n + 1, val * 2 FROM powers WHERE val &lt; 1024
+)
+SELECT n, val FROM powers;</code></pre></div>
+
+<p>Verified output: 10 rows, <code class="inline-code">n</code> 1 through 10, <code class="inline-code">val</code> doubling from 2 to 1024
+(2, 4, 8, 16, 32, 64, 128, 256, 512, 1024).</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-reproduce-a-slice-of-bronze_calendar-from-scratch">4. Reproduce a slice of <code class="inline-code">bronze_calendar</code> from scratch</h3>
+
+<p>Without querying <code class="inline-code">bronze_calendar</code> itself, write a <code class="inline-code">WITH RECURSIVE</code> CTE
+that generates the exact same 6 rows (<code class="inline-code">datekey</code>, <code class="inline-code">date</code>) that
+<code class="inline-code">bronze/calendar_recursive_cte.sql</code>'s recursive CTE would produce for
+2026-06-25 through 2026-06-30. Then confirm your output matches what's
+actually stored in <code class="inline-code">bronze_calendar</code> for that range.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH RECURSIVE dates(d) AS (
+    SELECT date(&#x27;2026-06-25&#x27;)
+    UNION ALL
+    SELECT date(d, &#x27;+1 day&#x27;)
+    FROM dates
+    WHERE d &lt; date(&#x27;2026-06-30&#x27;)
+)
+SELECT CAST(strftime(&#x27;%Y%m%d&#x27;, d) AS INTEGER) AS datekey, d AS date FROM dates;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>datekey</th><th>date</th></tr></thead><tbody><tr><td>20260625</td><td>2026-06-25</td></tr><tr><td>20260626</td><td>2026-06-26</td></tr><tr><td>20260627</td><td>2026-06-27</td></tr><tr><td>20260628</td><td>2026-06-28</td></tr><tr><td>20260629</td><td>2026-06-29</td></tr><tr><td>20260630</td><td>2026-06-30</td></tr></tbody></table></div>
+Confirm against the real table:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT datekey, date FROM bronze_calendar WHERE date BETWEEN &#x27;2026-06-25&#x27; AND &#x27;2026-06-30&#x27;;</code></pre></div>
+
+<p>Produces identical rows — the recursive CTE mechanism reproduces exactly
+what built the table in the first place.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-prove-the-leap-year-is-handled-correctly">5. Prove the leap year is handled correctly</h3>
+
+<p><code class="inline-code">bronze_calendar</code> was built by a recursive CTE stepping <code class="inline-code">+1 day</code> at a
+time, never hardcoding month/year lengths. Confirm this handled 2024 (a
+leap year) correctly by counting how many rows exist for <code class="inline-code">date LIKE
+'2024%'</code> — it should be 366, not 365.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_calendar WHERE date LIKE &#x27;2024%&#x27;;</code></pre></div>
+
+<p>Verified output: <strong>366</strong> — confirming 2024's leap day (2024-02-29) is
+present. Because the recursive CTE always adds exactly one calendar day
+via SQLite's <code class="inline-code">date(d, '+1 day')</code> (which itself correctly understands leap
+years), there's no manual "is this a leap year" logic anywhere in
+<code class="inline-code">calendar_recursive_cte.sql</code> — the date spine gets leap-year correctness
+for free from SQLite's own date arithmetic.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/05-recursive-ctes.html" class="nav-btn">5. Recursive CTEs</a>. Previous: <a href="04-lead-lag-period-over-period.html" class="nav-btn">4. LEAD, LAG, and Period-over-Period Comparisons</a>. Next: <a href="06-time-intelligence.html" class="nav-btn">6. Time Intelligence</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

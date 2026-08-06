@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Capstone — Combining CTEs and Window Functions | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-capstone--combining-ctes-and-window-functions">Exercises: Capstone — Combining CTEs and Window Functions</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/10-combining-ctes-and-window-functions.html" class="nav-btn">10. Capstone — Combining CTEs and Window Functions</a>. Previous: <a href="09-correlated-subqueries-exists.html" class="nav-btn">9. Correlated Subqueries, EXISTS, and NOT EXISTS</a>. Next: <a href="../04-expert/01-ddl-basics-and-type-affinity.html" class="nav-btn">1. DDL Basics and Type Affinity</a>.</nav>
+
+<p>Query <code class="inline-code">project/oakhaven.db</code> for all of these. Run with:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT ...;&quot; -header -column</code></pre></div>
+
+<p>These build directly on the curriculum module's worked example (top
+product per category by revenue) — expect to reuse and adapt that
+two-CTE shape (aggregate first, rank second) throughout.</p>
+
+<hr class="divider">
+
+<h3 id="1-top-employee-by-revenue-per-department">1. Top employee by revenue, per department</h3>
+
+<p>Find the single highest-revenue employee (by <code class="inline-code">SUM(fact_sales.net_amount)</code>)
+in each department. Return <code class="inline-code">department</code>, <code class="inline-code">full_name</code>, <code class="inline-code">total_revenue</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH emp_rev AS (
+    SELECT e.employee_id, e.full_name, e.department,
+           ROUND(SUM(f.net_amount), 2) AS total_revenue
+    FROM dim_employee e
+    JOIN fact_sales f ON f.employee_id = e.employee_id
+    GROUP BY e.employee_id, e.full_name, e.department
+),
+ranked AS (
+    SELECT *, RANK() OVER (PARTITION BY department ORDER BY total_revenue DESC) AS dept_rank
+    FROM emp_rev
+)
+SELECT department, full_name, total_revenue
+FROM ranked
+WHERE dept_rank = 1
+ORDER BY total_revenue DESC;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>department</th><th>full_name</th><th>total_revenue</th></tr></thead><tbody><tr><td>Support</td><td>Robert Anderson</td><td>268133.60</td></tr><tr><td>Management</td><td>Daniel Ramsey</td><td>263429.03</td></tr><tr><td>Warehouse</td><td>Elaine Jones</td><td>250715.52</td></tr><tr><td>Sales</td><td>Carol Harrison</td><td>246561.06</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="2-every-categorys-top-product-with-its-share-of-category-revenue">2. Every category's top product, with its share of category revenue</h3>
+
+<p>For each category, find the top product by revenue <em>and</em> what percentage
+of that category's total revenue it represents. (This is the curriculum
+module's "top 3, one category" example, generalized to rank 1 across
+<em>all</em> categories at once.)</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH product_revenue AS (
+    SELECT p.category, p.product_id, p.product_name,
+           ROUND(SUM(f.net_amount), 2) AS total_revenue
+    FROM fact_sales f
+    JOIN dim_product p ON p.product_id = f.product_id
+    GROUP BY p.category, p.product_id, p.product_name
+),
+ranked AS (
+    SELECT category, product_name, total_revenue,
+           SUM(total_revenue) OVER (PARTITION BY category) AS category_total,
+           ROW_NUMBER() OVER (PARTITION BY category ORDER BY total_revenue DESC) AS rn
+    FROM product_revenue
+)
+SELECT category, product_name, total_revenue,
+       ROUND(100.0 * total_revenue / category_total, 1) AS pct_of_category
+FROM ranked
+WHERE rn = 1
+ORDER BY pct_of_category DESC;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>product_name</th><th>total_revenue</th><th>pct_of_category</th></tr></thead><tbody><tr><td>Water Sports</td><td>Ridge Paddles</td><td>138646.07</td><td>19.2</td></tr><tr><td>Camping & Hiking</td><td>Highline Backpacks</td><td>172340.61</td><td>18.9</td></tr><tr><td>Nutrition & Hydration</td><td>Foothill Electrolyte Mixes</td><td>154322.60</td><td>13.3</td></tr><tr><td>Footwear</td><td>Canyon Hiking Boots</td><td>127464.80</td><td>11.8</td></tr><tr><td>Accessories</td><td>Granite Sunglasse</td><td>100832.83</td><td>10.7</td></tr><tr><td>Apparel</td><td>Highline Rain Shells</td><td>132236.97</td><td>10.7</td></tr><tr><td>Climbing</td><td>Meridian Chalk Bags</td><td>134818.34</td><td>9.7</td></tr><tr><td>Winter Sports</td><td>Alpine Snowboards</td><td>117472.48</td><td>9.4</td></tr></tbody></table></div>
+Notice `Water Sports`' top product carries a bigger share of its category
+(19.2%) than `Climbing`'s does (9.7%) — even though `Climbing`'s *category
+total* is much larger overall (from the facts sheet: $1,382,563.66 vs.
+Water Sports' $721,133.90). Revenue concentration and category size are
+independent facts; this query surfaces the former.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-bottom-product-per-category">3. Bottom product per category</h3>
+
+<p>Flip the sort direction from the curriculum's worked example: find the
+<em>lowest</em>-revenue product in each category (i.e. still sold at least once,
+but the weakest performer).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH product_revenue AS (
+    SELECT p.category, p.product_id, p.product_name,
+           ROUND(SUM(f.net_amount), 2) AS total_revenue
+    FROM fact_sales f
+    JOIN dim_product p ON p.product_id = f.product_id
+    GROUP BY p.category, p.product_id, p.product_name
+),
+ranked AS (
+    SELECT category, product_name, total_revenue,
+           RANK() OVER (PARTITION BY category ORDER BY total_revenue ASC) AS rnk
+    FROM product_revenue
+)
+SELECT category, product_name, total_revenue
+FROM ranked
+WHERE rnk = 1
+ORDER BY total_revenue;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>product_name</th><th>total_revenue</th></tr></thead><tbody><tr><td>Footwear</td><td>Cascade Hiking Boots</td><td>1442.09</td></tr><tr><td>Camping & Hiking</td><td>Trailhead Sleeping Bags</td><td>3633.70</td></tr><tr><td>Winter Sports</td><td>Glacier Winter Glove</td><td>3790.50</td></tr><tr><td>Accessories</td><td>Canyon Hats</td><td>3795.30</td></tr><tr><td>Apparel</td><td>Outrider Pants</td><td>9531.83</td></tr><tr><td>Nutrition & Hydration</td><td>Glacier Hydration Packs</td><td>11326.72</td></tr><tr><td>Climbing</td><td>Alpine Climbing Shoes</td><td>12947.16</td></tr><tr><td>Water Sports</td><td>Basecamp Life Jackets</td><td>17696.30</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="4-top-vip-customer-per-state">4. Top VIP customer per state</h3>
+
+<p>Among customers with <code class="inline-code">customer_segment = 'VIP'</code> and a known <code class="inline-code">state</code>, find
+the single highest-<code class="inline-code">lifetime_net_amount</code> VIP customer in each state. Show
+the top 8 states by that customer's lifetime value.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH vip AS (
+    SELECT customer_id, full_name, state, lifetime_net_amount
+    FROM agg_customer_ltv
+    WHERE customer_segment = &#x27;VIP&#x27; AND state IS NOT NULL
+),
+ranked AS (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY state ORDER BY lifetime_net_amount DESC) AS rn
+    FROM vip
+)
+SELECT state, full_name, lifetime_net_amount
+FROM ranked
+WHERE rn = 1
+ORDER BY lifetime_net_amount DESC
+LIMIT 8;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>state</th><th>full_name</th><th>lifetime_net_amount</th></tr></thead><tbody><tr><td>IA</td><td>Jennifer Howard</td><td>35024.55</td></tr><tr><td>HI</td><td>Angela Fischer</td><td>28985.84</td></tr><tr><td>MD</td><td>Shawn Jacobs</td><td>28149.78</td></tr><tr><td>CO</td><td>Kristin Baker</td><td>28089.28</td></tr><tr><td>PA</td><td>Michele Perez</td><td>27836.74</td></tr><tr><td>CA</td><td>Denise White</td><td>26519.30</td></tr><tr><td>RI</td><td>Ann Rogers</td><td>25614.81</td></tr><tr><td>MS</td><td>Joshua Pittman</td><td>24834.05</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="5-hardest-top-category-per-year-with-year-over-year-change-in-that-leading-categorys-own-revenue">5. Hardest: top category per year, with year-over-year change in that leading category's own revenue</h3>
+
+<p>For each year, find the top category by revenue (as in the curriculum's
+Module 1 worked example), then add a column showing how that <em>same
+category's</em> revenue changed from the previous year (even if it wasn't
+the top category the previous year). This needs three CTEs chained: (1)
+category-year totals, (2) the year's top category via <code class="inline-code">RANK()</code>, (3)
+<code class="inline-code">LAG()</code> applied <em>back on the category-year totals</em>, filtered down to just
+the winning categories.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH category_year AS (
+    SELECT year, category, ROUND(SUM(total_net_amount), 2) AS year_revenue
+    FROM agg_monthly_sales_by_category
+    GROUP BY year, category
+),
+with_prev AS (
+    SELECT year, category, year_revenue,
+           LAG(year_revenue) OVER (PARTITION BY category ORDER BY year) AS prev_year_revenue
+    FROM category_year
+),
+top_category AS (
+    SELECT year, category, year_revenue, prev_year_revenue,
+           RANK() OVER (PARTITION BY year ORDER BY year_revenue DESC) AS rnk
+    FROM with_prev
+)
+SELECT year, category, year_revenue, prev_year_revenue,
+       ROUND(year_revenue - prev_year_revenue, 2) AS yoy_change
+FROM top_category
+WHERE rnk = 1
+ORDER BY year;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>year</th><th>category</th><th>year_revenue</th><th>prev_year_revenue</th><th>yoy_change</th></tr></thead><tbody><tr><td>2021</td><td>Climbing</td><td>243934.82</td><td><em>(null)</em></td><td><em>(null)</em></td></tr><tr><td>2022</td><td>Nutrition & Hydration</td><td>268912.10</td><td>201398.10</td><td>67514.00</td></tr><tr><td>2023</td><td>Climbing</td><td>253598.69</td><td>264761.16</td><td>-11162.47</td></tr><tr><td>2024</td><td>Climbing</td><td>264295.25</td><td>253598.69</td><td>10696.56</td></tr><tr><td>2025</td><td>Climbing</td><td>242061.82</td><td>264295.25</td><td>-22233.43</td></tr><tr><td>2026</td><td>Climbing</td><td>113911.92</td><td>242061.82</td><td>-128149.90</td></tr></tbody></table></div>
+Two things worth noticing. First, 2022's winning category
+(Nutrition & Hydration) is compared against *its own* 2021 total
+($201,398.10) — not Climbing's 2021 total — because `LAG()` was computed
+per-category before the ranking step, exactly as intended. Second, 2023's
+`prev_year_revenue` ($264,761.16) is Climbing's actual 2022 total — and
+it's worth confirming that's plausible even though Climbing wasn't 2022's
+winner: querying `category_year` for 2022 directly shows Climbing
+($264,761.16) came in a close second to Nutrition & Hydration
+($268,912.10) — no contradiction, just a near-photo-finish year. Finally,
+2026's steep `yoy_change` is a separate, simpler caveat: it's a half-year
+total (data ends 2026-06-30) being compared to a full prior year, exactly
+the kind of caveat worth calling out any time a partial period gets
+compared against complete ones.
+
+<p>The key trick: <code class="inline-code">LAG()</code> in <code class="inline-code">with_prev</code> is computed <strong>before</strong> the ranking
+step, partitioned by <code class="inline-code">category</code> and ordered by <code class="inline-code">year</code> — so each category
+carries its own prior-year value regardless of rank, and only afterward
+does <code class="inline-code">top_category</code> pick out whichever category happened to win that
+particular year.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/10-combining-ctes-and-window-functions.html" class="nav-btn">10. Capstone — Combining CTEs and Window Functions</a>. Previous: <a href="09-correlated-subqueries-exists.html" class="nav-btn">9. Correlated Subqueries, EXISTS, and NOT EXISTS</a>. Next: <a href="../04-expert/01-ddl-basics-and-type-affinity.html" class="nav-btn">1. DDL Basics and Type Affinity</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

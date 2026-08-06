@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: LEAD, LAG, and Period-over-Period Comparisons | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-lead-lag-and-period-over-period-comparisons">Exercises: LEAD, LAG, and Period-over-Period Comparisons</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/04-lead-lag-period-over-period.html" class="nav-btn">4. LEAD, LAG, and Period-over-Period Comparisons</a>. Previous: <a href="03-window-functions-ii-running-totals.html" class="nav-btn">3. Window Functions II — Running Totals & Moving Aggregates</a>. Next: <a href="05-recursive-ctes.html" class="nav-btn">5. Recursive CTEs</a>.</nav>
+
+<p>Query <code class="inline-code">project/oakhaven.db</code> for all of these. Run with:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT ...;&quot; -header -column</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-month-over-month-change-for-one-category">1. Month-over-month change for one category</h3>
+
+<p>Using <code class="inline-code">agg_monthly_sales_by_category</code>, compute the month-over-month
+dollar change in <code class="inline-code">total_net_amount</code> for the <code class="inline-code">Climbing</code> category across
+2021, using <code class="inline-code">LAG()</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT year, month, total_net_amount,
+       ROUND(total_net_amount - LAG(total_net_amount) OVER (ORDER BY month), 2) AS mom_change
+FROM agg_monthly_sales_by_category
+WHERE category = &#x27;Climbing&#x27; AND year = 2021
+ORDER BY month;</code></pre></div>
+
+<p>Verified output (first row's <code class="inline-code">mom_change</code> is <code class="inline-code">NULL</code> — no prior month
+exists):</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>year</th><th>month</th><th>total_net_amount</th><th>mom_change</th></tr></thead><tbody><tr><td>2021</td><td>1</td><td>17972.83</td><td><em>(null)</em></td></tr><tr><td>2021</td><td>2</td><td>33663.09</td><td>15690.26</td></tr><tr><td>2021</td><td>3</td><td>28847.21</td><td>-4815.88</td></tr><tr><td>2021</td><td>4</td><td>14295.57</td><td>-14551.64</td></tr><tr><td>2021</td><td>5</td><td>22400.84</td><td>8105.27</td></tr><tr><td>2021</td><td>6</td><td>22866.67</td><td>465.83</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="2-quarter-over-quarter-revenue-change">2. Quarter-over-quarter revenue change</h3>
+
+<p>Roll <code class="inline-code">fact_sales</code> up to one row per <code class="inline-code">(year, quarter)</code> (join to <code class="inline-code">dim_date</code>
+for the quarter), then use <code class="inline-code">LAG()</code> to compute the quarter-over-quarter
+dollar change. Show the first 8 quarters.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH quarterly AS (
+    SELECT d.year, d.quarter, ROUND(SUM(f.net_amount), 2) AS quarter_total
+    FROM fact_sales f
+    JOIN dim_date d ON d.datekey = f.datekey
+    GROUP BY d.year, d.quarter
+)
+SELECT year, quarter, quarter_total,
+       LAG(quarter_total) OVER (ORDER BY year, quarter) AS prev_quarter_total,
+       ROUND(quarter_total - LAG(quarter_total) OVER (ORDER BY year, quarter), 2) AS qoq_change
+FROM quarterly
+ORDER BY year, quarter
+LIMIT 8;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>year</th><th>quarter</th><th>quarter_total</th><th>prev_quarter_total</th><th>qoq_change</th></tr></thead><tbody><tr><td>2021</td><td>1</td><td>437339.25</td><td><em>(null)</em></td><td><em>(null)</em></td></tr><tr><td>2021</td><td>2</td><td>377280.46</td><td>437339.25</td><td>-60058.79</td></tr><tr><td>2021</td><td>3</td><td>412462.23</td><td>377280.46</td><td>35181.77</td></tr><tr><td>2021</td><td>4</td><td>391927.88</td><td>412462.23</td><td>-20534.35</td></tr><tr><td>2022</td><td>1</td><td>425162.75</td><td>391927.88</td><td>33234.87</td></tr><tr><td>2022</td><td>2</td><td>369693.90</td><td>425162.75</td><td>-55468.85</td></tr><tr><td>2022</td><td>3</td><td>500489.31</td><td>369693.90</td><td>130795.41</td></tr><tr><td>2022</td><td>4</td><td>408633.39</td><td>500489.31</td><td>-91855.92</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="3-the-three-worst-month-over-month-drops-ever">3. The three worst month-over-month drops, ever</h3>
+
+<p>Across every category combined (<code class="inline-code">agg_monthly_sales_by_category</code> grouped
+to one row per <code class="inline-code">year, month</code>), find the 3 months with the largest
+month-over-month <em>decrease</em> in <code class="inline-code">total_net_amount</code>. Return <code class="inline-code">year</code>,
+<code class="inline-code">month</code>, <code class="inline-code">month_total</code>, <code class="inline-code">mom_change</code>, worst first.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH monthly AS (
+    SELECT year, month, ROUND(SUM(total_net_amount), 2) AS month_total
+    FROM agg_monthly_sales_by_category
+    GROUP BY year, month
+),
+changes AS (
+    SELECT year, month, month_total,
+           ROUND(month_total - LAG(month_total) OVER (ORDER BY year, month), 2) AS mom_change
+    FROM monthly
+)
+SELECT year, month, month_total, mom_change
+FROM changes
+WHERE mom_change IS NOT NULL
+ORDER BY mom_change ASC
+LIMIT 3;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>year</th><th>month</th><th>month_total</th><th>mom_change</th></tr></thead><tbody><tr><td>2021</td><td>4</td><td>115860.15</td><td>-50221.39</td></tr><tr><td>2023</td><td>11</td><td>110961.86</td><td>-38573.67</td></tr><tr><td>2026</td><td>2</td><td>103649.28</td><td>-38265.99</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="4-customer-41s-order-timeline-forward-looking">4. Customer 41's order timeline, forward-looking</h3>
+
+<p>Using <code class="inline-code">LEAD()</code> partitioned appropriately, show customer 41's order
+history with each order's <em>next</em> order date alongside it (their most
+recent order will show <code class="inline-code">NULL</code>, since there's no next order yet). Show the
+first 6 orders.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, order_date,
+       LEAD(order_date) OVER (ORDER BY order_date) AS next_order_date
+FROM (SELECT DISTINCT customer_id, order_date FROM fact_sales WHERE customer_id = 41 AND order_date IS NOT NULL)
+ORDER BY order_date
+LIMIT 6;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>order_date</th><th>next_order_date</th></tr></thead><tbody><tr><td>41</td><td>2021-08-14</td><td>2022-02-11</td></tr><tr><td>41</td><td>2022-02-11</td><td>2022-05-22</td></tr><tr><td>41</td><td>2022-05-22</td><td>2022-07-12</td></tr><tr><td>41</td><td>2022-07-12</td><td>2022-09-12</td></tr><tr><td>41</td><td>2022-09-12</td><td>2022-09-23</td></tr><tr><td>41</td><td>2022-09-23</td><td>2022-11-26</td></tr></tbody></table></div>
+Note this is the *same underlying relationship* as Module 4's Example 2,
+which computed `days_since_prev` with `LAG()` for customer 343 — this
+exercise asks for the mirror-image view with `LEAD()` instead.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-percent-change-with-the-null-safe-guard">5. Percent change, with the NULL-safe guard</h3>
+
+<p>Extend Exercise 1: add a <code class="inline-code">mom_pct_change</code> column (percent change vs. the
+prior month), and make sure the very first row (where <code class="inline-code">LAG()</code> is <code class="inline-code">NULL</code>)
+doesn't cause a division error — confirm SQLite returns <code class="inline-code">NULL</code> rather than
+erroring when dividing by a <code class="inline-code">NULL</code> <code class="inline-code">LAG()</code> result.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT year, month, total_net_amount,
+       ROUND(total_net_amount - LAG(total_net_amount) OVER (ORDER BY month), 2) AS mom_change,
+       ROUND(100.0 * (total_net_amount - LAG(total_net_amount) OVER (ORDER BY month))
+             / LAG(total_net_amount) OVER (ORDER BY month), 1) AS mom_pct_change
+FROM agg_monthly_sales_by_category
+WHERE category = &#x27;Climbing&#x27; AND year = 2021
+ORDER BY month
+LIMIT 4;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>year</th><th>month</th><th>total_net_amount</th><th>mom_change</th><th>mom_pct_change</th></tr></thead><tbody><tr><td>2021</td><td>1</td><td>17972.83</td><td><em>(null)</em></td><td><em>(null)</em></td></tr><tr><td>2021</td><td>2</td><td>33663.09</td><td>15690.26</td><td>87.3</td></tr><tr><td>2021</td><td>3</td><td>28847.21</td><td>-4815.88</td><td>-14.3</td></tr><tr><td>2021</td><td>4</td><td>14295.57</td><td>-14551.64</td><td>-50.4</td></tr></tbody></table></div>
+No error — SQL arithmetic involving a `NULL` operand (from `LAG()` on the
+first row) simply produces `NULL`, not a divide-by-zero or type error.
+This is worth confirming deliberately rather than assuming, since it's
+exactly the kind of edge case that's easy to overlook until it shows up in
+production.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/04-lead-lag-period-over-period.html" class="nav-btn">4. LEAD, LAG, and Period-over-Period Comparisons</a>. Previous: <a href="03-window-functions-ii-running-totals.html" class="nav-btn">3. Window Functions II — Running Totals & Moving Aggregates</a>. Next: <a href="05-recursive-ctes.html" class="nav-btn">5. Recursive CTEs</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

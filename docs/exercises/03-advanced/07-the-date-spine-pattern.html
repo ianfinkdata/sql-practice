@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: The Date-Spine Pattern | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-the-date-spine-pattern">Exercises: The Date-Spine Pattern</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/07-the-date-spine-pattern.html" class="nav-btn">7. The Date-Spine Pattern</a>. Previous: <a href="06-time-intelligence.html" class="nav-btn">6. Time Intelligence</a>. Next: <a href="08-writing-your-first-silver-view.html" class="nav-btn">8. Writing Your First Silver View</a>.</nav>
+
+<p>Query <code class="inline-code">project/oakhaven.db</code> for all of these. Run with:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT ...;&quot; -header -column</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-zero-order-days-in-a-single-month">1. Zero-order days in a single month</h3>
+
+<p>Using <code class="inline-code">agg_daily_sales</code>, list every zero-order day (<code class="inline-code">order_line_count =
+0</code>) that falls in December 2025, with its <code class="inline-code">day_name</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_date, day_name
+FROM agg_daily_sales
+WHERE order_line_count = 0 AND order_date LIKE &#x27;2025-12%&#x27;;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_date</th><th>day_name</th></tr></thead><tbody><tr><td>2025-12-21</td><td>Sunday</td></tr></tbody></table></div>
+Only one zero-order day in all of December 2025 — most days in this
+window had at least some order activity.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-build-your-own-category-scoped-date-spine">2. Build your own category-scoped date spine</h3>
+
+<p>Using the <code class="inline-code">dim_date</code> LEFT JOIN pattern (spine on the left), build a
+day-by-day order-line count for the <code class="inline-code">Winter Sports</code> category only, for
+the first 10 days of January 2021. (Hint: move the category filter into
+the <code class="inline-code">ON</code> clause of the join, not <code class="inline-code">WHERE</code> — otherwise you'll accidentally
+turn the <code class="inline-code">LEFT JOIN</code> back into an effective <code class="inline-code">INNER JOIN</code>.)</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT d.date, COUNT(f.order_line_id) AS lines
+FROM dim_date d
+LEFT JOIN fact_sales f ON f.datekey = d.datekey
+    AND f.product_id IN (SELECT product_id FROM dim_product WHERE category = &#x27;Winter Sports&#x27;)
+WHERE d.date BETWEEN &#x27;2021-01-01&#x27; AND &#x27;2021-01-10&#x27;
+GROUP BY d.date
+ORDER BY d.date;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>date</th><th>lines</th></tr></thead><tbody><tr><td>2021-01-01</td><td>1</td></tr><tr><td>2021-01-02</td><td>0</td></tr><tr><td>2021-01-03</td><td>1</td></tr><tr><td>2021-01-04</td><td>1</td></tr><tr><td>2021-01-05</td><td>2</td></tr><tr><td>2021-01-06</td><td>2</td></tr><tr><td>2021-01-07</td><td>1</td></tr><tr><td>2021-01-08</td><td>0</td></tr><tr><td>2021-01-09</td><td>1</td></tr><tr><td>2021-01-10</td><td>0</td></tr></tbody></table></div>
+Note the category filter (`f.product_id IN (...)`) lives in the `ON`
+clause, alongside the join key — this is what keeps every date row
+(including 2021-01-02, 2021-01-08, 2021-01-10, which had zero Winter
+Sports lines) in the result. Moving that same filter to `WHERE` would
+silently drop those three rows, since `WHERE` evaluates after the join and
+discards rows where the filtered (fact-side) column is `NULL`.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-count-the-gap-across-the-whole-window">3. Count the gap across the whole window</h3>
+
+<p>Using the same category-scoped spine pattern as Exercise 2, but for the
+<em>entire</em> operational window (2021-01-01 through 2026-06-30), count how
+many days had zero <code class="inline-code">Winter Sports</code> order lines.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+    SELECT d.date, COUNT(f.order_line_id) AS lines
+    FROM dim_date d
+    LEFT JOIN fact_sales f ON f.datekey = d.datekey
+        AND f.product_id IN (SELECT product_id FROM dim_product WHERE category = &#x27;Winter Sports&#x27;)
+    WHERE d.date BETWEEN &#x27;2021-01-01&#x27; AND &#x27;2026-06-30&#x27;
+    GROUP BY d.date
+    HAVING lines = 0
+);</code></pre></div>
+
+<p>Verified output: <strong>888</strong> days out of 2,007 in the window had zero Winter
+Sports order lines — a single category is naturally sparser day-to-day
+than the whole-store <code class="inline-code">agg_daily_sales</code> view (which only has 54 zero-order
+days across all categories combined).</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-count-zero-order-days-for-a-narrower-category-and-quarter">4. Count zero-order days for a narrower category and quarter</h3>
+
+<p>Using the same pattern, count zero-order days for the <code class="inline-code">Accessories</code>
+category specifically within Q1 2021 (2021-01-01 through 2021-03-31).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+    SELECT d.date, COUNT(f.order_line_id) AS lines
+    FROM dim_date d
+    LEFT JOIN fact_sales f ON f.datekey = d.datekey
+        AND f.product_id IN (SELECT product_id FROM dim_product WHERE category = &#x27;Accessories&#x27;)
+    WHERE d.date BETWEEN &#x27;2021-01-01&#x27; AND &#x27;2021-03-31&#x27;
+    GROUP BY d.date
+    HAVING lines = 0
+);</code></pre></div>
+
+<p>Verified output: <strong>50</strong> zero-Accessories-order days out of the 90 days in
+Q1 2021.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-prove-the-gap-filling-matters-inner-join-vs-left-join-row-counts">5. Prove the gap-filling matters: INNER JOIN vs LEFT JOIN row counts</h3>
+
+<p>For the full 2021-01-01–2026-06-30 window, compute (a) the total number
+of calendar days in <code class="inline-code">dim_date</code> for that range, and (b) the number of
+<em>distinct</em> dates that appear via an <code class="inline-code">INNER JOIN</code> to <code class="inline-code">fact_sales</code> (i.e. no
+date-spine gap-filling). Confirm the difference between (a) and (b)
+equals the 54 zero-order days documented in the facts sheet.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- (a) total days in the window
+SELECT COUNT(*) AS total_days
+FROM dim_date WHERE date BETWEEN &#x27;2021-01-01&#x27; AND &#x27;2026-06-30&#x27;;
+
+<p>-- (b) distinct days that show up via INNER JOIN (i.e. days with &gt;=1 order)
+SELECT COUNT(*) AS days_with_orders FROM (
+    SELECT d.date
+    FROM dim_date d
+    JOIN fact_sales f ON f.datekey = d.datekey
+    WHERE d.date BETWEEN &#x27;2021-01-01&#x27; AND &#x27;2026-06-30&#x27;
+    GROUP BY d.date
+);</code></pre></div></p>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_days</th></tr></thead><tbody><tr><td>2007</td></tr></tbody></table></div>
+<div class="table-container"><table class="styled-table"><thead><tr><th>days_with_orders</th></tr></thead><tbody><tr><td>1953</td></tr></tbody></table></div>
+2007 − 1953 = **54**, exactly matching `agg_daily_sales`'s documented
+zero-order-day count. Every one of those 54 days would silently
+disappear from an `INNER JOIN`-based report instead of showing up as a
+legitimate `0`.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/07-the-date-spine-pattern.html" class="nav-btn">7. The Date-Spine Pattern</a>. Previous: <a href="06-time-intelligence.html" class="nav-btn">6. Time Intelligence</a>. Next: <a href="08-writing-your-first-silver-view.html" class="nav-btn">8. Writing Your First Silver View</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

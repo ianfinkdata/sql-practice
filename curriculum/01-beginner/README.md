@@ -1,5 +1,11 @@
 # Tier 1 — Beginner
 
+> **BLUF (Bottom Line Up Front):** Tier 1 teaches core single-table SQL querying: selecting columns, filtering rows with `WHERE`, sorting with `ORDER BY`, handling `NULL` values, and computing aggregates across products and employees.
+
+<!-- nav -->
+[⏮️ Prev: Tier 0 Orientation](../00-orientation/README.md) | [📖 Table of Contents](../../README.md) | [⏭️ Next: Tier 2 Intermediate](../02-intermediate/README.md)
+<!-- /nav -->
+
 Your first real SQL. This tier covers the core `SELECT` toolkit — filtering, sorting, limiting, NULLs, aggregates, pattern matching, and duplicates — using Oakhaven's calmer tables (`bronze_products`, `bronze_employees`). The messiest data is saved for Tier 2, where cleaning it up is the actual lesson.
 
 | Module | Topic |
@@ -15,4 +21,8 @@ Your first real SQL. This tier covers the core `SELECT` toolkit — filtering, s
 
 Matching exercises: [`exercises/01-beginner/`](../../exercises/01-beginner/).
 
-Previous: [Tier 0 — Orientation](../00-orientation/README.md). Next: [Tier 2 — Intermediate](../02-intermediate/README.md).
+---
+
+<!-- nav -->
+[⏮️ Prev: Tier 0 Orientation](../00-orientation/README.md) | [📖 Table of Contents](../../README.md) | [⏭️ Next: Tier 2 Intermediate](../02-intermediate/README.md)
+<!-- /nav -->

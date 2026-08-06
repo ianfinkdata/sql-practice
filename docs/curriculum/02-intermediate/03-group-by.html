@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GROUP BY | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="group-by">GROUP BY</h1>
+
+<nav class="book-nav">Previous: <a href="02-left-join-and-missing-data.html" class="nav-btn">LEFT JOIN and Missing Data</a>. Next: <a href="04-having.html" class="nav-btn">HAVING</a>. Exercises: <a href="../../exercises/02-intermediate/03-group-by.html" class="nav-btn">GROUP BY</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Aggregate functions like <code class="inline-code">COUNT()</code>, <code class="inline-code">SUM()</code>, and <code class="inline-code">AVG()</code> collapse many
+rows into one number. By itself, <code class="inline-code">SELECT COUNT(<em>) FROM bronze_sales</code>
+collapses the </em>entire table* into a single row. <code class="inline-code">GROUP BY</code> changes
+that: it collapses rows into one row <strong>per distinct value</strong> of
+whatever you group on, running the aggregate separately within each
+group. "Total sales per category" and "order count per customer" are
+both <code class="inline-code">GROUP BY</code> questions.</p>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>Oakhaven's data begs for this: "how many order lines per category?"
+"what's the total revenue per category?" are exactly the questions a
+retailer asks constantly. But there's a trap waiting in this
+particular database, and it's worth hitting it on purpose so you
+recognize it later: <code class="inline-code">bronze_products.category</code> is messy. The 8 real
+categories (<code class="inline-code">Footwear</code>, <code class="inline-code">Apparel</code>, <code class="inline-code">Camping & Hiking</code>, <code class="inline-code">Climbing</code>,
+<code class="inline-code">Water Sports</code>, <code class="inline-code">Winter Sports</code>, <code class="inline-code">Accessories</code>, <code class="inline-code">Nutrition &
+Hydration</code>) exist in the data as <strong>40 different raw text variants</strong> —
+different casing, trailing spaces, <code class="inline-code">&</code> vs <code class="inline-code">and</code>. <code class="inline-code">GROUP BY</code> has no
+idea <code class="inline-code">'CLIMBING'</code>, <code class="inline-code">'Climbing'</code>, and <code class="inline-code">'climbing'</code> mean the same thing
+to a human — it groups on exact string equality, full stop. You'll see
+this play out below. Module 6 (<code class="inline-code">TRIM</code>/<code class="inline-code">UPPER</code>/<code class="inline-code">REPLACE</code>) is the fix;
+today's job is just to understand <code class="inline-code">GROUP BY</code> well enough to feel the
+problem.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT grouping_column, AGG_FUNC(some_column)
+FROM table
+GROUP BY grouping_column;</code></pre></div>
+<ul class="styled-list"><li>Every column in the <code class="inline-code">SELECT</code> list must be either (a) named in</li></ul>  `GROUP BY`, or (b) wrapped in an aggregate function. SQLite is more
+  lenient about this than most databases, but relying on that
+  leniency produces confusing results — stick to the rule.
+<ul class="styled-list"><li>Common aggregates: <code class="inline-code">COUNT(*)</code>, <code class="inline-code">COUNT(column)</code> (skips <code class="inline-code">NULL</code>s),</li></ul>  `SUM()`, `AVG()`, `MIN()`, `MAX()`.
+<ul class="styled-list"><li><code class="inline-code">GROUP BY</code> can list multiple columns, producing one row per unique</li></ul>  *combination*.
+<ul class="styled-list"><li><code class="inline-code">GROUP BY</code> runs after <code class="inline-code">WHERE</code> (row-level filtering) but before</li></ul>  `ORDER BY`.
+
+<h2 id="try-it">Try it</h2>
+
+<p><strong>1. Count and total order lines per raw category — the messy result</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.category, COUNT(*) AS line_count,
+       ROUND(SUM(s.quantity * s.unit_price), 2) AS rough_total
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id
+GROUP BY p.category
+ORDER BY p.category
+LIMIT 8;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>line_count</th><th>rough_total</th></tr></thead><tbody><tr><td>ACCESSORIES</td><td>238</td><td>230499.13</td></tr><tr><td>ACCESSORIES</td><td>380</td><td>232172.76</td></tr><tr><td>APPAREL</td><td>223</td><td>203459.33</td></tr><tr><td>APPAREL</td><td>324</td><td>310877.52</td></tr><tr><td>Accessories</td><td>690</td><td>403360.09</td></tr><tr><td>Apparel</td><td>766</td><td>695885.38</td></tr><tr><td>CAMPING & HIKING</td><td>77</td><td>96846.61</td></tr><tr><td>CAMPING & HIKING</td><td>330</td><td>361686.68</td></tr><tr><td>Camping and Hiking</td><td>160</td><td>57385.13</td></tr><tr><td>Climbing</td><td>717</td><td>561782.81</td></tr></tbody></table></div>
+Look closely at rows 1 and 2 (or 7 and 8) — those are *the same
+category*, split into two groups because one string has a trailing
+space and the other doesn't. "Accessories" revenue isn't $403,360.09;
+it's scattered across at least four differently-spelled groups. This
+is `GROUP BY` doing exactly what it's supposed to do (group on exact
+matches) applied to a column that isn't clean yet.
+
+<p><strong>2. Confirm the scale of the problem</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT p.category)
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT p.category)</th></tr></thead><tbody><tr><td>40</td></tr></tbody></table></div>
+40 groups for 8 real categories. Any report built directly on this
+`GROUP BY` — a category leaderboard, a pie chart, anything — would be
+wrong, not because `GROUP BY` is buggy, but because the input data has
+40 spellings of 8 ideas. (Module 6 shows the fix; this module is about
+recognizing the symptom.)
+
+<p><strong>3. Group by customer instead — a cleaner column, a cleaner result</strong></p>
+
+<p><code class="inline-code">bronze_sales.customer_id</code> is a plain integer, no casing problems
+possible. Which customers order the most?</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, COUNT(*) AS order_lines
+FROM bronze_sales
+GROUP BY customer_id
+ORDER BY order_lines DESC
+LIMIT 10;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>order_lines</th></tr></thead><tbody><tr><td>41</td><td>43</td></tr><tr><td>408</td><td>41</td></tr><tr><td>67</td><td>40</td></tr><tr><td>572</td><td>39</td></tr><tr><td>343</td><td>39</td></tr><tr><td>318</td><td>37</td></tr><tr><td>173</td><td>37</td></tr><tr><td>402</td><td>36</td></tr><tr><td>344</td><td>36</td></tr><tr><td>174</td><td>36</td></tr></tbody></table></div>
+**4. Group on more than one column**
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.category, s.channel, COUNT(*) AS line_count
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id
+WHERE p.category IN (&#x27;Climbing&#x27;, &#x27;CLIMBING&#x27;, &#x27;climbing&#x27;)
+GROUP BY p.category, s.channel
+ORDER BY p.category, s.channel;</code></pre></div>
+
+<p>Grouping by <code class="inline-code">(category, channel)</code> together gives one row per
+<em>combination</em> that actually occurs — a preview of how multi-column
+<code class="inline-code">GROUP BY</code> behaves, still riding the same messy-category problem.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Selecting a column that's neither grouped nor aggregated.</strong> e.g.</li></ul>  `SELECT customer_id, product_id, COUNT(*) FROM bronze_sales GROUP BY
+  customer_id` — SQLite will run this and silently pick *some*
+  `product_id` value per group (usually the first one seen), which is
+  almost never what you want. If a column isn't in `GROUP BY`, wrap it
+  in an aggregate or drop it.
+<ul class="styled-list"><li>**Assuming distinct-looking category counts mean distinct</li></ul>  categories.** As shown above, `GROUP BY category` on
+  `bronze_products` produces 40 groups, not 8 — always sanity-check
+  `COUNT(DISTINCT column)` against what you expect before trusting a
+  grouped report.
+<ul class="styled-list"><li><strong>Trying to filter on an aggregate with <code class="inline-code">WHERE</code>.</strong> `WHERE COUNT(*) ></li></ul>  10` is invalid SQL — `WHERE` runs before grouping happens, so it has
+  no aggregate to filter on yet. That's what `HAVING` (Module 4) is
+  for.
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">ORDER BY</code> after <code class="inline-code">GROUP BY</code>.</strong> Grouped results come</li></ul>  back in whatever order SQLite happens to produce them, not sorted by
+  count or total — add an explicit `ORDER BY` if order matters.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">GROUP BY column</code> collapses rows into one row per distinct value of</li></ul>  `column`, with aggregates computed per group.
+<ul class="styled-list"><li>Every non-aggregated <code class="inline-code">SELECT</code> column must appear in <code class="inline-code">GROUP BY</code>.</li><li><code class="inline-code">GROUP BY</code> groups on <em>exact string equality</em> — it has no concept of</li></ul>  "these mean the same thing."
+<ul class="styled-list"><li><code class="inline-code">bronze_products.category</code> groups into 40 raw variants instead of 8</li></ul>  real categories — a direct, measurable consequence of messy source
+  data, and the motivating problem for Module 6.
+<ul class="styled-list"><li>Always ask "how many distinct values do I expect?" before trusting a</li></ul>  `GROUP BY` result on an unfamiliar column.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="02-left-join-and-missing-data.html" class="nav-btn">LEFT JOIN and Missing Data</a>. Next: <a href="04-having.html" class="nav-btn">HAVING</a>. Exercises: <a href="../../exercises/02-intermediate/03-group-by.html" class="nav-btn">GROUP BY</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

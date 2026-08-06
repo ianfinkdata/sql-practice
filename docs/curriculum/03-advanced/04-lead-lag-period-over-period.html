@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4. LEAD, LAG, and Period-over-Period Comparisons | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="4-lead-lag-and-period-over-period-comparisons">4. LEAD, LAG, and Period-over-Period Comparisons</h1>
+
+<nav class="book-nav">Previous: <a href="03-window-functions-ii-running-totals.html" class="nav-btn">3. Window Functions II — Running Totals & Moving Aggregates</a>. Next: <a href="05-recursive-ctes.html" class="nav-btn">5. Recursive CTEs</a>. Exercises: <a href="../../exercises/03-advanced/04-lead-lag-period-over-period.html" class="nav-btn">4. LEAD, LAG, and Period-over-Period Comparisons</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p><code class="inline-code">LAG()</code> and <code class="inline-code">LEAD()</code> are window functions that let a row see the value of
+a <em>different</em> row — one before it (<code class="inline-code">LAG</code>) or after it (<code class="inline-code">LEAD</code>) in the same
+ordering — without a self-join. This is exactly the tool for "compare this
+month to last month," "how many days since this customer's previous
+order," or "what happened right after this event."</p>
+
+<p>Before window functions existed, this required joining a table to a
+shifted copy of itself. <code class="inline-code">LAG</code>/<code class="inline-code">LEAD</code> do it in one line.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">LAG(column [, offset [, default]]) OVER (
+    [PARTITION BY grouping_column]
+    ORDER BY sort_column
+)
+
+<p>LEAD(column [, offset [, default]]) OVER (
+    [PARTITION BY grouping_column]
+    ORDER BY sort_column
+)</code></pre></div>
+<ul class="styled-list"><li><code class="inline-code">offset</code> (optional, default <code class="inline-code">1</code>): how many rows back (<code class="inline-code">LAG</code>) or forward</li></ul>  (<code class="inline-code">LEAD</code>) to look.
+<ul class="styled-list"><li><code class="inline-code">default</code> (optional): what to return when there's no such row (e.g. the</li></ul>  very first row has no prior row to <code class="inline-code">LAG()</code> to) — otherwise it's <code class="inline-code">NULL</code>.
+<ul class="styled-list"><li><code class="inline-code">ORDER BY</code> here is <strong>required and load-bearing</strong> — it defines what</li></ul>  "previous" and "next" even mean. There's no concept of row order in a
+  table otherwise.</p>
+
+<h2 id="example-1-month-over-month-sales-change">Example 1: month-over-month sales change</h2>
+
+<p><em>Question: how did total net sales change from one month to the next?</em>
+Roll sales up to one row per month, then use <code class="inline-code">LAG()</code> to pull the prior
+month's total onto the same row as the current month, so the comparison is
+a plain subtraction:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH monthly AS (
+    SELECT year, month, ROUND(SUM(total_net_amount), 2) AS month_total
+    FROM agg_monthly_sales_by_category
+    GROUP BY year, month
+)
+SELECT year, month, month_total,
+       LAG(month_total) OVER (ORDER BY year, month) AS prev_month_total,
+       ROUND(month_total - LAG(month_total) OVER (ORDER BY year, month), 2) AS mom_change,
+       ROUND(100.0 * (month_total - LAG(month_total) OVER (ORDER BY year, month))
+             / LAG(month_total) OVER (ORDER BY year, month), 1) AS mom_pct_change
+FROM monthly
+ORDER BY year, month
+LIMIT 8;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>year</th><th>month</th><th>month_total</th><th>prev_month_total</th><th>mom_change</th><th>mom_pct_change</th></tr></thead><tbody><tr><td>2021</td><td>1</td><td>140643.78</td><td><em>(null)</em></td><td><em>(null)</em></td><td><em>(null)</em></td></tr><tr><td>2021</td><td>2</td><td>128982.68</td><td>140643.78</td><td>-11661.10</td><td>-8.3</td></tr><tr><td>2021</td><td>3</td><td>166081.54</td><td>128982.68</td><td>37098.86</td><td>28.8</td></tr><tr><td>2021</td><td>4</td><td>115860.15</td><td>166081.54</td><td>-50221.39</td><td>-30.2</td></tr><tr><td>2021</td><td>5</td><td>124873.83</td><td>115860.15</td><td>9013.68</td><td>7.8</td></tr><tr><td>2021</td><td>6</td><td>134540.90</td><td>124873.83</td><td>9667.07</td><td>7.7</td></tr><tr><td>2021</td><td>7</td><td>146567.78</td><td>134540.90</td><td>12026.88</td><td>8.9</td></tr><tr><td>2021</td><td>8</td><td>136303.96</td><td>146567.78</td><td>-10263.82</td><td>-7.0</td></tr></tbody></table></div>
+The very first row is `NULL` for every `LAG`-derived column — there's no
+month before 2021-01 in the data, so `LAG()` correctly has nothing to
+return. This is expected, not a bug; decide deliberately (with a `default`
+argument, or a `WHERE ... IS NOT NULL` filter downstream) how you want that
+edge handled rather than being surprised by it.
+
+<h2 id="example-2-days-since-a-customers-previous-order">Example 2: days since a customer's previous order</h2>
+
+<p><code class="inline-code">LEAD</code>/<code class="inline-code">LAG</code> work per-partition just like every other window function.
+Partitioning by <code class="inline-code">customer_id</code> computes each customer's <em>own</em> gap between
+consecutive orders, independent of every other customer:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH cust_orders AS (
+    SELECT DISTINCT customer_id, order_date
+    FROM fact_sales
+    WHERE customer_id = 343 AND order_date IS NOT NULL
+),
+gaps AS (
+    SELECT customer_id, order_date,
+           LAG(order_date) OVER (ORDER BY order_date) AS prev_date
+    FROM cust_orders
+)
+SELECT order_date, prev_date,
+       CAST(julianday(order_date) - julianday(prev_date) AS INTEGER) AS days_since_prev
+FROM gaps
+ORDER BY order_date
+LIMIT 6;</code></pre></div>
+
+<p>Verified output (customer 343, Jennifer Howard — the #2 lifetime-value
+customer):</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_date</th><th>prev_date</th><th>days_since_prev</th></tr></thead><tbody><tr><td>2021-07-04</td><td><em>(null)</em></td><td><em>(null)</em></td></tr><tr><td>2021-08-12</td><td>2021-07-04</td><td>39</td></tr><tr><td>2021-08-19</td><td>2021-08-12</td><td>7</td></tr><tr><td>2021-10-21</td><td>2021-08-19</td><td>63</td></tr><tr><td>2021-12-01</td><td>2021-10-21</td><td>41</td></tr><tr><td>2022-03-06</td><td>2021-12-01</td><td>95</td></tr></tbody></table></div>
+(`julianday()` is covered properly in the time-intelligence module — here
+it's just being used to turn two ISO dates into a day count.)
+
+<h2 id="example-3-lead-as-the-mirror-image-of-lag">Example 3: LEAD as the mirror image of LAG</h2>
+
+<p><code class="inline-code">LEAD()</code> is identical to <code class="inline-code">LAG()</code> except it looks <em>forward</em>. Same monthly
+data, but each row now sees <em>next</em> month's total instead of the previous
+one:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH monthly AS (
+    SELECT year, month, ROUND(SUM(total_net_amount), 2) AS month_total
+    FROM agg_monthly_sales_by_category GROUP BY year, month
+)
+SELECT year, month, month_total,
+       LEAD(month_total) OVER (ORDER BY year, month) AS next_month_total
+FROM monthly ORDER BY year, month LIMIT 5;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>year</th><th>month</th><th>month_total</th><th>next_month_total</th></tr></thead><tbody><tr><td>2021</td><td>1</td><td>140643.78</td><td>128982.68</td></tr><tr><td>2021</td><td>2</td><td>128982.68</td><td>166081.54</td></tr><tr><td>2021</td><td>3</td><td>166081.54</td><td>115860.15</td></tr><tr><td>2021</td><td>4</td><td>115860.15</td><td>124873.83</td></tr><tr><td>2021</td><td>5</td><td>124873.83</td><td>134540.90</td></tr></tbody></table></div>
+Notice each row's `next_month_total` is literally next row's
+`month_total` shifted up by one — and it's also exactly what `LAG()` would
+put in `prev_month_total` one row later. `LAG` and `LEAD` are two views of
+the same relationship; pick whichever reads more naturally for the
+question you're asking.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Omitting <code class="inline-code">ORDER BY</code> inside <code class="inline-code">OVER (...)</code>.</strong> Without it, "previous row"</li></ul>  and "next row" are undefined — SQLite won't error, but the result will
+  be meaningless because there's no guaranteed row order to shift across.
+<ul class="styled-list"><li><strong>Forgetting to handle the edge <code class="inline-code">NULL</code>.</strong> The first row of any partition</li></ul>  has no `LAG()` value; the last has no `LEAD()` value. If a downstream
+  calculation divides by a `LAG()` result (like a percent-change formula),
+  that first row will produce `NULL`, not an error — which is usually
+  fine, but confirm it's what you want before dropping those rows.
+<ul class="styled-list"><li>**Confusing <code class="inline-code">LAG</code>/<code class="inline-code">LEAD</code> with <code class="inline-code">ROWS BETWEEN</code> framing from the previous</li></ul>  module.** `LAG`/`LEAD` return a *single specific row's* value; framed
+  aggregates like a moving average summarize a *range* of rows. They solve
+  different problems even though both are window functions.
+<ul class="styled-list"><li><strong>Not partitioning when a comparison should be per-group.</strong> Without</li></ul>  `PARTITION BY customer_id`, `LAG(order_date)` would pull the previous
+  order date from *any* customer's row, not this customer's — a silent
+  and easy-to-miss bug.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">LAG()</code> looks backward, <code class="inline-code">LEAD()</code> looks forward, both within an</li></ul>  `ORDER BY`-defined sequence — no self-join required.
+<ul class="styled-list"><li><code class="inline-code">ORDER BY</code> inside <code class="inline-code">OVER (...)</code> is mandatory here; it defines what</li></ul>  "previous"/"next" mean.
+<ul class="styled-list"><li><code class="inline-code">PARTITION BY</code> scopes the look-back/look-forward per group (e.g. per</li></ul>  customer), exactly as in every other window function so far.
+<ul class="styled-list"><li>The first row of a partition has no <code class="inline-code">LAG()</code> value and the last has no</li></ul>  `LEAD()` value — both are `NULL` by default unless you supply a
+  `default` argument.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="03-window-functions-ii-running-totals.html" class="nav-btn">3. Window Functions II — Running Totals & Moving Aggregates</a>. Next: <a href="05-recursive-ctes.html" class="nav-btn">5. Recursive CTEs</a>. Exercises: <a href="../../exercises/03-advanced/04-lead-lag-period-over-period.html" class="nav-btn">4. LEAD, LAG, and Period-over-Period Comparisons</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

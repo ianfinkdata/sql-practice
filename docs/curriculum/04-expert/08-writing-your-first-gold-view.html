@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>8. Writing Your First Gold View | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="8-writing-your-first-gold-view">8. Writing Your First Gold View</h1>
+
+<nav class="book-nav">Previous: <a href="07-constraints-and-data-integrity.html" class="nav-btn">7. Constraints and Data Integrity</a>. Next: <a href="09-portable-idempotent-ddl-patterns.html" class="nav-btn">9. Portable, Idempotent DDL Patterns</a>. Exercises: <a href="../../exercises/04-expert/08-writing-your-first-gold-view.html" class="nav-btn">8. Writing Your First Gold View</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>This is the medallion architecture's payoff module. Across this
+course you've moved through three layers, each read-only for you but
+each doing a distinct job:
+<ul class="styled-list"><li><strong>Bronze</strong> — raw, messy, as-ingested (<code class="inline-code">bronze_sales</code>,</li></ul>  <code class="inline-code">bronze_customers</code>, ...). No cleaning, no constraints (Module 7).
+<ul class="styled-list"><li><strong>Silver</strong> — cleaned, standardized, one row per source row</li></ul>  (<code class="inline-code">silver_sales</code>, <code class="inline-code">silver_customers</code>, ...). Fixes formats, normalizes
+  casing, recomputes trustworthy values — but doesn't aggregate or
+  reshape for a specific business question.
+<ul class="styled-list"><li><strong>Gold</strong> — business-ready, consumption-ready. This is what a</li></ul>  dashboard, a report, or a business stakeholder actually queries.
+  Gold is where dimensional modeling (<code class="inline-code">dim_customer</code>, <code class="inline-code">dim_product</code>,
+  <code class="inline-code">dim_employee</code>, <code class="inline-code">dim_date</code>), fact tables (<code class="inline-code">fact_sales</code>), and
+  pre-aggregated rollups (<code class="inline-code">agg_monthly_sales_by_category</code>,
+  <code class="inline-code">agg_customer_ltv</code>, <code class="inline-code">agg_daily_sales</code>) all live.</p>
+
+<p>What makes a view <em>gold</em> isn't a technical property — it's a business
+one. A gold view answers a question a real stakeholder would actually
+ask ("how are sales trending by category, month over month?"), usually
+pre-joined across dimensions and pre-aggregated to the grain that
+question needs, so the consumer doesn't have to know the underlying
+silver/bronze plumbing at all.</p>
+
+<h2 id="dissecting-agg_monthly_sales_by_categorysql">Dissecting <code class="inline-code">agg_monthly_sales_by_category.sql</code></h2>
+
+<p>The real file, in full, from <code class="inline-code">project/gold/agg_monthly_sales_by_category.sql</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- agg_monthly_sales_by_category: monthly rollup of net sales by product
+-- category. Inner-joins to dim_date/dim_product, so order lines with a
+-- NULL order_date or an orphan product_id are (by design) excluded --
+-- they can&#x27;t be placed on a calendar or into a category. No
+-- order_status filter is applied here; that&#x27;s left as a lesson exercise.
+
+<p>DROP VIEW IF EXISTS agg_monthly_sales_by_category;
+CREATE VIEW agg_monthly_sales_by_category AS
+SELECT
+    d.year,
+    d.month,
+    d.month_name,
+    p.category,
+    COUNT(*) AS order_line_count,
+    SUM(f.quantity) AS total_quantity,
+    ROUND(SUM(f.net_amount), 2) AS total_net_amount
+FROM fact_sales f
+JOIN dim_date d ON d.datekey = f.datekey
+JOIN dim_product p ON p.product_id = f.product_id
+GROUP BY d.year, d.month, d.month_name, p.category
+ORDER BY d.year, d.month, p.category;</code></pre></div></p>
+
+<p>Walking through what makes this <em>gold</em>, not just "another view":
+<ul class="styled-list"><li><strong>It sits on top of <code class="inline-code">fact_sales</code>, a gold-layer view, not directly on</li></ul>  <code class="inline-code">silver_sales</code> or <code class="inline-code">bronze_sales</code>.</strong> Gold views build on gold facts
+  and dimensions — that's the whole point of having them. This keeps
+  the aggregation logic separate from the cleaning logic in Module 4's
+  view chain.
+<ul class="styled-list"><li><strong><code class="inline-code">JOIN dim_date</code> and <code class="inline-code">JOIN dim_product</code>, both </strong>inner<strong> joins, not</li></ul>  <code class="inline-code">LEFT JOIN</code>.</strong> This is a deliberate, documented business decision
+  (see the comment): an order line with a <code class="inline-code">NULL</code> <code class="inline-code">order_date</code> (and
+  therefore <code class="inline-code">NULL</code> <code class="inline-code">datekey</code>) can't be placed on a calendar month, and
+  one with an orphan <code class="inline-code">product_id</code> can't be placed in a category — both
+  get silently dropped from this particular rollup. That's a real
+  trade-off a gold view author has to make explicitly and document,
+  not something to leave implicit. (Contrast with <code class="inline-code">agg_daily_sales.sql</code>,
+  which deliberately uses a <code class="inline-code">LEFT JOIN</code> from <code class="inline-code">dim_date</code> so zero-order
+  days still appear as rows — a different business need, a different
+  join direction.)
+<ul class="styled-list"><li><strong>The grain is exactly what a stakeholder would ask for</strong>: one row</li></ul>  per (year, month, category) — not per order line. <code class="inline-code">COUNT(*)</code>,
+  <code class="inline-code">SUM(quantity)</code>, and <code class="inline-code">ROUND(SUM(net_amount), 2)</code> collapse potentially
+  hundreds of order lines into one summary row per month/category
+  combination.
+<ul class="styled-list"><li><strong><code class="inline-code">ROUND(..., 2)</code></strong> — gold output is meant to be <em>read</em>, often</li></ul>  directly by a report or dashboard, so money values are rounded to
+  cents rather than left as raw floating point.
+<ul class="styled-list"><li><strong><code class="inline-code">ORDER BY d.year, d.month, p.category</code></strong> — baked into the view</li></ul>  itself, so anyone querying it gets a naturally chronological,
+  grouped result without having to remember to add their own
+  <code class="inline-code">ORDER BY</code>.
+<ul class="styled-list"><li><strong><code class="inline-code">DROP VIEW IF EXISTS</code> before <code class="inline-code">CREATE VIEW</code></strong> — the idempotent</li></ul>  pattern from Module 9, so <code class="inline-code">project/build.py</code> can rerun this file
+  every time without erroring on "view already exists."</p>
+
+<p>Real, verified output:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM agg_monthly_sales_by_category LIMIT 5;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">year  month  month_name  category          order_line_count  total_quantity  total_net_amount
+----  -----  ----------  ----------------  ----------------  --------------  ----------------
+2021  1      January     Accessories       13                42              9801.58
+2021  1      January     Apparel           27                89              26856.39
+2021  1      January     Camping &amp; Hiking  20                47              14354.88
+2021  1      January     Climbing          26                70              17972.83
+2021  1      January     Footwear          22                65              12737.88</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM agg_monthly_sales_by_category;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">528</code></pre></div>
+
+<p>528 rows — matches the facts sheet exactly: roughly 66 months
+(2021-01 through 2026-06) × up to 8 categories per month.</p>
+
+<h2 id="your-turn-design-a-new-gold-style-aggregate">Your turn: design a new gold-style aggregate</h2>
+
+<p>The gold layer only has three <code class="inline-code">agg_*</code> views right now:
+<code class="inline-code">agg_monthly_sales_by_category</code>, <code class="inline-code">agg_customer_ltv</code>, and
+<code class="inline-code">agg_daily_sales</code>. There are plenty of real business questions those
+three don't answer.</p>
+
+<p><strong>Your task:</strong> write a <code class="inline-code">SELECT</code> (not a <code class="inline-code">CREATE VIEW</code> — you're
+verifying the logic against the read-only shared database, not
+persisting anything) that answers a business question none of the
+existing gold views cover. Some starting ideas:
+<ul class="styled-list"><li>Net sales and order-line count by <strong>payment method</strong> and <strong>year</strong>.</li><li>Net sales by <strong>employee region</strong> (via <code class="inline-code">dim_employee</code>), for</li></ul>  in-person/rep-assisted sales only.
+<ul class="styled-list"><li>A <strong>quarterly</strong> (not monthly) version of the category rollup, using</li></ul>  <code class="inline-code">dim_date.quarter</code>.
+<ul class="styled-list"><li>Top-N <strong>brands</strong> (via <code class="inline-code">dim_product.brand</code>) by lifetime net sales.</li></ul>
+Worked example — net sales and order count by payment method and
+year:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT d.year, f.payment_method,
+       COUNT(*) AS order_line_count,
+       ROUND(SUM(f.net_amount), 2) AS total_net_amount
+FROM fact_sales f
+JOIN dim_date d ON d.datekey = f.datekey
+GROUP BY d.year, f.payment_method
+ORDER BY d.year, total_net_amount DESC;</code></pre></div>
+
+<p>Real output (first two years):</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">year  payment_method  order_line_count  total_net_amount
+----  --------------  ----------------  ----------------
+2021  Credit Card     651               500382.11
+2021  PayPal          470               349670.57
+2021  Debit Card      448               332872.24
+2021  Cash            425               313837.87
+2021  Gift Card       193               122247.03
+2022  Credit Card     669               515112.09
+2022  PayPal          461               360400.38
+2022  Cash            431               320068.96
+2022  Debit Card      435               311279.96
+2022  Gift Card       277               197117.96</code></pre></div>
+
+<p>Notice this one deliberately used only <code class="inline-code">JOIN dim_date</code> (no
+<code class="inline-code">dim_product</code>), since payment method doesn't depend on which product
+was sold — matching the join list to exactly what the question needs
+is itself part of good gold-view design.</p>
+
+<p>Before you consider your own version done, ask the same questions
+<code class="inline-code">agg_monthly_sales_by_category</code>'s author had to answer:
+<ul class="styled-list"><li>What's the grain — one row per what?</li><li>Inner join or left join, and what does that choice silently exclude</li></ul>  or include? (Orphan products? NULL order dates? Zero-activity
+  periods?)
+<ul class="styled-list"><li>Are money values rounded for a human reader?</li><li>Does the <code class="inline-code">ORDER BY</code> make the result immediately usable without</li></ul>  further sorting?</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Building gold directly on bronze</strong>, skipping silver's cleaning</li></ul>  entirely. `agg_monthly_sales_by_category` never touches
+  `bronze_sales` directly — it goes through `fact_sales` →
+  `silver_sales`, inheriting all of silver's normalization for free.
+<ul class="styled-list"><li><strong>Choosing <code class="inline-code">LEFT JOIN</code> vs. <code class="inline-code">INNER JOIN</code> without thinking about it.</strong></li></ul>  This single choice determines whether orphans/NULLs/zero-activity
+  rows are silently dropped or explicitly preserved — get it wrong and
+  a stakeholder's "total sales" number quietly excludes real data (or
+  includes rows that shouldn't count).
+<ul class="styled-list"><li><strong>Leaving raw floating-point values unrounded</strong> in a view meant for</li></ul>  direct human/report consumption.
+<ul class="styled-list"><li><strong>Forgetting the grain changes what aggregate functions mean.</strong> If</li></ul>  you `GROUP BY` at the wrong level, `COUNT(*)` counts the wrong
+  thing — always state the intended grain before writing the query.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>Gold views are distinguished by <em>business readiness</em>, not any SQL</li></ul>  feature — pre-joined, pre-aggregated, rounded, ordered, and built to
+  answer a specific stakeholder question at a clear grain.
+<ul class="styled-list"><li><code class="inline-code">agg_monthly_sales_by_category</code> builds on <code class="inline-code">fact_sales</code>/<code class="inline-code">dim_date</code>/</li></ul>  `dim_product` (never raw bronze), uses deliberate inner joins with a
+  documented trade-off, rounds money to cents, and orders its own
+  output.
+<ul class="styled-list"><li>The join direction (<code class="inline-code">INNER</code> vs <code class="inline-code">LEFT</code>) is a business decision with</li></ul>  real consequences for which rows silently disappear — make it
+  consciously, and document it like the real gold views do.
+<ul class="styled-list"><li>Practice by writing (and verifying with real output) a <code class="inline-code">SELECT</code> for</li></ul>  a new gold-style aggregate not already in `project/gold/` — without
+  creating an actual view against the shared database.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="07-constraints-and-data-integrity.html" class="nav-btn">7. Constraints and Data Integrity</a>. Next: <a href="09-portable-idempotent-ddl-patterns.html" class="nav-btn">9. Portable, Idempotent DDL Patterns</a>. Exercises: <a href="../../exercises/04-expert/08-writing-your-first-gold-view.html" class="nav-btn">8. Writing Your First Gold View</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

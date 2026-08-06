@@ -1,5 +1,11 @@
 # portfolio/ — the reusable SQL pattern library
 
+> **BLUF (Bottom Line Up Front):** The Portfolio library is an engine-agnostic collection of production SQL design patterns (Bronze ingestion, Silver cleaning, Dimensional modeling, Analytical queries, and Cloud Portability) verified against `oakhaven.db` and ready for Snowflake, BigQuery, Databricks, and Postgres.
+
+<!-- nav -->
+[⏮️ Prev: Exercises Workbook](../exercises/README.md) | [📖 Table of Contents](../README.md) | [⏮️ Back to Home](../README.md)
+<!-- /nav -->
+
 This directory is the **takeaway artifact** of the sql-practice repo:
 standalone, heavily annotated SQL files organized by *pattern*, not by
 curriculum tier. Every file is written to be lifted whole into a
@@ -98,3 +104,9 @@ or approximated. Where a file's header cites a count from
 `project/docs/facts_sheet.md`, that figure was independently
 re-verified against the live database as part of writing this library,
 not merely copied from the doc.
+
+---
+
+<!-- nav -->
+[⏮️ Prev: Exercises Workbook](../exercises/README.md) | [📖 Table of Contents](../README.md) | [⏮️ Back to Home](../README.md)
+<!-- /nav -->

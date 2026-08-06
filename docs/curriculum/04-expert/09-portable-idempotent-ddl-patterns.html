@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>9. Portable, Idempotent DDL Patterns | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="9-portable-idempotent-ddl-patterns">9. Portable, Idempotent DDL Patterns</h1>
+
+<nav class="book-nav">Previous: <a href="08-writing-your-first-gold-view.html" class="nav-btn">8. Writing Your First Gold View</a>. Next: <a href="../05-master/README.html" class="nav-btn">Tier 5 — Master</a>. Exercises: <a href="../../exercises/04-expert/09-portable-idempotent-ddl-patterns.html" class="nav-btn">9. Portable, Idempotent DDL Patterns</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p><strong>Idempotent</strong> means "running it twice has the same effect as running
+it once." An idempotent build script can be rerun safely, any number
+of times, without erroring out or leaving things in an inconsistent
+state. This matters enormously for DDL specifically, because plain
+<code class="inline-code">CREATE TABLE</code>/<code class="inline-code">CREATE VIEW</code> are <strong>not</strong> idempotent by default — run
+either one twice against an object that already exists, and SQLite
+raises an error.</p>
+
+<p><code class="inline-code">project/build.py</code> is designed to be rerun constantly — every time you
+or a classmate wants a fresh copy of Oakhaven, <code class="inline-code">python project/build.py</code>
+runs again from scratch. That only works cleanly because every DDL
+statement in <code class="inline-code">project/bronze/</code>, <code class="inline-code">project/silver/</code>, and <code class="inline-code">project/gold/</code>
+follows an idempotent pattern.</p>
+
+<h2 id="the-pattern-drop--if-exists-then-create-">The pattern: <code class="inline-code">DROP ... IF EXISTS</code> then <code class="inline-code">CREATE ...</code></h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">DROP VIEW IF EXISTS view_name;
+CREATE VIEW view_name AS
+SELECT ...;</code></pre></div>
+
+<p>or, for a table:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">DROP TABLE IF EXISTS table_name;
+CREATE TABLE table_name (...);</code></pre></div>
+
+<p>The <code class="inline-code">IF EXISTS</code> is what makes the <code class="inline-code">DROP</code> safe to run even the <em>first</em>
+time, when the object doesn't exist yet — without it, the very first
+run of a fresh database would fail on <code class="inline-code">DROP TABLE table_name</code> because
+there's nothing to drop yet. Combined, <code class="inline-code">DROP ... IF EXISTS</code> followed
+by an unconditional <code class="inline-code">CREATE</code> guarantees the object ends up in exactly
+the state the <code class="inline-code">CREATE</code> statement describes, no matter how many times
+you run it, and no matter whether it existed before.</p>
+
+<h2 id="why-not-create-or-replace-view">Why not <code class="inline-code">CREATE OR REPLACE VIEW</code>?</h2>
+
+<p>If you've used Postgres or MySQL, you'd reach for <code class="inline-code">CREATE OR REPLACE
+VIEW</code> here — a single statement that does the drop-and-recreate for
+you. <strong>SQLite does not support this syntax at all:</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE OR REPLACE VIEW demo_v AS SELECT 1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: in prepare, near &quot;OR&quot;: syntax error
+  CREATE OR REPLACE VIEW demo_v AS SELECT 1;
+         ^--- error here</code></pre></div>
+
+<p>This is a genuine portability gap, not a style choice — SQL written
+for Postgres/MySQL that uses <code class="inline-code">CREATE OR REPLACE VIEW</code> simply will not
+run against SQLite. The two-statement <code class="inline-code">DROP VIEW IF EXISTS</code> +
+<code class="inline-code">CREATE VIEW</code> pattern is the <em>only</em> way to get equivalent behavior in
+SQLite, and it's exactly what every one of Oakhaven's silver and gold
+view files uses.</p>
+
+<h2 id="verified-the-failure-mode-this-pattern-prevents">Verified: the failure mode this pattern prevents</h2>
+
+<p>All against a <strong>scratch copy</strong>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/scratch_expert.db
+sqlite3 /tmp/scratch_expert.db</code></pre></div>
+
+<h3 id="without-the-guard--fails-on-the-second-run">Without the guard — fails on the second run</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE VIEW demo_v2 AS SELECT 1 AS x;
+CREATE VIEW demo_v2 AS SELECT 1 AS x;   -- run again, unmodified</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: in prepare, view demo_v2 already exists
+  CREATE VIEW demo_v2 AS SELECT 1 AS x;
+              ^--- error here</code></pre></div>
+
+<p>This is exactly the error a naive build script would hit on its
+<em>second</em> run — the entire point of a rerunnable build breaks on the
+very first rerun.</p>
+
+<h3 id="with-the-guard--safe-to-run-any-number-of-times-and-picks-up-changes">With the guard — safe to run any number of times, and picks up changes</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">DROP VIEW IF EXISTS demo_v3;
+CREATE VIEW demo_v3 AS SELECT 1 AS x;
+DROP VIEW IF EXISTS demo_v3;
+CREATE VIEW demo_v3 AS SELECT 2 AS x;   -- a *different* definition this time
+SELECT * FROM demo_v3;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">2</code></pre></div>
+
+<p>Not just "no error" — the view's definition was genuinely replaced.
+This matters for a real workflow: if you edit <code class="inline-code">project/gold/agg_daily_sales.sql</code>
+and rerun the build, the idempotent pattern guarantees the <em>new</em> SQL
+in that file wins, not a stale cached definition from a previous run.</p>
+
+<h3 id="confirming-the-pattern-is-used-consistently-across-the-real-project">Confirming the pattern is used consistently across the real project</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">grep -rc &quot;DROP VIEW IF EXISTS&quot; project/silver/ project/gold/</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">project/silver/silver_calendar.sql:1
+project/silver/silver_customers.sql:1
+project/silver/silver_sales.sql:1
+project/silver/silver_employees.sql:1
+project/silver/silver_products.sql:1
+project/gold/dim_date.sql:1
+project/gold/agg_daily_sales.sql:1
+project/gold/dim_product.sql:1
+project/gold/agg_monthly_sales_by_category.sql:1
+project/gold/dim_customer.sql:1
+project/gold/dim_employee.sql:1
+project/gold/agg_customer_ltv.sql:1
+project/gold/fact_sales.sql:1</code></pre></div>
+
+<p>All 13 view-defining <code class="inline-code">.sql</code> files in silver and gold — every single
+one — start with exactly this guard. It's not an occasional
+convenience; it's a project-wide convention.</p>
+
+<p><code class="inline-code">project/bronze/schema.sql</code> uses the table equivalent for the same
+reason:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">DROP TABLE IF EXISTS bronze_customers;
+CREATE TABLE bronze_customers (...);</code></pre></div>
+
+<p>(repeated for all five bronze tables). <code class="inline-code">CREATE TABLE IF NOT EXISTS</code>
+would <em>also</em> be idempotent in a narrow sense — it wouldn't error on a
+rerun — but it would silently <strong>keep the old table's schema and data</strong>
+if the table already existed, which is the wrong behavior for a
+generator that's supposed to produce a fresh, byte-identical dataset
+every time. <code class="inline-code">DROP ... IF EXISTS</code> + unconditional <code class="inline-code">CREATE</code> is the right
+choice specifically because bronze <em>wants</em> a clean slate on every
+rebuild, not a merge with whatever was there before.</p>
+
+<h2 id="how-projectbuildpy-relies-on-this">How <code class="inline-code">project/build.py</code> relies on this</h2>
+
+<p><code class="inline-code">build.py</code> itself takes an even more direct approach at the top level
+— it deletes <code class="inline-code">project/oakhaven.db</code> outright and reconnects to a fresh
+file (<code class="inline-code">os.remove(DB_PATH)</code> before <code class="inline-code">sqlite3.connect(DB_PATH)</code>), so the
+per-object <code class="inline-code">DROP ... IF EXISTS</code> guards inside <code class="inline-code">schema.sql</code> and the
+silver/gold <code class="inline-code">.sql</code> files are technically redundant <em>at that specific
+call site</em>. But those same <code class="inline-code">.sql</code> files are also designed to be
+<strong>runnable standalone</strong> — for instance, <code class="inline-code">bronze/calendar_recursive_cte.sql</code>
+is explicitly documented as runnable on its own, and any of the
+silver/gold <code class="inline-code">.sql</code> files could reasonably be re-executed by hand
+against an existing database while debugging a single view. The
+<code class="inline-code">DROP ... IF EXISTS</code> guard is what makes that safe: rerun any one file
+in isolation, anytime, without first checking whether its object
+already exists.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Assuming <code class="inline-code">CREATE OR REPLACE VIEW</code> works in SQLite.</strong> It's valid</li></ul>  Postgres/MySQL syntax, invalid SQLite syntax — verified above. Use
+  `DROP VIEW IF EXISTS` + `CREATE VIEW` instead.
+<ul class="styled-list"><li>**Using <code class="inline-code">CREATE TABLE IF NOT EXISTS</code> when you actually want a clean</li></ul>  rebuild.** `IF NOT EXISTS` guards make a statement idempotent but
+  preserve the *existing* object if there is one — that's the wrong
+  tool when the goal is "this object should end up looking exactly
+  like this definition," which is what a build/deploy script usually
+  wants for views and generated tables.
+<ul class="styled-list"><li>**Forgetting the guard makes a script fail on rerun, not on first</li></ul>  run.** This is an easy trap: a DDL script without `IF EXISTS` works
+  perfectly the first time you run it, and only breaks the *second*
+  time — which can be well after you've moved on and forgotten you
+  wrote it that way.
+<ul class="styled-list"><li>**Dropping and recreating a table that has dependent views without</li></ul>  also handling those views.** A view defined `SELECT ... FROM
+  some_table` will fail at *query* time (not at the view's own
+  `CREATE VIEW` time — SQLite doesn't validate view bodies against
+  schema until they're queried) if `some_table` was dropped and never
+  recreated. Oakhaven's `build.py` handles this by always running
+  bronze schema creation before silver, and silver before gold, in a
+  fixed order.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>Idempotent DDL means "safe to run any number of times" — essential</li></ul>  for any build/deploy script that might be rerun.
+<ul class="styled-list"><li>SQLite has <strong>no</strong> <code class="inline-code">CREATE OR REPLACE VIEW</code> (or <code class="inline-code">TABLE</code>) — the</li></ul>  portable equivalent is `DROP ... IF EXISTS` followed by an
+  unconditional `CREATE`, verified above to both avoid the "already
+  exists" error and actually pick up a changed definition.
+<ul class="styled-list"><li>All 13 silver/gold view files in this project, and all 5 bronze</li></ul>  table definitions, follow this exact pattern — it's a project-wide
+  convention, not a one-off.
+<ul class="styled-list"><li><code class="inline-code">CREATE TABLE/VIEW IF NOT EXISTS</code> is idempotent too, but preserves</li></ul>  the old definition if one exists — the wrong choice when you want a
+  rebuild to reflect the current `.sql` file's contents.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="08-writing-your-first-gold-view.html" class="nav-btn">8. Writing Your First Gold View</a>. Next: <a href="../05-master/README.html" class="nav-btn">Tier 5 — Master</a>. Exercises: <a href="../../exercises/04-expert/09-portable-idempotent-ddl-patterns.html" class="nav-btn">9. Portable, Idempotent DDL Patterns</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

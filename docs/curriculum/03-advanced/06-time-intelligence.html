@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6. Time Intelligence | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="6-time-intelligence">6. Time Intelligence</h1>
+
+<nav class="book-nav">Previous: <a href="05-recursive-ctes.html" class="nav-btn">5. Recursive CTEs</a>. Next: <a href="07-the-date-spine-pattern.html" class="nav-btn">7. The Date-Spine Pattern</a>. Exercises: <a href="../../exercises/03-advanced/06-time-intelligence.html" class="nav-btn">6. Time Intelligence</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>"Time intelligence" is the umbrella term for pulling calendar meaning out
+of dates: which year, which month, which quarter, which weekday, how many
+days between two dates. SQLite stores dates as plain <code class="inline-code">TEXT</code> (ISO
+<code class="inline-code">YYYY-MM-DD</code> strings, per Oakhaven's convention), so all of this comes down
+to a handful of built-in date functions rather than a special date type.</p>
+
+<p>This module covers those functions directly; the next module covers the
+<em>date spine</em> pattern that depends on them.</p>
+
+<h2 id="the-three-core-sqlite-date-functions">The three core SQLite date functions</h2>
+<ul class="styled-list"><li><strong><code class="inline-code">date(dateval, modifier, ...)</code></strong> — returns a date, optionally shifted</li></ul>  by modifiers like `'+1 day'`, `'-3 months'`, `'start of month'`,
+  `'weekday 1'`. Already seen throughout the recursive CTE module
+  (`date(d, '+1 day')`).
+<ul class="styled-list"><li><strong><code class="inline-code">strftime(format, dateval)</code></strong> — formats a date into a string, or</li></ul>  extracts a specific part as text: `'%Y'` (year), `'%m'` (month, zero
+  padded), `'%d'` (day), `'%w'` (weekday, `0`=Sunday..`6`=Saturday), `'%W'`
+  (week of year).
+<ul class="styled-list"><li><strong><code class="inline-code">julianday(dateval)</code></strong> — converts a date into a Julian day number (a</li></ul>  plain floating-point count of days since a fixed epoch). Not useful on
+  its own, but subtracting two `julianday()` calls gives you a day
+  difference — SQLite has no `DATEDIFF()`; this is how it's done instead.
+
+<p><code class="inline-code">strftime()</code> returns text, so extracted year/month values need <code class="inline-code">CAST(...
+AS INTEGER)</code> before you sort or compare them numerically — this is exactly
+what <code class="inline-code">gold/dim_date.sql</code> does (see below).</p>
+
+<h2 id="example-1-extracting-date-parts">Example 1: extracting date parts</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_date,
+       strftime(&#x27;%Y&#x27;, order_date) AS yr,
+       strftime(&#x27;%m&#x27;, order_date) AS mo,
+       CASE CAST(strftime(&#x27;%w&#x27;, order_date) AS INTEGER)
+         WHEN 0 THEN &#x27;Sunday&#x27; WHEN 1 THEN &#x27;Monday&#x27; WHEN 2 THEN &#x27;Tuesday&#x27;
+         WHEN 3 THEN &#x27;Wednesday&#x27; WHEN 4 THEN &#x27;Thursday&#x27;
+         WHEN 5 THEN &#x27;Friday&#x27; WHEN 6 THEN &#x27;Saturday&#x27;
+       END AS weekday
+FROM fact_sales
+WHERE order_date IS NOT NULL
+LIMIT 3;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_date</th><th>yr</th><th>mo</th><th>weekday</th></tr></thead><tbody><tr><td>2024-03-05</td><td>2024</td><td>03</td><td>Tuesday</td></tr><tr><td>2024-03-05</td><td>2024</td><td>03</td><td>Tuesday</td></tr><tr><td>2021-11-04</td><td>2021</td><td>11</td><td>Thursday</td></tr></tbody></table></div>
+This is exactly the logic behind `gold/dim_date.sql`, Oakhaven's date
+dimension view, built on top of `silver_calendar` (itself a thin
+pass-through over the recursive-CTE-built `bronze_calendar`):
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE VIEW dim_date AS
+SELECT
+    datekey,
+    date,
+    CAST(strftime(&#x27;%Y&#x27;, date) AS INTEGER) AS year,
+    CAST(strftime(&#x27;%m&#x27;, date) AS INTEGER) AS month,
+    CASE CAST(strftime(&#x27;%m&#x27;, date) AS INTEGER)
+        WHEN 1 THEN &#x27;January&#x27; WHEN 2 THEN &#x27;February&#x27; WHEN 3 THEN &#x27;March&#x27;
+        WHEN 4 THEN &#x27;April&#x27; WHEN 5 THEN &#x27;May&#x27; WHEN 6 THEN &#x27;June&#x27;
+        WHEN 7 THEN &#x27;July&#x27; WHEN 8 THEN &#x27;August&#x27; WHEN 9 THEN &#x27;September&#x27;
+        WHEN 10 THEN &#x27;October&#x27; WHEN 11 THEN &#x27;November&#x27; WHEN 12 THEN &#x27;December&#x27;
+    END AS month_name,
+    ((CAST(strftime(&#x27;%m&#x27;, date) AS INTEGER) - 1) / 3) + 1 AS quarter,
+    CAST(strftime(&#x27;%d&#x27;, date) AS INTEGER) AS day_of_month,
+    CAST(strftime(&#x27;%w&#x27;, date) AS INTEGER) AS day_of_week,
+    CASE CAST(strftime(&#x27;%w&#x27;, date) AS INTEGER)
+        WHEN 0 THEN &#x27;Sunday&#x27; WHEN 1 THEN &#x27;Monday&#x27; WHEN 2 THEN &#x27;Tuesday&#x27;
+        WHEN 3 THEN &#x27;Wednesday&#x27; WHEN 4 THEN &#x27;Thursday&#x27; WHEN 5 THEN &#x27;Friday&#x27;
+        WHEN 6 THEN &#x27;Saturday&#x27;
+    END AS day_name,
+    CASE WHEN CAST(strftime(&#x27;%w&#x27;, date) AS INTEGER) IN (0, 6) THEN 1 ELSE 0 END AS is_weekend
+FROM silver_calendar;</code></pre></div>
+
+<p>The <code class="inline-code">quarter</code> formula is worth pausing on: <code class="inline-code">((month - 1) / 3) + 1</code>. SQLite
+does <em>integer</em> division here (both operands are integers), so month 1–3
+gives <code class="inline-code">(0..2)/3 = 0</code>, <code class="inline-code">+1 = 1</code>; month 4–6 gives <code class="inline-code">(3..5)/3 = 1</code>, <code class="inline-code">+1 = 2</code>;
+and so on. Verified against real rows:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT date, year, month, quarter FROM dim_date
+WHERE date IN (&#x27;2026-01-15&#x27;,&#x27;2026-04-01&#x27;,&#x27;2026-07-01&#x27;,&#x27;2026-10-01&#x27;);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>date</th><th>year</th><th>month</th><th>quarter</th></tr></thead><tbody><tr><td>2026-01-15</td><td>2026</td><td>1</td><td>1</td></tr><tr><td>2026-04-01</td><td>2026</td><td>4</td><td>2</td></tr><tr><td>2026-07-01</td><td>2026</td><td>7</td><td>3</td></tr><tr><td>2026-10-01</td><td>2026</td><td>10</td><td>4</td></tr></tbody></table></div>
+Every dimension used throughout this course — year, month name, quarter,
+weekday name, weekend flag — is derived this way, once, in `dim_date`, so
+no downstream query has to repeat this logic.
+
+<h2 id="example-2-day-differences-with-julianday">Example 2: day differences with <code class="inline-code">julianday()</code></h2>
+
+<p><em>Question: how many days elapsed between order and shipment?</em></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_line_id, order_date, ship_date,
+       CAST(julianday(ship_date) - julianday(order_date) AS INTEGER) AS days_to_ship
+FROM silver_sales
+WHERE ship_date IS NOT NULL AND order_date IS NOT NULL
+LIMIT 5;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>order_date</th><th>ship_date</th><th>days_to_ship</th></tr></thead><tbody><tr><td>1</td><td>1</td><td>2024-03-05</td><td>2024-03-15</td><td>10</td></tr><tr><td>1</td><td>2</td><td>2024-03-05</td><td>2024-03-15</td><td>10</td></tr><tr><td>2</td><td>1</td><td>2021-11-04</td><td>2021-11-11</td><td>7</td></tr><tr><td>2</td><td>2</td><td>2021-11-04</td><td>2021-11-11</td><td>7</td></tr><tr><td>3</td><td>1</td><td>2023-01-13</td><td>2023-01-23</td><td>10</td></tr></tbody></table></div>
+`julianday()` returns a float, so the raw subtraction can carry a tiny
+fractional remainder even for whole dates (SQLite's Julian day arithmetic)
+— `CAST(... AS INTEGER)` truncates that away, giving a clean day count.
+
+<p><code class="inline-code">silver_sales</code> deliberately does <em>not</em> filter out bad rows here — recall
+from the data dictionary that ~2% of orders have a <code class="inline-code">ship_date</code>
+chronologically <em>before</em> <code class="inline-code">order_date</code> (intentional bad data). This same
+query surfaces those instantly as negative day counts:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_line_id, order_date, ship_date,
+       CAST(julianday(ship_date) - julianday(order_date) AS INTEGER) AS days_to_ship
+FROM silver_sales
+WHERE ship_date IS NOT NULL AND order_date IS NOT NULL
+  AND julianday(ship_date) &lt; julianday(order_date)
+LIMIT 5;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>order_date</th><th>ship_date</th><th>days_to_ship</th></tr></thead><tbody><tr><td>111</td><td>1</td><td>2023-10-26</td><td>2023-10-23</td><td>-3</td></tr><tr><td>133</td><td>1</td><td>2021-05-23</td><td>2021-05-22</td><td>-1</td></tr><tr><td>158</td><td>1</td><td>2023-10-13</td><td>2023-10-10</td><td>-3</td></tr><tr><td>158</td><td>2</td><td>2023-10-13</td><td>2023-10-10</td><td>-3</td></tr><tr><td>323</td><td>1</td><td>2021-11-11</td><td>2021-11-07</td><td>-4</td></tr></tbody></table></div>
+Total count of these: **216** rows — matching the facts sheet's documented
+figure exactly (`silver_sales` ship_date-before-order_date, 1.8%). This is
+a good habit to build: a `julianday()` difference is also a cheap, free
+data-quality check.
+
+<h2 id="example-3-date-modifiers-for-month-boundaries">Example 3: <code class="inline-code">date()</code> modifiers for month boundaries</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_date,
+       date(order_date, &#x27;start of month&#x27;) AS month_start,
+       date(order_date, &#x27;start of month&#x27;, &#x27;+1 month&#x27;, &#x27;-1 day&#x27;) AS month_end
+FROM fact_sales
+WHERE order_date IS NOT NULL
+LIMIT 3;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_date</th><th>month_start</th><th>month_end</th></tr></thead><tbody><tr><td>2024-03-05</td><td>2024-03-01</td><td>2024-03-31</td></tr><tr><td>2024-03-05</td><td>2024-03-01</td><td>2024-03-31</td></tr><tr><td>2021-11-04</td><td>2021-11-01</td><td>2021-11-30</td></tr></tbody></table></div>
+`date()` modifiers chain left to right: `'start of month'` snaps to the
+1st, then `'+1 month'` advances a month, then `'-1 day'` steps back one —
+landing exactly on the last day of the *original* month, correctly
+handling months of different lengths (28/29/30/31 days) with no manual
+case logic.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Comparing <code class="inline-code">strftime()</code> output as text without casting.</strong> <code class="inline-code">'%Y'</code></li></ul>  returns `TEXT`; `'9' > '10'` is true as strings (lexicographic) but false
+  as numbers. Always `CAST(... AS INTEGER)` before doing numeric
+  comparisons or sorting on extracted date parts — `dim_date` does this
+  everywhere.
+<ul class="styled-list"><li><strong>Subtracting date strings directly</strong> (<code class="inline-code">ship_date - order_date</code>) instead</li></ul>  of via `julianday()`. SQLite dates are `TEXT`; direct arithmetic on them
+  doesn't do what you want. Always go through `julianday()` for date math.
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">julianday()</code> differences can be fractional</strong> if either</li></ul>  input includes a time component, not just a date. Oakhaven's ISO dates
+  are date-only after silver-layer parsing, so this rarely bites here, but
+  it's a common surprise with raw timestamp data.
+<ul class="styled-list"><li><strong>Reinventing <code class="inline-code">dim_date</code>'s derivations inline, query after query.</strong></li></ul>  Every derivation shown here (year, month, quarter, weekday, weekend
+  flag) already exists as a column on `dim_date` — join to it instead of
+  recomputing `strftime()` expressions in every query.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>SQLite has three core date functions: <code class="inline-code">date()</code> (shift/format a date),</li></ul>  `strftime()` (extract parts as text), `julianday()` (convert to a
+  day-number float for arithmetic).
+<ul class="styled-list"><li>Always <code class="inline-code">CAST(strftime(...) AS INTEGER)</code> before treating extracted date</li></ul>  parts numerically.
+<ul class="styled-list"><li>Day differences go through <code class="inline-code">julianday(a) - julianday(b)</code>, then usually</li></ul>  `CAST(... AS INTEGER)` to drop the fractional remainder.
+<ul class="styled-list"><li><code class="inline-code">gold/dim_date.sql</code> centralizes every common date derivation</li></ul>  (year/month/month_name/quarter/day_name/is_weekend) exactly once — prefer
+  joining to it over recomputing `strftime()` logic in every query.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="05-recursive-ctes.html" class="nav-btn">5. Recursive CTEs</a>. Next: <a href="07-the-date-spine-pattern.html" class="nav-btn">7. The Date-Spine Pattern</a>. Exercises: <a href="../../exercises/03-advanced/06-time-intelligence.html" class="nav-btn">6. Time Intelligence</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

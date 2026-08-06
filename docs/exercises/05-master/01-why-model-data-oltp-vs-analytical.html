@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: 1. Why We Model Data: OLTP vs. Analytical Schemas | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-1-why-we-model-data-oltp-vs-analytical-schemas">Exercises: 1. Why We Model Data: OLTP vs. Analytical Schemas</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/01-why-model-data-oltp-vs-analytical.html" class="nav-btn">1. Why We Model Data: OLTP vs. Analytical Schemas</a>. Previous: <a href="../04-expert/09-portable-idempotent-ddl-patterns.html" class="nav-btn">9. Portable, Idempotent DDL Patterns</a>. Next: <a href="02-dimensions-and-facts-core-vocabulary.html" class="nav-btn">2. Dimensions and Facts: Core Vocabulary</a>.</nav>
+
+<p>Work against <code class="inline-code">project/oakhaven.db</code>. Read-only — every query below is a
+<code class="inline-code">SELECT</code>.</p>
+
+<hr class="divider">
+
+<h3 id="1-spot-the-flattened-header-attributes">1. Spot the flattened header attributes</h3>
+
+<p>Pick order <code class="inline-code">7197</code> from <code class="inline-code">bronze_sales</code> and list all of its lines,
+ordered by <code class="inline-code">order_line_id</code>. Which columns stay identical across every
+line of the order (the "order-header" attributes), and which vary
+per line (the "order-line" attributes)?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_line_id, product_id, quantity, unit_price,
+       order_date, customer_id, payment_method
+FROM bronze_sales
+WHERE order_id = 7197
+ORDER BY order_line_id;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>product_id</th><th>quantity</th><th>unit_price</th><th>order_date</th><th>customer_id</th><th>payment_method</th></tr></thead><tbody><tr><td>7197</td><td>1</td><td>7</td><td>2</td><td>420.99</td><td>05/07/2023</td><td>113</td><td>Credit Card</td></tr><tr><td>7197</td><td>2</td><td>81</td><td>-2</td><td>180.68</td><td>05/07/2023</td><td>113</td><td>Credit Card</td></tr><tr><td>7197</td><td>3</td><td>91</td><td>1</td><td>439.0</td><td>05/07/2023</td><td>113</td><td>Credit Card</td></tr></tbody></table></div>
+`order_date`, `customer_id`, and `payment_method` are identical across
+all three lines — these are order-header attributes, generated once
+per order. `product_id`, `quantity`, and `unit_price` vary per line —
+these are order-line attributes. This is exactly the header/detail
+split a normalized `orders` + `order_items` OLTP schema would enforce
+structurally; here it's just flattened into one repeating table.
+(Bonus observation: line 2 has `quantity = -2` — a return, per the
+data dictionary's note that ~3% of `bronze_sales.quantity` values are
+negative.)
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-count-vs-the-real-number-of-orders">2. <code class="inline-code">COUNT(*)</code> vs. the real number of orders</h3>
+
+<p>Using <code class="inline-code">fact_sales</code>, for the <code class="inline-code">Online</code> channel only, find both the
+number of order <em>lines</em> and the number of distinct <em>orders</em>. Are they
+the same number? Should they be?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS lines, COUNT(DISTINCT order_id) AS orders
+FROM fact_sales
+WHERE channel = &#x27;Online&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>lines</th><th>orders</th></tr></thead><tbody><tr><td>6040</td><td>3620</td></tr></tbody></table></div>
+They're different — 6,040 order lines across only 3,620 distinct
+orders — because `fact_sales` is at order-*line* grain, so some online
+orders have more than one line. `COUNT(*)` always counts rows at the
+fact table's grain; it is not automatically "count of orders" just
+because the question was about orders.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-one-join-a-real-business-number">3. One join, a real business number</h3>
+
+<p>Using <code class="inline-code">fact_sales</code> alone (no join needed — <code class="inline-code">channel</code> sits directly on
+the fact table as a degenerate dimension), compute total net sales by
+channel. Then explain in one sentence why this query would need more
+than one join if Oakhaven's data were stored as a normalized
+<code class="inline-code">orders</code> + <code class="inline-code">order_items</code> pair instead.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT channel, COUNT(*) AS lines, ROUND(SUM(net_amount), 2) AS total_net_amount
+FROM fact_sales
+GROUP BY channel
+ORDER BY total_net_amount DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>channel</th><th>lines</th><th>total_net_amount</th></tr></thead><tbody><tr><td>In-Store</td><td>5960</td><td>4380739.06</td></tr><tr><td>Online</td><td>6040</td><td>4361549.98</td></tr></tbody></table></div>
+No join at all is needed here, because `channel` is a degenerate
+dimension living directly on `fact_sales`. In a normalized OLTP
+schema, `channel` would most likely live on an `orders` header table,
+so summing `order_items.line_total` grouped by `orders.channel` would
+require joining `order_items` → `orders` first — one join for a
+question this simple, and more joins the moment you also want to
+group by product category or customer segment.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-confirm-bronze-has-no-structural-guarantees">4. Confirm bronze has no structural guarantees</h3>
+
+<p>Look up the actual <code class="inline-code">CREATE TABLE</code> statement SQLite stored for
+<code class="inline-code">bronze_sales</code>. Does it declare a primary key, a foreign key, or any
+<code class="inline-code">NOT NULL</code> constraint on <code class="inline-code">customer_id</code> or <code class="inline-code">product_id</code>? What does that
+imply about who is responsible for catching bad <code class="inline-code">customer_id</code> /
+<code class="inline-code">product_id</code> values?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT sql FROM sqlite_master WHERE name = &#x27;bronze_sales&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">CREATE TABLE bronze_sales (
+    order_id        INTEGER,
+    order_line_id   INTEGER,
+    customer_id     INTEGER,
+    product_id      INTEGER,
+    employee_id     INTEGER,
+    order_date      TEXT,
+    ship_date       TEXT,
+    quantity        INTEGER,
+    unit_price      REAL,
+    discount_pct    REAL,
+    order_total     TEXT,
+    payment_method  TEXT,
+    order_status    TEXT,
+    channel         TEXT
+)</code></pre></div>
+
+<p>No <code class="inline-code">PRIMARY KEY</code>, no <code class="inline-code">FOREIGN KEY</code>, no <code class="inline-code">NOT NULL</code> anywhere — every
+column is a bare type. Nothing at the database level stops
+<code class="inline-code">customer_id</code> or <code class="inline-code">product_id</code> from referencing a row that doesn't
+exist (and, per the data dictionary, ~1% of rows in this dataset do
+exactly that, intentionally). Catching that is entirely the job of the
+transformation layers built on top (<code class="inline-code">silver_sales.is_customer_orphan</code>
+/ <code class="inline-code">is_product_orphan</code>, surfaced onward into <code class="inline-code">fact_sales</code>), not the
+bronze table itself. This is realistic: raw source extracts are rarely
+constrained, and validation is a warehouse responsibility, not
+something you can assume the source system already did for you.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-naive-average-vs-correct-average-a-grain-trap">5. Naive average vs. correct average (a grain trap)</h3>
+
+<p>Compute the "average order value" two ways: (a) naively, as
+<code class="inline-code">AVG(net_amount)</code> directly over <code class="inline-code">fact_sales</code>, and (b) correctly, by
+first summing <code class="inline-code">net_amount</code> per order, then averaging those order
+totals. Are they the same number? Why not?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- (a) naive: averages at LINE grain
+SELECT ROUND(AVG(net_amount), 2) AS naive_avg_line_value
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>naive_avg_line_value</th></tr></thead><tbody><tr><td>728.52</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- (b) correct: sum to ORDER grain first, then average
+SELECT ROUND(AVG(order_total), 2) AS correct_avg_order_value
+FROM (
+    SELECT order_id, SUM(net_amount) AS order_total
+    FROM fact_sales
+    GROUP BY order_id
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>correct_avg_order_value</th></tr></thead><tbody><tr><td>1214.38</td></tr></tbody></table></div>
+They're substantially different — $728.52 vs. $1,214.38. `AVG(net_amount)`
+over `fact_sales` computes the average *order line* value, not the
+average *order* value, because `fact_sales`'s grain is one row per
+line and most orders have more than one line. This is the same grain
+trap as `COUNT(*)` (module 3, Example 2): any aggregate function
+applied directly to a fact table answers a question at the fact
+table's grain, and you have to explicitly re-aggregate to a coarser
+grain (here, via a subquery `GROUP BY order_id`) if that's the question
+you actually meant to ask.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/01-why-model-data-oltp-vs-analytical.html" class="nav-btn">1. Why We Model Data: OLTP vs. Analytical Schemas</a>. Previous: <a href="../04-expert/09-portable-idempotent-ddl-patterns.html" class="nav-btn">9. Portable, Idempotent DDL Patterns</a>. Next: <a href="02-dimensions-and-facts-core-vocabulary.html" class="nav-btn">2. Dimensions and Facts: Core Vocabulary</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

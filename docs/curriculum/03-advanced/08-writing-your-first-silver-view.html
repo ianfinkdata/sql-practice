@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>8. Writing Your First Silver View | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="8-writing-your-first-silver-view">8. Writing Your First Silver View</h1>
+
+<nav class="book-nav">Previous: <a href="07-the-date-spine-pattern.html" class="nav-btn">7. The Date-Spine Pattern</a>. Next: <a href="09-correlated-subqueries-exists.html" class="nav-btn">9. Correlated Subqueries, EXISTS, and NOT EXISTS</a>. Exercises: <a href="../../exercises/03-advanced/08-writing-your-first-silver-view.html" class="nav-btn">8. Writing Your First Silver View</a>.</nav>
+
+<h2 id="the-idea--what-silver-is-for">The idea — what "silver" is for</h2>
+
+<p>Oakhaven's database is organized as a <strong>medallion architecture</strong>, a common
+pattern in real data warehouses: raw data flows through named layers, each
+one cleaner and more trustworthy than the last.
+<ul class="styled-list"><li><strong>Bronze</strong> — raw, as-ingested data. Exactly what came in, messiness and</li></ul>  all. <code class="inline-code">bronze_customers</code>, <code class="inline-code">bronze_sales</code>, etc. No primary keys, no
+  cleaning, no opinions.
+<ul class="styled-list"><li><strong>Silver</strong> — cleaned, standardized, and <em>derived</em> data. Same grain as</li></ul>  bronze (one row per bronze row — silver doesn't delete or merge rows
+  here), but every column has been normalized to one consistent
+  representation.
+<ul class="styled-list"><li><strong>Gold</strong> — business-ready views: dimensions, facts, aggregates. Built on</li></ul>  top of silver, never on top of bronze directly.</p>
+
+<p>This module is about the middle layer. Silver's job has a very specific,
+narrow contract, worth stating precisely because it's easy to overreach:</p>
+
+<p><strong>Silver cleans, standardizes, and derives. It does not delete rows, and
+it does not silently hide problems it can't fully resolve.</strong> A phone
+number in five different formats becomes one format. A boolean spelled 11
+different ways becomes a real <code class="inline-code">0</code>/<code class="inline-code">1</code>. A date in three formats becomes one
+ISO format. But a row with an unresolvable problem — an orphan foreign
+key, a <code class="inline-code">NULL</code> that can't be safely defaulted — stays in the output,
+flagged if possible, rather than vanishing. Silver's whole value is that
+you can trust it <em>completely</em> for what it does clean, while still being
+honest about what it couldn't.</p>
+
+<h2 id="worked-example-dissecting-silversilver_customerssql">Worked example: dissecting <code class="inline-code">silver/silver_customers.sql</code></h2>
+
+<p>Full contents (verified against the live view definition):</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">DROP VIEW IF EXISTS silver_customers;
+CREATE VIEW silver_customers AS
+WITH state_map(name_key, abbr) AS (
+    VALUES
+        (&#x27;alabama&#x27;, &#x27;AL&#x27;), (&#x27;alaska&#x27;, &#x27;AK&#x27;), (&#x27;arizona&#x27;, &#x27;AZ&#x27;), (&#x27;arkansas&#x27;, &#x27;AR&#x27;),
+        (&#x27;california&#x27;, &#x27;CA&#x27;), (&#x27;colorado&#x27;, &#x27;CO&#x27;), (&#x27;connecticut&#x27;, &#x27;CT&#x27;), (&#x27;delaware&#x27;, &#x27;DE&#x27;),
+        -- ... all 50 states ...
+        (&#x27;calif.&#x27;, &#x27;CA&#x27;), (&#x27;fla.&#x27;, &#x27;FL&#x27;), (&#x27;mass.&#x27;, &#x27;MA&#x27;), (&#x27;penn.&#x27;, &#x27;PA&#x27;), (&#x27;wash.&#x27;, &#x27;WA&#x27;)
+),
+base AS (
+    SELECT
+        c.customer_id,
+        TRIM(REPLACE(REPLACE(TRIM(c.first_name), &#x27;  &#x27;, &#x27; &#x27;), &#x27;  &#x27;, &#x27; &#x27;)) AS fn_collapsed,
+        TRIM(REPLACE(REPLACE(TRIM(c.last_name), &#x27;  &#x27;, &#x27; &#x27;), &#x27;  &#x27;, &#x27; &#x27;)) AS ln_collapsed,
+        NULLIF(TRIM(LOWER(c.email)), &#x27;&#x27;) AS email,
+        c.phone AS phone_raw,
+        NULLIF(TRIM(c.state), &#x27;&#x27;) AS state_raw,
+        c.signup_date AS signup_date_raw,
+        c.is_active AS is_active_raw,
+        c.customer_segment AS segment_raw
+    FROM bronze_customers c
+)
+SELECT
+    customer_id,
+    UPPER(SUBSTR(fn_collapsed, 1, 1)) || LOWER(SUBSTR(fn_collapsed, 2)) AS first_name,
+    -- ... last_name, full_name follow the same pattern ...
+    email,
+    CASE
+        WHEN phone_raw IS NULL OR TRIM(phone_raw) = &#x27;&#x27; THEN NULL
+        WHEN phone_raw LIKE &#x27;(___) ___-____&#x27;
+            THEN &#x27;(&#x27; || substr(phone_raw, 2, 3) || &#x27;) &#x27; || substr(phone_raw, 7, 3) || &#x27;-&#x27; || substr(phone_raw, 11, 4)
+        WHEN phone_raw LIKE &#x27;___-___-____&#x27;
+            THEN &#x27;(&#x27; || substr(phone_raw, 1, 3) || &#x27;) &#x27; || substr(phone_raw, 5, 3) || &#x27;-&#x27; || substr(phone_raw, 9, 4)
+        -- ... more format branches ...
+        WHEN phone_raw GLOB &#x27;[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]&#x27;
+            THEN &#x27;(&#x27; || substr(phone_raw, 1, 3) || &#x27;) &#x27; || substr(phone_raw, 4, 3) || &#x27;-&#x27; || substr(phone_raw, 7, 4)
+        ELSE phone_raw
+    END AS phone,
+    COALESCE(
+        (SELECT abbr FROM state_map WHERE name_key = LOWER(state_raw)),
+        (SELECT abbr FROM state_map WHERE abbr = UPPER(state_raw))
+    ) AS state,
+    -- ... signup_date parsing (same 3-format pattern seen elsewhere) ...
+    CASE
+        WHEN LOWER(TRIM(is_active_raw)) IN (&#x27;y&#x27;, &#x27;yes&#x27;, &#x27;true&#x27;, &#x27;1&#x27;) THEN 1
+        WHEN LOWER(TRIM(is_active_raw)) IN (&#x27;n&#x27;, &#x27;no&#x27;, &#x27;false&#x27;, &#x27;0&#x27;) THEN 0
+        ELSE NULL
+    END AS is_active,
+    CASE LOWER(TRIM(segment_raw))
+        WHEN &#x27;retail&#x27; THEN &#x27;Retail&#x27;
+        WHEN &#x27;wholesale&#x27; THEN &#x27;Wholesale&#x27;
+        WHEN &#x27;vip&#x27; THEN &#x27;VIP&#x27;
+        ELSE NULL
+    END AS customer_segment
+FROM base;</code></pre></div>
+
+<p>Four techniques worth pulling out individually — each one a reusable
+pattern, not just a one-off fix:</p>
+
+<h3 id="1-phone-reformatting-by-shape-matching-not-by-re-parsing-digits">1. Phone reformatting by shape-matching, not by re-parsing digits</h3>
+
+<p>Rather than stripping all non-digit characters and reassembling, the view
+matches each raw value's <em>shape</em> with <code class="inline-code">LIKE</code>/<code class="inline-code">GLOB</code> patterns —
+<code class="inline-code">'(___) ___-____'</code>, <code class="inline-code">'___-___-____'</code>, <code class="inline-code">'___.___.____'</code>, <code class="inline-code">'+1 ___ ___
+____'</code>, or 10 bare digits — and extracts fixed-position substrings for
+each. This only works because the data dictionary guarantees every
+non-null phone value is exactly 3-3-4 digit groups; a format-based
+approach like this is a bet on that guarantee holding, and it's a
+reasonable bet here specifically because it's documented. Verified
+before/after:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT b.customer_id, b.phone AS raw_phone, s.phone AS clean_phone
+FROM bronze_customers b JOIN silver_customers s ON s.customer_id = b.customer_id
+WHERE b.phone IS NOT NULL
+ORDER BY b.customer_id LIMIT 8;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>raw_phone</th><th>clean_phone</th></tr></thead><tbody><tr><td>2</td><td>4278193651</td><td>(427) 819-3651</td></tr><tr><td>3</td><td>+1 363 326 9140</td><td>(363) 326-9140</td></tr><tr><td>4</td><td>(941) 660-5364</td><td>(941) 660-5364</td></tr><tr><td>5</td><td>472-676-3094</td><td>(472) 676-3094</td></tr><tr><td>6</td><td>(936) 218-7125</td><td>(936) 218-7125</td></tr><tr><td>7</td><td>+1 378 520 9025</td><td>(378) 520-9025</td></tr><tr><td>8</td><td>517-252-2676</td><td>(517) 252-2676</td></tr><tr><td>9</td><td>4286531983</td><td>(428) 653-1983</td></tr></tbody></table></div>
+<h3 id="2-state-normalization-via-a-values-based-lookup-table">2. State normalization via a <code class="inline-code">VALUES</code>-based lookup table</h3>
+
+<p><code class="inline-code">state_map</code> is a CTE built entirely from a <code class="inline-code">VALUES</code> list — no source
+table, just a literal 2-column mapping of every full state name (and five
+special dotted abbreviations: <code class="inline-code">Calif.</code>, <code class="inline-code">Fla.</code>, <code class="inline-code">Mass.</code>, <code class="inline-code">Penn.</code>, <code class="inline-code">Wash.</code>)
+to its canonical 2-letter code. The main query then does a <code class="inline-code">COALESCE</code> of
+two correlated-subquery lookups: try matching the raw value as a full name
+first, then try it as an abbreviation already in the right form. This
+pattern — a <code class="inline-code">VALUES</code>-based mapping CTE plus a lookup — generalizes to any
+"normalize a field from a small fixed vocabulary" problem, and keeps the
+mapping data visible and editable right in the SQL rather than buried in
+<code class="inline-code">CASE</code> branches. Verified:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT b.customer_id, b.state AS raw_state, s.state AS clean_state
+FROM bronze_customers b JOIN silver_customers s ON s.customer_id = b.customer_id
+WHERE b.state IN (&#x27;Calif.&#x27;,&#x27;Fla.&#x27;,&#x27;Mass.&#x27;,&#x27;Penn.&#x27;,&#x27;Wash.&#x27;)
+LIMIT 6;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>raw_state</th><th>clean_state</th></tr></thead><tbody><tr><td>6</td><td>Calif.</td><td>CA</td></tr><tr><td>40</td><td>Penn.</td><td>PA</td></tr><tr><td>50</td><td>Mass.</td><td>MA</td></tr><tr><td>143</td><td>Calif.</td><td>CA</td></tr><tr><td>223</td><td>Mass.</td><td>MA</td></tr><tr><td>238</td><td>Penn.</td><td>PA</td></tr></tbody></table></div>
+<h3 id="3-mixed-boolean-coalescing-to-a-real-01">3. Mixed-boolean coalescing to a real 0/1</h3>
+
+<p><code class="inline-code">bronze_customers.is_active</code> is <code class="inline-code">TEXT</code>, drawn from an 11-value pool
+including <code class="inline-code">NULL</code> itself (<code class="inline-code">Y</code>, <code class="inline-code">y</code>, <code class="inline-code">yes</code>, <code class="inline-code">true</code>, <code class="inline-code">1</code>, <code class="inline-code">N</code>, <code class="inline-code">n</code>, <code class="inline-code">no</code>,
+<code class="inline-code">false</code>, <code class="inline-code">0</code>, and literal <code class="inline-code">NULL</code>). The <code class="inline-code">CASE</code> normalizes every "truthy"
+spelling to integer <code class="inline-code">1</code>, every "falsy" spelling to <code class="inline-code">0</code>, and — critically —
+anything that doesn't match either list (including bronze <code class="inline-code">NULL</code>) falls
+through to <code class="inline-code">ELSE NULL</code>, an honest "unknown," rather than being guessed at.
+Verified — every raw/clean combination that actually occurs, with counts:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT b.is_active AS raw, s.is_active AS clean, COUNT(*)
+FROM bronze_customers b JOIN silver_customers s ON s.customer_id = b.customer_id
+GROUP BY b.is_active, s.is_active ORDER BY s.is_active;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>raw</th><th>clean</th><th>COUNT(*)</th></tr></thead><tbody><tr><td><em>(null)</em></td><td><em>(null)</em></td><td>31</td></tr><tr><td><code class="inline-code">0</code></td><td>0</td><td>18</td></tr><tr><td><code class="inline-code">N</code></td><td>0</td><td>29</td></tr><tr><td><code class="inline-code">false</code></td><td>0</td><td>9</td></tr><tr><td><code class="inline-code">n</code></td><td>0</td><td>21</td></tr><tr><td><code class="inline-code">no</code></td><td>0</td><td>14</td></tr><tr><td><code class="inline-code">1</code></td><td>1</td><td>103</td></tr><tr><td><code class="inline-code">Y</code></td><td>1</td><td>101</td></tr><tr><td><code class="inline-code">true</code></td><td>1</td><td>93</td></tr><tr><td><code class="inline-code">y</code></td><td>1</td><td>92</td></tr><tr><td><code class="inline-code">yes</code></td><td>1</td><td>89</td></tr></tbody></table></div>
+Every one of the 11 raw spellings lands on exactly the right side — and
+the raw `NULL` group (31 rows) stays `NULL` on the clean side too, rather
+than being defaulted to `0` or `1` by guesswork.
+
+<h3 id="4-near-duplicate-awareness--deliberately-not-solved-here">4. Near-duplicate awareness — deliberately <em>not</em> solved here</h3>
+
+<p>The header comment on the real file is explicit about a boundary:
+<em>"Does NOT deduplicate the intentional near-duplicate people — that's left
+for a dedicated ROW_NUMBER lesson."</em> <code class="inline-code">silver_customers</code> still returns 600
+rows, the same as <code class="inline-code">bronze_customers</code> — cleaning is applied per-row, but no
+row is dropped or merged, even though Module 2 showed that ~29-30 of these
+600 rows are the same underlying person appearing twice. That's a
+deliberate, documented scope boundary, not an oversight: deduplication is
+a <em>judgment call</em> (which row is "canonical"? do you merge fields or pick
+one?) that belongs in a purpose-built step, not silently baked into a
+general-purpose cleaning view. This is the silver-layer contract in
+action: clean and standardize, but don't quietly make consequential
+decisions a downstream consumer wasn't told about.</p>
+
+<h2 id="your-turn-clean-a-column-silver_customerssql-doesnt-touch">Your turn: clean a column silver_customers.sql doesn't touch</h2>
+
+<p>Every technique above lives in <code class="inline-code">silver_customers.sql</code>, scoped to
+<code class="inline-code">bronze_customers</code>. To practice the pattern yourself, look at a <em>different</em>
+table: <code class="inline-code">bronze_employees.department</code> and <code class="inline-code">bronze_employees.region</code> have
+the exact same casing-inconsistency problem (<code class="inline-code">MANAGEMENT</code>, <code class="inline-code">Management</code>,
+<code class="inline-code">management</code> all meaning the same thing), verified from the raw data:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT department FROM bronze_employees ORDER BY 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>department</th></tr></thead><tbody><tr><td>MANAGEMENT</td></tr><tr><td>Management</td></tr><tr><td>SUPPORT</td></tr><tr><td>Sales</td></tr><tr><td>Support</td></tr><tr><td>WAREHOUSE</td></tr><tr><td>Warehouse</td></tr><tr><td>management</td></tr><tr><td>sales</td></tr><tr><td>support</td></tr><tr><td>warehouse</td></tr></tbody></table></div>
+**Write a plain `SELECT`** (not a `CREATE VIEW` — never run DDL against
+the shared `oakhaven.db`) that normalizes `department` to its 4 canonical
+forms (`Sales`, `Support`, `Warehouse`, `Management`), using the same
+`LOWER(TRIM(...))`-key-then-`CASE` technique `silver_customers.sql` uses
+for `customer_segment`. Then do the same for `region` (canonical forms:
+`West`, `East`, `Central`, `South`, `Northeast`). Try it before checking
+the exercises file for this module — the point is building the muscle
+memory of writing the `CASE` yourself, not reading someone else's.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Deleting rows in a silver view because they look wrong.</strong> Silver's job</li></ul>  is to clean what it can and be honest about what it can't — not to
+  quietly filter out anything inconvenient. If bronze has 600 rows,
+  silver_customers has 600 rows too.
+<ul class="styled-list"><li><strong>Guessing at ambiguous values instead of returning <code class="inline-code">NULL</code>.</strong> The</li></ul>  `is_active` `CASE` above explicitly falls through to `NULL` for anything
+  unrecognized, rather than defaulting everything unmatched to `0`
+  (or `1`) — a default here would be a silent, unjustified assumption
+  baked permanently into "clean" data.
+<ul class="styled-list"><li>**Assuming a format-matching approach (like the phone reformat) is safe</li></ul>  without checking the guarantee it depends on.** The phone `LIKE`/`GLOB`
+  patterns work *because* the data dictionary guarantees a fixed 3-3-4
+  digit shape for every non-null value — that assumption is exactly what
+  to re-verify first if this pattern is reused against a different,
+  unverified data source.
+<ul class="styled-list"><li><strong>Solving deduplication inside a general cleaning view.</strong> As shown</li></ul>  above, `silver_customers.sql` explicitly punts near-duplicate resolution
+  to a dedicated step — bundling it in here would hide a significant,
+  debatable decision inside what's supposed to be uncontroversial cleaning.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>Bronze → silver → gold: bronze is raw, silver cleans/standardizes/derives</li></ul>  without deleting rows or hiding unresolved problems, gold is
+  business-ready.
+<ul class="styled-list"><li><code class="inline-code">silver_customers.sql</code> demonstrates four reusable silver-layer</li></ul>  techniques: shape-based reformatting (phone), a `VALUES`-based lookup
+  CTE (state), exhaustive `CASE`-based boolean coalescing with an honest
+  `NULL` fallback (is_active), and deliberately deferring a judgment call
+  (deduplication) to a dedicated step rather than making it silently.
+<ul class="styled-list"><li>Silver views preserve bronze's row count and grain — cleaning happens</li></ul>  per-row, not by filtering.
+<ul class="styled-list"><li>The same casing-normalization technique used for <code class="inline-code">customer_segment</code></li></ul>  applies directly to `bronze_employees.department`/`region` — practice it
+  there before checking this module's exercises.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="07-the-date-spine-pattern.html" class="nav-btn">7. The Date-Spine Pattern</a>. Next: <a href="09-correlated-subqueries-exists.html" class="nav-btn">9. Correlated Subqueries, EXISTS, and NOT EXISTS</a>. Exercises: <a href="../../exercises/03-advanced/08-writing-your-first-silver-view.html" class="nav-btn">8. Writing Your First Silver View</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

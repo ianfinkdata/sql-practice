@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3. Tools and Setup | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="3-tools-and-setup">3. Tools and Setup</h1>
+
+<nav class="book-nav">Previous: <a href="02-what-is-sql.html" class="nav-btn">2. What Is SQL?</a>. Next: <a href="04-meet-oakhaven.html" class="nav-btn">4. Meet Oakhaven</a>. Exercises: <a href="../../exercises/00-orientation/03-tools-and-setup.html" class="nav-btn">3. Tools and Setup</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Before writing any SQL, you need two things: the practice database
+itself (<code class="inline-code">oakhaven.db</code>), and a way to open it and run queries against
+it. <code class="inline-code">project/oakhaven.db</code> is already checked into this repo, so if you
+just cloned it, the first thing is already done — you can go straight
+to <a href="#opening-the-database">Opening the database</a> below. This module
+covers that path first, then how to generate the database yourself
+from scratch, for anyone who wants to see the pipeline run.</p>
+
+<h2 id="opening-the-database">Opening the database</h2>
+
+<p>Once you've cloned the repo, <code class="inline-code">project/oakhaven.db</code> already exists.
+You just need something to open it with and run SQL against. Two good
+options — pick whichever fits how you like to work:</p>
+
+<p><strong>Option A: the <code class="inline-code">sqlite3</code> command-line tool.</strong> Fast, keyboard-driven,
+works everywhere. If you don't already have it, it's available via your
+OS package manager on Linux (e.g. <code class="inline-code">apt install sqlite3</code> on
+Debian/Ubuntu) and may already be present on macOS. On Windows it
+isn't bundled with the OS — download the "sqlite-tools" zip for your
+system from the <a href="https://www.sqlite.org/download.html">official SQLite download
+page</a>, unzip it, and either add
+that folder to your <code class="inline-code">PATH</code> or run <code class="inline-code">sqlite3.exe</code> from inside it.
+Once installed:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db</code></pre></div>
+
+<p>drops you into an interactive prompt where you can type SQL directly.
+This course's SQL examples are written assuming this tool, but the SQL
+itself is identical no matter what client you use. For the full set of
+CLI tips (readable output formatting, useful dot-commands, common
+gotchas), see <strong><code class="inline-code">project/docs/sqlite_cli_guide.md</code></strong> — worth a skim
+before Tier 1.</p>
+
+<p><strong>Option B: a GUI like DB Browser for SQLite or Beekeeper Studio.</strong> Free
+graphical applications — open the <code class="inline-code">.db</code> file in a window, let you
+browse tables, run SQL in a query editor, and see results in a
+spreadsheet-like grid. Good if you prefer a visual interface over a
+terminal, or if you'd rather skip installing Python entirely and just
+open the committed <code class="inline-code">project/oakhaven.db</code> directly. Download DB Browser
+at <strong>https://sqlitebrowser.org/</strong> or Beekeeper Studio at
+<strong>https://www.beekeeperstudio.io/</strong>.</p>
+
+<p>Either is fine. Some people use both — the CLI for quick one-off
+queries, a GUI for browsing table structure. Nothing in this course
+depends on which one you pick.</p>
+
+<h2 id="a-sanity-check">A sanity check</h2>
+
+<p>However you connect, confirm the database is really there and populated:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT COUNT(*) FROM bronze_sales;&quot;</code></pre></div>
+
+<p>This should print <code class="inline-code">12000</code>. If you get an error about no such table,
+double-check you're running the command from the repo root and that
+<code class="inline-code">project/oakhaven.db</code> exists (<code class="inline-code">ls project/oakhaven.db</code>).</p>
+
+<h2 id="building-the-database-yourself-optional">Building the database yourself (optional)</h2>
+
+<p>You don't need to do this to start the course — skip this section if
+you'd rather get straight to Tier 1. But it's worth doing once,
+whenever you're curious: the whole database is <em>generated</em> by a Python
+script, deterministically, from a fixed random seed. That means
+rebuilding it gets you byte-for-byte the same data every time (same
+customers, same messy strings, same row counts) — this matters because
+every example and exercise in this course cites exact numbers from
+that one deterministic build. If a number you compute doesn't match,
+it's a sign to check whether your database has drifted from a fresh
+build, not that the numbers in the lesson are wrong.</p>
+
+<p>From the repo root:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">pip install -r project/requirements.txt
+python project/build.py</code></pre></div>
+
+<blockquote class="custom-blockquote"><strong>Using Claude Code or another AI coding assistant?</strong> This repo ships<br>a <code class="inline-code">setup-database</code> skill (<code class="inline-code">.claude/skills/setup-database/</code>) that runs<br>all of the steps below for you, handles the virtual-environment<br>pitfall automatically, and verifies the result. Just ask it to set up<br>the database.</blockquote>
+
+<p>The <code class="inline-code">build.py</code> script creates <code class="inline-code">project/oakhaven.db</code>, populates all the
+bronze tables, and prints a summary when it's done (ending in something
+like <code class="inline-code">ALL HARD CHECKS PASSED</code>).</p>
+
+<h3 id="if-pip-install-refuses-to-run-macoslinux">If <code class="inline-code">pip install</code> refuses to run (macOS/Linux)</h3>
+
+<p>On modern Debian/Ubuntu systems, running <code class="inline-code">pip install</code> directly against
+your system Python often fails with an error like:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">error: externally-managed-environment</code></pre></div>
+
+<p>This is Debian/Ubuntu protecting your system Python from having random
+packages installed into it. The fix is to create a <strong>virtual
+environment</strong> — an isolated, project-local copy of Python where <code class="inline-code">pip
+install</code> is safe to run — and install into that instead:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">python3 -m venv .venv
+source .venv/bin/activate
+pip install -r project/requirements.txt
+python project/build.py</code></pre></div>
+
+<p><code class="inline-code">source .venv/bin/activate</code> needs to be re-run (from the repo root)
+each time you open a new terminal and want to use this environment.
+You'll know it worked because your shell prompt will show <code class="inline-code">(.venv)</code> at
+the front.</p>
+
+<h3 id="installing-on-windows">Installing on Windows</h3>
+
+<p>The same two commands from the top of this section
+(<code class="inline-code">pip install -r project/requirements.txt</code> then <code class="inline-code">python project/build.py</code>)
+usually work as-is in Command Prompt or PowerShell if you installed
+Python from <a href="https://www.python.org/downloads/">python.org</a> with the
+"Add python.exe to PATH" option checked. If you'd rather isolate the
+install in a virtual environment (recommended, and the same idea as the
+macOS/Linux fix above), from the repo root:</p>
+
+<p><strong>PowerShell:</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">POWERSHELL</span></div><pre><code class="language-powershell">python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r project/requirements.txt
+python project/build.py</code></pre></div>
+
+<p>If activation fails with a message about running scripts being
+disabled on the system, PowerShell's execution policy is blocking it.
+Run this once in that terminal, then retry the activate command:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">POWERSHELL</span></div><pre><code class="language-powershell">Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code></pre></div>
+
+<p><strong>Command Prompt (cmd.exe):</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BAT</span></div><pre><code class="language-bat">python -m venv .venv
+.venv\Scripts\activate.bat
+pip install -r project/requirements.txt
+python project/build.py</code></pre></div>
+
+<p>Either way, you'll know activation worked because the prompt shows
+<code class="inline-code">(.venv)</code> at the front, and you'll need to re-activate (<code class="inline-code">.venv\Scripts\Activate.ps1</code>
+or <code class="inline-code">.venv\Scripts\activate.bat</code>) each time you open a new terminal.</p>
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">project/oakhaven.db</code> is already committed to the repo — clone and</li></ul>  open it, no Python required.
+<ul class="styled-list"><li>Open it with the <code class="inline-code">sqlite3</code> CLI (on Windows, grab it from</li></ul>  https://www.sqlite.org/download.html), DB Browser for SQLite
+  (https://sqlitebrowser.org/), or Beekeeper Studio
+  (https://www.beekeeperstudio.io/) — your choice.
+<ul class="styled-list"><li><code class="inline-code">project/docs/sqlite_cli_guide.md</code> is your reference for CLI-specific</li></ul>  tips once you start running real queries.
+<ul class="styled-list"><li>You can also generate the database yourself, byte-identically, if</li></ul>  you want to see the pipeline run: `pip install -r
+  project/requirements.txt` then `python project/build.py`. Optional —
+  not required to start the curriculum.
+<ul class="styled-list"><li>If that <code class="inline-code">pip install</code> fails with "externally-managed-environment"</li></ul>  (macOS/Linux), create a virtual environment first (`python3 -m venv
+  .venv && source .venv/bin/activate`) and install inside it. On
+  Windows, use `python -m venv .venv` and `.venv\Scripts\Activate.ps1`
+  (PowerShell) or `.venv\Scripts\activate.bat` (cmd.exe).
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="02-what-is-sql.html" class="nav-btn">2. What Is SQL?</a>. Next: <a href="04-meet-oakhaven.html" class="nav-btn">4. Meet Oakhaven</a>. Exercises: <a href="../../exercises/00-orientation/03-tools-and-setup.html" class="nav-btn">3. Tools and Setup</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

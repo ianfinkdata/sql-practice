@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3. Transactions | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="3-transactions">3. Transactions</h1>
+
+<nav class="book-nav">Previous: <a href="02-alter-table-and-schema-evolution.html" class="nav-btn">2. ALTER TABLE and Schema Evolution</a>. Next: <a href="04-views.html" class="nav-btn">4. Views</a>. Exercises: <a href="../../exercises/04-expert/03-transactions.html" class="nav-btn">3. Transactions</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>A transaction groups one or more statements into a single unit: either
+<strong>all</strong> of them take effect, or <strong>none</strong> of them do. That guarantee is
+called <strong>atomicity</strong> — it's the "A" in the classic ACID acronym
+(Atomicity, Consistency, Isolation, Durability), and it's what lets
+you write multi-statement operations without worrying about the
+database ending up in a half-finished state if something goes wrong
+partway through.</p>
+
+<p>The classic motivating example is a bank transfer: moving money from
+Alice's account to Bob's is <em>two</em> updates (debit Alice, credit Bob).
+If the process crashes after the debit but before the credit, and
+those two statements weren't in a transaction, money has simply
+vanished. Wrap them in a transaction and that can't happen — either
+both updates land, or neither does.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">BEGIN;
+  -- one or more statements
+COMMIT;    -- make all of them permanent</code></pre></div>
+
+<p>or, to abandon everything since <code class="inline-code">BEGIN</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">BEGIN;
+  -- one or more statements
+ROLLBACK;  -- undo all of them, as if they never ran</code></pre></div>
+
+<p>Outside an explicit <code class="inline-code">BEGIN</code>, SQLite runs every statement in its own
+implicit transaction (this is "autocommit mode") — which is why every
+<code class="inline-code">SELECT</code> you've run all course has "just worked" without you ever
+typing <code class="inline-code">BEGIN</code>/<code class="inline-code">COMMIT</code>. Explicit transactions matter once you have
+<strong>more than one write that needs to succeed or fail together.</strong></p>
+
+<h2 id="verified-examples">Verified examples</h2>
+
+<p>All against a <strong>scratch copy</strong> — transactions modify data, so this
+must never run against the shared <code class="inline-code">project/oakhaven.db</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/scratch_expert.db
+sqlite3 /tmp/scratch_expert.db</code></pre></div>
+
+<h3 id="example-1--rollback-actually-undoes-the-change">Example 1 — ROLLBACK actually undoes the change</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_customers;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">600</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">BEGIN;
+DELETE FROM bronze_customers WHERE customer_id &lt;= 10;
+SELECT COUNT(*) AS after_delete FROM bronze_customers;
+ROLLBACK;
+SELECT COUNT(*) AS after_rollback FROM bronze_customers;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">after_delete
+------------
+590
+
+<p>after_rollback
+--------------
+600</code></pre></div></p>
+
+<p>The <code class="inline-code">DELETE</code> really did remove 10 rows — <code class="inline-code">after_delete</code> proves that,
+mid-transaction, the change is visible within this same connection.
+But <code class="inline-code">ROLLBACK</code> threw the entire transaction away: <code class="inline-code">after_rollback</code>
+shows the count is back to 600, as if the <code class="inline-code">DELETE</code> never happened.</p>
+
+<h3 id="example-2--commit-makes-it-permanent">Example 2 — COMMIT makes it permanent</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">BEGIN;
+DELETE FROM bronze_customers WHERE customer_id &lt;= 5;
+COMMIT;
+SELECT COUNT(*) AS after_commit FROM bronze_customers;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">after_commit
+------------
+595</code></pre></div>
+
+<p>This time <code class="inline-code">COMMIT</code> was called instead of <code class="inline-code">ROLLBACK</code> — the delete of 5
+rows is now permanent. A fresh connection to this scratch file would
+also see 595 rows; a <code class="inline-code">ROLLBACK</code> after <code class="inline-code">COMMIT</code> would do nothing (the
+transaction is already closed).</p>
+
+<h3 id="example-3--atomicity-across-multiple-statements-the-transfer-pattern">Example 3 — atomicity across multiple statements (the transfer pattern)</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE demo_accounts (id INTEGER PRIMARY KEY, name TEXT, balance REAL);
+INSERT INTO demo_accounts (name, balance) VALUES (&#x27;Alice&#x27;, 100.0), (&#x27;Bob&#x27;, 50.0);
+
+<p>BEGIN;
+UPDATE demo_accounts SET balance = balance - 30 WHERE name = &#x27;Alice&#x27;;
+UPDATE demo_accounts SET balance = balance + 30 WHERE name = &#x27;Bob&#x27;;
+SELECT * FROM demo_accounts;
+COMMIT;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">id  name   balance
+--  -----  -------
+1   Alice  70.0
+2   Bob    80.0</code></pre></div>
+
+<p>Both updates are visible together, inside the transaction, before the
+<code class="inline-code">COMMIT</code> even runs — and once committed they're permanent. If the
+second <code class="inline-code">UPDATE</code> had failed for any reason, the whole block could be
+rolled back and Alice's balance would never have been debited in the
+first place.</p>
+
+<h3 id="example-4--catching-a-mistake-before-its-permanent">Example 4 — catching a mistake before it's permanent</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">BEGIN;
+UPDATE demo_accounts SET balance = balance - 1000 WHERE name = &#x27;Alice&#x27;;
+SELECT * FROM demo_accounts;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">id  name   balance
+--  -----  -------
+1   Alice  -930.0
+2   Bob    80.0</code></pre></div>
+
+<p>That's an obviously wrong balance — this is exactly the moment a
+transaction earns its keep. Instead of committing a mistake:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ROLLBACK;
+SELECT * FROM demo_accounts;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">id  name   balance
+--  -----  -------
+1   Alice  70.0
+2   Bob    80.0</code></pre></div>
+
+<p>Alice's balance is back to 70.0, as though the erroneous <code class="inline-code">UPDATE</code> never
+ran. This is the core value proposition of a transaction: it gives
+you a checkpoint you can return to as long as you haven't typed
+<code class="inline-code">COMMIT</code> yet.</p>
+
+<h2 id="how-this-connects-to-oakhaven">How this connects to Oakhaven</h2>
+
+<p><code class="inline-code">project/build.py</code> uses exactly this pattern for real: it opens one
+connection, runs bronze schema creation, all the Python-driven bronze
+data generation, the calendar recursive CTE, then all silver and gold
+view creation — and only calls <code class="inline-code">conn.commit()</code> near the very end.
+Everything from <code class="inline-code">sqlite3.connect()</code> to that <code class="inline-code">commit()</code> is effectively
+one long transaction. If generation crashed partway through (a Python
+exception mid-way through <code class="inline-code">generate_sales.generate()</code>, say), nothing
+would be persisted to <code class="inline-code">project/oakhaven.db</code> — you'd never end up with
+a half-populated database on disk.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Forgetting to <code class="inline-code">COMMIT</code>.</strong> Uncommitted changes are only visible to</li></ul>  the connection that made them; if the process exits or the
+  connection closes without a `COMMIT`, most SQLite configurations
+  will roll the transaction back automatically. Don't assume a change
+  "took" just because a `SELECT` in the same session sees it.
+<ul class="styled-list"><li><strong>Assuming <code class="inline-code">ROLLBACK</code> works after <code class="inline-code">COMMIT</code>.</strong> Once committed, a</li></ul>  transaction is closed — there's nothing left to roll back. If you
+  need to undo committed data, that's a new set of statements (and a
+  new transaction), not a `ROLLBACK`.
+<ul class="styled-list"><li>**Running long transactions against a shared, concurrently-used</li></ul>  database.** An open transaction can hold locks that block other
+  connections. This is one more reason the shared `project/oakhaven.db`
+  is read-only for you in this course — concurrent writers are exactly
+  the scenario transactions are designed to arbitrate, and you don't
+  want to be the one blocking a classmate's `SELECT`.
+<ul class="styled-list"><li>**Treating a transaction as a performance tool without needing the</li></ul>  atomicity.** Wrapping many independent statements in a single
+  transaction can speed up bulk writes (fewer disk syncs), but if
+  those statements have no logical "all or nothing" relationship,
+  reach for it deliberately, not as a reflex.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">BEGIN</code> / <code class="inline-code">COMMIT</code> / <code class="inline-code">ROLLBACK</code> group statements into one atomic</li></ul>  unit — all changes apply, or none do.
+<ul class="styled-list"><li><code class="inline-code">ROLLBACK</code> genuinely undoes everything since the matching <code class="inline-code">BEGIN</code>,</li></ul>  even changes already visible in the same session — verified above
+  by watching a row count drop and then bounce back.
+<ul class="styled-list"><li>Outside an explicit <code class="inline-code">BEGIN</code>, SQLite auto-commits every statement</li></ul>  individually — explicit transactions matter once multiple writes
+  need to succeed or fail as one.
+<ul class="styled-list"><li>Always demo transactions against a scratch copy of the database.</li></ul>
+---
+
+<nav class="book-nav">Previous: <a href="02-alter-table-and-schema-evolution.html" class="nav-btn">2. ALTER TABLE and Schema Evolution</a>. Next: <a href="04-views.html" class="nav-btn">4. Views</a>. Exercises: <a href="../../exercises/04-expert/03-transactions.html" class="nav-btn">3. Transactions</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: NULL — the Absence of a Value | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-null--the-absence-of-a-value">Exercises: NULL — the Absence of a Value</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/05-null-the-absence-of-a-value.html" class="nav-btn">5. NULL: the Absence of a Value</a>. Previous: <a href="04-limiting-with-limit.html" class="nav-btn">4. Limiting with LIMIT (and OFFSET)</a>. Next: <a href="06-basic-aggregate-functions.html" class="nav-btn">6. Basic Aggregate Functions</a>.</nav>
+
+<h3 id="1-missing-emails">1. Missing emails</h3>
+
+<p>Write a query that shows <code class="inline-code">employee_id</code>, <code class="inline-code">first_name</code>, <code class="inline-code">last_name</code>,
+<code class="inline-code">email</code> for every employee with no email on file.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT employee_id, first_name, last_name, email
+FROM bronze_employees
+WHERE email IS NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>first_name</th><th>last_name</th><th>email</th></tr></thead><tbody><tr><td>5</td><td>stephanie</td><td>REID</td><td></td></tr><tr><td>11</td><td>Adam</td><td>Mcneil</td><td></td></tr><tr><td>21</td><td>Ashlee</td><td>Hall</td><td></td></tr><tr><td>33</td><td>Derek</td><td>Brown</td><td></td></tr></tbody></table></div>
+4 employees have no email recorded.
+
+<p></details></p>
+
+<h3 id="2-still-employed">2. Still employed</h3>
+
+<p><code class="inline-code">bronze_employees.termination_date</code> is <code class="inline-code">NULL</code> for anyone still
+employed (as of the snapshot date). Count how many employees are still
+employed, and how many have been terminated.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_employees WHERE termination_date IS NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>27</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_employees WHERE termination_date IS NOT NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>8</td></tr></tbody></table></div>
+27 + 8 = 35, the full employee roster.
+
+<p></details></p>
+
+<h3 id="3-two-nulls-at-once">3. Two NULLs at once</h3>
+
+<p>Write a query for products that are missing <strong>both</strong> <code class="inline-code">subcategory</code>
+<em>and</em> <code class="inline-code">unit_cost</code>. How many rows come back?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, product_name
+FROM bronze_products
+WHERE subcategory IS NULL AND unit_cost IS NULL;</code></pre></div>
+
+<p>Zero rows come back — none of the 150 products happen to be missing
+<em>both</em> fields at once in this build. That's a legitimate, useful
+result: it tells you these two kinds of missingness don't overlap
+here, not that the query is broken. (Try running the two <code class="inline-code">IS NULL</code>
+conditions separately — 27 and 7 rows respectively, from the
+curriculum module — to convince yourself neither set is empty on its
+own.)</p>
+
+<p></details></p>
+
+<h3 id="4-confirm-the-trap-yourself">4. Confirm the trap yourself</h3>
+
+<p>Write a query using <code class="inline-code">= NULL</code> (not <code class="inline-code">IS NULL</code>) to try to find employees
+with a missing email. What do you get, and why?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_employees WHERE email = NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>0</td></tr></tbody></table></div>
+Zero, even though exercise 1 just showed 4 employees really do have a
+missing email. `= NULL` never matches anything — any comparison
+against `NULL` evaluates to unknown, not true, so `WHERE` drops every
+row. The correct version is `WHERE email IS NULL`.
+
+<p></details></p>
+
+<h3 id="5-null-in-the-biggest-table">5. NULL in the biggest table</h3>
+
+<p><code class="inline-code">bronze_sales.employee_id</code> is <code class="inline-code">NULL</code> for online orders with no
+employee involved. Count how many of the 12,000 order-line rows have
+a <code class="inline-code">NULL</code> <code class="inline-code">employee_id</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales WHERE employee_id IS NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>1243</td></tr></tbody></table></div>
+About 10.4% of all order lines have no employee attached — consistent
+with "represents an online/no-rep sale" from the data dictionary.
+
+<p></details></p>
+
+<h3 id="6-combine-where-is-not-null-and-order-by">6. Combine WHERE, IS NOT NULL, and ORDER BY</h3>
+
+<p>Write a query for the 5 cheapest products, but only among products
+that actually <em>have</em> a recorded <code class="inline-code">unit_cost</code> (i.e. exclude the ones
+with <code class="inline-code">unit_cost IS NULL</code>).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_cost
+FROM bronze_products
+WHERE unit_cost IS NOT NULL
+ORDER BY unit_cost ASC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_cost</th></tr></thead><tbody><tr><td>Outrider Multi-Tools</td><td>-131.94</td></tr><tr><td>Cascade Hiking Boots</td><td>-4.19</td></tr><tr><td>Canyon Hats</td><td>8.48</td></tr><tr><td>Trailhead Sleeping Bags</td><td>10.4</td></tr><tr><td>Outrider Sleeping Bag</td><td>13.63</td></tr></tbody></table></div>
+The `unit_cost IS NOT NULL` filter did its job — no missing values
+snuck in. But look at the top two: **negative** unit costs. That's not
+a bug in your query; `bronze_products.unit_cost` really does have a
+small number of deliberately negative values (a data-entry error baked
+into the practice data on purpose). NULL isn't the only kind of "bad"
+data you'll need to watch for — it's just the one this module is
+about. Negative/implausible values like these get their own attention
+starting in Tier 2.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/05-null-the-absence-of-a-value.html" class="nav-btn">5. NULL: the Absence of a Value</a>. Previous: <a href="04-limiting-with-limit.html" class="nav-btn">4. Limiting with LIMIT (and OFFSET)</a>. Next: <a href="06-basic-aggregate-functions.html" class="nav-btn">6. Basic Aggregate Functions</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

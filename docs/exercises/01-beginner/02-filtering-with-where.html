@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Filtering with WHERE | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-filtering-with-where">Exercises: Filtering with WHERE</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/02-filtering-with-where.html" class="nav-btn">2. Filtering with WHERE</a>. Previous: <a href="01-select-and-from.html" class="nav-btn">1. SELECT and FROM</a>. Next: <a href="03-sorting-with-order-by.html" class="nav-btn">3. Sorting with ORDER BY</a>.</nav>
+
+<h3 id="1-one-category">1. One category</h3>
+
+<p>Write a query that shows <code class="inline-code">product_name</code> and <code class="inline-code">unit_price</code> for every
+product in <code class="inline-code">bronze_products</code> where <code class="inline-code">category</code> is exactly <code class="inline-code">Footwear</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+WHERE category = &#x27;Footwear&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Switchback Trail Running Shoes</td><td>341.91</td></tr><tr><td>Driftwood Approach Shoes</td><td>71.3</td></tr><tr><td>Backcountry Approach Shoes</td><td>60.5</td></tr></tbody></table></div>
+Only 3 rows — remember this misses `FOOTWEAR`, `footwear`, `Foot Wear`,
+and other messy variants, since `=` is exact-match.
+
+<p></details></p>
+
+<h3 id="2-budget-gear">2. Budget gear</h3>
+
+<p>Write a query that shows <code class="inline-code">product_name</code> and <code class="inline-code">unit_price</code> for every
+product priced under $50. How many rows come back?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+WHERE unit_price &lt; 50;</code></pre></div>
+
+<p>10 rows. First few:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Cascade Hiking Boots</td><td>6.67</td></tr><tr><td>Glacier Winter Glove</td><td>26.09</td></tr><tr><td>Trailhead Sleeping Bags</td><td>22.82</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE unit_price &lt; 50;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>10</td></tr></tbody></table></div>
+</details>
+
+<h3 id="3-two-conditions-with-and">3. Two conditions with AND</h3>
+
+<p>Write a query that finds employees who are in the <code class="inline-code">Management</code>
+department <strong>and</strong> the <code class="inline-code">West</code> region. Show <code class="inline-code">first_name</code>, <code class="inline-code">last_name</code>,
+<code class="inline-code">department</code>, <code class="inline-code">region</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT first_name, last_name, department, region
+FROM bronze_employees
+WHERE department = &#x27;Management&#x27; AND region = &#x27;West&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>first_name</th><th>last_name</th><th>department</th><th>region</th></tr></thead><tbody><tr><td>Alexa</td><td>garcia</td><td>Management</td><td>West</td></tr><tr><td>DALE</td><td>parker</td><td>Management</td><td>West</td></tr></tbody></table></div>
+</details>
+
+<h3 id="4-either-of-two-values-two-ways">4. Either of two values, two ways</h3>
+
+<p>Count how many products have <code class="inline-code">is_discontinued</code> equal to <code class="inline-code">'true'</code> or
+<code class="inline-code">'yes'</code>. Write it once using <code class="inline-code">OR</code>, and confirm you'd get the same
+count using <code class="inline-code">IN</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products
+WHERE is_discontinued = &#x27;true&#x27; OR is_discontinued = &#x27;yes&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>2</td></tr></tbody></table></div>
+Equivalently:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products
+WHERE is_discontinued IN (&#x27;true&#x27;, &#x27;yes&#x27;);</code></pre></div>
+
+<p>Same result: 2. (Note this is deliberately not the full picture — the
+mixed-boolean pool for <code class="inline-code">is_discontinued</code> also includes <code class="inline-code">1</code>, <code class="inline-code">Y</code>, <code class="inline-code">y</code>;
+a real "how many are discontinued" question needs the cleaned-up
+silver version, which you'll meet in Tier 2.)</p>
+
+<p></details></p>
+
+<h3 id="5-in-with-three-or-more-values">5. IN with three or more values</h3>
+
+<p>Write a query listing <code class="inline-code">first_name</code>, <code class="inline-code">last_name</code>, and <code class="inline-code">region</code> for
+employees whose <code class="inline-code">region</code> is <code class="inline-code">East</code> or <code class="inline-code">West</code>. How many total rows
+match?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT first_name, last_name, region
+FROM bronze_employees
+WHERE region IN (&#x27;East&#x27;, &#x27;West&#x27;);</code></pre></div>
+
+<p>10 rows total. First few:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>first_name</th><th>last_name</th><th>region</th></tr></thead><tbody><tr><td>Alexa</td><td>garcia</td><td>West</td></tr><tr><td>Alexandria</td><td>CUNNINGHAM</td><td>East</td></tr><tr><td>CHRISTY</td><td>Lee</td><td>West</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_employees WHERE region IN (&#x27;East&#x27;, &#x27;West&#x27;);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>10</td></tr></tbody></table></div>
+</details>
+
+<h3 id="6-not-equal-and-why-it-can-surprise-you">6. Not equal, and why it can surprise you</h3>
+
+<p>Count products where <code class="inline-code">category</code> is <strong>not</strong> exactly <code class="inline-code">Footwear</code>. Before
+running it, predict roughly what you'd expect if <code class="inline-code">category</code> had no
+casing mess at all (150 total products, 3 exactly <code class="inline-code">'Footwear'</code>) —
+then run it and see if the real number matches that expectation.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE category != &#x27;Footwear&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>147</td></tr></tbody></table></div>
+150 total products minus the 3 exactly matching `'Footwear'` gives
+147 — which does match, because `!=` (like `=`) is exact-match too, so
+it's *consistent* with the exact-match count, even though it's still
+including other-cased footwear rows (`FOOTWEAR`, `Foot Wear`, etc.) in
+the "not footwear" bucket. That inconsistency between what the query
+literally says and what you'd actually want ("not footwear, in any
+casing") is exactly why raw `category` gets cleaned up in Tier 2.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/02-filtering-with-where.html" class="nav-btn">2. Filtering with WHERE</a>. Previous: <a href="01-select-and-from.html" class="nav-btn">1. SELECT and FROM</a>. Next: <a href="03-sorting-with-order-by.html" class="nav-btn">3. Sorting with ORDER BY</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4. Limiting with LIMIT (and OFFSET) | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="4-limiting-with-limit-and-offset">4. Limiting with LIMIT (and OFFSET)</h1>
+
+<nav class="book-nav">Previous: <a href="03-sorting-with-order-by.html" class="nav-btn">3. Sorting with ORDER BY</a>. Next: <a href="05-null-the-absence-of-a-value.html" class="nav-btn">5. NULL: the Absence of a Value</a>. Exercises: <a href="../../exercises/01-beginner/04-limiting-with-limit.html" class="nav-btn">4. Limiting with LIMIT (and OFFSET)</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>You've already used <code class="inline-code">LIMIT</code> in every module so far, almost in
+passing — it's time to make it explicit. <code class="inline-code">LIMIT</code> caps how many rows a
+query returns. <code class="inline-code">OFFSET</code>, used alongside it, skips a number of rows
+before starting to return results. Together they let you grab a
+specific "page" of results out of a larger set.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT columns FROM table_name
+ORDER BY column_name
+LIMIT n;</code></pre></div>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>Two big reasons to reach for <code class="inline-code">LIMIT</code>:</p>
+
+<p>1. <strong>Exploration.</strong> When you're getting to know a table, you rarely
+   want all 12,000 rows dumped to your screen — <code class="inline-code">LIMIT 5</code> or <code class="inline-code">LIMIT
+   10</code> gives you a manageable taste. You've been doing exactly this
+   since Tier 0.
+2. <strong>Real questions that only want a "top N."</strong> "What are our 5
+   best-selling products?" "Who are the 3 most senior employees?"
+   These are naturally <code class="inline-code">ORDER BY ... LIMIT n</code> questions — sort by the
+   thing that matters, then take only as many as you need.</p>
+
+<p><code class="inline-code">OFFSET</code> builds on that for pagination — "give me the next page of
+results" — the same technique that powers "page 2" of search results
+or a paginated report.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT columns FROM table_name
+ORDER BY column_name
+LIMIT n;                 -- first n rows
+
+<p>SELECT columns FROM table_name
+ORDER BY column_name
+LIMIT n OFFSET m;         -- skip the first m rows, then take the next n</code></pre></div></p>
+
+<p><code class="inline-code">LIMIT</code> without <code class="inline-code">ORDER BY</code> will still cap your row count, but <em>which</em>
+rows you get is not guaranteed to be meaningful or stable — always
+pair <code class="inline-code">LIMIT</code>/<code class="inline-code">OFFSET</code> with <code class="inline-code">ORDER BY</code> when the specific rows matter
+(which is almost always).</p>
+
+<h2 id="try-it">Try it</h2>
+
+<h3 id="the-top-5">The top 5</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+ORDER BY unit_price DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Highline Backpacks</td><td>812.71</td></tr><tr><td>Foothill Electrolyte Mixes</td><td>782.32</td></tr><tr><td>Highline Paddle</td><td>696.3</td></tr><tr><td>Canyon Backpacks</td><td>687.96</td></tr><tr><td>Meridian Chalk Bags</td><td>669.02</td></tr></tbody></table></div>
+<h3 id="the-next-5--page-2-via-offset">The next 5 — "page 2" via OFFSET</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+ORDER BY unit_price DESC
+LIMIT 5 OFFSET 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Canyon Hiking Boots</td><td>649.26</td></tr><tr><td>Ridge Paddles</td><td>645.99</td></tr><tr><td>Highline Harnesse</td><td>642.05</td></tr><tr><td>Alpine Harnesse</td><td>640.45</td></tr><tr><td>Switchback Carabiner</td><td>618.29</td></tr></tbody></table></div>
+Same sort order as before, but this time skipping the top 5 and
+starting from rank 6. Products #6–10 by price, in other words.
+
+<h3 id="page-3">Page 3</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+ORDER BY unit_price DESC
+LIMIT 5 OFFSET 10;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Cascade Carabiners</td><td>584.4</td></tr><tr><td>Highline Rain Shells</td><td>567.3</td></tr><tr><td>Canyon Energy Bars</td><td>565.0</td></tr><tr><td>Backcountry Climbing Shoes</td><td>563.18</td></tr><tr><td>Ironpeak Hiking Boot</td><td>553.01</td></tr></tbody></table></div>
+Notice the pattern: `OFFSET 0` (page 1), `OFFSET 5` (page 2), `OFFSET
+10` (page 3) — each page's offset is `page_size * (page_number - 1)`.
+
+<h3 id="the-2nd-cheapest--limit-and-offset-together-for-a-single-row">"The 2nd cheapest" — LIMIT and OFFSET together for a single row</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+ORDER BY unit_price ASC
+LIMIT 1 OFFSET 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Canyon Hats</td><td>21.03</td></tr></tbody></table></div>
+`LIMIT 1` alone would give you the single cheapest product (Cascade
+Hiking Boots, from module 3). Adding `OFFSET 1` skips past that one
+and gives you the next — the 2nd cheapest.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Using LIMIT without ORDER BY when you care which rows you get.</strong></li></ul>  `SELECT * FROM bronze_products LIMIT 5;` will return *some* 5 rows,
+  but there's no guarantee they're a meaningful 5 (e.g. "the 5
+  cheapest") unless you sort first.
+<ul class="styled-list"><li><strong>Off-by-one errors with OFFSET.</strong> <code class="inline-code">OFFSET 5</code> skips the first 5 rows</li></ul>  and starts at the 6th — it's easy to accidentally write `OFFSET 6`
+  and skip one row too many, or forget you need `OFFSET 0` (or no
+  `OFFSET` at all) for page 1.
+<ul class="styled-list"><li><strong>Forgetting LIMIT entirely on a big table.</strong> `SELECT * FROM</li></ul>  bronze_sales;` with no `LIMIT` dumps all 12,000 rows to your
+  terminal — harmless but usually not what you meant while exploring.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">LIMIT n</code> caps the number of rows returned.</li><li><code class="inline-code">OFFSET m</code> skips the first <code class="inline-code">m</code> rows before applying the limit — the</li></ul>  combination gives you pagination.
+<ul class="styled-list"><li>Always pair <code class="inline-code">LIMIT</code>/<code class="inline-code">OFFSET</code> with <code class="inline-code">ORDER BY</code> when <em>which</em> rows you</li></ul>  get actually matters.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="03-sorting-with-order-by.html" class="nav-btn">3. Sorting with ORDER BY</a>. Next: <a href="05-null-the-absence-of-a-value.html" class="nav-btn">5. NULL: the Absence of a Value</a>. Exercises: <a href="../../exercises/01-beginner/04-limiting-with-limit.html" class="nav-btn">4. Limiting with LIMIT (and OFFSET)</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

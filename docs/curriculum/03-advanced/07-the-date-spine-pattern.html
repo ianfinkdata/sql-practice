@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>7. The Date-Spine Pattern | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="7-the-date-spine-pattern">7. The Date-Spine Pattern</h1>
+
+<nav class="book-nav">Previous: <a href="06-time-intelligence.html" class="nav-btn">6. Time Intelligence</a>. Next: <a href="08-writing-your-first-silver-view.html" class="nav-btn">8. Writing Your First Silver View</a>. Exercises: <a href="../../exercises/03-advanced/07-the-date-spine-pattern.html" class="nav-btn">7. The Date-Spine Pattern</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>If you build a sales-by-day report with a plain <code class="inline-code">GROUP BY order_date</code> over
+<code class="inline-code">fact_sales</code>, you get one row per day <strong>that had at least one order</strong>. Days
+with zero orders simply don't appear — not as a row with <code class="inline-code">0</code>, but as
+nothing at all. For a lot of real questions ("show me a chart of daily
+sales for the quarter," "what's our longest streak without an order?")
+that silent absence is actively wrong: a missing row looks identical to a
+day that was never queried, and most charting/BI tools will just skip the
+gap rather than plot a zero.</p>
+
+<p>The fix is the <strong>date-spine pattern</strong>: start from a complete, gapless
+calendar (<code class="inline-code">dim_date</code>, itself built from the recursive-CTE-generated
+<code class="inline-code">bronze_calendar</code> — Module 5), and <code class="inline-code">LEFT JOIN</code> your actual data onto it.
+Every date in the spine survives; dates with no matching data just get
+<code class="inline-code">NULL</code>s from the joined side, which you then <code class="inline-code">COALESCE</code> down to <code class="inline-code">0</code>.</p>
+
+<h2 id="the-pattern">The pattern</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT d.date, ..., COALESCE(SUM(f.measure), 0) AS total
+FROM dim_date d
+LEFT JOIN fact_table f ON f.datekey = d.datekey
+WHERE d.date BETWEEN start_date AND end_date
+GROUP BY d.date, ...</code></pre></div>
+
+<p>The load-bearing detail: <strong>the spine table is on the left of the <code class="inline-code">LEFT
+JOIN</code> and drives the <code class="inline-code">FROM</code> clause.</strong> Get this backwards — <code class="inline-code">FROM
+fact_table f LEFT JOIN dim_date d ON ...</code> — and you're back to only seeing
+dates that already have data, because now <code class="inline-code">fact_table</code> (not the spine) is
+what decides which rows exist.</p>
+
+<h2 id="worked-example-dissecting-goldagg_daily_salessql">Worked example: dissecting <code class="inline-code">gold/agg_daily_sales.sql</code></h2>
+
+<p>Full contents:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">DROP VIEW IF EXISTS agg_daily_sales;
+CREATE VIEW agg_daily_sales AS
+SELECT
+    d.date AS order_date,
+    d.year,
+    d.month,
+    d.day_name,
+    d.is_weekend,
+    COUNT(f.order_line_id) AS order_line_count,
+    ROUND(COALESCE(SUM(f.net_amount), 0), 2) AS total_net_amount
+FROM dim_date d
+LEFT JOIN fact_sales f ON f.datekey = d.datekey
+WHERE d.date BETWEEN &#x27;2021-01-01&#x27; AND &#x27;2026-06-30&#x27;
+GROUP BY d.date, d.year, d.month, d.day_name, d.is_weekend
+ORDER BY d.date;</code></pre></div>
+
+<p>Reading it against the pattern above:
+<ul class="styled-list"><li><strong><code class="inline-code">FROM dim_date d</code></strong> — the spine drives the query. <code class="inline-code">dim_date</code> has 7,670</li></ul>  rows (2018-01-01 through 2038-12-31); this view only wants the
+  operational sales window, filtered later.
+<ul class="styled-list"><li><strong><code class="inline-code">LEFT JOIN fact_sales f ON f.datekey = d.datekey</code></strong> — every date row</li></ul>  from <code class="inline-code">dim_date</code> is kept regardless of whether it finds a match in
+  <code class="inline-code">fact_sales</code>. Days with orders get one matched row per order line (which
+  is why the aggregates below need <code class="inline-code">GROUP BY</code>); days without orders get a
+  single unmatched row where every <code class="inline-code">f.<em></code> column is <code class="inline-code">NULL</code>.
+<ul class="styled-list"><li><strong><code class="inline-code">WHERE d.date BETWEEN '2021-01-01' AND '2026-06-30'</code></strong> — restricts the</li></ul>  spine to Oakhaven's actual operational window. The file's own comment
+  flags that these literals mirror <code class="inline-code">build_lib/config.py</code>'s <code class="inline-code">SALES_START</code>
+  and <code class="inline-code">SNAPSHOT_DATE</code> constants, and must be kept in sync if those ever
+  change — a good example of a magic-value dependency worth documenting
+  in the SQL itself.
+<ul class="styled-list"><li><strong><code class="inline-code">COUNT(f.order_line_id)</code></strong> — counting a <em>column</em> (not <code class="inline-code">COUNT(</em>)</code>) is</li></ul>  deliberate: <code class="inline-code">COUNT(column)</code> ignores <code class="inline-code">NULL</code>s, so on a zero-order day
+  (where <code class="inline-code">f.order_line_id</code> is <code class="inline-code">NULL</code> from the unmatched <code class="inline-code">LEFT JOIN</code>) this
+  correctly evaluates to <code class="inline-code">0</code>. <code class="inline-code">COUNT(*)</code> would instead count the single
+  unmatched placeholder row and wrongly report <code class="inline-code">1</code>.
+<ul class="styled-list"><li><strong><code class="inline-code">COALESCE(SUM(f.net_amount), 0)</code></strong> — <code class="inline-code">SUM()</code> over zero non-null rows</li></ul>  returns <code class="inline-code">NULL</code> in SQL, not <code class="inline-code">0</code>. <code class="inline-code">COALESCE(..., 0)</code> converts that <code class="inline-code">NULL</code>
+  into an honest <code class="inline-code">0.0</code> so a zero-order day reports <code class="inline-code">total_net_amount = 0</code>
+  instead of a missing/<code class="inline-code">NULL</code> total.</p>
+
+<h2 id="verifying-the-gap-filling-actually-works">Verifying the gap-filling actually works</h2>
+
+<p>The facts sheet states the operational window (2021-01-01 through
+2026-06-30) contains exactly <strong>54</strong> zero-order days. Confirmed directly:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM agg_daily_sales WHERE order_line_count = 0;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>54</td></tr></tbody></table></div>
+A sample of them:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_date, day_name, is_weekend, order_line_count, total_net_amount
+FROM agg_daily_sales WHERE order_line_count = 0 ORDER BY order_date LIMIT 6;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_date</th><th>day_name</th><th>is_weekend</th><th>order_line_count</th><th>total_net_amount</th></tr></thead><tbody><tr><td>2021-01-08</td><td>Friday</td><td>0</td><td>0</td><td>0.0</td></tr><tr><td>2021-03-02</td><td>Tuesday</td><td>0</td><td>0</td><td>0.0</td></tr><tr><td>2021-03-13</td><td>Saturday</td><td>1</td><td>0</td><td>0.0</td></tr><tr><td>2021-03-26</td><td>Friday</td><td>0</td><td>0</td><td>0.0</td></tr><tr><td>2021-04-30</td><td>Friday</td><td>0</td><td>0</td><td>0.0</td></tr><tr><td>2021-05-01</td><td>Saturday</td><td>1</td><td>0</td><td>0.0</td></tr></tbody></table></div>
+These are real calendar days that genuinely had zero orders — a weekday
+(Friday) is just as likely to show up here as a weekend day, since
+Oakhaven's order volume isn't modeled with a strong day-of-week
+seasonality. Without the date spine, all 54 of these rows would simply not
+exist in the output.
+
+<p>To see exactly what the <code class="inline-code">INNER JOIN</code> mistake would have cost, rebuild the
+same query with a plain <code class="inline-code">JOIN</code> instead of <code class="inline-code">LEFT JOIN</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+  SELECT d.date FROM dim_date d
+  JOIN fact_sales f ON f.datekey = d.datekey
+  WHERE d.date BETWEEN &#x27;2021-01-01&#x27; AND &#x27;2026-06-30&#x27;
+  GROUP BY d.date
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>1953</td></tr></tbody></table></div>
+The full window has 2,007 days (`SELECT COUNT(*) FROM dim_date WHERE date
+BETWEEN '2021-01-01' AND '2026-06-30'`); an `INNER JOIN` produces only
+1,953 of them — exactly 2,007 − 1,953 = **54** short, matching the
+zero-order-day count precisely. That's the date-spine pattern's entire
+value proposition, quantified.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Putting the fact table first in the <code class="inline-code">FROM</code> clause.</strong> `FROM fact_sales</li></ul>  f LEFT JOIN dim_date d ON ...` looks superficially similar but drives
+  the row set from the *fact* table, silently reintroducing the exact gaps
+  the spine was supposed to eliminate.
+<ul class="styled-list"><li>*<em>Using <code class="inline-code">COUNT(</em>)</code> instead of <code class="inline-code">COUNT(column)</code>** when counting matched</li></ul>  rows after a `LEFT JOIN`. `COUNT(*)` counts the placeholder row itself on
+  unmatched dates, always reporting at least 1, even on a genuine
+  zero-order day.
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">COALESCE()</code> around <code class="inline-code">SUM()</code>/<code class="inline-code">AVG()</code>.</strong> These return <code class="inline-code">NULL</code>,</li></ul>  not `0`, when there's nothing to aggregate — which then breaks any
+  downstream arithmetic or chart that isn't expecting a `NULL`.
+<ul class="styled-list"><li>**Filtering on a joined (fact-side) column in <code class="inline-code">WHERE</code> instead of</li></ul>  `ON`.** Adding a `fact_sales` condition to `WHERE` (rather than folding
+  it into the `ON` clause) silently turns the `LEFT JOIN` back into an
+  effective `INNER JOIN`, because `WHERE` evaluates after the join and
+  discards any row where that column is `NULL` — including every
+  zero-order day. If you need to filter the fact side while still keeping
+  spine rows with no match, the condition belongs in `ON`, not `WHERE`.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>The date-spine pattern: `FROM dim_date LEFT JOIN fact_table ON</li></ul>  datekey = datekey`, spine on the left, so every date survives regardless
+  of whether it has matching data.
+<ul class="styled-list"><li><code class="inline-code">agg_daily_sales</code> uses exactly this pattern and genuinely needs it: 54</li></ul>  of the 2,007 days in its 2021-01-01–2026-06-30 window have zero orders,
+  and would silently vanish under a plain `JOIN`.
+<ul class="styled-list"><li><code class="inline-code">COUNT(column)</code> (ignores <code class="inline-code">NULL</code>) and <code class="inline-code">COALESCE(SUM(...), 0)</code> (converts a</li></ul>  `NULL` sum to `0`) are the two companion techniques that make the
+  zero-order rows report clean `0`s instead of `NULL`s.
+<ul class="styled-list"><li>This pattern generalizes beyond dates: any time you need "every X, even</li></ul>  ones with no matching data," start the `FROM` clause from the complete
+  list of X and `LEFT JOIN` the data onto it.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="06-time-intelligence.html" class="nav-btn">6. Time Intelligence</a>. Next: <a href="08-writing-your-first-silver-view.html" class="nav-btn">8. Writing Your First Silver View</a>. Exercises: <a href="../../exercises/03-advanced/07-the-date-spine-pattern.html" class="nav-btn">7. The Date-Spine Pattern</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

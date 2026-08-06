@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: COALESCE and NULLIF | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-coalesce-and-nullif">Exercises: COALESCE and NULLIF</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/07-coalesce-and-nullif.html" class="nav-btn">COALESCE and NULLIF</a>. Previous: <a href="06-cleaning-text-trim-upper-replace.html" class="nav-btn">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</a>. Next: <a href="08-subqueries-and-derived-tables.html" class="nav-btn">Subqueries and Derived Tables</a>.</nav>
+
+<p>Use <code class="inline-code">project/oakhaven.db</code>. Every solution below was run against the
+real database — your output should match exactly.</p>
+
+<hr class="divider">
+
+<p><strong>1. Fill missing emails with a placeholder</strong></p>
+
+<p>Return <code class="inline-code">customer_id</code>, <code class="inline-code">email</code>, and a <code class="inline-code">email_filled</code> column using
+<code class="inline-code">COALESCE</code> to substitute <code class="inline-code">'unknown@oakhaven.local'</code> for <code class="inline-code">NULL</code> emails.
+Show the first 5 rows where <code class="inline-code">email IS NULL</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, email, COALESCE(email, &#x27;unknown@oakhaven.local&#x27;) AS email_filled
+FROM bronze_customers
+WHERE email IS NULL
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>email</th><th>email_filled</th></tr></thead><tbody><tr><td>14</td><td></td><td>unknown@oakhaven.local</td></tr><tr><td>32</td><td></td><td>unknown@oakhaven.local</td></tr><tr><td>50</td><td></td><td>unknown@oakhaven.local</td></tr><tr><td>85</td><td></td><td>unknown@oakhaven.local</td></tr><tr><td>122</td><td></td><td>unknown@oakhaven.local</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<p><strong>2. Fill missing <code class="inline-code">state</code>, catching both NULL and empty string</strong></p>
+
+<p><code class="inline-code">state</code> is <code class="inline-code">NULL</code> for 17 customers and <code class="inline-code">''</code> for another 10. Write a
+query returning <code class="inline-code">customer_id</code>, <code class="inline-code">state</code>, and <code class="inline-code">state_filled</code> (using
+<code class="inline-code">COALESCE</code> + <code class="inline-code">NULLIF</code> so both cases become <code class="inline-code">'Unknown'</code>), limited to
+the first 5 rows matching either condition.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, state, COALESCE(NULLIF(state, &#x27;&#x27;), &#x27;Unknown&#x27;) AS state_filled
+FROM bronze_customers
+WHERE state IS NULL OR state = &#x27;&#x27;
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>state</th><th>state_filled</th></tr></thead><tbody><tr><td>7</td><td></td><td>Unknown</td></tr><tr><td>29</td><td></td><td>Unknown</td></tr><tr><td>46</td><td></td><td>Unknown</td></tr><tr><td>91</td><td></td><td>Unknown</td></tr><tr><td>97</td><td></td><td>Unknown</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_customers WHERE state IS NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>17</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_customers WHERE state = &#x27;&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>10</td></tr></tbody></table></div>
+27 total customers (17 + 10) needed the `NULLIF` step to be caught —
+plain `COALESCE(state, 'Unknown')` alone would have left the 10
+empty-string rows untouched, same bug as Module 7's email example.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>3. Products with an "Unspecified" subcategory, for one brand</strong></p>
+
+<p>For brand <code class="inline-code">'Elkstone'</code>, group products by <code class="inline-code">COALESCE(subcategory,
+'Unspecified')</code> and count how many products fall into each
+subcategory (including the unspecified bucket).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT brand, COALESCE(subcategory, &#x27;Unspecified&#x27;) AS subcat, COUNT(*) AS n
+FROM bronze_products
+WHERE brand = &#x27;Elkstone&#x27;
+GROUP BY brand, subcat
+ORDER BY n DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>brand</th><th>subcat</th><th>n</th></tr></thead><tbody><tr><td>Elkstone</td><td>Hydration Packs</td><td>2</td></tr><tr><td>Elkstone</td><td>Unspecified</td><td>2</td></tr><tr><td>Elkstone</td><td>Chalk Bags</td><td>1</td></tr><tr><td>Elkstone</td><td>Electrolyte Mixes</td><td>1</td></tr><tr><td>Elkstone</td><td>Ropes</td><td>1</td></tr><tr><td>Elkstone</td><td>Sleeping Bags</td><td>1</td></tr><tr><td>Elkstone</td><td>Trail Running Shoes</td><td>1</td></tr><tr><td>Elkstone</td><td>Winter Gloves</td><td>1</td></tr></tbody></table></div>
+2 of Elkstone's 10 products have no `subcategory` on file — grouping
+on the raw column would have made those 2 rows vanish from the report
+(`GROUP BY` treats `NULL` as its own group, but a bare `NULL` label is
+easy to overlook); `COALESCE` turns them into a visible, countable
+bucket instead.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>4. Best available contact: prefer email, fall back to phone</strong></p>
+
+<p>For customers with a missing or empty <code class="inline-code">email</code> but a non-null <code class="inline-code">phone</code>,
+show <code class="inline-code">customer_id</code>, <code class="inline-code">email</code>, <code class="inline-code">phone</code>, and a <code class="inline-code">best_contact</code> column that
+picks <code class="inline-code">email</code> first, falls back to <code class="inline-code">phone</code>, and finally to <code class="inline-code">'no
+contact on file'</code> if neither exists. Show the first 5 matching rows.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, email, phone,
+       COALESCE(NULLIF(email, &#x27;&#x27;), NULLIF(phone, &#x27;&#x27;), &#x27;no contact on file&#x27;) AS best_contact
+FROM bronze_customers
+WHERE (email IS NULL OR email = &#x27;&#x27;) AND phone IS NOT NULL
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>email</th><th>phone</th><th>best_contact</th></tr></thead><tbody><tr><td>14</td><td></td><td>+1 759 362 5645</td><td>+1 759 362 5645</td></tr><tr><td>32</td><td></td><td>(281) 469-9386</td><td>(281) 469-9386</td></tr><tr><td>50</td><td></td><td>+1 250 470 6432</td><td>+1 250 470 6432</td></tr><tr><td>85</td><td></td><td>(519) 315-2771</td><td>(519) 315-2771</td></tr><tr><td>88</td><td></td><td>541.323.1956</td><td>541.323.1956</td></tr></tbody></table></div>
+`COALESCE` with three arguments here: try `email` (via `NULLIF` to
+also catch `''`), then `phone` (same treatment), then the literal
+fallback string — each argument only gets evaluated as a fallback for
+the one before it.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>5. How many customers have neither a usable email nor phone?</strong></p>
+
+<p>Using the same <code class="inline-code">COALESCE(NULLIF(email, ''), NULLIF(phone, ''))</code>
+pattern (no final string fallback this time), count how many
+customers get <code class="inline-code">NULL</code> back — meaning both fields are missing or empty.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_customers
+WHERE COALESCE(NULLIF(email, &#x27;&#x27;), NULLIF(phone, &#x27;&#x27;)) IS NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>2</td></tr></tbody></table></div>
+Only 2 of 600 customers have no usable contact method at all —
+`COALESCE` returning `NULL` here means every argument passed to it
+evaluated to `NULL`, which is itself useful information, not just a
+display artifact.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>6. Guard a ratio calculation against a hypothetical zero</strong></p>
+
+<p><code class="inline-code">unit_cost</code> never actually equals <code class="inline-code">0</code> in this build, but writing
+defensive SQL means guarding anyway. Compute <code class="inline-code">unit_price /
+NULLIF(unit_cost, 0)</code> as <code class="inline-code">markup_ratio</code> for all products where
+<code class="inline-code">unit_cost</code> is not <code class="inline-code">NULL</code>, and separately confirm no <code class="inline-code">unit_cost</code> is
+actually <code class="inline-code">0</code> (so you know the guard isn't currently doing anything,
+but would if the data changed). Show the 5 lowest markup ratios.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE unit_cost = 0;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>0</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, unit_cost, unit_price,
+       ROUND(unit_price / NULLIF(unit_cost, 0), 2) AS markup_ratio
+FROM bronze_products
+WHERE unit_cost IS NOT NULL
+ORDER BY markup_ratio ASC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>unit_cost</th><th>unit_price</th><th>markup_ratio</th></tr></thead><tbody><tr><td>30</td><td>-131.94</td><td>240.4</td><td>-1.82</td></tr><tr><td>19</td><td>-4.19</td><td>6.67</td><td>-1.59</td></tr><tr><td>146</td><td>199.28</td><td>259.26</td><td>1.3</td></tr><tr><td>14</td><td>172.07</td><td>225.67</td><td>1.31</td></tr><tr><td>45</td><td>153.36</td><td>201.29</td><td>1.31</td></tr></tbody></table></div>
+The two lowest (and only negative) markup ratios come from the two
+products with negative `unit_cost` documented in the data
+dictionary — `NULLIF` was never the tool for that particular
+messiness (negative cost isn't zero cost), which is worth noticing:
+`NULLIF(unit_cost, 0)` protects against exactly one specific bad
+value, not "anything weird about this column."
+
+<p></details></p>
+
+<hr class="divider">
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/07-coalesce-and-nullif.html" class="nav-btn">COALESCE and NULLIF</a>. Previous: <a href="06-cleaning-text-trim-upper-replace.html" class="nav-btn">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</a>. Next: <a href="08-subqueries-and-derived-tables.html" class="nav-btn">Subqueries and Derived Tables</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

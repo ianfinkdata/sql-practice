@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2. ALTER TABLE and Schema Evolution | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="2-alter-table-and-schema-evolution">2. ALTER TABLE and Schema Evolution</h1>
+
+<nav class="book-nav">Previous: <a href="01-ddl-basics-and-type-affinity.html" class="nav-btn">1. DDL Basics and Type Affinity</a>. Next: <a href="03-transactions.html" class="nav-btn">3. Transactions</a>. Exercises: <a href="../../exercises/04-expert/02-alter-table-and-schema-evolution.html" class="nav-btn">2. ALTER TABLE and Schema Evolution</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Real schemas change after they're deployed: a new column is needed, a
+table gets renamed as the domain model matures, a column that seemed
+fine at launch turns out to need a different type. <code class="inline-code">ALTER TABLE</code> is
+how you evolve an existing table's structure without dropping and
+recreating it (and losing its data in the process).</p>
+
+<p>SQLite supports a genuinely useful subset of <code class="inline-code">ALTER TABLE</code> — but a
+much smaller subset than Postgres, MySQL, or SQL Server. Knowing
+exactly where that boundary is (and the workaround pattern for
+everything outside it) is the point of this module.</p>
+
+<h2 id="what-sqlites-alter-table-can-do">What SQLite's ALTER TABLE can do</h2>
+
+<p>SQLite supports five <code class="inline-code">ALTER TABLE</code> forms:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ALTER TABLE table_name RENAME TO new_table_name;
+ALTER TABLE table_name RENAME COLUMN old_name TO new_name;
+ALTER TABLE table_name ADD COLUMN column_name TYPE [DEFAULT value];
+ALTER TABLE table_name DROP COLUMN column_name;
+ALTER TABLE table_name ADD COLUMN ... (constraints below)</code></pre></div>
+
+<p>That's the entire list. There is <strong>no</strong> <code class="inline-code">ALTER COLUMN</code>, no <code class="inline-code">MODIFY
+COLUMN</code>, no direct way to change a column's type, no way to add a
+constraint to an existing column, and <code class="inline-code">ADD COLUMN</code> itself has sharp
+restrictions (below). Compare this to Postgres, where <code class="inline-code">ALTER TABLE ...
+ALTER COLUMN ... TYPE ...</code> and <code class="inline-code">ALTER TABLE ... ADD CONSTRAINT ...</code>
+are both routine. Porting a migration script written for Postgres to
+SQLite verbatim will fail.</p>
+
+<h2 id="add-columns-restrictions">ADD COLUMN's restrictions</h2>
+
+<p><code class="inline-code">ADD COLUMN</code> works, but only under specific conditions, because
+SQLite adds the column by rewriting the table's schema definition
+rather than rewriting every existing row:
+<ul class="styled-list"><li>The new column <strong>cannot</strong> have a <code class="inline-code">UNIQUE</code> constraint.</li><li>The new column <strong>cannot</strong> be <code class="inline-code">PRIMARY KEY</code>.</li><li>If the new column is <code class="inline-code">NOT NULL</code>, it <strong>must</strong> have a non-<code class="inline-code">NULL</code></li></ul>  <code class="inline-code">DEFAULT</code> — existing rows need <em>some</em> value to backfill, and SQLite
+  won't guess one.
+<ul class="styled-list"><li>The default, if given, must be a constant (or a small set of</li></ul>  constant-like expressions) — not something computed from other
+  columns.</p>
+
+<h2 id="verified-examples">Verified examples</h2>
+
+<p>All against a <strong>scratch copy</strong>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/scratch_expert.db
+sqlite3 /tmp/scratch_expert.db</code></pre></div>
+
+<h3 id="example-1--add-column-with-a-default-backfilled-onto-existing-rows">Example 1 — ADD COLUMN with a default, backfilled onto existing rows</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE demo_alter (id INTEGER PRIMARY KEY, name TEXT);
+INSERT INTO demo_alter (name) VALUES (&#x27;widget&#x27;), (&#x27;gadget&#x27;);
+ALTER TABLE demo_alter ADD COLUMN price REAL DEFAULT 0;
+SELECT * FROM demo_alter;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">id  name    price
+--  ------  -----
+1   widget  0.0
+2   gadget  0.0</code></pre></div>
+
+<p>Both pre-existing rows picked up <code class="inline-code">price = 0.0</code> — SQLite backfilled the
+default without you touching the existing data.</p>
+
+<h3 id="example-2--rename-column-and-rename-to">Example 2 — RENAME COLUMN and RENAME TO</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ALTER TABLE demo_alter RENAME COLUMN name TO product_name;
+.schema demo_alter
+-- CREATE TABLE demo_alter (id INTEGER PRIMARY KEY, product_name TEXT, price REAL DEFAULT 0);
+
+<p>ALTER TABLE demo_alter RENAME TO demo_alter_renamed;
+SELECT * FROM demo_alter_renamed;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">id  product_name  price
+--  ------------  -----
+1   widget        0.0
+2   gadget        0.0</code></pre></div>
+
+<h3 id="example-3--drop-column-sqlite--3350">Example 3 — DROP COLUMN (SQLite ≥ 3.35.0)</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ALTER TABLE demo_alter_renamed DROP COLUMN price;
+.schema demo_alter_renamed</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE IF NOT EXISTS &quot;demo_alter_renamed&quot; (id INTEGER PRIMARY KEY, product_name TEXT);</code></pre></div>
+
+<p><code class="inline-code">DROP COLUMN</code> is a relatively recent addition to SQLite (3.35.0,
+2021) — worth knowing if you ever work against an older SQLite build,
+where it isn't available at all.</p>
+
+<h3 id="example-4--the-restrictions-hit-head-on">Example 4 — the restrictions, hit head-on</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ALTER TABLE demo_alter_renamed ADD COLUMN required_field TEXT NOT NULL;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: stepping, Cannot add a NOT NULL column with default value NULL</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ALTER TABLE demo_alter_renamed ADD COLUMN sku TEXT UNIQUE;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: in prepare, Cannot add a UNIQUE column</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ALTER TABLE demo_alter_renamed ALTER COLUMN product_name TYPE VARCHAR(50);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: in prepare, near &quot;ALTER&quot;: syntax error</code></pre></div>
+
+<p>All three errors are real SQLite behavior, run against the scratch
+copy — this isn't a hypothetical list of limitations, it's what
+actually happens.</p>
+
+<h3 id="example-5--the-workaround-rename-recreate-copy-drop">Example 5 — the workaround: rename, recreate, copy, drop</h3>
+
+<p>When you need something <code class="inline-code">ALTER TABLE</code> can't do directly — add a
+<code class="inline-code">UNIQUE</code>/<code class="inline-code">CHECK</code> constraint, change a type, add a <code class="inline-code">NOT NULL</code> column
+without a usable default — the standard SQLite pattern (documented in
+SQLite's own docs as the "12-step" procedure, simplified here) is:
+rename the old table out of the way, create the new table with the
+desired shape, copy the data across, drop the old table. Wrapped in a
+transaction so it's all-or-nothing (Module 3 covers transactions in
+depth):</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">BEGIN;
+ALTER TABLE demo_alter_renamed RENAME TO demo_alter_old;
+CREATE TABLE demo_alter_renamed (
+    id INTEGER PRIMARY KEY,
+    product_name TEXT NOT NULL DEFAULT &#x27;unknown&#x27;
+);
+INSERT INTO demo_alter_renamed (id, product_name)
+    SELECT id, product_name FROM demo_alter_old;
+DROP TABLE demo_alter_old;
+COMMIT;
+
+<p>SELECT * FROM demo_alter_renamed;
+.schema demo_alter_renamed</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">id  product_name
+--  ------------
+1   widget
+2   gadget
+
+<p>CREATE TABLE demo_alter_renamed (
+    id INTEGER PRIMARY KEY,
+    product_name TEXT NOT NULL DEFAULT &#x27;unknown&#x27;
+);</code></pre></div></p>
+
+<p>The new table now has a <code class="inline-code">NOT NULL DEFAULT 'unknown'</code> constraint on
+<code class="inline-code">product_name</code> that plain <code class="inline-code">ALTER TABLE</code> could never have added to an
+existing column — achieved entirely through table rebuilding.</p>
+
+<h2 id="how-this-connects-to-oakhaven">How this connects to Oakhaven</h2>
+
+<p><code class="inline-code">project/bronze/schema.sql</code> never uses <code class="inline-code">ALTER TABLE</code> at all — every
+table is dropped and recreated from scratch on each build
+(<code class="inline-code">project/build.py</code> deletes the whole <code class="inline-code">.db</code> file and starts over).
+That's a defensible choice for a from-scratch practice-data generator,
+but it's <em>not</em> how a real production schema evolves: you don't drop a
+live table with a decade of customer orders in it just to add a
+column. If Oakhaven's schema needed a real migration — say, adding a
+<code class="inline-code">loyalty_tier</code> column to <code class="inline-code">bronze_customers</code> after go-live — you'd
+reach for <code class="inline-code">ALTER TABLE ... ADD COLUMN ... DEFAULT ...</code> (Example 1's
+pattern), not a rebuild.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Expecting <code class="inline-code">ALTER COLUMN</code> to exist.</strong> It doesn't, in any form. To</li></ul>  change a column's type or add a constraint to an existing column,
+  use the rename/recreate/copy/drop pattern.
+<ul class="styled-list"><li>**Adding a <code class="inline-code">NOT NULL</code> column without a default and being surprised</li></ul>  by the error.** SQLite needs to know what to backfill into existing
+  rows; give it a `DEFAULT`.
+<ul class="styled-list"><li><strong>Running the rebuild pattern outside a transaction.</strong> If the</li></ul>  `INSERT ... SELECT` fails partway (or the process is killed) without
+  a transaction wrapping the whole sequence, you can be left with
+  neither table in a clean state. Always wrap it in `BEGIN`/`COMMIT`.
+<ul class="styled-list"><li>**Forgetting indexes and views don't automatically follow a rebuilt</li></ul>  table.** If the old table had indexes, or views/triggers referenced
+  its old name, those need to be recreated against the new table too.
+<ul class="styled-list"><li><strong>Doing any of this against <code class="inline-code">project/oakhaven.db</code> directly.</strong> Always</li></ul>  work on a scratch copy — the shared file is being read concurrently.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>SQLite's <code class="inline-code">ALTER TABLE</code> supports exactly five things: rename table,</li></ul>  rename column, add column, drop column — nothing else.
+<ul class="styled-list"><li><code class="inline-code">ADD COLUMN</code> can't add <code class="inline-code">UNIQUE</code>, can't add <code class="inline-code">PRIMARY KEY</code>, and a `NOT</li></ul>  NULL` addition needs a constant `DEFAULT` to backfill existing rows.
+<ul class="styled-list"><li>There is no <code class="inline-code">ALTER COLUMN</code> / <code class="inline-code">MODIFY COLUMN</code> — to change a type or</li></ul>  add a constraint to an existing column, rebuild the table
+  (rename → create → copy → drop, inside a transaction).
+<ul class="styled-list"><li>This is meaningfully more restrictive than Postgres/MySQL — don't</li></ul>  assume a migration script written for another engine will run
+  unmodified against SQLite.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="01-ddl-basics-and-type-affinity.html" class="nav-btn">1. DDL Basics and Type Affinity</a>. Next: <a href="03-transactions.html" class="nav-btn">3. Transactions</a>. Exercises: <a href="../../exercises/04-expert/02-alter-table-and-schema-evolution.html" class="nav-btn">2. ALTER TABLE and Schema Evolution</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

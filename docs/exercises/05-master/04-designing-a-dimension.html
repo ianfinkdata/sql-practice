@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: 4. Designing a Dimension | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-4-designing-a-dimension">Exercises: 4. Designing a Dimension</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/04-designing-a-dimension.html" class="nav-btn">4. Designing a Dimension</a>. Previous: <a href="03-grain-the-most-important-decision.html" class="nav-btn">3. Grain: The Most Important Decision in Star Schema Design</a>. Next: <a href="05-slowly-changing-dimensions-scd-1-and-2.html" class="nav-btn">5. Slowly Changing Dimensions: Type 1 and Type 2</a>.</nav>
+
+<p>Work against <code class="inline-code">project/oakhaven.db</code>. Read-only — every query below is a
+<code class="inline-code">SELECT</code>. None of these modify <code class="inline-code">dim_customer.sql</code> or any other gold
+object; they're all standalone <code class="inline-code">SELECT</code>s exploring what a fix <em>would</em>
+look like.</p>
+
+<hr class="divider">
+
+<h3 id="1-confirm-the-near-duplicate-block">1. Confirm the near-duplicate block</h3>
+
+<p>The data dictionary claims <code class="inline-code">customer_id</code> 571–600 are the intentional
+near-duplicate rows. Confirm the block's exact boundaries and size,
+and confirm none of them are missing an email (a prerequisite for the
+email-based dedup approach used in later exercises here).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT MIN(customer_id), MAX(customer_id), COUNT(*) AS total,
+       SUM(CASE WHEN email IS NULL OR email = &#x27;&#x27; THEN 1 ELSE 0 END) AS null_or_empty_email
+FROM dim_customer
+WHERE customer_id &gt;= 571;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>MIN(customer_id)</th><th>MAX(customer_id)</th><th>total</th><th>null_or_empty_email</th></tr></thead><tbody><tr><td>571</td><td>600</td><td>30</td><td>0</td></tr></tbody></table></div>
+Exactly 30 rows, `customer_id` 571 through 600, all with a usable
+email — confirming the block described in
+`project/docs/data_dictionary.md`.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-count-how-many-email-groups-actually-contain-a-duplicate">2. Count how many email groups actually contain a duplicate</h3>
+
+<p>Rather than looking at one example pair, find how many distinct
+normalized email addresses appear on more than one row of
+<code class="inline-code">dim_customer</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS groups_with_dupes
+FROM (
+    SELECT LOWER(TRIM(email)) AS ek
+    FROM dim_customer
+    WHERE email IS NOT NULL AND email &lt;&gt; &#x27;&#x27;
+    GROUP BY LOWER(TRIM(email))
+    HAVING COUNT(*) &gt; 1
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>groups_with_dupes</th></tr></thead><tbody><tr><td>29</td></tr></tbody></table></div>
+29 distinct email addresses each appear on exactly two rows (you can
+confirm no group has 3+ by checking `HAVING COUNT(*) > 2`, which
+returns zero rows). That's 29 pairs — 58 rows total involved in a
+duplicate — which is one fewer *pair* than the 30 near-duplicate
+`customer_id`s in the 571–600 block. Exercise 5 tracks down why.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-preview-the-full-dedup-how-many-rows-survive">3. Preview the full dedup: how many rows survive?</h3>
+
+<p>Apply the <code class="inline-code">ROW_NUMBER() OVER (PARTITION BY LOWER(TRIM(email)) ...)</code>
+pattern across the <em>entire</em> <code class="inline-code">dim_customer</code> table (not just one email),
+keeping the earliest signup per normalized email. How many rows would
+survive, and how does that compare to the original 600?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH ranked AS (
+    SELECT customer_id,
+           ROW_NUMBER() OVER (
+               PARTITION BY LOWER(TRIM(email))
+               ORDER BY signup_date ASC, customer_id ASC
+           ) AS rn
+    FROM dim_customer
+    WHERE email IS NOT NULL AND email &lt;&gt; &#x27;&#x27;
+)
+SELECT COUNT(*) AS rows_kept FROM ranked WHERE rn = 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>rows_kept</th></tr></thead><tbody><tr><td>536</td></tr></tbody></table></div>
+536 rows would survive out of the 565 rows that have a usable email
+(600 total minus 35 with `NULL`/empty email) — a reduction of 29 rows,
+matching Exercise 2's count of 29 duplicate email groups exactly (one
+"extra" row removed per group). Note this dedup pass only ever
+considers rows with a non-empty email, by construction (the `WHERE`
+clause) — any customer with a missing email is left completely alone
+by an email-based dedup strategy, duplicate or not.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-find-a-near-duplicate-pair-that-email-based-dedup-would-miss">4. Find a near-duplicate pair that email-based dedup would <em>miss</em></h3>
+
+<p>Exercise 2 found 29 duplicate pairs among the 30 near-duplicate
+<code class="inline-code">customer_id</code>s (571–600). Find the one near-duplicate row (571–600)
+whose email does <strong>not</strong> match any row in the base range (1–570) —
+i.e., dedup-by-email would never catch it, even though the data
+dictionary says it should be a near-duplicate of some base customer.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT d.customer_id AS dup_id, d.email,
+       (SELECT COUNT(*) FROM dim_customer b
+        WHERE b.customer_id &lt; 571 AND LOWER(TRIM(b.email)) = LOWER(TRIM(d.email))) AS matching_base_rows
+FROM dim_customer d
+WHERE d.customer_id &gt;= 571
+ORDER BY d.customer_id;</code></pre></div>
+
+<p>Scanning the results, <code class="inline-code">customer_id = 572</code> (<code class="inline-code">cindy.robinson@icloud.com</code>)
+is the one row with <code class="inline-code">matching_base_rows = 0</code> — every other row in
+571–600 matches exactly one base-range row on normalized email.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, email FROM dim_customer
+WHERE LOWER(TRIM(email)) = &#x27;cindy.robinson@icloud.com&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>email</th></tr></thead><tbody><tr><td>572</td><td>cindy.robinson@icloud.com</td></tr></tbody></table></div>
+Only one row in the entire table has this email — its intended "base"
+counterpart apparently has a `NULL` or empty email in this build (an
+independently regenerated field, per the data dictionary), which
+breaks the email-based matching entirely. This is a genuine limitation
+of the dedup approach from Exercise 3, worth internalizing: **matching
+on any single field is only as reliable as that field's own
+completeness.** A production MDM (master data management) process
+would typically need a fuzzier or multi-field matching strategy (name
++ phone + address similarity, not just exact email equality) to catch
+cases like this one.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-design-judgment-what-would-you-need-to-safely-dedupe-dim_customer-for-real">5. Design judgment: what would you need to safely dedupe <code class="inline-code">dim_customer</code> for real?</h3>
+
+<p>This one has no single query — it's a design exercise. Using what
+you've found in Exercises 1–4, write out (as SQL comments or plain
+text) the steps you'd need, in order, to actually deduplicate
+<code class="inline-code">dim_customer</code> in a way that's safe for <code class="inline-code">fact_sales</code> to keep working
+correctly. Then write one query that identifies the specific risk your
+plan has to handle: rows in <code class="inline-code">fact_sales</code> whose <code class="inline-code">customer_id</code> would be
+one of the 29 "losing" duplicate rows from Exercise 3, i.e., orders
+that would become orphaned if you just deleted the losing rows without
+redirecting their foreign keys.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>A safe plan needs, at minimum:</p>
+
+<p>1. <strong>Decide and document a conflict-resolution rule</strong> (e.g., "keep the
+   row with the earliest <code class="inline-code">signup_date</code>; on a tie, keep the lower
+   <code class="inline-code">customer_id</code>") — this is what Exercise 3's <code class="inline-code">ROW_NUMBER()</code> ordering
+   already encodes, but it should be a deliberate business decision,
+   not just whatever ordering happened to be convenient.
+2. <strong>Build a <code class="inline-code">customer_id</code> crosswalk</strong> mapping every "losing"
+   <code class="inline-code">customer_id</code> to its "winning" survivor's <code class="inline-code">customer_id</code>.
+3. <strong>Redirect <code class="inline-code">fact_sales.customer_id</code></strong> for any row currently pointing
+   at a losing ID, using the crosswalk, <em>before</em> removing the losing
+   rows from the dimension.
+4. <strong>Only then</strong> filter the dimension down to <code class="inline-code">rn = 1</code> per
+   Exercise 3.
+5. Accept that email-only matching (Exercise 4) will miss some real
+   near-duplicates — document that as a known limitation, not a
+   solved problem.</p>
+
+<p>The query that shows why step 3 matters — how many <code class="inline-code">fact_sales</code> rows
+currently reference a <code class="inline-code">customer_id</code> that Exercise 3's dedup would
+remove:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH ranked AS (
+    SELECT customer_id,
+           ROW_NUMBER() OVER (
+               PARTITION BY LOWER(TRIM(email))
+               ORDER BY signup_date ASC, customer_id ASC
+           ) AS rn
+    FROM dim_customer
+    WHERE email IS NOT NULL AND email &lt;&gt; &#x27;&#x27;
+),
+losing_ids AS (
+    SELECT customer_id FROM ranked WHERE rn &gt; 1
+)
+SELECT COUNT(*) AS fact_rows_at_risk_of_orphaning
+FROM fact_sales f
+JOIN losing_ids l ON f.customer_id = l.customer_id;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>fact_rows_at_risk_of_orphaning</th></tr></thead><tbody><tr><td>584</td></tr></tbody></table></div>
+584 order lines in `fact_sales` currently reference one of the 29
+"losing" `customer_id` values. Every one of those rows would silently
+lose its ability to join to `dim_customer` the moment the losing
+dimension rows were deleted without a crosswalk redirect first — which
+is exactly the kind of quiet, hard-to-detect breakage that makes "just
+delete the duplicates" the wrong first instinct for fixing a dimension
+like this.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/04-designing-a-dimension.html" class="nav-btn">4. Designing a Dimension</a>. Previous: <a href="03-grain-the-most-important-decision.html" class="nav-btn">3. Grain: The Most Important Decision in Star Schema Design</a>. Next: <a href="05-slowly-changing-dimensions-scd-1-and-2.html" class="nav-btn">5. Slowly Changing Dimensions: Type 1 and Type 2</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

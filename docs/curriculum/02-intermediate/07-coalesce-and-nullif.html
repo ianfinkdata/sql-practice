@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COALESCE and NULLIF | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="coalesce-and-nullif">COALESCE and NULLIF</h1>
+
+<nav class="book-nav">Previous: <a href="06-cleaning-text-trim-upper-replace.html" class="nav-btn">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</a>. Next: <a href="08-subqueries-and-derived-tables.html" class="nav-btn">Subqueries and Derived Tables</a>. Exercises: <a href="../../exercises/02-intermediate/07-coalesce-and-nullif.html" class="nav-btn">COALESCE and NULLIF</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Two small, opposite-purposed functions for handling <code class="inline-code">NULL</code>:
+<ul class="styled-list"><li><strong><code class="inline-code">COALESCE(a, b, c, ...)</code></strong> returns the first argument in the list</li></ul>  that is <em>not</em> <code class="inline-code">NULL</code>. Its most common form is two arguments:
+  <code class="inline-code">COALESCE(column, 'fallback')</code> — "use <code class="inline-code">column</code>, but if it's <code class="inline-code">NULL</code>,
+  use this default instead."
+<ul class="styled-list"><li><strong><code class="inline-code">NULLIF(a, b)</code></strong> returns <code class="inline-code">NULL</code> if <code class="inline-code">a</code> equals <code class="inline-code">b</code>, otherwise</li></ul>  returns <code class="inline-code">a</code>. It turns a specific <em>value</em> into <code class="inline-code">NULL</code> — the reverse
+  direction of <code class="inline-code">COALESCE</code>.</p>
+
+<p>They're often used together: <code class="inline-code">NULLIF</code> first converts an "empty but not
+technically NULL" value (like <code class="inline-code">''</code>) into a real <code class="inline-code">NULL</code>, then
+<code class="inline-code">COALESCE</code> supplies the fallback for it.</p>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p><code class="inline-code">bronze_products.subcategory</code> is <code class="inline-code">NULL</code> for about 10% of products —
+<code class="inline-code">COALESCE</code> is the direct fix for displaying those rows sensibly
+instead of a blank cell. <code class="inline-code">bronze_customers.email</code> is messier: it's
+<code class="inline-code">NULL</code> for ~4.3% of customers <em>and</em> an empty string <code class="inline-code">''</code> for another
+~1.5%. Those are two different problems that look almost identical in
+a result grid, and <code class="inline-code">COALESCE</code> alone only catches one of them —
+<code class="inline-code">COALESCE(email, 'x')</code> does nothing for a row where <code class="inline-code">email</code> is <code class="inline-code">''</code>,
+because <code class="inline-code">''</code> is a value, not <code class="inline-code">NULL</code>. That's exactly what <code class="inline-code">NULLIF</code> is
+for, and you'll see the bug happen live below.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">COALESCE(expr1, expr2, ..., exprN)  -- first non-NULL wins
+NULLIF(expr1, expr2)                -- NULL if expr1 = expr2, else expr1</code></pre></div>
+<ul class="styled-list"><li><code class="inline-code">COALESCE</code> accepts two or more arguments and evaluates left to</li></ul>  right, stopping at the first non-`NULL` value.
+<ul class="styled-list"><li><code class="inline-code">NULLIF(a, b)</code> is shorthand for `CASE WHEN a = b THEN NULL ELSE a</li></ul>  END`.
+<ul class="styled-list"><li>Combine them: <code class="inline-code">COALESCE(NULLIF(column, 'bad_value'), 'fallback')</code> —</li></ul>  "treat `bad_value` as if it were `NULL`, then apply the fallback."
+
+<h2 id="try-it">Try it</h2>
+
+<p><strong>1. Fill in missing <code class="inline-code">subcategory</code> values</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, product_name, subcategory,
+       COALESCE(subcategory, &#x27;Unspecified&#x27;) AS subcategory_filled
+FROM bronze_products
+WHERE subcategory IS NULL
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>product_name</th><th>subcategory</th><th>subcategory_filled</th></tr></thead><tbody><tr><td>5</td><td>Canyon Life Jackets</td><td>NULL</td><td>Unspecified</td></tr><tr><td>28</td><td>Basecamp Tents</td><td>NULL</td><td>Unspecified</td></tr><tr><td>44</td><td>Highline Approach Shoe</td><td>NULL</td><td>Unspecified</td></tr><tr><td>45</td><td>Canyon Water Filters</td><td>NULL</td><td>Unspecified</td></tr><tr><td>51</td><td>Alpine Camp Stove</td><td>NULL</td><td>Unspecified</td></tr></tbody></table></div>
+27 of 150 products have `subcategory IS NULL`. Grouping on the
+`COALESCE`d version instead of the raw column keeps those 27 visible
+as their own labeled group rather than either erroring or vanishing:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COALESCE(subcategory, &#x27;Unspecified&#x27;) AS subcat, COUNT(*) AS n
+FROM bronze_products
+GROUP BY subcat
+ORDER BY n DESC
+LIMIT 6;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>subcat</th><th>n</th></tr></thead><tbody><tr><td>Unspecified</td><td>27</td></tr><tr><td>Chalk Bags</td><td>7</td></tr><tr><td>Jackets</td><td>6</td></tr><tr><td>Energy Bars</td><td>6</td></tr><tr><td>Sleeping Bags</td><td>5</td></tr><tr><td>Hydration Packs</td><td>5</td></tr></tbody></table></div>
+**2. `email` has two different kinds of "missing" — see them both**
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+  CASE WHEN email IS NULL THEN &#x27;NULL&#x27;
+       WHEN email = &#x27;&#x27; THEN &#x27;empty string&#x27;
+       ELSE &#x27;has value&#x27; END AS email_state,
+  COUNT(*) AS n
+FROM bronze_customers
+GROUP BY email_state;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>email_state</th><th>n</th></tr></thead><tbody><tr><td>NULL</td><td>26</td></tr><tr><td>empty string</td><td>9</td></tr><tr><td>has value</td><td>565</td></tr></tbody></table></div>
+**3. Catch `COALESCE` doing nothing for empty strings — the bug, live**
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, email,
+       COALESCE(email, &#x27;no-email-on-file&#x27;) AS coalesce_only,
+       COALESCE(NULLIF(email, &#x27;&#x27;), &#x27;no-email-on-file&#x27;) AS coalesce_plus_nullif
+FROM bronze_customers
+WHERE email = &#x27;&#x27;
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>email</th><th>coalesce_only</th><th>coalesce_plus_nullif</th></tr></thead><tbody><tr><td>88</td><td></td><td></td><td>no-email-on-file</td></tr><tr><td>135</td><td></td><td></td><td>no-email-on-file</td></tr><tr><td>228</td><td></td><td></td><td>no-email-on-file</td></tr><tr><td>295</td><td></td><td></td><td>no-email-on-file</td></tr><tr><td>322</td><td></td><td></td><td>no-email-on-file</td></tr></tbody></table></div>
+Look at the `coalesce_only` column: still blank. `COALESCE(email,
+'no-email-on-file')` only substitutes when `email` **IS NULL** — an
+empty string `''` is a perfectly valid non-`NULL` value as far as
+`COALESCE` is concerned, so it sails through untouched. Wrapping
+`email` in `NULLIF(email, '')` first converts `''` into a real `NULL`,
+*then* `COALESCE` catches it. This is the single most common
+`COALESCE` mistake, so seeing it fail before fixing it is worth the
+extra step.
+
+<p><strong>4. <code class="inline-code">NULLIF</code> for its classic purpose: guarding a division</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, unit_cost, unit_price,
+       ROUND(unit_price / NULLIF(unit_cost, 0), 2) AS markup_ratio
+FROM bronze_products
+WHERE unit_cost IS NOT NULL
+ORDER BY product_id
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>unit_cost</th><th>unit_price</th><th>markup_ratio</th></tr></thead><tbody><tr><td>1</td><td>269.63</td><td>649.26</td><td>2.41</td></tr><tr><td>2</td><td>231.98</td><td>348.55</td><td>1.5</td></tr><tr><td>3</td><td>136.25</td><td>286.86</td><td>2.11</td></tr><tr><td>4</td><td>72.33</td><td>155.94</td><td>2.16</td></tr><tr><td>5</td><td>193.92</td><td>310.93</td><td>1.6</td></tr></tbody></table></div>
+`unit_cost` never actually equals `0` in this build (verified —
+`SELECT COUNT(*) FROM bronze_products WHERE unit_cost = 0` returns
+`0`), so this particular guard never triggers here. It's still worth
+writing defensively: `unit_price / unit_cost` would throw a
+divide-by-zero error the moment a `0` did show up, and `NULLIF`
+sidesteps that by turning a `0` divisor into `NULL` first — `x / NULL`
+is just `NULL`, not an error. (`unit_cost` does go *negative* for 2
+products here — a different, real messiness that division-guarding
+doesn't touch; that's a `WHERE`/`CASE` problem, not a `NULLIF` one.)
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Expecting <code class="inline-code">COALESCE</code> to catch empty strings.</strong> As shown above, it</li></ul>  only reacts to `NULL`. Pre-process with `NULLIF(column, '')` if
+  empty string should be treated the same as missing.
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">COALESCE</code> evaluates left to right and stops early.</strong></li></ul>  `COALESCE(a, b, c)` never even looks at `c` if `a` is non-`NULL` —
+  order your fallback arguments from most-preferred to
+  least-preferred.
+<ul class="styled-list"><li><strong>Using <code class="inline-code">NULLIF</code> backwards.</strong> <code class="inline-code">NULLIF(a, b)</code> returns <code class="inline-code">NULL</code> when `a</li></ul>  = b` — it does *not* mean "a unless null, then b" (that's
+  `COALESCE`). Mixing the two up is an easy naming-based mistake.
+<ul class="styled-list"><li>**Applying <code class="inline-code">COALESCE</code>'s fallback where it changes the meaning of an</li></ul>  aggregate.** `COALESCE(subcategory, 'Unspecified')` is fine for
+  display/grouping, but don't forget the fallback label itself is now
+  a made-up string — don't accidentally treat "Unspecified" rows as if
+  they were a real subcategory in downstream logic.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">COALESCE(a, b, ...)</code> returns the first non-<code class="inline-code">NULL</code> argument — a</li></ul>  general-purpose default/fallback tool.
+<ul class="styled-list"><li><code class="inline-code">NULLIF(a, b)</code> returns <code class="inline-code">NULL</code> when <code class="inline-code">a</code> equals <code class="inline-code">b</code> — used to turn a</li></ul>  specific "junk" value into a real `NULL` so other `NULL`-aware logic
+  (like `COALESCE`) can catch it.
+<ul class="styled-list"><li><code class="inline-code">bronze_customers.email</code> is <code class="inline-code">NULL</code> for 26 customers and <code class="inline-code">''</code> for 9</li></ul>  more — two distinct kinds of missing that `COALESCE(email, ...)`
+  alone only half-solves; `COALESCE(NULLIF(email, ''), ...)` solves
+  both.
+<ul class="styled-list"><li><code class="inline-code">NULLIF(divisor, 0)</code> is the standard idiom for guarding against</li></ul>  divide-by-zero without an error.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="06-cleaning-text-trim-upper-replace.html" class="nav-btn">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</a>. Next: <a href="08-subqueries-and-derived-tables.html" class="nav-btn">Subqueries and Derived Tables</a>. Exercises: <a href="../../exercises/02-intermediate/07-coalesce-and-nullif.html" class="nav-btn">COALESCE and NULLIF</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

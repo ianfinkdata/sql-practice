@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5. Indexes and EXPLAIN QUERY PLAN | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="5-indexes-and-explain-query-plan">5. Indexes and EXPLAIN QUERY PLAN</h1>
+
+<nav class="book-nav">Previous: <a href="04-views.html" class="nav-btn">4. Views</a>. Next: <a href="06-query-optimization-basics.html" class="nav-btn">6. Query Optimization Basics</a>. Exercises: <a href="../../exercises/04-expert/05-indexes-and-explain-query-plan.html" class="nav-btn">5. Indexes and EXPLAIN QUERY PLAN</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Without an index, finding rows that match a <code class="inline-code">WHERE</code> condition means
+SQLite checking every single row in the table, one at a time — a
+<strong>full table scan</strong>. That's fine for a handful of rows. It gets slow
+as tables grow, because the work scales linearly with row count: twice
+the rows, twice the work, every single query.</p>
+
+<p>An <strong>index</strong> is a separate, sorted data structure (a B-tree, under the
+hood) built on one or more columns, that lets SQLite jump straight to
+matching rows instead of checking every one. Think of it like a book's
+index: instead of reading every page to find "SQLite," you look up
+"SQLite" in the back, alphabetically sorted, and jump straight to the
+right pages.</p>
+
+<p><code class="inline-code">EXPLAIN QUERY PLAN</code> is how you <em>see</em> whether SQLite is scanning or
+searching — it doesn't run the query, it shows you the strategy
+SQLite's query planner picked for it.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX index_name ON table_name(column_name);
+CREATE INDEX index_name ON table_name(col1, col2);  -- composite index
+
+<p>DROP INDEX index_name;</p>
+
+<p>EXPLAIN QUERY PLAN
+SELECT ...;</code></pre></div></p>
+
+<h2 id="verified-examples">Verified examples</h2>
+
+<p>All against a <strong>scratch copy</strong>, on <code class="inline-code">bronze_sales</code> — big enough (12,000
+rows) for the scan-vs-search difference to actually matter:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/scratch_expert.db
+sqlite3 /tmp/scratch_expert.db</code></pre></div>
+
+<h3 id="example-1--before-an-index-a-full-table-scan">Example 1 — before an index: a full table scan</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN
+SELECT * FROM bronze_sales WHERE customer_id = 41;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SCAN bronze_sales</code></pre></div>
+
+<p><code class="inline-code">SCAN bronze_sales</code> means exactly what it says: SQLite walks every row
+in the table checking <code class="inline-code">customer_id = 41</code>. With <code class="inline-code">.timer on</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales WHERE customer_id = 41;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">43
+Run Time: real 0.010 user 0.008556 sys 0.002191</code></pre></div>
+
+<h3 id="example-2--after-an-index-a-search">Example 2 — after an index: a search</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX idx_bronze_sales_customer_id ON bronze_sales(customer_id);
+
+<p>EXPLAIN QUERY PLAN
+SELECT * FROM bronze_sales WHERE customer_id = 41;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SEARCH bronze_sales USING INDEX idx_bronze_sales_customer_id (customer_id=?)</code></pre></div>
+
+<p><code class="inline-code">SEARCH ... USING INDEX</code> means SQLite went straight to the matching
+rows via the index's B-tree instead of scanning every row. Same query,
+same result:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales WHERE customer_id = 41;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">43
+Run Time: real 0.003 user 0.003125 sys 0.000185</code></pre></div>
+
+<p>At 12,000 rows the wall-clock difference (10ms → 3ms) is modest — but
+notice the <em>plan</em> changed completely, and the row count is identical
+either way (an index changes <em>how</em> SQLite finds rows, never <em>which</em>
+rows it returns). At millions of rows, that scan-vs-search difference
+is the entire ballgame between a query that returns instantly and one
+that times out.</p>
+
+<h3 id="example-3--sqlites-query-planner-sometimes-builds-its-own-index-on-the-fly">Example 3 — SQLite's query planner sometimes builds its own index on the fly</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">DROP INDEX idx_bronze_sales_customer_id;
+
+<p>EXPLAIN QUERY PLAN
+SELECT s.order_id, p.product_name
+FROM bronze_sales s
+JOIN bronze_products p ON p.product_id = s.product_id
+WHERE p.category = &#x27;Climbing&#x27;;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+|--SCAN p
+|--BLOOM FILTER ON s (product_id=?)
+`--SEARCH s USING AUTOMATIC COVERING INDEX (product_id=?)</code></pre></div>
+
+<p>With no index on <code class="inline-code">bronze_sales.product_id</code>, SQLite's planner
+recognized the join would benefit from one and built a temporary
+<strong>automatic covering index</strong> in memory just for this query, plus a
+Bloom filter to cheaply reject non-matching rows before the full
+search. This is the query planner doing its best without help — but a
+temporary index is rebuilt every single time the query runs, which is
+wasted work for a query you run often.</p>
+
+<h3 id="example-4--a-real-persistent-index-removes-the-automatic-workaround">Example 4 — a real, persistent index removes the "AUTOMATIC" workaround</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX idx_bronze_sales_product_id ON bronze_sales(product_id);
+
+<p>EXPLAIN QUERY PLAN
+SELECT s.order_id, p.product_name
+FROM bronze_sales s
+JOIN bronze_products p ON p.product_id = s.product_id
+WHERE p.category = &#x27;Climbing&#x27;;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+|--SCAN p
+`--SEARCH s USING INDEX idx_bronze_sales_product_id (product_id=?)</code></pre></div>
+
+<p>Same strategy, but now backed by a real index that persists across
+queries instead of being rebuilt from scratch every time.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">PRAGMA index_list(bronze_sales);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">0|idx_bronze_sales_product_id|0|c|0</code></pre></div>
+
+<p><code class="inline-code">PRAGMA index_list(table_name)</code> lists every index defined on a table —
+useful for auditing what indexes already exist before deciding whether
+you need a new one.</p>
+
+<h2 id="how-this-connects-to-oakhaven">How this connects to Oakhaven</h2>
+
+<p>Bronze tables have zero indexes beyond SQLite's implicit rowid — that
+follows directly from having no <code class="inline-code">PRIMARY KEY</code>/<code class="inline-code">UNIQUE</code> constraints
+(Module 7), since those are what typically create indexes as a side
+effect. Every query you've run against bronze/silver/gold so far has
+been a full scan under the hood. At Oakhaven's scale (thousands, not
+millions, of rows) that's invisible. If this were a production
+warehouse with years of sales history, <code class="inline-code">bronze_sales.customer_id</code> and
+<code class="inline-code">bronze_sales.product_id</code> would be prime index candidates — exactly
+the columns <code class="inline-code">fact_sales</code> joins against <code class="inline-code">dim_customer</code> and
+<code class="inline-code">dim_product</code> on every query.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Indexing every column "just in case."</strong> Indexes speed up reads but</li></ul>  slow down writes (every `INSERT`/`UPDATE`/`DELETE` has to update
+  every index on that table too) and take up disk space. Index
+  columns you actually filter, join, or sort on — not everything.
+<ul class="styled-list"><li>**Expecting an index to help a query that doesn't filter selectively</li></ul>  enough.** An index on a column with only 2 distinct values (like a
+  boolean-ish `is_active`) rarely helps much — half the table matches
+  either way, so SQLite may reasonably choose a scan anyway. Indexes
+  pay off most on columns with high selectivity (many distinct
+  values, like an ID).
+<ul class="styled-list"><li><strong>Assuming <code class="inline-code">CREATE INDEX</code> changes query results.</strong> It never does —</li></ul>  only the *strategy* SQLite uses to find the same rows. If a query's
+  output changes after adding an index, the index isn't the cause;
+  look elsewhere.
+<ul class="styled-list"><li>**Forgetting to check <code class="inline-code">EXPLAIN QUERY PLAN</code> before assuming an index</li></ul>  is being used.** SQLite's planner decides at query time whether an
+  index actually helps for that specific query — creating one doesn't
+  guarantee it's used. Verify with `EXPLAIN QUERY PLAN`, don't assume.
+<ul class="styled-list"><li><strong>Running <code class="inline-code">CREATE INDEX</code> against the shared <code class="inline-code">project/oakhaven.db</code>.</strong></li></ul>  Always work on a scratch copy.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>No index means a full table <code class="inline-code">SCAN</code>; a matching index lets SQLite</li></ul>  `SEARCH` via a sorted B-tree instead — verified above on
+  `bronze_sales`, going from `SCAN` to `SEARCH USING INDEX`.
+<ul class="styled-list"><li><code class="inline-code">EXPLAIN QUERY PLAN</code> shows the strategy without running the query —</li></ul>  always check it before assuming an index is (or isn't) helping.
+<ul class="styled-list"><li>SQLite's planner can build temporary "automatic covering indexes"</li></ul>  for a single query; a real `CREATE INDEX` persists and avoids
+  rebuilding that structure every time.
+<ul class="styled-list"><li><code class="inline-code">PRAGMA index_list(table_name)</code> shows what indexes already exist.</li><li>Indexes trade write speed and disk space for read speed — index</li></ul>  what you actually filter/join/sort on, not everything.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="04-views.html" class="nav-btn">4. Views</a>. Next: <a href="06-query-optimization-basics.html" class="nav-btn">6. Query Optimization Basics</a>. Exercises: <a href="../../exercises/04-expert/05-indexes-and-explain-query-plan.html" class="nav-btn">5. Indexes and EXPLAIN QUERY PLAN</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

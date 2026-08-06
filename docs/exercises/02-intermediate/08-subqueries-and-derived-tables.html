@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Subqueries and Derived Tables | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-subqueries-and-derived-tables">Exercises: Subqueries and Derived Tables</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/08-subqueries-and-derived-tables.html" class="nav-btn">Subqueries and Derived Tables</a>. Previous: <a href="07-coalesce-and-nullif.html" class="nav-btn">COALESCE and NULLIF</a>. Next: <a href="09-set-operations.html" class="nav-btn">Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT</a>.</nav>
+
+<p>Use <code class="inline-code">project/oakhaven.db</code>. Every solution below was run against the
+real database — your output should match exactly.</p>
+
+<hr class="divider">
+
+<p><strong>1. Products cheaper (by cost) than average</strong></p>
+
+<p>First find the average <code class="inline-code">unit_cost</code> (excluding <code class="inline-code">NULL</code>s). Then, using a
+scalar subquery, find the 5 cheapest products by <code class="inline-code">unit_cost</code> that fall
+below that average.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT ROUND(AVG(unit_cost), 2) FROM bronze_products WHERE unit_cost IS NOT NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>ROUND(AVG(unit_cost), 2)</th></tr></thead><tbody><tr><td>159.05</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, product_name, unit_cost
+FROM bronze_products
+WHERE unit_cost &lt; (SELECT AVG(unit_cost) FROM bronze_products WHERE unit_cost IS NOT NULL)
+ORDER BY unit_cost ASC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>product_name</th><th>unit_cost</th></tr></thead><tbody><tr><td>30</td><td>Outrider Multi-Tools</td><td>-131.94</td></tr><tr><td>19</td><td>Cascade Hiking Boots</td><td>-4.19</td></tr><tr><td>122</td><td>Canyon Hats</td><td>8.48</td></tr><tr><td>27</td><td>Trailhead Sleeping Bags</td><td>10.4</td></tr><tr><td>112</td><td>Outrider Sleeping Bag</td><td>13.63</td></tr></tbody></table></div>
+Note the subquery's own `WHERE unit_cost IS NOT NULL` — without it,
+`AVG()` would just skip `NULL`s anyway (aggregates always do), but
+being explicit makes the intent clear, and matters more once the
+comparison logic gets more complex.
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products
+WHERE unit_cost &lt; (SELECT AVG(unit_cost) FROM bronze_products WHERE unit_cost IS NOT NULL);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>70</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<p><strong>2. Confirm no product has zero sales, using <code class="inline-code">NOT IN</code></strong></p>
+
+<p>Using a subquery with <code class="inline-code">NOT IN</code>, count how many <code class="inline-code">bronze_products</code> rows
+have a <code class="inline-code">product_id</code> that never appears in <code class="inline-code">bronze_sales</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products
+WHERE product_id NOT IN (SELECT product_id FROM bronze_sales WHERE product_id IS NOT NULL);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>0</td></tr></tbody></table></div>
+Same answer Module 2 found with a `LEFT JOIN` — `NOT IN` over a
+subquery is an alternative way to ask the same "does this ever
+appear" question. (The `WHERE product_id IS NOT NULL` inside the
+subquery matters here: `NOT IN` against a list containing a `NULL`
+can behave counterintuitively in SQL generally, so it's good practice
+to exclude `NULL`s explicitly when building the list for `NOT IN`.)
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>3. Customer 41's running total, as a scalar subquery baseline</strong></p>
+
+<p>Find customer 41's rough total spend (<code class="inline-code">quantity * unit_price</code>, summed
+across all their order lines).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT ROUND(SUM(quantity * unit_price), 2) FROM bronze_sales WHERE customer_id = 41;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>ROUND(SUM(quantity * unit_price), 2)</th></tr></thead><tbody><tr><td>44030.55</td></tr></tbody></table></div>
+Worth confirming this matches Module 8's derived-table example, which
+found the same $44,030.55 for customer 41 through a
+`GROUP BY`-in-a-subquery instead of a direct filter — two different
+routes to the same number is a good sanity check that both are
+correct.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>4. Top 5 employees by rough revenue — derived table</strong></p>
+
+<p>Build a derived table that computes each employee's order-line count
+and rough total revenue (excluding <code class="inline-code">NULL</code> <code class="inline-code">employee_id</code>), then select
+the top 5 by revenue from it.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM (
+  SELECT employee_id, COUNT(*) AS n, ROUND(SUM(quantity * unit_price), 2) AS rough_total
+  FROM bronze_sales
+  WHERE employee_id IS NOT NULL
+  GROUP BY employee_id
+) AS totals
+ORDER BY rough_total DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>n</th><th>rough_total</th></tr></thead><tbody><tr><td>29</td><td>338</td><td>298518.4</td></tr><tr><td>22</td><td>353</td><td>298400.48</td></tr><tr><td>34</td><td>325</td><td>290989.75</td></tr><tr><td>12</td><td>354</td><td>282111.68</td></tr><tr><td>2</td><td>365</td><td>282075.68</td></tr></tbody></table></div>
+Note employee 29 tops revenue with fewer lines (338) than employees
+12 and 2 — the derived table makes it trivial to sort on the computed
+`rough_total` rather than the raw line count, which a plain `GROUP
+BY`/`ORDER BY` in one step can already do, but which becomes essential
+once you need to filter or join on the computed value afterward
+(see #6).
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>5. Customers who bought from 15+ distinct raw category spellings</strong></p>
+
+<p>Using a derived table, compute how many distinct raw <code class="inline-code">category</code>
+values each customer has purchased from, then filter to customers
+with 15 or more, top 5 by that count.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM (
+  SELECT s.customer_id, COUNT(DISTINCT p.category) AS distinct_categories
+  FROM bronze_sales s
+  JOIN bronze_products p ON s.product_id = p.product_id
+  GROUP BY s.customer_id
+) AS spread
+WHERE spread.distinct_categories &gt;= 15
+ORDER BY distinct_categories DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>distinct_categories</th></tr></thead><tbody><tr><td>41</td><td>26</td></tr><tr><td>535</td><td>24</td></tr><tr><td>67</td><td>23</td></tr><tr><td>572</td><td>23</td></tr><tr><td>130</td><td>22</td></tr></tbody></table></div>
+Customer 41 (already familiar as the top spender from earlier
+modules) also touches 26 distinct *raw category spellings* — a
+reminder that even one heavy-ordering customer's history is enough to
+surface most of the category messiness in this database. A real
+report on "how many different categories does this customer buy
+from" would need Module 6's cleaning applied to `p.category` first,
+or this number massively overstates genuine category variety.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>6. Employees whose revenue beats the average employee's revenue</strong></p>
+
+<p>Using a derived table for per-employee rough revenue (like #4), find
+employees whose revenue exceeds the <em>average</em> revenue across all
+employees — combining a derived table with a scalar subquery in the
+same query.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM (
+  SELECT employee_id, ROUND(SUM(quantity * unit_price), 2) AS rough_total
+  FROM bronze_sales
+  WHERE employee_id IS NOT NULL
+  GROUP BY employee_id
+) AS totals
+WHERE totals.rough_total &gt; (
+  SELECT AVG(emp_total) FROM (
+    SELECT SUM(quantity * unit_price) AS emp_total
+    FROM bronze_sales
+    WHERE employee_id IS NOT NULL
+    GROUP BY employee_id
+  )
+)
+ORDER BY totals.rough_total DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>rough_total</th></tr></thead><tbody><tr><td>29</td><td>298518.4</td></tr><tr><td>22</td><td>298400.48</td></tr><tr><td>34</td><td>290989.75</td></tr><tr><td>12</td><td>282111.68</td></tr><tr><td>2</td><td>282075.68</td></tr></tbody></table></div>
+17 of the 35 employees clear the average (confirmed with a `COUNT(*)`
+version of the same query). This is a three-layer query — a derived
+table for display, compared against a scalar subquery that itself
+wraps *another* derived table to get a true per-employee average
+(rather than an average-per-line, which `AVG()` over raw
+`bronze_sales` rows would incorrectly weight toward employees with
+more, smaller line items). Building it up one layer at a time —
+testing each inner piece standalone first, per Module 8's debugging
+tip — is much more manageable than writing all three levels at once.
+
+<p></details></p>
+
+<hr class="divider">
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/08-subqueries-and-derived-tables.html" class="nav-btn">Subqueries and Derived Tables</a>. Previous: <a href="07-coalesce-and-nullif.html" class="nav-btn">COALESCE and NULLIF</a>. Next: <a href="09-set-operations.html" class="nav-btn">Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

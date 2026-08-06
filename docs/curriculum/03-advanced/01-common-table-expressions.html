@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1. Common Table Expressions (CTEs) | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="1-common-table-expressions-ctes">1. Common Table Expressions (CTEs)</h1>
+
+<nav class="book-nav">Previous: <a href="../02-intermediate/README.html" class="nav-btn">Tier 2 — Intermediate</a>. Next: <a href="02-window-functions-i-row-number-rank.html" class="nav-btn">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</a>. Exercises: <a href="../../exercises/03-advanced/01-common-table-expressions.html" class="nav-btn">1. Common Table Expressions (CTEs)</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>A <strong>Common Table Expression</strong> (CTE) is a named, temporary result set that
+exists only for the duration of one query. You define it with a <code class="inline-code">WITH</code>
+clause, give it a name, and then reference that name later in the query
+exactly as if it were a real table.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH short_name AS (
+    SELECT ...
+)
+SELECT * FROM short_name;</code></pre></div>
+
+<p>That's the whole mechanism. What makes CTEs worth a whole lesson isn't the
+syntax — it's what they replace: <strong>nested subqueries</strong>. Every CTE you'll
+write in this course could, in principle, be written as a subquery buried
+inside a <code class="inline-code">FROM</code> clause or a <code class="inline-code">WHERE</code> clause instead. CTEs exist because that
+alternative gets unreadable fast.</p>
+
+<h2 id="why-ctes-beat-nested-subqueries">Why CTEs beat nested subqueries</h2>
+
+<p>Compare two ways of asking the same question against Oakhaven:
+<em>"Which VIP customers have a lifetime value above the average VIP lifetime
+value?"</em></p>
+
+<p><strong>Nested subquery version</strong> — the logic is inside-out. You have to read the
+<code class="inline-code">WHERE</code> clause's subquery first, mentally hold onto what it computes, then
+come back up to the outer query:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT c.customer_id, c.full_name, c.customer_segment, c.lifetime_net_amount
+FROM agg_customer_ltv c
+WHERE c.customer_segment = &#x27;VIP&#x27;
+  AND c.lifetime_net_amount &gt; (
+        SELECT AVG(lifetime_net_amount) FROM agg_customer_ltv c2
+        WHERE c2.customer_segment = c.customer_segment
+  )
+ORDER BY c.lifetime_net_amount DESC
+LIMIT 5;</code></pre></div>
+
+<p><strong>CTE version</strong> — the logic reads top-to-bottom, in the order you'd explain
+it out loud: "first compute the segment averages, then compare each
+customer against theirs."</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH segment_avg AS (
+    SELECT customer_segment, ROUND(AVG(lifetime_net_amount), 2) AS avg_ltv
+    FROM agg_customer_ltv
+    WHERE customer_segment IS NOT NULL
+    GROUP BY customer_segment
+)
+SELECT c.customer_id, c.full_name, c.customer_segment,
+       c.lifetime_net_amount, sa.avg_ltv
+FROM agg_customer_ltv c
+JOIN segment_avg sa ON sa.customer_segment = c.customer_segment
+WHERE c.customer_segment = &#x27;VIP&#x27; AND c.lifetime_net_amount &gt; sa.avg_ltv
+ORDER BY c.lifetime_net_amount DESC
+LIMIT 5;</code></pre></div>
+
+<p>Verified output (identical for both versions):</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>full_name</th><th>customer_segment</th><th>lifetime_net_amount</th><th>avg_ltv</th></tr></thead><tbody><tr><td>343</td><td>Jennifer Howard</td><td>VIP</td><td>35024.55</td><td>14542.34</td></tr><tr><td>186</td><td>Angela Fischer</td><td>VIP</td><td>28985.84</td><td>14542.34</td></tr><tr><td>408</td><td>Shawn Jacobs</td><td>VIP</td><td>28149.78</td><td>14542.34</td></tr><tr><td>338</td><td>Kristin Baker</td><td>VIP</td><td>28089.28</td><td>14542.34</td></tr><tr><td>68</td><td>Michele Perez</td><td>VIP</td><td>27836.74</td><td>14542.34</td></tr></tbody></table></div>
+Same result, same performance in SQLite — but the CTE version names its
+intermediate step (`segment_avg`), which means you can read it, and you can
+debug it: run `SELECT * FROM segment_avg` (well, the standalone `SELECT`
+inside it) on its own to sanity-check that piece before trusting the whole
+query.
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH cte_name AS (
+    SELECT ...
+)
+SELECT ... FROM cte_name ...;</code></pre></div>
+
+<p>You can chain multiple CTEs, separated by commas, and later CTEs can
+reference earlier ones:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH cte_one AS (
+    SELECT ...
+),
+cte_two AS (
+    SELECT ... FROM cte_one ...
+)
+SELECT ... FROM cte_two ...;</code></pre></div>
+
+<p>A CTE is <strong>not</strong> a materialized table — it's not written to disk, and (in
+SQLite) it's typically inlined into the surrounding query at execution
+time. Think of it as a readability tool first, not a performance tool.</p>
+
+<h2 id="worked-example-a-real-multi-step-cte-chain-over-oakhaven">Worked example: a real multi-step CTE chain over Oakhaven</h2>
+
+<p><em>Question: which product category generated the most revenue in each
+calendar year?</em> This needs two steps — first roll sales up to
+category-per-year, then rank categories within each year — so it's a
+natural two-CTE chain:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH category_year AS (
+    SELECT year, category, ROUND(SUM(total_net_amount), 2) AS year_revenue
+    FROM agg_monthly_sales_by_category
+    GROUP BY year, category
+),
+ranked AS (
+    SELECT year, category, year_revenue,
+           RANK() OVER (PARTITION BY year ORDER BY year_revenue DESC) AS rnk
+    FROM category_year
+)
+SELECT year, category, year_revenue
+FROM ranked
+WHERE rnk = 1
+ORDER BY year;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>year</th><th>category</th><th>year_revenue</th></tr></thead><tbody><tr><td>2021</td><td>Climbing</td><td>243934.82</td></tr><tr><td>2022</td><td>Nutrition & Hydration</td><td>268912.10</td></tr><tr><td>2023</td><td>Climbing</td><td>253598.69</td></tr><tr><td>2024</td><td>Climbing</td><td>264295.25</td></tr><tr><td>2025</td><td>Climbing</td><td>242061.82</td></tr><tr><td>2026</td><td>Climbing</td><td>113911.92</td></tr></tbody></table></div>
+(2026's total is naturally lower — Oakhaven's data only runs through
+2026-06-30, so that's a half-year figure, not a full one. `RANK()` is
+covered properly in the next module; for now just notice how naturally the
+second CTE builds on the first one's output.)
+
+<p>Don't worry if <code class="inline-code">RANK() OVER (...)</code> looks unfamiliar — that's the whole
+subject of the next module. The point here is the <em>shape</em>: each CTE does
+one clear job, and the final <code class="inline-code">SELECT</code> just consumes the last one's output.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Forgetting a CTE only lives for one statement.</strong> You can't `WITH x AS</li></ul>  (...)` in one query and reference `x` in a separate query later — it's
+  scoped to the single statement it's attached to.
+<ul class="styled-list"><li><strong>Referencing a later CTE from an earlier one.</strong> CTEs (except recursive</li></ul>  ones — a later lesson) can only reference CTEs defined *before* them in
+  the same `WITH` clause, not after.
+<ul class="styled-list"><li><strong>Reaching for a CTE when a plain <code class="inline-code">JOIN</code> would do.</strong> If you're not</li></ul>  aggregating or filtering an intermediate result, you may not need a CTE
+  at all — don't add ceremony where a simple join reads just as clearly.
+<ul class="styled-list"><li><strong>One giant CTE instead of several small ones.</strong> If a single CTE is</li></ul>  doing three unrelated things, split it. The whole point is readability;
+  a CTE that's as tangled as the subquery it replaced defeats the purpose.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>A CTE is a named, temporary result set, scoped to a single statement,</li></ul>  defined with `WITH name AS (SELECT ...)`.
+<ul class="styled-list"><li>CTEs and equivalent nested subqueries usually produce identical results</li></ul>  and performance in SQLite — the difference is entirely about
+  readability and debuggability.
+<ul class="styled-list"><li>Chain multiple CTEs with commas; each one can reference the CTEs</li></ul>  defined before it.
+<ul class="styled-list"><li>A good rule of thumb: reach for a CTE whenever you catch yourself</li></ul>  writing a subquery you'd want to name if you could.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="../02-intermediate/README.html" class="nav-btn">Tier 2 — Intermediate</a>. Next: <a href="02-window-functions-i-row-number-rank.html" class="nav-btn">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</a>. Exercises: <a href="../../exercises/03-advanced/01-common-table-expressions.html" class="nav-btn">1. Common Table Expressions (CTEs)</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

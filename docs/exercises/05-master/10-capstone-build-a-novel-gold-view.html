@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capstone Exercises: Build a Novel Gold View | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="capstone-exercises-build-a-novel-gold-view">Capstone Exercises: Build a Novel Gold View</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/10-capstone-build-a-novel-gold-view.html" class="nav-btn">10. Capstone: Design a Novel Gold View</a>. Previous: <a href="09-medallion-pipeline-recap.html" class="nav-btn">9. The Medallion Pipeline, Start to Finish</a>. Next: <a href="11-beyond-sqlite-portability-notes.html" class="nav-btn">11. Beyond SQLite: Portability Notes</a>.</nav>
+
+<p>Three original gold-style views, none of which exist in
+<code class="inline-code">project/gold/</code>. Each was designed and solved by hand, then verified
+against real output from <code class="inline-code">project/oakhaven.db</code> — grade your own
+solution against the exact tables shown here, not just "does it look
+plausible."</p>
+
+<p>Attempt each one yourself before expanding the solution. Query
+<code class="inline-code">project/oakhaven.db</code> directly with <code class="inline-code">sqlite3</code> to check your work.</p>
+
+<h2 id="1-graded-capstone-customer-order-frequency-segmentation">1. Graded capstone: customer order-frequency segmentation</h2>
+
+<p><strong>Grain:</strong> one row per <code class="inline-code">(customer_segment, frequency_tier)</code> pair.</p>
+
+<p>Build a view that buckets every customer in <code class="inline-code">dim_customer</code> into a
+frequency tier based on their distinct <code class="inline-code">order_id</code> count in
+<code class="inline-code">fact_sales</code>, then rolls that up by <code class="inline-code">customer_segment</code>:
+<ul class="styled-list"><li><code class="inline-code">No Orders</code> — 0 orders</li><li><code class="inline-code">Light (1-8 orders)</code> — 1 to 8 orders</li><li><code class="inline-code">Regular (9-14 orders)</code> — 9 to 14 orders</li><li><code class="inline-code">Frequent (15+ orders)</code> — 15 or more orders</li></ul>
+Start from <code class="inline-code">dim_customer</code> (LEFT JOIN order counts on), so customers
+with zero orders would still appear if any existed. Treat a NULL
+<code class="inline-code">customer_segment</code> as <code class="inline-code">'Unknown'</code> rather than dropping those rows from
+the <code class="inline-code">GROUP BY</code>. Return <code class="inline-code">customer_segment</code>, <code class="inline-code">frequency_tier</code>,
+<code class="inline-code">num_customers</code>, and <code class="inline-code">avg_orders</code> (average order count within that
+bucket, rounded to 2 decimals).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH orders_per_customer AS (
+    SELECT customer_id, COUNT(DISTINCT order_id) AS order_count
+    FROM fact_sales
+    GROUP BY customer_id
+),
+tiered AS (
+    SELECT
+        c.customer_id,
+        COALESCE(c.customer_segment, &#x27;Unknown&#x27;) AS customer_segment,
+        COALESCE(o.order_count, 0) AS order_count,
+        CASE
+            WHEN COALESCE(o.order_count, 0) = 0 THEN &#x27;No Orders&#x27;
+            WHEN o.order_count &lt;= 8 THEN &#x27;Light (1-8 orders)&#x27;
+            WHEN o.order_count &lt;= 14 THEN &#x27;Regular (9-14 orders)&#x27;
+            ELSE &#x27;Frequent (15+ orders)&#x27;
+        END AS frequency_tier
+    FROM dim_customer c
+    LEFT JOIN orders_per_customer o ON o.customer_id = c.customer_id
+)
+SELECT
+    customer_segment,
+    frequency_tier,
+    COUNT(*) AS num_customers,
+    ROUND(AVG(order_count), 2) AS avg_orders
+FROM tiered
+GROUP BY customer_segment, frequency_tier
+ORDER BY customer_segment,
+    CASE frequency_tier
+        WHEN &#x27;No Orders&#x27; THEN 0
+        WHEN &#x27;Light (1-8 orders)&#x27; THEN 1
+        WHEN &#x27;Regular (9-14 orders)&#x27; THEN 2
+        ELSE 3
+    END;</code></pre></div>
+
+<p><strong>GRADED EXPECTED RESULT</strong> (exact — 12 rows, real verified output):</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_segment</th><th>frequency_tier</th><th>num_customers</th><th>avg_orders</th></tr></thead><tbody><tr><td>Retail</td><td>Light (1-8 orders)</td><td>30</td><td>6.73</td></tr><tr><td>Retail</td><td>Regular (9-14 orders)</td><td>105</td><td>11.6</td></tr><tr><td>Retail</td><td>Frequent (15+ orders)</td><td>38</td><td>17.05</td></tr><tr><td>Unknown</td><td>Light (1-8 orders)</td><td>2</td><td>6.0</td></tr><tr><td>Unknown</td><td>Regular (9-14 orders)</td><td>9</td><td>11.78</td></tr><tr><td>Unknown</td><td>Frequent (15+ orders)</td><td>3</td><td>15.33</td></tr><tr><td>VIP</td><td>Light (1-8 orders)</td><td>31</td><td>7.06</td></tr><tr><td>VIP</td><td>Regular (9-14 orders)</td><td>130</td><td>11.42</td></tr><tr><td>VIP</td><td>Frequent (15+ orders)</td><td>46</td><td>17.11</td></tr><tr><td>Wholesale</td><td>Light (1-8 orders)</td><td>31</td><td>6.87</td></tr><tr><td>Wholesale</td><td>Regular (9-14 orders)</td><td>133</td><td>11.34</td></tr><tr><td>Wholesale</td><td>Frequent (15+ orders)</td><td>42</td><td>16.52</td></tr></tbody></table></div>
+**Quick self-check if your row-by-row output doesn't match exactly:**
+your result should have exactly 12 rows, no `No Orders` row (every real
+customer has placed at least 3 orders in this dataset), and
+`SUM(num_customers)` across all 12 rows must equal **600** — the exact
+`dim_customer` row count from the facts sheet. If your sum isn't 600,
+you've either dropped customers (check you started from `dim_customer`,
+not `fact_sales`) or double-counted them (check your `GROUP BY` and
+join don't fan out).
+
+<p></details></p>
+
+<h2 id="2-alternate-novel-view-signup-cohort-90-day-activation-rate">2. Alternate novel view: signup-cohort 90-day activation rate</h2>
+
+<p><strong>Grain:</strong> one row per signup year.</p>
+
+<p>For each <code class="inline-code">signup_year</code> (extracted from <code class="inline-code">dim_customer.signup_date</code>),
+compute: cohort size, how many of those customers placed their first
+order (<code class="inline-code">MIN(order_date)</code> in <code class="inline-code">fact_sales</code>) within 90 days of their
+signup date, and the resulting activation rate as a percentage.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH cohort AS (
+    SELECT customer_id, signup_date, CAST(strftime(&#x27;%Y&#x27;, signup_date) AS INTEGER) AS signup_year
+    FROM dim_customer
+    WHERE signup_date IS NOT NULL
+),
+first_order AS (
+    SELECT customer_id, MIN(order_date) AS first_order_date
+    FROM fact_sales
+    WHERE order_date IS NOT NULL
+    GROUP BY customer_id
+)
+SELECT
+    c.signup_year,
+    COUNT(*) AS cohort_size,
+    SUM(CASE WHEN f.first_order_date IS NOT NULL
+             AND julianday(f.first_order_date) - julianday(c.signup_date) BETWEEN 0 AND 90
+             THEN 1 ELSE 0 END) AS activated_within_90d,
+    ROUND(100.0 * SUM(CASE WHEN f.first_order_date IS NOT NULL
+             AND julianday(f.first_order_date) - julianday(c.signup_date) BETWEEN 0 AND 90
+             THEN 1 ELSE 0 END) / COUNT(*), 2) AS activation_rate_pct
+FROM cohort c
+LEFT JOIN first_order f ON f.customer_id = c.customer_id
+GROUP BY c.signup_year
+ORDER BY c.signup_year;</code></pre></div>
+
+<p><strong>Verified real output (9 rows, 2018–2026):</strong></p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>signup_year</th><th>cohort_size</th><th>activated_within_90d</th><th>activation_rate_pct</th></tr></thead><tbody><tr><td>2018</td><td>63</td><td>0</td><td>0.0</td></tr><tr><td>2019</td><td>74</td><td>0</td><td>0.0</td></tr><tr><td>2020</td><td>70</td><td>5</td><td>7.14</td></tr><tr><td>2021</td><td>66</td><td>11</td><td>16.67</td></tr><tr><td>2022</td><td>81</td><td>1</td><td>1.23</td></tr><tr><td>2023</td><td>62</td><td>0</td><td>0.0</td></tr><tr><td>2024</td><td>76</td><td>0</td><td>0.0</td></tr><tr><td>2025</td><td>70</td><td>0</td><td>0.0</td></tr><tr><td>2026</td><td>38</td><td>0</td><td>0.0</td></tr></tbody></table></div>
+This is a genuinely interesting (if slightly sobering) result: 90-day
+activation is essentially zero for almost every cohort. That's a real
+finding worth investigating before shipping a dashboard built on this
+metric — it likely means most Oakhaven customers' *first* order tends
+to land well outside a 90-day post-signup window relative to when
+`fact_sales`' order history actually starts (2021-01-01), which
+truncates the observable activation window for the earliest cohorts in
+particular. Notice the pattern this teaches: a novel gold view isn't
+"done" just because it runs — reading its actual output and asking
+whether the result makes sense is part of building it.
+
+<p><strong>Self-check:</strong> 9 rows total (years 2018 through 2026 inclusive);
+<code class="inline-code">SUM(cohort_size)</code> should equal the count of customers with a non-NULL
+<code class="inline-code">signup_date</code> (600, since none are NULL in this dataset).</p>
+
+<p></details></p>
+
+<h2 id="3-alternate-novel-view-cross-category-purchase-breadth">3. Alternate novel view: cross-category purchase breadth</h2>
+
+<p><strong>Grain:</strong> one row per <code class="inline-code">(customer_segment, breadth_tier)</code> pair.</p>
+
+<p>For each customer, count the distinct product <code class="inline-code">category</code> values
+they've purchased from (via <code class="inline-code">fact_sales JOIN dim_product</code>, excluding
+orphan-customer rows). Bucket into:
+<ul class="styled-list"><li><code class="inline-code">No Purchases</code> — 0 categories</li><li><code class="inline-code">Narrow (1-2 categories)</code></li><li><code class="inline-code">Moderate (3-4 categories)</code></li><li><code class="inline-code">Broad (5+ categories)</code></li></ul>
+Roll up by <code class="inline-code">customer_segment</code> (again treating NULL as <code class="inline-code">'Unknown'</code>),
+returning customer count and average distinct-category count per
+bucket.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH customer_categories AS (
+    SELECT f.customer_id, COUNT(DISTINCT p.category) AS distinct_categories_purchased
+    FROM fact_sales f
+    JOIN dim_product p ON p.product_id = f.product_id
+    WHERE f.is_customer_orphan = 0
+    GROUP BY f.customer_id
+),
+tiered AS (
+    SELECT
+        c.customer_id,
+        COALESCE(c.customer_segment, &#x27;Unknown&#x27;) AS customer_segment,
+        COALESCE(cc.distinct_categories_purchased, 0) AS distinct_categories_purchased,
+        CASE
+            WHEN COALESCE(cc.distinct_categories_purchased, 0) = 0 THEN &#x27;No Purchases&#x27;
+            WHEN cc.distinct_categories_purchased &lt;= 2 THEN &#x27;Narrow (1-2 categories)&#x27;
+            WHEN cc.distinct_categories_purchased &lt;= 4 THEN &#x27;Moderate (3-4 categories)&#x27;
+            ELSE &#x27;Broad (5+ categories)&#x27;
+        END AS breadth_tier
+    FROM dim_customer c
+    LEFT JOIN customer_categories cc ON cc.customer_id = c.customer_id
+)
+SELECT
+    customer_segment,
+    breadth_tier,
+    COUNT(*) AS num_customers,
+    ROUND(AVG(distinct_categories_purchased), 2) AS avg_categories
+FROM tiered
+GROUP BY customer_segment, breadth_tier
+ORDER BY customer_segment,
+    CASE breadth_tier
+        WHEN &#x27;No Purchases&#x27; THEN 0
+        WHEN &#x27;Narrow (1-2 categories)&#x27; THEN 1
+        WHEN &#x27;Moderate (3-4 categories)&#x27; THEN 2
+        ELSE 3
+    END;</code></pre></div>
+
+<p><strong>Verified real output (10 rows):</strong></p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_segment</th><th>breadth_tier</th><th>num_customers</th><th>avg_categories</th></tr></thead><tbody><tr><td>Retail</td><td>Moderate (3-4 categories)</td><td>2</td><td>4.0</td></tr><tr><td>Retail</td><td>Broad (5+ categories)</td><td>171</td><td>7.13</td></tr><tr><td>Unknown</td><td>Broad (5+ categories)</td><td>14</td><td>7.0</td></tr><tr><td>VIP</td><td>Moderate (3-4 categories)</td><td>1</td><td>4.0</td></tr><tr><td>VIP</td><td>Broad (5+ categories)</td><td>206</td><td>7.18</td></tr><tr><td>Wholesale</td><td>Narrow (1-2 categories)</td><td>1</td><td>2.0</td></tr><tr><td>Wholesale</td><td>Moderate (3-4 categories)</td><td>5</td><td>3.8</td></tr><tr><td>Wholesale</td><td>Broad (5+ categories)</td><td>200</td><td>7.22</td></tr></tbody></table></div>
+Nearly every customer, regardless of segment, buys broadly across 5+
+of the 8 categories — with a high enough average order count per
+customer (established in exercise 1), it makes sense that most
+customers eventually touch most categories. Notice `SUM(num_customers)`
+here: 2+171+14+1+206+1+5+200 = 600, the full customer base — the same
+self-check discipline as the other two views in this file.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/10-capstone-build-a-novel-gold-view.html" class="nav-btn">10. Capstone: Design a Novel Gold View</a>. Previous: <a href="09-medallion-pipeline-recap.html" class="nav-btn">9. The Medallion Pipeline, Start to Finish</a>. Next: <a href="11-beyond-sqlite-portability-notes.html" class="nav-btn">11. Beyond SQLite: Portability Notes</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

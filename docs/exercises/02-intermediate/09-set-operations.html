@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Set Operations (UNION, UNION ALL, INTERSECT, EXCEPT) | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-set-operations-union-union-all-intersect-except">Exercises: Set Operations (UNION, UNION ALL, INTERSECT, EXCEPT)</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/09-set-operations.html" class="nav-btn">Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT</a>. Previous: <a href="08-subqueries-and-derived-tables.html" class="nav-btn">Subqueries and Derived Tables</a>. Next: <a href="../03-advanced/01-common-table-expressions.html" class="nav-btn">1. Common Table Expressions (CTEs)</a>.</nav>
+
+<p>Use <code class="inline-code">project/oakhaven.db</code>. Every solution below was run against the
+real database — your output should match exactly.</p>
+
+<hr class="divider">
+
+<p><strong>1. Confirm <code class="inline-code">'Completed'</code> is already present in <code class="inline-code">order_status</code> using UNION</strong></p>
+
+<p>Combine the distinct raw <code class="inline-code">order_status</code> values with a single-row query
+returning the literal <code class="inline-code">'Completed'</code>, using <code class="inline-code">UNION</code>. If the combined
+list is the same size as the original distinct list, the value was
+already present.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT order_status FROM bronze_sales
+UNION
+SELECT &#x27;Completed&#x27;
+ORDER BY 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_status</th></tr></thead><tbody><tr><td><em>(blank/NULL)</em></td></tr><tr><td>CANCELLED</td></tr><tr><td>Cancelled</td></tr><tr><td>Completed</td></tr><tr><td>Returned</td></tr><tr><td>completed</td></tr></tbody></table></div>
+6 rows — the same count as `SELECT DISTINCT order_status FROM
+bronze_sales` alone would return, confirming `'Completed'` (exact
+casing) was already one of the 6 raw values, so `UNION` added
+nothing new.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>2. INTERSECT: Wholesale customers who bought exactly-spelled <code class="inline-code">'Footwear'</code></strong></p>
+
+<p><code class="inline-code">bronze_customers.customer_segment = 'Wholesale'</code> has 95 exact-cased
+matches. Using <code class="inline-code">INTERSECT</code>, find how many of those customers also
+bought a product from the exact-cased <code class="inline-code">'Footwear'</code> category.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_customers WHERE customer_segment = &#x27;Wholesale&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>95</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id FROM bronze_customers WHERE customer_segment = &#x27;Wholesale&#x27;
+INTERSECT
+SELECT customer_id FROM bronze_sales
+  WHERE product_id IN (SELECT product_id FROM bronze_products WHERE category = &#x27;Footwear&#x27;)
+ORDER BY customer_id
+LIMIT 10;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th></tr></thead><tbody><tr><td>5</td></tr><tr><td>26</td></tr><tr><td>31</td></tr><tr><td>65</td></tr><tr><td>92</td></tr><tr><td>110</td></tr><tr><td>113</td></tr><tr><td>159</td></tr><tr><td>160</td></tr><tr><td>174</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+  SELECT customer_id FROM bronze_customers WHERE customer_segment = &#x27;Wholesale&#x27;
+  INTERSECT
+  SELECT customer_id FROM bronze_sales
+    WHERE product_id IN (SELECT product_id FROM bronze_products WHERE category = &#x27;Footwear&#x27;)
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>33</td></tr></tbody></table></div>
+33 of the 95 exact-cased `'Wholesale'` customers bought from the
+exact-cased `'Footwear'` category. Both numbers undercount the real
+answer, since both `customer_segment` and `category` have other raw
+spellings not included here — a fair exercise in seeing how set
+operations compose cleanly even when the underlying filters are still
+partial.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>3. EXCEPT: verify every real customer has placed at least one order</strong></p>
+
+<p>Using <code class="inline-code">EXCEPT</code> instead of a <code class="inline-code">LEFT JOIN</code>, find <code class="inline-code">customer_id</code>s present in
+<code class="inline-code">bronze_customers</code> but absent from <code class="inline-code">bronze_sales</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+  SELECT customer_id FROM bronze_customers
+  EXCEPT
+  SELECT customer_id FROM bronze_sales
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>0</td></tr></tbody></table></div>
+Same answer Module 2 found with `LEFT JOIN ... WHERE ... IS NULL` —
+`EXCEPT` is a different, equally valid way to ask "what's in A but not
+in B."
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>4. EXCEPT: which raw <code class="inline-code">payment_method</code> spellings aren't one of the 5 canonical, exact-cased forms?</strong></p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT payment_method FROM bronze_sales
+EXCEPT
+SELECT * FROM (
+  SELECT &#x27;Credit Card&#x27; AS payment_method
+  UNION ALL SELECT &#x27;Cash&#x27;
+  UNION ALL SELECT &#x27;Debit Card&#x27;
+  UNION ALL SELECT &#x27;Gift Card&#x27;
+  UNION ALL SELECT &#x27;PayPal&#x27;
+)
+ORDER BY 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>payment_method</th></tr></thead><tbody><tr><td>CC</td></tr><tr><td>cash</td></tr><tr><td>credit card</td></tr><tr><td>debit card</td></tr><tr><td>paypal</td></tr></tbody></table></div>
+5 "wrong" spellings out of 10 total raw values — exactly half. Notice
+`cash ` has a trailing space, invisible in the rendered table but
+real to `EXCEPT`'s comparison; that's the same lesson from Module 6
+resurfacing here.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>5. UNION ALL: how many total first names exist across customers and employees?</strong></p>
+
+<p>Stack <code class="inline-code">bronze_customers.first_name</code> and <code class="inline-code">bronze_employees.first_name</code>
+with <code class="inline-code">UNION ALL</code> and confirm the row count equals the sum of both
+tables' row counts.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+  SELECT first_name FROM bronze_customers
+  UNION ALL
+  SELECT first_name FROM bronze_employees
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>635</td></tr></tbody></table></div>
+600 (customers) + 35 (employees) = 635 — `UNION ALL` never
+deduplicates, so this is pure addition, confirming no rows were
+silently dropped or merged.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>6. Build your own audit: which raw <code class="inline-code">channel</code> values aren't <code class="inline-code">'Online'</code> or <code class="inline-code">'In-Store'</code> exactly?</strong></p>
+
+<p>Using the <code class="inline-code">EXCEPT</code> pattern from #4, find every raw <code class="inline-code">channel</code> value
+that doesn't exactly match <code class="inline-code">'Online'</code> or <code class="inline-code">'In-Store'</code>. Then write a
+second query using <code class="inline-code">UNION</code> to confirm your 2-value canonical list,
+combined with the full raw distinct list, doesn't grow past 6
+distinct values total (4 raw + the same 2 canonical, since 2 raw
+values already match exactly).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT channel FROM bronze_sales
+EXCEPT
+SELECT * FROM (SELECT &#x27;Online&#x27; AS channel UNION ALL SELECT &#x27;In-Store&#x27;)
+ORDER BY 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>channel</th></tr></thead><tbody><tr><td>in store</td></tr><tr><td>online</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+  SELECT channel FROM bronze_sales
+  UNION
+  SELECT * FROM (SELECT &#x27;Online&#x27; AS channel UNION ALL SELECT &#x27;In-Store&#x27;)
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>4</td></tr></tbody></table></div>
+Only 4, not 6 — because `'Online'` and `'In-Store'` (exact casing)
+were already among the 4 raw values, so adding them again via `UNION`
+contributed nothing new. `UNION`'s dedup behavior is exactly what
+makes it a reliable way to check "is this value already present"
+without first needing to know the answer.
+
+<p></details></p>
+
+<hr class="divider">
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/09-set-operations.html" class="nav-btn">Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT</a>. Previous: <a href="08-subqueries-and-derived-tables.html" class="nav-btn">Subqueries and Derived Tables</a>. Next: <a href="../03-advanced/01-common-table-expressions.html" class="nav-btn">1. Common Table Expressions (CTEs)</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

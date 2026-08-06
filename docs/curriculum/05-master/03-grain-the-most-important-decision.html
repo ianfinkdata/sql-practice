@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3. Grain: The Most Important Decision in Star Schema Design | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="3-grain-the-most-important-decision-in-star-schema-design">3. Grain: The Most Important Decision in Star Schema Design</h1>
+
+<nav class="book-nav">Previous: <a href="02-dimensions-and-facts-core-vocabulary.html" class="nav-btn">2. Dimensions and Facts: Core Vocabulary</a>. Next: <a href="04-designing-a-dimension.html" class="nav-btn">4. Designing a Dimension</a>. Exercises: <a href="../../exercises/05-master/03-grain-the-most-important-decision.html" class="nav-btn">3. Grain: The Most Important Decision in Star Schema Design</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p><strong>Grain</strong> is the precise, one-sentence answer to: "what does a single
+row in this fact table represent?" Not "sales data" — that's not a
+grain, that's a subject area. A grain is specific enough that anyone
+reading it could look at a random row and know exactly what real-world
+event it corresponds to: "one row per order line," "one row per daily
+account balance snapshot," "one row per web page view."</p>
+
+<p>Grain gets its own lesson because it isn't just <em>a</em> decision among
+many in star schema design — it's the decision everything else
+depends on. Before you know the grain, you don't know:
+<ul class="styled-list"><li><strong>Which foreign keys the fact table needs.</strong> A "one row per order</li></ul>  line" fact needs <code class="inline-code">product_id</code>; a "one row per order" fact doesn't
+  (an order can have several products, so product wouldn't fit at that
+  grain without losing information).
+<ul class="styled-list"><li><strong>What counts as a measure vs. what has to be derived.</strong> At order-line</li></ul>  grain, <code class="inline-code">quantity</code> is a simple column. At order grain, "quantity" only
+  makes sense as <code class="inline-code">SUM(quantity)</code> across the order's lines — it's a
+  derived aggregate, not a stored value.
+<ul class="styled-list"><li><strong>How to count things correctly.</strong> <code class="inline-code">COUNT(*)</code> means something</li></ul>  completely different depending on the grain — see Example 2.</p>
+
+<p>Declare the grain <em>first</em>, in words, before writing a single <code class="inline-code">CREATE
+VIEW</code>. If you can't state it in one clear sentence, you don't
+understand your own design yet — and changing grain after a warehouse
+is built and queries depend on it is one of the most expensive mistakes
+in data modeling, because every downstream aggregate query has to be
+rewritten and re-validated.</p>
+
+<h2 id="worked-example-fact_saless-actual-grain">Worked example: <code class="inline-code">fact_sales</code>'s actual grain</h2>
+
+<p>The <code class="inline-code">fact_sales</code> view's own header comment states the grain directly:
+<em>"one row per order line."</em> Don't take a comment's word for it —
+verify it the way you'd verify any grain claim: check that the
+declared grain keys are actually unique.</p>
+
+<h3 id="verifying-the-grain">Verifying the grain</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total_rows,
+       COUNT(DISTINCT order_id || &#x27;-&#x27; || order_line_id) AS distinct_order_lines
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_rows</th><th>distinct_order_lines</th></tr></thead><tbody><tr><td>12000</td><td>12000</td></tr></tbody></table></div>
+Every row's `(order_id, order_line_id)` pair is unique — 12,000 rows,
+12,000 distinct combinations. That confirms the grain. As a second
+check, confirm the *composite* key is truly required — `order_id`
+alone is **not** unique:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_line_id, COUNT(*)
+FROM fact_sales
+GROUP BY order_id, order_line_id
+HAVING COUNT(*) &gt; 1;</code></pre></div>
+
+<p>This returns zero rows — no duplicate <code class="inline-code">(order_id, order_line_id)</code>
+pairs exist. And:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total_rows, COUNT(DISTINCT order_id) AS distinct_orders
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_rows</th><th>distinct_orders</th></tr></thead><tbody><tr><td>12000</td><td>7199</td></tr></tbody></table></div>
+12,000 rows but only 7,199 distinct `order_id` values — proof that
+`order_id` alone under-identifies a row. You need both columns. This
+is exactly why the grain statement is "one row per order line," not
+"one row per order": the finer-grained key is the one that's actually
+unique.
+
+<h2 id="what-breaks-if-you-assume-the-wrong-grain">What breaks if you assume the wrong grain</h2>
+
+<p>A very common real-world bug: an analyst assumes a fact table is at
+order grain (one row per order) when it's actually at order-line
+grain, and uses <code class="inline-code">COUNT(*)</code> to count orders.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS lines_miscounted_as_orders
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>lines_miscounted_as_orders</th></tr></thead><tbody><tr><td>12000</td></tr></tbody></table></div>
+That's **12,000**, not the true order count of **7,199** — a 67%
+overcount, silently wrong, no error thrown. The fix requires knowing
+the grain and counting the *dimension of interest* explicitly:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT order_id) AS true_order_count
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>true_order_count</th></tr></thead><tbody><tr><td>7199</td></tr></tbody></table></div>
+This is the single most common grain-related bug in practice: `COUNT(*)`
+always counts *rows at the fact table's grain*, never automatically
+"orders" or "customers" or whatever business entity you have in mind.
+
+<h2 id="what-would-change-if-the-grain-were-one-row-per-order-instead">What would change if the grain were "one row per order" instead</h2>
+
+<p>Suppose you decided <code class="inline-code">fact_sales</code> should be at order grain rather than
+order-line grain. Here's what that forces:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, COUNT(*) AS line_count, SUM(net_amount) AS order_net_amount
+FROM fact_sales
+GROUP BY order_id
+ORDER BY line_count DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>line_count</th><th>order_net_amount</th></tr></thead><tbody><tr><td>7197</td><td>3</td><td>715.55</td></tr><tr><td>7191</td><td>3</td><td>3456.21</td></tr><tr><td>7184</td><td>3</td><td>221.12</td></tr><tr><td>7183</td><td>3</td><td>-183.87</td></tr><tr><td>7179</td><td>3</td><td>3587.43</td></tr></tbody></table></div>
+Distribution of lines per order across the whole table:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT line_count, COUNT(*) AS num_orders
+FROM (SELECT order_id, COUNT(*) AS line_count FROM fact_sales GROUP BY order_id)
+GROUP BY line_count
+ORDER BY line_count;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>line_count</th><th>num_orders</th></tr></thead><tbody><tr><td>1</td><td>3589</td></tr><tr><td>2</td><td>2419</td></tr><tr><td>3</td><td>1191</td></tr></tbody></table></div>
+At order grain, you'd gain a table that's 40% smaller (7,199 rows
+instead of 12,000) and trivially answers "how many orders." But you'd
+lose the ability to answer *any* product-level question: `product_id`,
+`quantity`, and per-line `unit_price`/`discount_pct` can't fit at
+order grain without collapsing information (an order with 3 different
+products can't have a single `product_id` column). You'd have to
+either drop that analysis entirely, or pre-aggregate it into
+derived columns (e.g., `distinct_product_count`,
+`SUM(quantity) AS total_units`) — which is strictly *less* information
+than the line-grain table preserves. This is the general trade-off of
+grain: coarser grain means smaller, simpler, faster-to-query tables,
+at the cost of detail you can never get back without rebuilding from
+source. Oakhaven's designers chose order-line grain specifically
+because product-level analysis ("what sells," "category performance")
+is a core use case — see `agg_monthly_sales_by_category` in the gold
+layer, which depends on that per-line `product_id`.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Not stating the grain in words before building the table.</strong> If you</li></ul>  can't finish the sentence "one row per ___," you don't have a design
+  yet, you have a pile of columns.
+<ul class="styled-list"><li><strong>Mixing grains in one fact table.</strong> A table with some rows at</li></ul>  order-line grain and others aggregated to order grain (e.g., adding
+  a "summary" row per order) breaks every `SUM`/`COUNT` downstream,
+  because a naive aggregate double-counts the summary alongside the
+  detail rows.
+<ul class="styled-list"><li>*<em>Using <code class="inline-code">COUNT(</em>)</code> as a stand-in for "count of business entity X"**</li></ul>  without checking whether the fact table's grain actually matches
+  entity X. Always ask "what does one row mean here?" before writing
+  `COUNT(*)`.
+<ul class="styled-list"><li><strong>Letting a <code class="inline-code">JOIN</code> silently change the effective grain.</strong> Joining a</li></ul>  fact table to a dimension where the join key isn't actually unique
+  in the dimension causes row fan-out — the fact table's *effective*
+  grain in the query result becomes finer than its stored grain, and
+  `SUM`s inflate. (This is precisely why grain verification — Example
+  1 above — matters for dimensions too, not just facts.)
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>Grain is the first design decision in any star schema, and everything</li></ul>  else — foreign keys, measures vs. derived aggregates, correct
+  counting — follows from it.
+<ul class="styled-list"><li>Always verify a claimed grain empirically: check that the declared</li></ul>  grain key(s) produce zero duplicates via `GROUP BY ... HAVING
+  COUNT(*) > 1`, or compare `COUNT(*)` to `COUNT(DISTINCT <key>)`.
+<ul class="styled-list"><li><code class="inline-code">fact_sales</code>'s verified grain is <strong>one row per order line</strong></li></ul>  — `(order_id, order_line_id)` is unique across all 12,000 rows, while
+  `order_id` alone repeats (7,199 distinct values across 12,000 rows).
+<ul class="styled-list"><li><code class="inline-code">COUNT(*)</code> counts rows at the fact table's grain, not any particular</li></ul>  business entity — conflating the two is the most common grain bug in
+  practice.
+<ul class="styled-list"><li>Coarser grain (e.g., order instead of order line) trades away detail</li></ul>  you can't recover later; this is a real, permanent cost, not a free
+  simplification.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="02-dimensions-and-facts-core-vocabulary.html" class="nav-btn">2. Dimensions and Facts: Core Vocabulary</a>. Next: <a href="04-designing-a-dimension.html" class="nav-btn">4. Designing a Dimension</a>. Exercises: <a href="../../exercises/05-master/03-grain-the-most-important-decision.html" class="nav-btn">3. Grain: The Most Important Decision in Star Schema Design</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

@@ -1,5 +1,11 @@
 # Tier 2 — Intermediate
 
+> **BLUF (Bottom Line Up Front):** Tier 2 focuses on multi-table queries and data cleaning: `JOIN` types, `GROUP BY`, conditional logic (`CASE`), string scrubbing (`TRIM`, `UPPER`), and handling missing values with `COALESCE`.
+
+<!-- nav -->
+[⏮️ Prev: Tier 1 Beginner](../01-beginner/README.md) | [📖 Table of Contents](../../README.md) | [⏭️ Next: Tier 3 Advanced](../03-advanced/README.md)
+<!-- /nav -->
+
 Combining tables, summarizing data, and confronting the messy parts of `bronze_customers` and `bronze_sales` head-on. This is the tier where "the data doesn't look right" stops being a surprise and starts being something you know how to fix.
 
 | Module | Topic |
@@ -16,4 +22,8 @@ Combining tables, summarizing data, and confronting the messy parts of `bronze_c
 
 Matching exercises: [`exercises/02-intermediate/`](../../exercises/02-intermediate/).
 
-Previous: [Tier 1 — Beginner](../01-beginner/README.md). Next: [Tier 3 — Advanced](../03-advanced/README.md).
+---
+
+<!-- nav -->
+[⏮️ Prev: Tier 1 Beginner](../01-beginner/README.md) | [📖 Table of Contents](../../README.md) | [⏭️ Next: Tier 3 Advanced](../03-advanced/README.md)
+<!-- /nav -->

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: The Medallion Pipeline, Start to Finish | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-the-medallion-pipeline-start-to-finish">Exercises: The Medallion Pipeline, Start to Finish</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/09-medallion-pipeline-recap.html" class="nav-btn">9. The Medallion Pipeline, Start to Finish</a>. Previous: <a href="08-star-vs-snowflake-schema.html" class="nav-btn">8. Star vs. Snowflake Schema</a>. Next: <a href="10-capstone-build-a-novel-gold-view.html" class="nav-btn">10. Capstone: Design a Novel Gold View</a>.</nav>
+
+<p>All solutions verified against <code class="inline-code">project/oakhaven.db</code>.</p>
+
+<h2 id="1-follow-the-discount_pct-bug-through-all-three-layers">1. Follow the discount_pct bug through all three layers</h2>
+
+<p>Order 21, line 1 has the <code class="inline-code">discount_pct</code> whole-number data-entry bug
+mentioned in the facts sheet (<code class="inline-code">25.0</code> stored instead of <code class="inline-code">0.25</code>). Write
+one query joining <code class="inline-code">bronze_sales</code> → <code class="inline-code">silver_sales</code> → <code class="inline-code">fact_sales</code> on
+<code class="inline-code">(order_id, order_line_id)</code> that shows <code class="inline-code">discount_pct</code> at each layer
+plus the final <code class="inline-code">net_amount</code>, for <code class="inline-code">order_id = 21, order_line_id = 1</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    b.discount_pct AS bronze_discount,
+    s.discount_pct AS silver_discount,
+    f.discount_pct AS gold_discount,
+    f.net_amount AS gold_net_amount
+FROM bronze_sales b
+JOIN silver_sales s ON s.order_id = b.order_id AND s.order_line_id = b.order_line_id
+JOIN fact_sales f ON f.order_id = b.order_id AND f.order_line_id = b.order_line_id
+WHERE b.order_id = 21 AND b.order_line_id = 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>bronze_discount</th><th>silver_discount</th><th>gold_discount</th><th>gold_net_amount</th></tr></thead><tbody><tr><td>25.0</td><td>0.25</td><td>0.25</td><td>1786.01</td></tr></tbody></table></div>
+Bronze's `25.0` (the bug — a whole-number percentage instead of a
+fraction) is caught and fixed exactly once, in silver. Gold inherits
+the already-correct `0.25` and does nothing further to it.
+
+<p></details></p>
+
+<h2 id="2-how-many-rows-did-silvers-discount-fix-actually-touch">2. How many rows did silver's discount fix actually touch?</h2>
+
+<p>Count how many rows in <code class="inline-code">bronze_sales</code> have the whole-number
+<code class="inline-code">discount_pct</code> bug (<code class="inline-code">discount_pct > 1</code>), by joining to <code class="inline-code">silver_sales</code>
+on the grain key.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*)
+FROM bronze_sales b
+JOIN silver_sales s ON s.order_id = b.order_id AND s.order_line_id = b.order_line_id
+WHERE b.discount_pct &gt; 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>110</td></tr></tbody></table></div>
+110 order lines (about 0.9% of all 12,000) had this specific bug —
+matching the facts sheet's documented rate. Every one of them gets
+fixed the same way, in the same place, because the fix lives in
+`silver_sales`'s single `CASE WHEN discount_pct > 1 THEN discount_pct /
+100.0 ELSE discount_pct END` expression rather than being re-solved
+per downstream query.
+
+<p></details></p>
+
+<h2 id="3-the-employee-thread-row-count-parity-and-a-messy-value">3. The employee thread: row-count parity and a messy value</h2>
+
+<p>Two parts. First, confirm <code class="inline-code">bronze_employees</code> → <code class="inline-code">silver_employees</code> →
+<code class="inline-code">dim_employee</code> all have the same row count (no employees silently
+dropped or duplicated across layers). Second, look up employee 16's
+<code class="inline-code">department</code> and <code class="inline-code">region</code> in <code class="inline-code">bronze_employees</code> and in <code class="inline-code">dim_employee</code>
+side by side to see what silver's cleaning actually changed.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    (SELECT COUNT(*) FROM bronze_employees) AS bronze,
+    (SELECT COUNT(*) FROM silver_employees) AS silver,
+    (SELECT COUNT(*) FROM dim_employee) AS gold;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>bronze</th><th>silver</th><th>gold</th></tr></thead><tbody><tr><td>35</td><td>35</td><td>35</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT employee_id, department, region FROM bronze_employees WHERE employee_id = 16
+UNION ALL
+SELECT employee_id, department, region FROM dim_employee WHERE employee_id = 16;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>department</th><th>region</th></tr></thead><tbody><tr><td>16</td><td>sales</td><td>south</td></tr><tr><td>16</td><td>Sales</td><td>South</td></tr></tbody></table></div>
+35 employees at every layer, and employee 16's lowercase `sales`/`south`
+in bronze becomes properly-cased `Sales`/`South` by the time it reaches
+`dim_employee` — cleaned once in `silver_employees`, unchanged
+afterward, same pattern as every other thread in this pipeline.
+
+<p></details></p>
+
+<h2 id="4-prove-fact_sales-is-built-on-silver-not-bronze">4. Prove <code class="inline-code">fact_sales</code> is built on silver, not bronze</h2>
+
+<p>Without reading the <code class="inline-code">.sql</code> file directly, use <code class="inline-code">sqlite_master</code> to
+inspect <code class="inline-code">fact_sales</code>'s definition and confirm which table it selects
+<code class="inline-code">FROM</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT sql FROM sqlite_master WHERE name = &#x27;fact_sales&#x27;;</code></pre></div>
+
+<p>The definition's <code class="inline-code">FROM</code> clause reads <code class="inline-code">FROM silver_sales s</code> — confirming
+<code class="inline-code">fact_sales</code> is built entirely on the cleaned silver layer, never
+directly on <code class="inline-code">bronze_sales</code>. This is exactly why gold doesn't need to
+re-parse dates or re-fix the discount bug: silver already did it, once.</p>
+
+<p></details></p>
+
+<h2 id="5-harder-spot-check-row-count-parity-across-every-bronzesilvergold-thread-at-once">5. Harder: spot-check row-count parity across every bronze/silver/gold thread at once</h2>
+
+<p>Write a single query (using <code class="inline-code">UNION ALL</code>) that reports bronze, silver,
+and gold-equivalent row counts for all four base entities: sales,
+customers, products, and employees. (Gold-equivalent tables:
+<code class="inline-code">fact_sales</code>, <code class="inline-code">dim_customer</code>, <code class="inline-code">dim_product</code>, <code class="inline-code">dim_employee</code>.)</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT &#x27;sales&#x27; AS thread, (SELECT COUNT(*) FROM bronze_sales) AS bronze,
+       (SELECT COUNT(*) FROM silver_sales) AS silver, (SELECT COUNT(*) FROM fact_sales) AS gold
+UNION ALL
+SELECT &#x27;customers&#x27;, (SELECT COUNT(*) FROM bronze_customers),
+       (SELECT COUNT(*) FROM silver_customers), (SELECT COUNT(*) FROM dim_customer)
+UNION ALL
+SELECT &#x27;products&#x27;, (SELECT COUNT(*) FROM bronze_products),
+       (SELECT COUNT(*) FROM silver_products), (SELECT COUNT(*) FROM dim_product)
+UNION ALL
+SELECT &#x27;employees&#x27;, (SELECT COUNT(*) FROM bronze_employees),
+       (SELECT COUNT(*) FROM silver_employees), (SELECT COUNT(*) FROM dim_employee);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>thread</th><th>bronze</th><th>silver</th><th>gold</th></tr></thead><tbody><tr><td>sales</td><td>12000</td><td>12000</td><td>12000</td></tr><tr><td>customers</td><td>600</td><td>600</td><td>600</td></tr><tr><td>products</td><td>150</td><td>150</td><td>150</td></tr><tr><td>employees</td><td>35</td><td>35</td><td>35</td></tr></tbody></table></div>
+Perfect parity across all four threads, all three layers. This is the
+single most useful sanity check to run on *any* medallion pipeline
+you're handed for the first time — before trusting a single number out
+of gold, confirm nothing got silently dropped or duplicated on the way
+there.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/09-medallion-pipeline-recap.html" class="nav-btn">9. The Medallion Pipeline, Start to Finish</a>. Previous: <a href="08-star-vs-snowflake-schema.html" class="nav-btn">8. Star vs. Snowflake Schema</a>. Next: <a href="10-capstone-build-a-novel-gold-view.html" class="nav-btn">10. Capstone: Design a Novel Gold View</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

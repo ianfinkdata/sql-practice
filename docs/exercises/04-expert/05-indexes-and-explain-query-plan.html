@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Indexes and EXPLAIN QUERY PLAN | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-indexes-and-explain-query-plan">Exercises: Indexes and EXPLAIN QUERY PLAN</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/05-indexes-and-explain-query-plan.html" class="nav-btn">5. Indexes and EXPLAIN QUERY PLAN</a>. Previous: <a href="04-views.html" class="nav-btn">4. Views</a>. Next: <a href="06-query-optimization-basics.html" class="nav-btn">6. Query Optimization Basics</a>.</nav>
+
+<p><code class="inline-code">EXPLAIN QUERY PLAN</code> alone is read-only and safe against the shared
+database. Any exercise involving <code class="inline-code">CREATE INDEX</code> must run against your
+own scratch copy:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/my_scratch.db
+sqlite3 /tmp/my_scratch.db</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-confirm-bronze-has-no-indexes-to-begin-with">1. Confirm bronze has no indexes to begin with</h3>
+
+<p>Using <code class="inline-code">PRAGMA index_list</code>, confirm that <code class="inline-code">bronze_sales</code> and
+<code class="inline-code">bronze_customers</code> have zero indexes defined (this is read-only —
+safe against the real <code class="inline-code">project/oakhaven.db</code>). Then run <code class="inline-code">EXPLAIN QUERY
+PLAN</code> on <code class="inline-code">SELECT * FROM bronze_sales WHERE order_id = 500;</code> and
+confirm it's a full scan.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">PRAGMA index_list(bronze_sales);
+PRAGMA index_list(bronze_customers);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">(no rows returned for either — confirms zero indexes)</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN SELECT * FROM bronze_sales WHERE order_id = 500;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SCAN bronze_sales</code></pre></div>
+
+<p>No indexes, so every filter on <code class="inline-code">bronze_sales</code> is a full scan of all
+12,000 rows, regardless of the column.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-add-an-index-and-watch-scan-become-search">2. Add an index and watch SCAN become SEARCH</h3>
+
+<p>On your scratch copy, run <code class="inline-code">EXPLAIN QUERY PLAN</code> on <code class="inline-code">SELECT * FROM
+bronze_sales WHERE employee_id = 5;</code> before creating any index. Then
+create an index on <code class="inline-code">employee_id</code> and run the exact same query plan
+check again.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN SELECT * FROM bronze_sales WHERE employee_id = 5;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SCAN bronze_sales</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX idx_es_employee ON bronze_sales(employee_id);
+EXPLAIN QUERY PLAN SELECT * FROM bronze_sales WHERE employee_id = 5;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SEARCH bronze_sales USING INDEX idx_es_employee (employee_id=?)</code></pre></div>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-column-order-matters-in-a-composite-index">3. Column order matters in a composite index</h3>
+
+<p>On your scratch copy, create a composite index on <code class="inline-code">(order_status,
+order_date)</code>. Then check <code class="inline-code">EXPLAIN QUERY PLAN</code> for two different
+queries: one filtering on both columns, and one filtering <em>only</em> on
+<code class="inline-code">order_date</code> (the second column in the index, not the first). Does
+the index get used for both?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX idx_es_status_date ON bronze_sales(order_status, order_date);
+
+<p>EXPLAIN QUERY PLAN
+SELECT * FROM bronze_sales WHERE order_status = &#x27;Completed&#x27; AND order_date = &#x27;2023-05-15&#x27;;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SEARCH bronze_sales USING INDEX idx_es_status_date (order_status=? AND order_date=?)</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN
+SELECT * FROM bronze_sales WHERE order_date = &#x27;2023-05-15&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SCAN bronze_sales</code></pre></div>
+
+<p>Filtering on both columns uses the index. Filtering <em>only</em> on
+<code class="inline-code">order_date</code> — the second column — falls back to a full scan, because
+a composite index is physically sorted first by <code class="inline-code">order_status</code>, then
+by <code class="inline-code">order_date</code> within each status. Without a value for the leading
+column, SQLite can't jump to the right starting point in the index;
+it's like trying to use a phone book sorted by (last name, first name)
+to look someone up by first name alone. The rule of thumb: put the
+column you'll filter on <em>most often, or alone</em>, first in a composite
+index.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-an-index-changes-the-plan-never-the-result">4. An index changes the plan, never the result</h3>
+
+<p>On your scratch copy, run <code class="inline-code">SELECT COUNT(<em>), SUM(quantity) FROM
+bronze_sales WHERE channel = 'Online';</code> before creating any index on
+<code class="inline-code">channel</code>. Then create the index and run the exact same query again.
+Confirm the numbers are identical — an index can never change </em>what<em>
+a query returns, only </em>how* the database finds it.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*), SUM(quantity) FROM bronze_sales WHERE channel = &#x27;Online&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">2961|8025</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX idx_es_channel ON bronze_sales(channel);
+SELECT COUNT(*), SUM(quantity) FROM bronze_sales WHERE channel = &#x27;Online&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">2961|8025</code></pre></div>
+
+<p>Identical: 2,961 matching rows, summing to 8,025 units, both times.
+If adding an index ever changes a query's <em>results</em>, the index isn't
+the problem — something else changed (different data, a different
+predicate, a bug in the query itself).</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-diagnose-a-join-that-isnt-using-an-available-index">5. Diagnose a join that isn't using an available index</h3>
+
+<p>On your scratch copy, create an index on <code class="inline-code">bronze_customers(customer_id)</code>
+(note: <code class="inline-code">customer_id</code> isn't declared <code class="inline-code">PRIMARY KEY</code> in bronze, so it has
+no implicit index — Module 7 covers why). Then check <code class="inline-code">EXPLAIN QUERY
+PLAN</code> for a join between <code class="inline-code">bronze_sales</code> and <code class="inline-code">bronze_customers</code> filtered
+by <code class="inline-code">bronze_customers.state</code>. Which table does SQLite scan, and which
+does it search? Explain why, given only one side of the join has a
+useful filter predicate on an indexed column.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX idx_customers_id ON bronze_customers(customer_id);
+
+<p>EXPLAIN QUERY PLAN
+SELECT s.order_id, c.state
+FROM bronze_sales s
+JOIN bronze_customers c ON c.customer_id = s.customer_id
+WHERE c.state = &#x27;CA&#x27;;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+|--SCAN c
+`--SEARCH s USING AUTOMATIC COVERING INDEX (customer_id=?)</code></pre></div>
+
+<p>SQLite scans <code class="inline-code">bronze_customers</code> (<code class="inline-code">c</code>) — because the filter
+<code class="inline-code">c.state = 'CA'</code> is on <code class="inline-code">state</code>, which has no index, <code class="inline-code">state</code> itself
+still requires a scan to find matching customers. But once it has
+each matching customer's <code class="inline-code">customer_id</code>, it searches <code class="inline-code">bronze_sales</code>
+efficiently (via an automatic covering index it builds for this join,
+since <code class="inline-code">bronze_sales.customer_id</code> also has no persistent index in this
+exercise). The <code class="inline-code">idx_customers_id</code> index you created doesn't help this
+particular query at all — it would help a query that filters
+<code class="inline-code">bronze_customers</code> <em>by</em> <code class="inline-code">customer_id</code>, not one that filters by
+<code class="inline-code">state</code> and only joins on <code class="inline-code">customer_id</code>. This is a good illustration
+of matching the index to the actual filter column, not just any
+column that happens to be involved in the query.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="6-design-the-right-index-for-a-real-oakhaven-query-pattern">6. Design the right index for a real Oakhaven query pattern</h3>
+
+<p>Consider this query, which mirrors a realistic "recent orders for a
+customer" lookup:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_date, quantity, unit_price
+FROM bronze_sales
+WHERE customer_id = 41
+ORDER BY order_date DESC;</code></pre></div>
+
+<p>On your scratch copy: check the plan with no index, design and create
+a single index that would help both the <code class="inline-code">WHERE</code> and the <code class="inline-code">ORDER BY</code>
+in one structure, then confirm the plan improved.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN
+SELECT order_id, order_date, quantity, unit_price
+FROM bronze_sales
+WHERE customer_id = 41
+ORDER BY order_date DESC;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+|--SCAN bronze_sales
+`--USE TEMP B-TREE FOR ORDER BY</code></pre></div>
+
+<p>Two costs here: a full scan for the filter, <em>and</em> a temporary sort
+structure built just for <code class="inline-code">ORDER BY</code>. A composite index on
+<code class="inline-code">(customer_id, order_date)</code> can fix both at once — the leading column
+serves the <code class="inline-code">WHERE customer_id = 41</code> filter, and because rows within
+each <code class="inline-code">customer_id</code> are already stored sorted by <code class="inline-code">order_date</code> in the
+index, SQLite can walk them in that order directly instead of
+building a separate sort structure:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX idx_es_customer_date ON bronze_sales(customer_id, order_date);
+
+<p>EXPLAIN QUERY PLAN
+SELECT order_id, order_date, quantity, unit_price
+FROM bronze_sales
+WHERE customer_id = 41
+ORDER BY order_date DESC;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SEARCH bronze_sales USING INDEX idx_es_customer_date (customer_id=?)</code></pre></div>
+
+<p>No more <code class="inline-code">SCAN</code>, and no more separate <code class="inline-code">TEMP B-TREE FOR ORDER BY</code> step
+— one index serves both the filter and the sort.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/05-indexes-and-explain-query-plan.html" class="nav-btn">5. Indexes and EXPLAIN QUERY PLAN</a>. Previous: <a href="04-views.html" class="nav-btn">4. Views</a>. Next: <a href="06-query-optimization-basics.html" class="nav-btn">6. Query Optimization Basics</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

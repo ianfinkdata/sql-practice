@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Query Optimization Basics | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-query-optimization-basics">Exercises: Query Optimization Basics</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/06-query-optimization-basics.html" class="nav-btn">6. Query Optimization Basics</a>. Previous: <a href="05-indexes-and-explain-query-plan.html" class="nav-btn">5. Indexes and EXPLAIN QUERY PLAN</a>. Next: <a href="07-constraints-and-data-integrity.html" class="nav-btn">7. Constraints and Data Integrity</a>.</nav>
+
+<p><code class="inline-code">EXPLAIN QUERY PLAN</code> alone is read-only. Any exercise creating an
+index must run against your own scratch copy:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/my_scratch.db
+sqlite3 /tmp/my_scratch.db</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-spot-the-sargable-predicate">1. Spot the sargable predicate</h3>
+
+<p>Without running anything yet, look at these four <code class="inline-code">WHERE</code> clauses and
+predict which are sargable (could use a plain index on the named
+column) and which aren't:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- (a)
+WHERE customer_id = 41
+-- (b)
+WHERE UPPER(state) = &#x27;CA&#x27;
+-- (c)
+WHERE order_date &gt;= &#x27;2023-01-01&#x27; AND order_date &lt; &#x27;2024-01-01&#x27;
+-- (d)
+WHERE quantity * 2 &gt; 10</code></pre></div>
+
+<p><details>
+<summary>Show solution</summary>
+<ul class="styled-list"><li>(a) <strong>Sargable.</strong> Direct equality on the raw column value.</li><li>(b) <strong>Not sargable.</strong> <code class="inline-code">UPPER()</code> wraps the column — an index on</li></ul>  <code class="inline-code">state</code> stores raw values, not uppercased ones.
+<ul class="styled-list"><li>(c) <strong>Sargable.</strong> A range condition on the raw column, expressible</li></ul>  directly against a sorted index.
+<ul class="styled-list"><li>(d) <strong>Not sargable.</strong> <code class="inline-code">quantity <em> 2</code> wraps the column in arithmetic</li></ul>  — an index on <code class="inline-code">quantity</code> can't be searched for <code class="inline-code">quantity </em> 2 > 10</code>
+  directly. Rewritten as <code class="inline-code">WHERE quantity > 5</code>, it would be sargable.</p>
+
+<p>Verify (b) and (d) empirically in Exercises 2 and 5 below.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-prove-a-function-wrapper-defeats-an-index">2. Prove a function wrapper defeats an index</h3>
+
+<p>On your scratch copy, create an index on <code class="inline-code">bronze_customers(email)</code>.
+Check <code class="inline-code">EXPLAIN QUERY PLAN</code> for <code class="inline-code">WHERE email = 'test@example.com'</code>
+first, then for <code class="inline-code">WHERE LOWER(email) = 'test@example.com'</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX idx_customers_email ON bronze_customers(email);
+
+<p>EXPLAIN QUERY PLAN SELECT * FROM bronze_customers WHERE email = &#x27;test@example.com&#x27;;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SEARCH bronze_customers USING INDEX idx_customers_email (email=?)</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN SELECT * FROM bronze_customers WHERE LOWER(email) = &#x27;test@example.com&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SCAN bronze_customers</code></pre></div>
+
+<p>Same index, same table, same intent — wrapping the column in
+<code class="inline-code">LOWER()</code> alone flips <code class="inline-code">SEARCH</code> back to <code class="inline-code">SCAN</code>.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-make-a-prefix-like-search-sargable">3. Make a prefix <code class="inline-code">LIKE</code> search sargable</h3>
+
+<p>On the same scratch copy (with <code class="inline-code">idx_customers_email</code> still in place),
+check <code class="inline-code">EXPLAIN QUERY PLAN</code> for <code class="inline-code">WHERE email LIKE 'john%'</code> under
+SQLite's default case-insensitive <code class="inline-code">LIKE</code>. Then set <code class="inline-code">PRAGMA
+case_sensitive_like = ON;</code> and check the same query again.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN SELECT * FROM bronze_customers WHERE email LIKE &#x27;john%&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SCAN bronze_customers</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">PRAGMA case_sensitive_like = ON;
+EXPLAIN QUERY PLAN SELECT * FROM bronze_customers WHERE email LIKE &#x27;john%&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SEARCH bronze_customers USING INDEX idx_customers_email (email&gt;? AND email&lt;?)</code></pre></div>
+
+<p>With case-sensitive comparison, SQLite rewrites the prefix match into
+an index-friendly range (<code class="inline-code">email > 'john' AND email < 'joho'</code>-ish
+bound) and searches the index instead of scanning.  Be aware this
+pragma changes <code class="inline-code">LIKE</code>'s matching behavior globally for the connection
+— <code class="inline-code">'John'</code> would no longer match <code class="inline-code">'john%'</code> once it's on — so it's a
+real behavior trade-off, not a free performance win.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-reason-about-select--cost-without-running-anything">4. Reason about <code class="inline-code">SELECT *</code> cost without running anything</h3>
+
+<p><code class="inline-code">bronze_sales</code> has 14 columns. A report only needs <code class="inline-code">order_id</code>,
+<code class="inline-code">order_date</code>, and the computed net amount (which, per Module 4, lives
+in <code class="inline-code">silver_sales.net_amount</code>, not raw <code class="inline-code">bronze_sales</code>). Write the
+<code class="inline-code">SELECT</code> you'd actually use for that report against <code class="inline-code">silver_sales</code>,
+and explain in one sentence why it's preferable to <code class="inline-code">SELECT *</code>
+even though both would return correct data.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_date, net_amount FROM silver_sales;</code></pre></div>
+
+<p>This reads only 3 of <code class="inline-code">silver_sales</code>'s columns instead of all of them
+(<code class="inline-code">silver_sales</code> re-derives ~14 output columns from <code class="inline-code">bronze_sales</code>'s
+14), reducing the I/O and computation <code class="inline-code">silver_sales</code>'s underlying
+<code class="inline-code">CASE</code> expressions have to do for columns nobody's going to look at
+(recall from Module 4 that a view recomputes its <em>entire</em> <code class="inline-code">SELECT</code> on
+every query, including columns you then discard) — and it documents
+exactly what the report depends on, so a future schema change to an
+unrelated column can't silently break it.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-rewrite-a-non-sargable-arithmetic-filter">5. Rewrite a non-sargable arithmetic filter</h3>
+
+<p>On your scratch copy, create an index on <code class="inline-code">bronze_sales(quantity)</code>.
+Check the plan for <code class="inline-code">WHERE quantity + 1 > 5</code>, then rewrite it as an
+equivalent sargable predicate and check the plan again.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX idx_sales_qty ON bronze_sales(quantity);
+
+<p>EXPLAIN QUERY PLAN SELECT * FROM bronze_sales WHERE quantity + 1 &gt; 5;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SCAN bronze_sales</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN SELECT * FROM bronze_sales WHERE quantity &gt; 4;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SEARCH bronze_sales USING INDEX idx_sales_qty (quantity&gt;?)</code></pre></div>
+
+<p><code class="inline-code">quantity + 1 > 5</code> and <code class="inline-code">quantity > 4</code> are mathematically identical,
+but only the second is sargable — the first wraps the indexed column
+in arithmetic, the second isolates it on one side of the comparison.
+Whenever possible, do the arithmetic to the <em>constant</em>, not the
+column.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="6-rewrite-a-date-function-filter-as-a-sargable-range">6. Rewrite a date-function filter as a sargable range</h3>
+
+<p>A common mistake: filtering "all 2023 orders" with
+<code class="inline-code">strftime('%Y', order_date) = '2023'</code>. On your scratch copy, create an
+index on <code class="inline-code">bronze_sales(order_date)</code>, check that plan, then rewrite the
+filter as a sargable range on the raw <code class="inline-code">order_date</code> text and check
+again. (Hint: ISO <code class="inline-code">YYYY-MM-DD</code> text sorts and compares correctly as
+plain text, which is exactly why bronze — despite storing dates as
+<code class="inline-code">TEXT</code> — can still support range queries once the format is
+consistent.)</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX idx_sales_order_date ON bronze_sales(order_date);
+
+<p>EXPLAIN QUERY PLAN
+SELECT * FROM bronze_sales WHERE strftime(&#x27;%Y&#x27;, order_date) = &#x27;2023&#x27;;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SCAN bronze_sales</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN
+SELECT * FROM bronze_sales WHERE order_date &gt;= &#x27;2023-01-01&#x27; AND order_date &lt; &#x27;2024-01-01&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SEARCH bronze_sales USING INDEX idx_sales_order_date (order_date&gt;? AND order_date&lt;?)</code></pre></div>
+
+<p>Wrapping <code class="inline-code">order_date</code> in <code class="inline-code">strftime()</code> forces a full scan — SQLite has
+to compute <code class="inline-code">strftime('%Y', ...)</code> for every row to check the match. The
+range rewrite avoids the function entirely and searches the index
+directly. One caveat worth remembering for real Oakhaven queries:
+<code class="inline-code">bronze_sales.order_date</code> is genuinely messy (three mixed formats per
+the data dictionary) — this range rewrite is only valid against a
+column you know is consistently ISO-formatted, such as
+<code class="inline-code">silver_sales.order_date</code> after cleaning, not raw <code class="inline-code">bronze_sales.order_date</code>
+directly.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/06-query-optimization-basics.html" class="nav-btn">6. Query Optimization Basics</a>. Previous: <a href="05-indexes-and-explain-query-plan.html" class="nav-btn">5. Indexes and EXPLAIN QUERY PLAN</a>. Next: <a href="07-constraints-and-data-integrity.html" class="nav-btn">7. Constraints and Data Integrity</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

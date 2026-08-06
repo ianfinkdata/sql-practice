@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3. Sorting with ORDER BY | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="3-sorting-with-order-by">3. Sorting with ORDER BY</h1>
+
+<nav class="book-nav">Previous: <a href="02-filtering-with-where.html" class="nav-btn">2. Filtering with WHERE</a>. Next: <a href="04-limiting-with-limit.html" class="nav-btn">4. Limiting with LIMIT (and OFFSET)</a>. Exercises: <a href="../../exercises/01-beginner/03-sorting-with-order-by.html" class="nav-btn">3. Sorting with ORDER BY</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>By default, a query returns rows in whatever order the database
+happens to produce them — which, in practice, usually resembles the
+order they were inserted, but nothing in SQL <em>guarantees</em> that.
+<code class="inline-code">ORDER BY</code> is how you take control and ask for rows in a specific,
+meaningful order: cheapest products first, most recently hired
+employees first, alphabetically by name.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT columns
+FROM table_name
+ORDER BY column_name;</code></pre></div>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>"What's our most expensive product?" and "what's our cheapest
+product?" are both trivial once you can sort — the answer is just the
+first row after the right <code class="inline-code">ORDER BY</code>. Sorting is also foundational for
+later work: ranking customers by lifetime value, finding the earliest
+or latest order, building a leaderboard. It's a small piece of syntax
+that unlocks a lot of practical questions.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT columns FROM table_name
+ORDER BY column_name ASC;   -- ascending (low to high, A to Z) — the default
+
+<p>SELECT columns FROM table_name
+ORDER BY column_name DESC;  -- descending (high to low, Z to A)</code></pre></div></p>
+
+<p><code class="inline-code">ASC</code> is the default — if you omit it, ascending is assumed. Most
+people write <code class="inline-code">ASC</code> explicitly anyway for readability, but it's never
+required.</p>
+
+<p>You can sort by more than one column. The first column is the primary
+sort; ties in that column are broken by the second column, and so on:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT columns FROM table_name
+ORDER BY column_a ASC, column_b DESC;</code></pre></div>
+
+<h2 id="try-it">Try it</h2>
+
+<h3 id="cheapest-products-first">Cheapest products first</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+ORDER BY unit_price ASC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Cascade Hiking Boots</td><td>6.67</td></tr><tr><td>Canyon Hats</td><td>21.03</td></tr><tr><td>Glacier Sleeping Bag</td><td>22.65</td></tr><tr><td>Trailhead Sleeping Bags</td><td>22.82</td></tr><tr><td>Outrider Sleeping Bag</td><td>23.52</td></tr></tbody></table></div>
+<h3 id="most-expensive-products-first">Most expensive products first</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+ORDER BY unit_price DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Highline Backpacks</td><td>812.71</td></tr><tr><td>Foothill Electrolyte Mixes</td><td>782.32</td></tr><tr><td>Highline Paddle</td><td>696.3</td></tr><tr><td>Canyon Backpacks</td><td>687.96</td></tr><tr><td>Meridian Chalk Bags</td><td>669.02</td></tr></tbody></table></div>
+<h3 id="multi-column-sort-group-by-category-then-by-price-within-each">Multi-column sort: group by category, then by price within each</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT category, product_name, unit_price
+FROM bronze_products
+ORDER BY category ASC, unit_price DESC
+LIMIT 8;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>ACCESSORIES</td><td>Switchback Multi-Tools</td><td>505.09</td></tr><tr><td>ACCESSORIES</td><td>Granite Sunglasse</td><td>490.08</td></tr><tr><td>ACCESSORIES</td><td>Trailhead Hats</td><td>67.0</td></tr><tr><td>ACCESSORIES</td><td>Switchback Headlamps</td><td>370.95</td></tr><tr><td>ACCESSORIES</td><td>Summit Sunglasses</td><td>309.16</td></tr><tr><td>ACCESSORIES</td><td>Timberline Multi-Tools</td><td>192.25</td></tr><tr><td>ACCESSORIES</td><td>Wayfinder Multi-Tools</td><td>145.45</td></tr><tr><td>ACCESSORIES</td><td>Granite Headlamps</td><td>122.88</td></tr></tbody></table></div>
+All `ACCESSORIES`-category rows come first (there happen to be enough
+of them to fill the whole `LIMIT 8`), and within that group, price
+descends from $505.09 down. That's the two-column sort at work: sort
+by `category` first, and only use `unit_price` to break ties *within*
+a category.
+
+<h3 id="a-trap-sorting-mixed-format-dates">A trap: sorting mixed-format dates</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT first_name, last_name, hire_date
+FROM bronze_employees
+ORDER BY hire_date
+LIMIT 10;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>first_name</th><th>last_name</th><th>hire_date</th></tr></thead><tbody><tr><td>Wendy</td><td>Scott</td><td>02/11/2021</td></tr><tr><td>Alexa</td><td>garcia</td><td>04/09/2024</td></tr><tr><td>ANTONIO</td><td>Bailey</td><td>04/22/2022</td></tr><tr><td>sandra</td><td>Thompson</td><td>05/25/2018</td></tr><tr><td>Scott</td><td>henderson</td><td>05/29/2024</td></tr><tr><td>Elaine</td><td>jones</td><td>07/07/2022</td></tr><tr><td>Karen</td><td>jackson</td><td>07/13/2025</td></tr><tr><td>Ashlee</td><td>Hall</td><td>09/16/2018</td></tr><tr><td>NANCY</td><td>Simmons</td><td>10/28/2025</td></tr><tr><td>Nicholas</td><td>Morris</td><td>11/05/2022</td></tr></tbody></table></div>
+Look closely: this is **not** chronological order at all, even though
+it might look plausible at a glance. `hire_date` is stored as raw
+`TEXT`, and Oakhaven's bronze data mixes `MM/DD/YYYY` and
+`YYYY-MM-DD` formats. SQLite sorts `TEXT` values character by
+character, left to right — and every `MM/DD/YYYY` value starts with a
+`0` or `1` (the month), which sorts *before* every `YYYY-MM-DD` value
+(which starts with `2`, the first digit of a year like `2018`). So
+this query puts *every* `MM/DD/YYYY`-formatted hire date ahead of
+*every* `YYYY-MM-DD`-formatted one, regardless of which year either
+one actually is — Wendy Scott's `02/11/2021` sorts before someone
+hired in `2018-07-14`, even though 2018 is earlier. This is exactly
+the kind of bug that raw, mixed-format bronze data invites, and
+exactly why parsing dates into one consistent format is one of the
+first things the silver layer does (Tier 2).
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Assuming unsorted output has a meaningful order.</strong> Without</li></ul>  `ORDER BY`, don't rely on rows coming back in any particular
+  sequence — always sort explicitly if order matters to you.
+<ul class="styled-list"><li>**Sorting text-formatted dates and expecting chronological</li></ul>  order.** As shown above, this silently produces wrong results
+  rather than an error — the most dangerous kind of mistake. When
+  `hire_date`/`order_date`/etc. are messy `TEXT`, `ORDER BY` sorts them
+  as strings, not as dates.
+<ul class="styled-list"><li><strong>Putting <code class="inline-code">ORDER BY</code> before <code class="inline-code">WHERE</code>.</strong> The correct clause order is</li></ul>  `SELECT ... FROM ... WHERE ... ORDER BY ...`. Reversing `WHERE` and
+  `ORDER BY` is a syntax error.
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">DESC</code> and getting the opposite of what you wanted.</strong></li></ul>  "Top 5 most expensive" needs `ORDER BY unit_price DESC` — leaving off
+  `DESC` silently gives you the 5 *cheapest* instead, no error, just
+  the wrong answer.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">ORDER BY column ASC|DESC</code> controls result order; without it, order</li></ul>  isn't guaranteed.
+<ul class="styled-list"><li>You can sort by multiple columns — later columns break ties in</li></ul>  earlier ones.
+<ul class="styled-list"><li>Sorting mixed-format text dates does <strong>not</strong> give chronological</li></ul>  order — a real trap in Oakhaven's bronze layer, and a preview of why
+  the silver layer standardizes date formats.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="02-filtering-with-where.html" class="nav-btn">2. Filtering with WHERE</a>. Next: <a href="04-limiting-with-limit.html" class="nav-btn">4. Limiting with LIMIT (and OFFSET)</a>. Exercises: <a href="../../exercises/01-beginner/03-sorting-with-order-by.html" class="nav-btn">3. Sorting with ORDER BY</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

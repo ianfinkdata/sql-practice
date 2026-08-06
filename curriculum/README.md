@@ -1,5 +1,11 @@
 # Curriculum
 
+> **BLUF (Bottom Line Up Front):** The SQL Practice curriculum is a 6-tier progressive guide (Beginner → Master) taking you from basic `SELECT` statements to designing enterprise star schemas and medallion pipelines.
+
+<!-- nav -->
+[⏮️ Prev: Home](../README.md) | [📖 Table of Contents](../README.md) | [⏭️ Next: Tier 0 Orientation](00-orientation/README.md)
+<!-- /nav -->
+
 Six tiers, beginner to master, each building on the last. Start at [`00-orientation/`](00-orientation/) if you're new; jump to whichever tier matches where you are otherwise.
 
 | Tier | Name | Focus |
@@ -14,3 +20,9 @@ Six tiers, beginner to master, each building on the last. Start at [`00-orientat
 Starting at Tier 3, lessons lean on the real [Oakhaven database](../project/) instead of hypothetical tables — every example and every exercise solution in this curriculum was run against `project/oakhaven.db` and its output verified, not invented.
 
 Each tier's modules are paired 1:1 with practice prompts in [`exercises/`](../exercises/) — same tier folder, same file name.
+
+---
+
+<!-- nav -->
+[⏮️ Prev: Home](../README.md) | [📖 Table of Contents](../README.md) | [⏭️ Next: Tier 0 Orientation](00-orientation/README.md)
+<!-- /nav -->

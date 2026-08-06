@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tier 1 — Beginner | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="tier-1--beginner">Tier 1 — Beginner</h1>
+
+<div class="bluf-card"><div class="bluf-badge">⚡ BLUF (Bottom Line Up Front)</div><div class="bluf-body">Tier 1 teaches core single-table SQL querying: selecting columns, filtering rows with <code class="inline-code">WHERE</code>, sorting with <code class="inline-code">ORDER BY</code>, handling <code class="inline-code">NULL</code> values, and computing aggregates across products and employees.</div></div>
+
+<nav class="book-nav"><a href="../00-orientation/README.html" class="nav-btn">⏮️ Prev: Tier 0 Orientation</a> <a href="../../README.html" class="nav-btn">📖 Table of Contents</a> <a href="../02-intermediate/README.html" class="nav-btn">⏭️ Next: Tier 2 Intermediate</a></nav>
+
+<p>Your first real SQL. This tier covers the core <code class="inline-code">SELECT</code> toolkit — filtering, sorting, limiting, NULLs, aggregates, pattern matching, and duplicates — using Oakhaven's calmer tables (<code class="inline-code">bronze_products</code>, <code class="inline-code">bronze_employees</code>). The messiest data is saved for Tier 2, where cleaning it up is the actual lesson.</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Module</th><th>Topic</th></tr></thead><tbody><tr><td><a href="01-select-and-from.html">01</a></td><td>SELECT and FROM</td></tr><tr><td><a href="02-filtering-with-where.html">02</a></td><td>Filtering with WHERE</td></tr><tr><td><a href="03-sorting-with-order-by.html">03</a></td><td>Sorting with ORDER BY</td></tr><tr><td><a href="04-limiting-with-limit.html">04</a></td><td>Limiting results with LIMIT</td></tr><tr><td><a href="05-null-the-absence-of-a-value.html">05</a></td><td>NULL: the absence of a value</td></tr><tr><td><a href="06-basic-aggregate-functions.html">06</a></td><td>Basic aggregate functions</td></tr><tr><td><a href="07-pattern-matching-with-like.html">07</a></td><td>Pattern matching with LIKE</td></tr><tr><td><a href="08-distinct-and-duplicates.html">08</a></td><td>DISTINCT and duplicates</td></tr></tbody></table></div>
+Matching exercises: [`exercises/01-beginner/`](../../exercises/01-beginner/).
+
+<hr class="divider">
+
+<nav class="book-nav"><a href="../00-orientation/README.html" class="nav-btn">⏮️ Prev: Tier 0 Orientation</a> <a href="../../README.html" class="nav-btn">📖 Table of Contents</a> <a href="../02-intermediate/README.html" class="nav-btn">⏭️ Next: Tier 2 Intermediate</a></nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

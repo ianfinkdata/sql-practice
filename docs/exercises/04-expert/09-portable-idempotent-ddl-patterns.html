@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Portable, Idempotent DDL Patterns | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-portable-idempotent-ddl-patterns">Exercises: Portable, Idempotent DDL Patterns</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/09-portable-idempotent-ddl-patterns.html" class="nav-btn">9. Portable, Idempotent DDL Patterns</a>. Previous: <a href="08-writing-your-first-gold-view.html" class="nav-btn">8. Writing Your First Gold View</a>. Next: <a href="../05-master/01-why-model-data-oltp-vs-analytical.html" class="nav-btn">1. Why We Model Data: OLTP vs. Analytical Schemas</a>.</nav>
+
+<p>Exercise 1 is read-only (a <code class="inline-code">grep</code> over <code class="inline-code">.sql</code> files). Every other
+exercise creates database objects — work against your own scratch
+copy:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/my_scratch.db
+sqlite3 /tmp/my_scratch.db</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-audit-the-real-project-for-the-idempotent-pattern">1. Audit the real project for the idempotent pattern</h3>
+
+<p>Using <code class="inline-code">grep</code>, confirm that every <code class="inline-code">.sql</code> file in <code class="inline-code">project/silver/</code> and
+<code class="inline-code">project/gold/</code> starts with <code class="inline-code">DROP VIEW IF EXISTS</code> for the view it
+defines. How many files total follow this pattern?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">grep -rc &quot;DROP VIEW IF EXISTS&quot; project/silver/ project/gold/</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">project/silver/silver_calendar.sql:1
+project/silver/silver_customers.sql:1
+project/silver/silver_sales.sql:1
+project/silver/silver_employees.sql:1
+project/silver/silver_products.sql:1
+project/gold/dim_date.sql:1
+project/gold/agg_daily_sales.sql:1
+project/gold/dim_product.sql:1
+project/gold/agg_monthly_sales_by_category.sql:1
+project/gold/dim_customer.sql:1
+project/gold/dim_employee.sql:1
+project/gold/agg_customer_ltv.sql:1
+project/gold/fact_sales.sql:1</code></pre></div>
+
+<p>All 13 files (5 silver + 8 gold) — every view-defining <code class="inline-code">.sql</code> file in
+the project follows the pattern exactly once.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-confirm-create-or-replace-view-isnt-valid-sqlite">2. Confirm <code class="inline-code">CREATE OR REPLACE VIEW</code> isn't valid SQLite</h3>
+
+<p>On your scratch copy, try <code class="inline-code">CREATE OR REPLACE VIEW ex_v AS SELECT 1;</code>.
+Capture the exact error.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE OR REPLACE VIEW ex_v AS SELECT 1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: in prepare, near &quot;OR&quot;: syntax error
+  CREATE OR REPLACE VIEW ex_v AS SELECT 1;
+         ^--- error here</code></pre></div>
+
+<p>SQLite's parser doesn't recognize <code class="inline-code">OR REPLACE</code> after <code class="inline-code">CREATE VIEW</code> at
+all — this isn't a runtime restriction, it's a syntax error, meaning
+SQLite doesn't understand the statement as valid SQL in the first
+place.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-reproduce-the-already-exists-failure-then-fix-it">3. Reproduce the "already exists" failure, then fix it</h3>
+
+<p>On your scratch copy: create a view <code class="inline-code">ex_v2</code> with a plain <code class="inline-code">CREATE
+VIEW</code> (no guard). Run the <em>exact same statement</em> again and capture the
+error. Then create a <em>different</em> view, <code class="inline-code">ex_v3</code>, using the
+<code class="inline-code">DROP VIEW IF EXISTS</code> + <code class="inline-code">CREATE VIEW</code> pattern, and run that pair
+twice to prove it doesn't error either time.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE VIEW ex_v2 AS SELECT 1 AS x;
+CREATE VIEW ex_v2 AS SELECT 1 AS x;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: in prepare, view ex_v2 already exists
+  CREATE VIEW ex_v2 AS SELECT 1 AS x;
+              ^--- error here</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">DROP VIEW IF EXISTS ex_v3;
+CREATE VIEW ex_v3 AS SELECT 1 AS x;
+DROP VIEW IF EXISTS ex_v3;
+CREATE VIEW ex_v3 AS SELECT 1 AS x;
+SELECT &#x27;ran twice fine&#x27; AS ok;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">ok
+---------------
+ran twice fine</code></pre></div>
+
+<p>Same underlying <code class="inline-code">CREATE VIEW</code> statement, run twice both times — the
+only difference is the <code class="inline-code">DROP VIEW IF EXISTS</code> guard in front of it.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-if-not-exists-is-idempotent-but-doesnt-update-the-schema">4. <code class="inline-code">IF NOT EXISTS</code> is idempotent but doesn't update the schema</h3>
+
+<p>On your scratch copy: create <code class="inline-code">ex_t (id INTEGER, name TEXT)</code> using
+<code class="inline-code">CREATE TABLE IF NOT EXISTS</code>, insert one row, then run <code class="inline-code">CREATE TABLE
+IF NOT EXISTS</code> <em>again</em> for <code class="inline-code">ex_t</code> — but this time with an extra
+column, <code class="inline-code">extra_col TEXT</code>, in the definition. Check <code class="inline-code">.schema ex_t</code>
+afterward. Did the extra column get added?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE IF NOT EXISTS ex_t (id INTEGER, name TEXT);
+INSERT INTO ex_t VALUES (1, &#x27;original&#x27;);
+CREATE TABLE IF NOT EXISTS ex_t (id INTEGER, name TEXT, extra_col TEXT);
+SELECT * FROM ex_t;
+.schema ex_t</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">1|original
+CREATE TABLE ex_t (id INTEGER, name TEXT);</code></pre></div>
+
+<p>No — the second <code class="inline-code">CREATE TABLE IF NOT EXISTS</code> was silently a no-op,
+because <code class="inline-code">ex_t</code> already existed; <code class="inline-code">extra_col</code> never got added, and no
+error was raised either. This is the key trap <code class="inline-code">IF NOT EXISTS</code> sets:
+it's idempotent in the narrow sense of "won't error on rerun," but it
+does <strong>not</strong> guarantee the object matches your <em>current</em> <code class="inline-code">CREATE</code>
+statement — it guarantees the <em>opposite</em>, that whatever existed first
+wins. This is exactly why the silver/gold layer uses <code class="inline-code">DROP ... IF
+EXISTS</code> + unconditional <code class="inline-code">CREATE</code> instead: it guarantees the object
+always ends up matching the current <code class="inline-code">.sql</code> file, not whatever ran
+first.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-create-index-if-not-exists--the-one-place-if-not-exists-is-usually-the-right-call">5. <code class="inline-code">CREATE INDEX IF NOT EXISTS</code> — the one place <code class="inline-code">IF NOT EXISTS</code> is usually the right call</h3>
+
+<p>Unlike tables/views (Exercise 4), an index's definition rarely needs
+to "win" over a pre-existing one with the same name in the way a
+view's business logic does — an index is purely a performance
+structure, not a source of truth for the data's shape. On your scratch
+copy, create an index using <code class="inline-code">CREATE INDEX IF NOT EXISTS</code>, then run the
+identical statement again and confirm it doesn't error.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX IF NOT EXISTS idx_ex ON bronze_products(category);
+CREATE INDEX IF NOT EXISTS idx_ex ON bronze_products(category);
+SELECT &#x27;ran twice fine&#x27; AS ok;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">ok
+---------------
+ran twice fine</code></pre></div>
+
+<p>For indexes specifically, <code class="inline-code">IF NOT EXISTS</code> is usually the pragmatic
+choice over <code class="inline-code">DROP INDEX IF EXISTS</code> + <code class="inline-code">CREATE INDEX</code>: since an index
+with a given name is either present (and already correct, if your
+script hasn't changed the index's definition) or needs creating from
+scratch, there's rarely a "stale old index body" problem the way
+there is with view logic. If you <em>do</em> need to change an existing
+index's columns, though, you'd still need <code class="inline-code">DROP INDEX</code> first — <code class="inline-code">CREATE
+INDEX IF NOT EXISTS</code> alone won't update it, for the same reason
+Exercise 4 showed for tables.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="6-simulate-a-buildpy-style-rerun-after-editing-a-views-logic">6. Simulate a <code class="inline-code">build.py</code>-style rerun after editing a view's logic</h3>
+
+<p>This mirrors what actually happens when someone edits one of
+<code class="inline-code">project/silver/<em>.sql</code> or <code class="inline-code">project/gold/</em>.sql</code> and reruns
+<code class="inline-code">python project/build.py</code>. On your scratch copy: create a view
+<code class="inline-code">ex_gold_v1</code> that groups <code class="inline-code">bronze_sales</code> by raw <code class="inline-code">channel</code> (messy,
+4 variants). Query it. Then, using the <code class="inline-code">DROP VIEW IF EXISTS</code> +
+<code class="inline-code">CREATE VIEW</code> pattern, redefine the <em>same</em> view name with cleaned-up
+grouping logic (normalize <code class="inline-code">channel</code> before grouping). Query it again
+— confirm the view now reflects the new logic, with no separate
+"migration" step needed.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">DROP VIEW IF EXISTS ex_gold_v1;
+CREATE VIEW ex_gold_v1 AS
+SELECT channel, COUNT(*) AS n FROM bronze_sales GROUP BY channel;
+SELECT * FROM ex_gold_v1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">channel   n
+--------  ----
+In-Store  3006
+Online    2961
+in store  2954
+online    3079</code></pre></div>
+
+<p>Messy: 4 rows instead of 2, because raw <code class="inline-code">channel</code> has inconsistent
+casing/hyphenation. Now "edit the file" and rerun the guarded pattern:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">DROP VIEW IF EXISTS ex_gold_v1;
+CREATE VIEW ex_gold_v1 AS
+SELECT LOWER(TRIM(REPLACE(channel, &#x27;-&#x27;, &#x27; &#x27;))) AS channel_key, COUNT(*) AS n
+FROM bronze_sales GROUP BY channel_key;
+SELECT * FROM ex_gold_v1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">channel_key  n
+-----------  ----
+in store     5960
+online       6040</code></pre></div>
+
+<p>Now 2 clean rows, matching the facts sheet's channel totals exactly
+(In-Store: 5,960 lines; Online: 6,040 lines). The <code class="inline-code">DROP VIEW IF
+EXISTS</code> guard is what made this rerun safe — without it, the second
+<code class="inline-code">CREATE VIEW ex_gold_v1</code> would have failed with "view already exists,"
+exactly as in Exercise 3, and the improved logic would never have
+taken effect. This is the entire reason <code class="inline-code">project/build.py</code> can be
+rerun after any edit to any silver/gold <code class="inline-code">.sql</code> file and always end up
+with the database matching the current state of the code.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/09-portable-idempotent-ddl-patterns.html" class="nav-btn">9. Portable, Idempotent DDL Patterns</a>. Previous: <a href="08-writing-your-first-gold-view.html" class="nav-btn">8. Writing Your First Gold View</a>. Next: <a href="../05-master/01-why-model-data-oltp-vs-analytical.html" class="nav-btn">1. Why We Model Data: OLTP vs. Analytical Schemas</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

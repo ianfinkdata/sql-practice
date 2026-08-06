@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Window Functions I — ROW_NUMBER, RANK, DENSE_RANK | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-window-functions-i--row_number-rank-dense_rank">Exercises: Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/02-window-functions-i-row-number-rank.html" class="nav-btn">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</a>. Previous: <a href="01-common-table-expressions.html" class="nav-btn">1. Common Table Expressions (CTEs)</a>. Next: <a href="03-window-functions-ii-running-totals.html" class="nav-btn">3. Window Functions II — Running Totals & Moving Aggregates</a>.</nav>
+
+<p>Query <code class="inline-code">project/oakhaven.db</code> for all of these. Run with:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT ...;&quot; -header -column</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-rank-products-by-price-within-category">1. Rank products by price within category</h3>
+
+<p>For <code class="inline-code">dim_product</code> rows in the <code class="inline-code">Footwear</code> category, rank each product by
+<code class="inline-code">unit_price</code> descending using <code class="inline-code">RANK()</code>. Return <code class="inline-code">product_id</code>,
+<code class="inline-code">product_name</code>, <code class="inline-code">unit_price</code>, and <code class="inline-code">price_rank</code>, top 5 only.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, product_name, unit_price,
+       RANK() OVER (ORDER BY unit_price DESC) AS price_rank
+FROM dim_product
+WHERE category = &#x27;Footwear&#x27;
+ORDER BY unit_price DESC
+LIMIT 5;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>product_name</th><th>unit_price</th><th>price_rank</th></tr></thead><tbody><tr><td>1</td><td>Canyon Hiking Boots</td><td>649.26</td><td>1</td></tr><tr><td>25</td><td>Ironpeak Hiking Boot</td><td>553.01</td><td>2</td></tr><tr><td>109</td><td>Basecamp Sandals</td><td>511.03</td><td>3</td></tr><tr><td>87</td><td>Foothill Hiking Boot</td><td>484.61</td><td>4</td></tr><tr><td>99</td><td>Outrider Sandals</td><td>458.12</td><td>5</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="2-each-customers-most-recent-order">2. Each customer's most recent order</h3>
+
+<p>Using <code class="inline-code">ROW_NUMBER()</code> partitioned by <code class="inline-code">customer_id</code> and ordered by
+<code class="inline-code">order_date</code> descending, find the single most recent order for customers
+41, 67, and 343. (Hint: dedupe <code class="inline-code">fact_sales</code> to distinct <code class="inline-code">(customer_id,
+order_id, order_date)</code> first, since <code class="inline-code">fact_sales</code> has multiple rows per
+order.) Filter to <code class="inline-code">rn = 1</code> in an outer query.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH ranked_orders AS (
+    SELECT customer_id, order_id, order_date,
+           ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) AS rn
+    FROM (SELECT DISTINCT customer_id, order_id, order_date FROM fact_sales WHERE order_date IS NOT NULL)
+)
+SELECT customer_id, order_id, order_date
+FROM ranked_orders
+WHERE rn = 1 AND customer_id IN (41, 343, 67)
+ORDER BY customer_id;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>order_id</th><th>order_date</th></tr></thead><tbody><tr><td>41</td><td>529</td><td>2026-03-17</td></tr><tr><td>67</td><td>6287</td><td>2026-06-05</td></tr><tr><td>343</td><td>3898</td><td>2026-06-25</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="3-employees-ranked-by-sales-volume-within-region">3. Employees ranked by sales volume, within region</h3>
+
+<p>Using <code class="inline-code">DENSE_RANK()</code>, rank employees in the <code class="inline-code">West</code> region by the number of
+<code class="inline-code">fact_sales</code> order lines they processed, most first. Return
+<code class="inline-code">employee_id</code>, <code class="inline-code">full_name</code>, <code class="inline-code">line_count</code>, <code class="inline-code">region_rank</code>, top 6 only.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH emp_counts AS (
+    SELECT e.employee_id, e.full_name, e.region, COUNT(*) AS line_count
+    FROM dim_employee e
+    JOIN fact_sales f ON f.employee_id = e.employee_id
+    GROUP BY e.employee_id, e.full_name, e.region
+)
+SELECT employee_id, full_name, line_count,
+       DENSE_RANK() OVER (ORDER BY line_count DESC) AS region_rank
+FROM emp_counts
+WHERE region = &#x27;West&#x27;
+ORDER BY line_count DESC
+LIMIT 6;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>full_name</th><th>line_count</th><th>region_rank</th></tr></thead><tbody><tr><td>22</td><td>Robert Anderson</td><td>353</td><td>1</td></tr><tr><td>29</td><td>Daniel Ramsey</td><td>338</td><td>2</td></tr><tr><td>34</td><td>Nicholas Morris</td><td>325</td><td>3</td></tr><tr><td>6</td><td>Christy Lee</td><td>316</td><td>4</td></tr><tr><td>1</td><td>Alexa Garcia</td><td>301</td><td>5</td></tr><tr><td>23</td><td>Nicholas Campos</td><td>299</td><td>6</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="4-the-near-duplicate-customer-dedup-pattern">4. The near-duplicate customer dedup pattern</h3>
+
+<p>Recall from the data dictionary: <code class="inline-code">bronze_customers</code> has 30 intentional
+near-duplicate rows (<code class="inline-code">customer_id</code> 571–600), detectable by matching
+<code class="inline-code">LOWER(TRIM(email))</code>. Using <code class="inline-code">ROW_NUMBER() OVER (PARTITION BY
+LOWER(TRIM(email)) ORDER BY customer_id)</code>, count how many rows land at
+<code class="inline-code">rn = 1</code> vs <code class="inline-code">rn = 2</code> (excluding <code class="inline-code">NULL</code>/empty emails). Then explain, in a
+sentence, why the <code class="inline-code">rn = 2</code> count doesn't exactly match the "30" from the
+data dictionary.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH ranked AS (
+    SELECT customer_id, email,
+           ROW_NUMBER() OVER (PARTITION BY LOWER(TRIM(email)) ORDER BY customer_id) AS rn
+    FROM bronze_customers
+    WHERE email IS NOT NULL AND TRIM(email) != &#x27;&#x27;
+)
+SELECT rn, COUNT(*) FROM ranked GROUP BY rn;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>rn</th><th>COUNT(*)</th></tr></thead><tbody><tr><td>1</td><td>536</td></tr><tr><td>2</td><td>29</td></tr></tbody></table></div>
+Only **29**, not 30, land at `rn = 2`. The missing pair is `customer_id`
+572 (`Cindy Robinson`, email `CINDY.ROBINSON@ICLOUD.COM`) and its true
+base counterpart, `customer_id = 14` — but customer 14's `email` is an
+empty string (`''`), which the `WHERE email IS NOT NULL AND TRIM(email) !=
+''` filter excludes entirely, so this one near-duplicate pair has no
+matching email key to group on and never shows up as a detected
+duplicate. An email-only dedup strategy structurally cannot catch a pair
+where one side's email is blank.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-top-2-products-by-revenue-per-category">5. Top 2 products by revenue, per category</h3>
+
+<p>Using <code class="inline-code">ROW_NUMBER()</code> in a CTE, find the top 2 products by total net
+revenue (<code class="inline-code">SUM(fact_sales.net_amount)</code>, joined through <code class="inline-code">dim_product</code>) in
+the <code class="inline-code">Winter Sports</code> category. Return <code class="inline-code">product_name</code> and <code class="inline-code">total_revenue</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH product_revenue AS (
+    SELECT p.category, p.product_id, p.product_name,
+           ROUND(SUM(f.net_amount), 2) AS total_revenue
+    FROM fact_sales f
+    JOIN dim_product p ON p.product_id = f.product_id
+    WHERE p.category = &#x27;Winter Sports&#x27;
+    GROUP BY p.category, p.product_id, p.product_name
+),
+ranked AS (
+    SELECT product_name, total_revenue,
+           ROW_NUMBER() OVER (ORDER BY total_revenue DESC) AS rn
+    FROM product_revenue
+)
+SELECT product_name, total_revenue
+FROM ranked
+WHERE rn &lt;= 2;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>total_revenue</th></tr></thead><tbody><tr><td>Alpine Snowboards</td><td>117472.48</td></tr><tr><td>Backcountry Ski</td><td>88323.00</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/02-window-functions-i-row-number-rank.html" class="nav-btn">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</a>. Previous: <a href="01-common-table-expressions.html" class="nav-btn">1. Common Table Expressions (CTEs)</a>. Next: <a href="03-window-functions-ii-running-totals.html" class="nav-btn">3. Window Functions II — Running Totals & Moving Aggregates</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

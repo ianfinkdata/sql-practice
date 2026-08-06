@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5. Recursive CTEs | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="5-recursive-ctes">5. Recursive CTEs</h1>
+
+<nav class="book-nav">Previous: <a href="04-lead-lag-period-over-period.html" class="nav-btn">4. LEAD, LAG, and Period-over-Period Comparisons</a>. Next: <a href="06-time-intelligence.html" class="nav-btn">6. Time Intelligence</a>. Exercises: <a href="../../exercises/03-advanced/05-recursive-ctes.html" class="nav-btn">5. Recursive CTEs</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Every CTE so far (Module 1) has been non-recursive: define it once,
+reference it once. A <strong>recursive CTE</strong> references <em>itself</em>, letting you
+generate rows iteratively — one step building on the last — until some
+stopping condition is met. It's SQL's answer to a loop.</p>
+
+<p>The classic use case, and the one Oakhaven actually uses: generating a
+<strong>sequence of consecutive dates</strong> with no gaps. There's no <code class="inline-code">SELECT
+date('2018-01-01') THROUGH date('2038-12-31')</code> shortcut in SQL — you have
+to either generate every date in application code (a Python loop, say) or
+generate it inside SQL with a recursive CTE. Oakhaven does the latter.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH RECURSIVE cte_name(column) AS (
+    -- &quot;anchor&quot; member: the starting row(s)
+    SELECT starting_value
+
+<p>UNION ALL</p>
+
+<p>-- &quot;recursive&quot; member: references cte_name itself
+    SELECT next_value_expression
+    FROM cte_name
+    WHERE stopping_condition
+)
+SELECT * FROM cte_name;</code></pre></div></p>
+
+<p>Three parts, always:</p>
+
+<p>1. <strong>Anchor member</strong> — a plain <code class="inline-code">SELECT</code> with no self-reference. Runs once,
+   produces the starting row(s).
+2. <strong>Recursive member</strong> — a <code class="inline-code">SELECT</code> that references <code class="inline-code">cte_name</code> itself,
+   combined with the anchor via <code class="inline-code">UNION ALL</code>. SQLite re-runs this
+   repeatedly: each pass reads the <em>previous</em> pass's output as <code class="inline-code">cte_name</code>
+   and produces the <em>next</em> set of rows.
+3. <strong>Stopping condition</strong> — a <code class="inline-code">WHERE</code> clause in the recursive member. Once
+   it produces zero rows, the recursion stops. Omit this and you get an
+   infinite loop (SQLite will eventually give up with an error, but don't
+   rely on that — always include a stopping condition).</p>
+
+<p>A tiny warm-up before the real thing:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH RECURSIVE nums(n) AS (
+    SELECT 1
+    UNION ALL
+    SELECT n + 1 FROM nums WHERE n &lt; 10
+)
+SELECT * FROM nums;</code></pre></div>
+
+<p>Verified output: <code class="inline-code">n</code> = 1 through 10, one row each. Trace it by hand: the
+anchor produces <code class="inline-code">n = 1</code>. Pass 1 of the recursive member reads that single
+row, computes <code class="inline-code">n + 1 = 2</code>, checks <code class="inline-code">1 < 10</code> (true), emits <code class="inline-code">2</code>. Pass 2 reads
+<code class="inline-code">{2}</code>, computes <code class="inline-code">3</code>, checks <code class="inline-code">2 < 10</code> (true), emits <code class="inline-code">3</code>. This repeats until
+a pass reads <code class="inline-code">{10}</code>, computes <code class="inline-code">11</code>, checks <code class="inline-code">10 < 10</code> (false) — that pass
+emits nothing, and the recursion stops. Final result: everything the
+anchor and every recursive pass ever emitted, unioned together.</p>
+
+<h2 id="worked-example-dissecting-bronzecalendar_recursive_ctesql">Worked example: dissecting <code class="inline-code">bronze/calendar_recursive_cte.sql</code></h2>
+
+<p>This is the real file that built <code class="inline-code">bronze_calendar</code> — not a toy. Full
+contents:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">DROP TABLE IF EXISTS bronze_calendar;
+CREATE TABLE bronze_calendar (
+    datekey INTEGER,
+    date    TEXT
+);
+
+<p>INSERT INTO bronze_calendar (datekey, date)
+WITH RECURSIVE dates(d) AS (
+    SELECT date(&#x27;2018-01-01&#x27;)
+    UNION ALL
+    SELECT date(d, &#x27;+1 day&#x27;)
+    FROM dates
+    WHERE d &lt; date(&#x27;2038-12-31&#x27;)
+)
+SELECT
+    CAST(strftime(&#x27;%Y%m%d&#x27;, d) AS INTEGER) AS datekey,
+    d AS date
+FROM dates;</code></pre></div></p>
+
+<p>Line by line:
+<ul class="styled-list"><li><strong><code class="inline-code">DROP TABLE IF EXISTS</code> / <code class="inline-code">CREATE TABLE</code></strong> — this file is self-contained</li></ul>  and runnable on its own (per its header comment), so it rebuilds
+  <code class="inline-code">bronze_calendar</code> from scratch rather than assuming it already exists.
+<ul class="styled-list"><li><strong><code class="inline-code">INSERT INTO bronze_calendar (datekey, date) WITH RECURSIVE ...</code></strong> — the</li></ul>  recursive CTE is the <em>source</em> of an <code class="inline-code">INSERT</code>, not a standalone <code class="inline-code">SELECT</code>.
+  This is a common and important pattern: recursive CTEs aren't just for
+  reading data, they can generate rows that then get written.
+<ul class="styled-list"><li><strong><code class="inline-code">dates(d) AS (SELECT date('2018-01-01') ...)</code></strong> — the anchor. <code class="inline-code">d</code></li></ul>  starts as the SQLite date value for 2018-01-01 (this is the <em>entire</em>
+  starting point — one row).
+<ul class="styled-list"><li><strong><code class="inline-code">UNION ALL SELECT date(d, '+1 day') FROM dates WHERE d < date('2038-12-31')</code></strong></li></ul>  — the recursive member. Each pass takes the previous pass's <code class="inline-code">d</code>, adds one
+  day with SQLite's <code class="inline-code">date(..., '+1 day')</code> modifier, and only continues if
+  that previous <code class="inline-code">d</code> was still before 2038-12-31. This is what makes the
+  spine advance one calendar day at a time with no possibility of gaps —
+  each new date is mechanically derived from the last, not independently
+  computed.
+<ul class="styled-list"><li><strong>Stopping condition: <code class="inline-code">WHERE d < date('2038-12-31')</code>.</strong> The pass that</li></ul>  reads <code class="inline-code">d = '2038-12-31'</code> fails this check and emits nothing — so
+  2038-12-31 itself <em>is</em> included (it was emitted by the pass before that
+  one), but 2039-01-01 never gets generated. Off-by-one reasoning like this
+  is exactly what to check first whenever a recursive CTE's row count looks
+  wrong by exactly one.
+<ul class="styled-list"><li><strong>Final <code class="inline-code">SELECT ... FROM dates</code></strong> — outside the CTE definition, this</li></ul>  turns each generated date <code class="inline-code">d</code> into the two output columns:
+  <code class="inline-code">datekey</code> (an <code class="inline-code">INTEGER</code> in <code class="inline-code">YYYYMMDD</code> form, via <code class="inline-code">strftime('%Y%m%d', d)</code>
+  cast to <code class="inline-code">INTEGER</code>) and <code class="inline-code">date</code> (the ISO text form, <code class="inline-code">d</code> itself).</p>
+
+<p>Verified: <code class="inline-code">bronze_calendar</code> has exactly 7,670 rows, spanning 2018-01-01
+through 2038-12-31 inclusive — confirmed directly against the live
+database:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT MIN(date), MAX(date), COUNT(*) FROM bronze_calendar;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>MIN(date)</th><th>MAX(date)</th><th>COUNT(*)</th></tr></thead><tbody><tr><td>2018-01-01</td><td>2038-12-31</td><td>7670</td></tr></tbody></table></div>
+You can verify the mechanism itself — independent of the `INSERT` — by
+running just the recursive CTE's `SELECT` over a short range and comparing
+it to what's already in the table:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH RECURSIVE dates(d) AS (
+    SELECT date(&#x27;2026-06-25&#x27;)
+    UNION ALL
+    SELECT date(d, &#x27;+1 day&#x27;)
+    FROM dates
+    WHERE d &lt; date(&#x27;2026-06-30&#x27;)
+)
+SELECT CAST(strftime(&#x27;%Y%m%d&#x27;, d) AS INTEGER) AS datekey, d AS date FROM dates;</code></pre></div>
+
+<p>Verified output — 6 rows, 2026-06-25 through 2026-06-30 inclusive:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>datekey</th><th>date</th></tr></thead><tbody><tr><td>20260625</td><td>2026-06-25</td></tr><tr><td>20260626</td><td>2026-06-26</td></tr><tr><td>20260627</td><td>2026-06-27</td></tr><tr><td>20260628</td><td>2026-06-28</td></tr><tr><td>20260629</td><td>2026-06-29</td></tr><tr><td>20260630</td><td>2026-06-30</td></tr></tbody></table></div>
+(This lesson only *reads* from the live `oakhaven.db` — it never runs the
+`DROP TABLE`/`CREATE TABLE`/`INSERT` statements against the shared file.
+Never run destructive statements against a database you're sharing with
+other people or processes; that's true here and in production alike.)
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Missing <code class="inline-code">RECURSIVE</code>.</strong> <code class="inline-code">WITH cte AS (...)</code> and `WITH RECURSIVE cte AS</li></ul>  (...)` are different keywords — plain `WITH` cannot self-reference at
+  all, and you'll get an error, not silent wrong behavior.
+<ul class="styled-list"><li><strong>No stopping condition, or a condition that's never false.</strong> This</li></ul>  produces an infinite (or near-infinite) loop. Always double check the
+  recursive member's `WHERE` clause will eventually be false.
+<ul class="styled-list"><li><strong>Off-by-one boundaries.</strong> <code class="inline-code">WHERE d < date('2038-12-31')</code> includes</li></ul>  2038-12-31 in the output (see above); `WHERE d <= date('2038-12-31')`
+  would generate one extra day past it. Always trace the last one or two
+  iterations by hand.
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">UNION ALL</code> must be exactly that</strong> — <code class="inline-code">UNION</code> (which</li></ul>  deduplicates) also works syntactically, but forces SQLite to compare
+  every generated row against every previous one for duplicates, which is
+  needless overhead for something like a date spine where duplicates are
+  structurally impossible anyway.
+<ul class="styled-list"><li><strong>Not testing the recursive member's logic on a tiny range first.</strong></li></ul>  Generating 7,670 rows and eyeballing them for correctness is much harder
+  than generating 6 and checking those by hand, as done above.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">WITH RECURSIVE name(cols) AS (anchor UNION ALL recursive_member)</code> has</li></ul>  three required parts: an anchor, a self-referencing recursive member,
+  and a stopping condition inside that member's `WHERE`.
+<ul class="styled-list"><li><code class="inline-code">bronze_calendar</code> (7,670 rows, 2018-01-01 through 2038-12-31) is built</li></ul>  entirely by a recursive CTE feeding an `INSERT` — no Python loop — in
+  `project/bronze/calendar_recursive_cte.sql`.
+<ul class="styled-list"><li>A recursive CTE can be the source of an <code class="inline-code">INSERT</code>, not just a</li></ul>  standalone `SELECT` — a common pattern for generating spine/reference
+  data directly in SQL.
+<ul class="styled-list"><li>When a recursive CTE's output looks off by one row, check the stopping</li></ul>  condition's comparison operator (`<` vs `<=`) first.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="04-lead-lag-period-over-period.html" class="nav-btn">4. LEAD, LAG, and Period-over-Period Comparisons</a>. Next: <a href="06-time-intelligence.html" class="nav-btn">6. Time Intelligence</a>. Exercises: <a href="../../exercises/03-advanced/05-recursive-ctes.html" class="nav-btn">5. Recursive CTEs</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

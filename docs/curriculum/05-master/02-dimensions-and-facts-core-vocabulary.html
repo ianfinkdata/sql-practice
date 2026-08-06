@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2. Dimensions and Facts: Core Vocabulary | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="2-dimensions-and-facts-core-vocabulary">2. Dimensions and Facts: Core Vocabulary</h1>
+
+<nav class="book-nav">Previous: <a href="01-why-model-data-oltp-vs-analytical.html" class="nav-btn">1. Why We Model Data: OLTP vs. Analytical Schemas</a>. Next: <a href="03-grain-the-most-important-decision.html" class="nav-btn">3. Grain: The Most Important Decision in Star Schema Design</a>. Exercises: <a href="../../exercises/05-master/02-dimensions-and-facts-core-vocabulary.html" class="nav-btn">2. Dimensions and Facts: Core Vocabulary</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Dimensional modeling has a small, precise vocabulary. Once you have
+these six terms — <strong>dimension</strong>, <strong>fact</strong>, <strong>measure</strong>, <strong>attribute</strong>,
+<strong>grain</strong>, and <strong>surrogate vs. natural key</strong> — pinned down exactly,
+you can look at almost any warehouse schema in the world (retail,
+finance, healthcare, ad tech) and immediately know what you're looking
+at. This module defines each term precisely against Oakhaven's real
+gold-layer objects, so the definitions aren't abstract — they're
+things you can point at.</p>
+
+<h2 id="the-vocabulary">The vocabulary</h2>
+
+<p><strong>Dimension</strong> — a table of descriptive context you slice, filter, or
+group by. Dimensions answer "who / what / where / when," not "how
+much." Oakhaven has four: <code class="inline-code">dim_customer</code>, <code class="inline-code">dim_product</code>,
+<code class="inline-code">dim_employee</code>, <code class="inline-code">dim_date</code>. Each is a lookup table of attributes about
+one kind of business entity.</p>
+
+<p><strong>Fact</strong> — a table recording business events or measurements, at a
+stated grain, referencing dimensions via key columns. Oakhaven has
+one: <code class="inline-code">fact_sales</code>, where each row is one order line. Fact tables are
+usually much taller (more rows) and much narrower (fewer descriptive
+columns) than dimension tables, because they mostly hold keys and
+numbers, not text.</p>
+
+<p><strong>Measure</strong> — a numeric column on a fact table meant to be aggregated
+(<code class="inline-code">SUM</code>, <code class="inline-code">AVG</code>, etc.) across many rows. In <code class="inline-code">fact_sales</code>, <code class="inline-code">net_amount</code>
+and <code class="inline-code">quantity</code> are measures. Not every numeric fact column is a clean
+measure, though — <code class="inline-code">discount_pct</code> is numeric but <strong>non-additive</strong>:
+summing it across rows produces a meaningless number (see Example 3).
+Good measures are usually <strong>additive</strong> (safely summed across any
+dimension, like <code class="inline-code">net_amount</code>) or at worst <strong>semi-additive</strong> (summable
+across some dimensions but not others — Oakhaven doesn't have one, but
+a classic example is an account balance, which you can sum across
+customers but not across time).</p>
+
+<p><strong>Attribute</strong> — a descriptive, non-numeric-or-non-summable column on a
+dimension, used for filtering, labeling, and grouping. <code class="inline-code">dim_product</code>'s
+<code class="inline-code">category</code>, <code class="inline-code">brand</code>, and <code class="inline-code">is_discontinued</code> are attributes. Attributes
+answer "what kind," not "how much."</p>
+
+<p><strong>Grain</strong> — the precise business statement of what one row in a fact
+table represents. <code class="inline-code">fact_sales</code>'s grain is "one row per order line."
+Grain is the single most important design decision in a star schema —
+important enough to get its own lesson (module 3).</p>
+
+<p><strong>Surrogate key vs. natural key</strong> — a <strong>natural key</strong> is an identifier
+that's meaningful in the source system: <code class="inline-code">customer_id</code> in
+<code class="inline-code">bronze_customers</code>, assigned by whatever system originally created the
+customer record. A <strong>surrogate key</strong> is a warehouse-generated,
+business-meaningless key (often just an auto-incrementing integer)
+assigned purely to identify a row <em>inside the dimension table itself</em>,
+independent of the source system's ID. Surrogate keys matter most once
+you need to track history (module 5's Slowly Changing Dimensions):
+if one customer's row changes over time and you keep multiple versions
+of it, <code class="inline-code">customer_id</code> alone can no longer uniquely identify a version —
+you need a separate key per version.</p>
+
+<p>Notably: <strong>Oakhaven's gold dimensions don't currently use surrogate
+keys.</strong> Look at <code class="inline-code">project/gold/dim_customer.sql</code> — the view selects
+<code class="inline-code">customer_id</code> straight out of <code class="inline-code">silver_customers</code> and uses it as the
+join key <code class="inline-code">fact_sales</code> relies on. That's a natural key doing a
+surrogate key's job. It's a defensible simplification <em>because</em> none
+of Oakhaven's dimensions are actually historized yet — every <code class="inline-code">dim_*</code>
+view reflects only the current state of its source rows (Type 1
+behavior, whether or not anyone labeled it that way). Module 5 covers
+exactly what would need to change if you wanted true version history.</p>
+
+<h2 id="examples">Examples</h2>
+
+<h3 id="1-classify-fact_saless-columns-keys-vs-measures-vs-pass-through-attributes">1. Classify <code class="inline-code">fact_sales</code>'s columns: keys vs. measures vs. pass-through attributes</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">PRAGMA table_info(fact_sales);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>cid</th><th>name</th><th>notes</th></tr></thead><tbody><tr><td>0-4</td><td><code class="inline-code">order_id</code>, <code class="inline-code">order_line_id</code>, <code class="inline-code">customer_id</code>, <code class="inline-code">product_id</code>, <code class="inline-code">employee_id</code></td><td>grain + foreign keys into dimensions</td></tr><tr><td>5</td><td><code class="inline-code">datekey</code></td><td>foreign key into <code class="inline-code">dim_date</code></td></tr><tr><td>8-9</td><td><code class="inline-code">quantity</code>, <code class="inline-code">unit_price</code></td><td>measures (additive)</td></tr><tr><td>10</td><td><code class="inline-code">discount_pct</code></td><td>numeric, but <strong>not</strong> a safe measure (non-additive — see Example 3)</td></tr><tr><td>11</td><td><code class="inline-code">net_amount</code></td><td>the primary measure — additive, recomputed from <code class="inline-code">quantity <em> unit_price </em> (1 - discount_pct)</code> in <code class="inline-code">silver_sales</code>, not trusted from raw <code class="inline-code">order_total</code></td></tr><tr><td>12-14</td><td><code class="inline-code">payment_method</code>, <code class="inline-code">order_status</code>, <code class="inline-code">channel</code></td><td>degenerate attributes — descriptive text that lives directly on the fact row because it has no dimension of its own (there's no <code class="inline-code">dim_channel</code> table)</td></tr><tr><td>15-16</td><td><code class="inline-code">is_customer_orphan</code>, <code class="inline-code">is_product_orphan</code></td><td>data-quality flags, not measures — don't <code class="inline-code">SUM</code> these for a business number</td></tr></tbody></table></div>
+`payment_method`, `order_status`, and `channel` are worth calling out:
+they're attributes, but they live on the fact table itself instead of
+in a separate dimension. This is a legitimate, common pattern called a
+**degenerate dimension** — an attribute with no other descriptive
+columns worth breaking into its own table. You'll recognize this
+pattern in real warehouses constantly (order numbers, invoice numbers,
+ticket IDs).
+
+<h3 id="2-classify-dim_products-columns-pure-attributes-no-measures">2. Classify <code class="inline-code">dim_product</code>'s columns: pure attributes, no measures</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">PRAGMA table_info(dim_product);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>column</th><th>role</th></tr></thead><tbody><tr><td><code class="inline-code">product_id</code></td><td>natural key (join target for <code class="inline-code">fact_sales.product_id</code>)</td></tr><tr><td><code class="inline-code">product_name</code>, <code class="inline-code">category</code>, <code class="inline-code">subcategory</code>, <code class="inline-code">brand</code>, <code class="inline-code">is_discontinued</code>, <code class="inline-code">sku</code>, <code class="inline-code">weight_kg</code></td><td>attributes</td></tr><tr><td><code class="inline-code">unit_cost</code>, <code class="inline-code">unit_price</code></td><td>numeric, but these describe the <em>product</em> (its current list price), not a <em>sale event</em> — they're attributes of the dimension, not measures of a fact. (<code class="inline-code">fact_sales.unit_price</code> is a different, related column: the price actually charged at time of sale — see the data dictionary's note on price drift.)</td></tr><tr><td><code class="inline-code">sku_is_duplicate</code></td><td>data-quality flag attribute</td></tr></tbody></table></div>
+This is the general rule: a numeric column's *role* — measure vs.
+attribute — depends on which table it lives in and what it describes,
+not on its data type. `unit_price` appears in both `dim_product`
+(current catalog price, an attribute) and `fact_sales` (transaction
+price, a measure of what happened).
+
+<h3 id="3-why-discount_pct-is-not-a-safe-measure">3. Why <code class="inline-code">discount_pct</code> is not a safe measure</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+  ROUND(SUM(discount_pct), 2) AS nonsense_sum_of_discount,
+  ROUND(AVG(discount_pct), 4) AS simple_avg_discount,
+  ROUND(SUM(quantity * unit_price * discount_pct) / SUM(quantity * unit_price), 4) AS true_weighted_avg_discount
+FROM fact_sales
+WHERE discount_pct IS NOT NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>nonsense_sum_of_discount</th><th>simple_avg_discount</th><th>true_weighted_avg_discount</th></tr></thead><tbody><tr><td>1375.35</td><td>0.1146</td><td>0.1152</td></tr></tbody></table></div>
+`SUM(discount_pct)` produces `1375.35` — a number with no business
+meaning whatsoever. Even a plain `AVG` (0.1146) is a *rough*
+approximation; the mathematically correct "overall discount rate" is
+the dollar-weighted average (0.1152), because a 10-unit order
+discounted 20% should count more than a 1-unit order discounted 20%.
+This is the difference between a **measure** (safe to aggregate
+directly, like `net_amount`) and a **ratio/rate stored on the fact
+row** (must be recomputed from its underlying components, never summed
+directly).
+
+<h3 id="4-natural-keys-arent-the-same-thing-as-real-world-entity-identity">4. Natural keys aren't the same thing as real-world entity identity</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total_rows, COUNT(DISTINCT customer_id) AS distinct_ids
+FROM dim_customer;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_rows</th><th>distinct_ids</th></tr></thead><tbody><tr><td>600</td><td>600</td></tr></tbody></table></div>
+`customer_id` is unique per row — every row has its own ID, so as a
+*key* it works fine. But "unique key" and "one row per real person"
+are different guarantees: `dim_customer` has 30 rows (`customer_id`
+571–600) that are near-duplicates of 30 earlier rows — the same real
+person, re-registered under a new `customer_id`. The natural key
+faithfully identifies *rows*; it says nothing about whether two rows
+represent the same underlying business entity. Module 4 digs into this
+directly.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Confusing "numeric" with "measure."</strong> <code class="inline-code">discount_pct</code> is numeric</li></ul>  and lives on a fact table, but summing it is meaningless. Ask "does
+  aggregating this produce a number a business person could use?"
+  before treating any numeric fact column as a measure.
+<ul class="styled-list"><li>**Putting measures in a dimension or attributes in a fact without</li></ul>  noticing.** `dim_product.unit_price` (catalog price, an attribute)
+  and `fact_sales.unit_price` (transaction price, a measure input) are
+  easy to conflate because they share a name — check which table
+  you're in.
+<ul class="styled-list"><li><strong>Assuming a unique key means one row per real-world thing.</strong> Keys</li></ul>  guarantee row identity, not entity identity. Near-duplicate rows
+  (like Oakhaven's 30 re-registered customers) can each have a
+  perfectly valid, perfectly unique natural key.
+<ul class="styled-list"><li><strong>Not noticing when a dimension is missing.</strong> <code class="inline-code">payment_method</code>,</li></ul>  `order_status`, and `channel` sit directly on `fact_sales` with no
+  backing dimension table. That's fine as a degenerate dimension when
+  there's nothing more to describe about them — but if you found
+  yourself wanting to add descriptive columns to `channel` (say, a
+  channel owner or a launch date), that would be your signal it needs
+  to become a real dimension.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><strong>Dimension</strong> = descriptive context you group/filter by.</li></ul>  **Fact** = an event/measurement at a stated grain, referencing
+  dimensions by key.
+<ul class="styled-list"><li><strong>Measure</strong> = an aggregatable number on a fact (ideally additive).</li></ul>  **Attribute** = a descriptive, non-aggregated column on a dimension
+  (or, for a degenerate dimension, directly on a fact).
+<ul class="styled-list"><li><strong>Grain</strong> is the precise statement of what one fact row represents —</li></ul>  the foundational decision, covered next.
+<ul class="styled-list"><li><strong>Natural key</strong> = meaningful in the source system. <strong>Surrogate key</strong></li></ul>  = warehouse-generated, meaningless, row-versioning identifier.
+  Oakhaven's gold dimensions currently use natural keys directly
+  because none of them are historized yet — a deliberate simplification
+  worth noticing, not an oversight.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="01-why-model-data-oltp-vs-analytical.html" class="nav-btn">1. Why We Model Data: OLTP vs. Analytical Schemas</a>. Next: <a href="03-grain-the-most-important-decision.html" class="nav-btn">3. Grain: The Most Important Decision in Star Schema Design</a>. Exercises: <a href="../../exercises/05-master/02-dimensions-and-facts-core-vocabulary.html" class="nav-btn">2. Dimensions and Facts: Core Vocabulary</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

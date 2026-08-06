@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10. Capstone — Combining CTEs and Window Functions | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="10-capstone--combining-ctes-and-window-functions">10. Capstone — Combining CTEs and Window Functions</h1>
+
+<nav class="book-nav">Previous: <a href="09-correlated-subqueries-exists.html" class="nav-btn">9. Correlated Subqueries, EXISTS, and NOT EXISTS</a>. Next: <a href="../04-expert/README.html" class="nav-btn">Tier 4 — Expert</a>. Exercises: <a href="../../exercises/03-advanced/10-combining-ctes-and-window-functions.html" class="nav-btn">10. Capstone — Combining CTEs and Window Functions</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>This module doesn't introduce new syntax. It's a deliberate synthesis
+exercise: every technique from Modules 1–9 (CTEs, <code class="inline-code">ROW_NUMBER</code>/<code class="inline-code">RANK</code>,
+running totals, <code class="inline-code">LAG</code>/<code class="inline-code">LEAD</code>, recursive CTEs, time intelligence, the date
+spine, silver-layer cleaning, correlated subqueries) is a tool. Real
+analytical questions usually need <em>several</em> of these tools chained
+together, not just one in isolation. This is what that actually looks
+like.</p>
+
+<p>The pattern you'll see over and over: <strong>aggregate first, rank second.</strong>
+Compute a plain summary in one CTE (revenue per group, counts, totals),
+then apply a window function to that summary in a second CTE, then filter
+the final result. Trying to do the aggregation and the ranking in the same
+<code class="inline-code">SELECT</code> doesn't work — window functions run after <code class="inline-code">GROUP BY</code>, so you'd be
+ranking pre-aggregation rows, not the aggregated result you actually want
+to rank.</p>
+
+<h2 id="worked-example-top-product-per-category-by-revenue">Worked example: top product per category by revenue</h2>
+
+<p><em>Question: for each product category, which single product generated the
+most net revenue?</em> This needs: (1) revenue per product, (2) that revenue
+ranked within each product's category, (3) keep only rank 1.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH product_revenue AS (
+    SELECT p.category, p.product_id, p.product_name,
+           ROUND(SUM(f.net_amount), 2) AS total_revenue
+    FROM fact_sales f
+    JOIN dim_product p ON p.product_id = f.product_id
+    GROUP BY p.category, p.product_id, p.product_name
+),
+ranked AS (
+    SELECT category, product_id, product_name, total_revenue,
+           RANK() OVER (PARTITION BY category ORDER BY total_revenue DESC) AS category_rank
+    FROM product_revenue
+)
+SELECT category, product_name, total_revenue
+FROM ranked
+WHERE category_rank = 1
+ORDER BY total_revenue DESC;</code></pre></div>
+
+<p>Verified output — one row per category, all 8 of Oakhaven's canonical
+categories represented:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>product_name</th><th>total_revenue</th></tr></thead><tbody><tr><td>Camping & Hiking</td><td>Highline Backpacks</td><td>172340.61</td></tr><tr><td>Nutrition & Hydration</td><td>Foothill Electrolyte Mixes</td><td>154322.60</td></tr><tr><td>Water Sports</td><td>Ridge Paddles</td><td>138646.07</td></tr><tr><td>Climbing</td><td>Meridian Chalk Bags</td><td>134818.34</td></tr><tr><td>Apparel</td><td>Highline Rain Shells</td><td>132236.97</td></tr><tr><td>Footwear</td><td>Canyon Hiking Boots</td><td>127464.80</td></tr><tr><td>Winter Sports</td><td>Alpine Snowboards</td><td>117472.48</td></tr><tr><td>Accessories</td><td>Granite Sunglasse</td><td>100832.83</td></tr></tbody></table></div>
+Trace the shape: `product_revenue` is a plain `GROUP BY` — nothing new.
+`ranked` takes that *already-aggregated* result and ranks it — this only
+works because `product_revenue` already collapsed `fact_sales` down to one
+row per product; ranking `fact_sales` order lines directly would rank
+individual sales, not products. The final `SELECT` is just a filter.
+Three CTEs' (well, two, plus the final query) worth of clarity for a
+question that would be genuinely painful to express as nested subqueries.
+
+<h2 id="extending-it-top-3-per-category-with-each-ones-share-of-the-category">Extending it: top 3 per category, with each one's share of the category</h2>
+
+<p>Swap <code class="inline-code">RANK()</code> for <code class="inline-code">ROW_NUMBER()</code> (to get an exact top-N without tie
+expansion) and add a second window function — an unordered
+<code class="inline-code">SUM(...) OVER (PARTITION BY category)</code>, which computes the <em>whole</em>
+category's total without collapsing rows, letting you compute each
+product's percentage contribution in the same pass:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH product_revenue AS (
+    SELECT p.category, p.product_id, p.product_name,
+           ROUND(SUM(f.net_amount), 2) AS total_revenue
+    FROM fact_sales f
+    JOIN dim_product p ON p.product_id = f.product_id
+    GROUP BY p.category, p.product_id, p.product_name
+),
+ranked AS (
+    SELECT category, product_name, total_revenue,
+           SUM(total_revenue) OVER (PARTITION BY category) AS category_total,
+           ROW_NUMBER() OVER (PARTITION BY category ORDER BY total_revenue DESC) AS rn
+    FROM product_revenue
+)
+SELECT category, product_name, total_revenue,
+       ROUND(100.0 * total_revenue / category_total, 1) AS pct_of_category
+FROM ranked
+WHERE rn &lt;= 3 AND category = &#x27;Climbing&#x27;
+ORDER BY total_revenue DESC;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>product_name</th><th>total_revenue</th><th>pct_of_category</th></tr></thead><tbody><tr><td>Climbing</td><td>Meridian Chalk Bags</td><td>134818.34</td><td>9.7</td></tr><tr><td>Climbing</td><td>Alpine Harnesse</td><td>134520.27</td><td>9.7</td></tr><tr><td>Climbing</td><td>Highline Harnesse</td><td>132416.20</td><td>9.5</td></tr></tbody></table></div>
+Two different window functions over the *same* partition (`category`) in
+the same CTE: one with an `ORDER BY` (`ROW_NUMBER`, for ranking) and one
+without (`SUM`, for a partition-wide total that every row in the partition
+shares equally). This is a genuinely common combination — "rank within a
+group, and also show each row's share of the group's total" — and it only
+takes one extra line once you're comfortable with the mechanism.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Trying to rank and aggregate in a single <code class="inline-code">SELECT</code>.</strong> `SELECT category,</li></ul>  RANK() OVER (...) FROM fact_sales JOIN dim_product ... GROUP BY
+  category` doesn't do what you want — window functions see the grouped
+  rows, but you'd need the aggregate (`SUM(net_amount)`) computed *before*
+  ranking, which is exactly why the aggregation belongs in its own CTE
+  first.
+<ul class="styled-list"><li>**Forgetting <code class="inline-code">PARTITION BY</code> on the second window function in a chained</li></ul>  example.** An unpartitioned `SUM(total_revenue) OVER ()` computes the
+  *grand* total across every category, not each category's own total —
+  silently wrong percentages that don't sum to 100% within a group.
+<ul class="styled-list"><li><strong>Using <code class="inline-code">RANK()</code> when you specifically want exactly N rows per group.</strong></li></ul>  `RANK()` can return more than N rows if there's a tie at the Nth
+  position (e.g. `WHERE category_rank <= 3` could return 4 rows if two
+  products tie for 3rd). Use `ROW_NUMBER()` instead when the exact count
+  matters more than tie-fairness.
+<ul class="styled-list"><li><strong>Not verifying the CTE chain's first step in isolation.</strong> When a</li></ul>  multi-CTE query produces a suspicious result, run the *first* CTE's
+  `SELECT` standalone before assuming the bug is in the window function —
+  a wrong join or a duplicated `GROUP BY` key upstream will look like a
+  ranking bug downstream.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>The recurring capstone pattern: aggregate in one CTE, rank/window that</li></ul>  aggregate in the next CTE, filter in the final `SELECT` — never try to
+  aggregate and window in the same `SELECT`.
+<ul class="styled-list"><li>Multiple window functions can share the same <code class="inline-code">PARTITION BY</code> in the same</li></ul>  query to answer compound questions ("rank within group" + "share of
+  group total") in one pass.
+<ul class="styled-list"><li><code class="inline-code">RANK()</code> can return more rows than expected at a tie boundary;</li></ul>  `ROW_NUMBER()` guarantees an exact count when ties don't matter to you.
+<ul class="styled-list"><li>Every tool from this tier — CTEs, window functions, recursive CTEs, date</li></ul>  intelligence, the date spine, silver-layer cleaning, correlated
+  subqueries — composes with the others. Real analytical SQL is rarely one
+  technique in isolation; it's several, chained clearly.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="09-correlated-subqueries-exists.html" class="nav-btn">9. Correlated Subqueries, EXISTS, and NOT EXISTS</a>. Next: <a href="../04-expert/README.html" class="nav-btn">Tier 4 — Expert</a>. Exercises: <a href="../../exercises/03-advanced/10-combining-ctes-and-window-functions.html" class="nav-btn">10. Capstone — Combining CTEs and Window Functions</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

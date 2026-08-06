@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: 6. Designing the Date Dimension | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-6-designing-the-date-dimension">Exercises: 6. Designing the Date Dimension</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/06-designing-the-date-dimension.html" class="nav-btn">6. Designing the Date Dimension</a>. Previous: <a href="05-slowly-changing-dimensions-scd-1-and-2.html" class="nav-btn">5. Slowly Changing Dimensions: Type 1 and Type 2</a>. Next: <a href="07-designing-the-fact-table.html" class="nav-btn">7. Designing the Fact Table</a>.</nav>
+
+<p>Work against <code class="inline-code">project/oakhaven.db</code>. Read-only — every query below is a
+<code class="inline-code">SELECT</code>.</p>
+
+<hr class="divider">
+
+<h3 id="1-verify-the-calendars-completeness">1. Verify the calendar's completeness</h3>
+
+<p>Confirm <code class="inline-code">dim_date</code>'s total row count and its full date span.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total_days, MIN(date) AS min_date, MAX(date) AS max_date
+FROM dim_date;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_days</th><th>min_date</th><th>max_date</th></tr></thead><tbody><tr><td>7670</td><td>2018-01-01</td><td>2038-12-31</td></tr></tbody></table></div>
+One row for every day from 2018-01-01 through 2038-12-31, no gaps —
+21 full years, built once, independent of any fact table.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-a-sanity-check-most-messy-dimensions-cant-offer-leap-days">2. A sanity check most "messy" dimensions can't offer: leap days</h3>
+
+<p>Count how many <code class="inline-code">2026</code>-through-<code class="inline-code">2038</code>-range leap days (<code class="inline-code">month = 2</code>,
+<code class="inline-code">day_of_month = 29</code>) exist in <code class="inline-code">dim_date</code>. Does the count look right
+for the span?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM dim_date WHERE month = 2 AND day_of_month = 29;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>5</td></tr></tbody></table></div>
+5 leap days across the full 2018–2038 span (2020, 2024, 2028, 2032,
+2036 are the leap years in that range). This kind of exhaustive
+correctness check — "does every leap year in the range have exactly
+one Feb 29, and no non-leap year has one" — is cheap and conclusive
+for a manufactured date dimension, precisely because there's no source
+messiness to account for. You could never run an equivalently
+confident check against, say, `dim_customer`'s `state` column.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-reproduce-the-zero-order-day-pattern-yourself">3. Reproduce the zero-order-day pattern yourself</h3>
+
+<p>Using a <code class="inline-code">LEFT JOIN</code> from <code class="inline-code">dim_date</code> to <code class="inline-code">fact_sales</code> (dimension first,
+fact second — not the other way around), restricted to the date range
+<code class="inline-code">fact_sales.order_date</code> actually spans (2021-01-01 through
+2026-06-30), count how many calendar days have zero order lines.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS zero_order_days
+FROM (
+    SELECT d.datekey, COUNT(f.order_id) AS n
+    FROM dim_date d
+    LEFT JOIN fact_sales f ON f.datekey = d.datekey
+    WHERE d.date BETWEEN &#x27;2021-01-01&#x27; AND &#x27;2026-06-30&#x27;
+    GROUP BY d.datekey
+) day_counts
+WHERE n = 0;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>zero_order_days</th></tr></thead><tbody><tr><td>54</td></tr></tbody></table></div>
+54 days had no sales activity at all, and this query still finds them
+correctly — because it starts from the complete `dim_date` calendar
+and joins *out* to whatever `fact_sales` rows happen to exist, rather
+than starting from `fact_sales` (which, by definition, can never
+contain a day where nothing happened). Try rewriting this query
+starting `FROM fact_sales` with a `RIGHT`-style intent instead, and
+notice it becomes awkward or impossible in SQLite — that awkwardness
+is itself evidence for why "dimension-first" is the correct join
+direction for this kind of report.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-confirm-the-datekey-encoding-is-internally-consistent">4. Confirm the <code class="inline-code">datekey</code> encoding is internally consistent</h3>
+
+<p>For every row in <code class="inline-code">dim_date</code>, confirm that the stored <code class="inline-code">datekey</code> integer
+actually equals the <code class="inline-code">YYYYMMDD</code> encoding of that row's <code class="inline-code">date</code> column
+(i.e., that there's no drift between the two).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total,
+       SUM(CASE WHEN datekey = CAST(strftime(&#x27;%Y%m%d&#x27;, date) AS INTEGER) THEN 1 ELSE 0 END) AS matching
+FROM dim_date;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total</th><th>matching</th></tr></thead><tbody><tr><td>7670</td><td>7670</td></tr></tbody></table></div>
+All 7,670 rows match — `datekey` and `date` are always consistent
+encodings of the same day. This kind of self-consistency check is
+worth running on any date dimension you inherit or build yourself:
+it's cheap, and a mismatch (e.g., off-by-one-day drift from a time
+zone bug) is a serious, hard-to-notice-otherwise correctness bug.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-explore-the-role-playing-dimension-opportunity">5. Explore the role-playing dimension opportunity</h3>
+
+<p><code class="inline-code">fact_sales</code> carries both <code class="inline-code">order_date</code> and <code class="inline-code">ship_date</code>, but only
+<code class="inline-code">order_date</code> is converted into a <code class="inline-code">datekey</code> and stored as a join key.
+First, check how many <code class="inline-code">fact_sales</code> rows have a non-<code class="inline-code">NULL</code> <code class="inline-code">ship_date</code>.
+Then, without modifying any gold object, write a query that joins
+those rows to <code class="inline-code">dim_date</code> a <em>second</em> time — via <code class="inline-code">ship_date</code> instead of
+<code class="inline-code">datekey</code> — to pull back the day-of-week and quarter the order was
+<em>shipped</em> (not placed).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total, SUM(CASE WHEN ship_date IS NOT NULL THEN 1 ELSE 0 END) AS has_ship_date
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total</th><th>has_ship_date</th></tr></thead><tbody><tr><td>12000</td><td>10269</td></tr></tbody></table></div>
+10,269 of 12,000 order lines have a `ship_date` (the remaining ~15%
+are `NULL`, per the data dictionary). Now join those rows to
+`dim_date` on `ship_date` instead of the fact table's stored
+`datekey`:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT f.order_id, f.order_line_id, f.order_date, f.ship_date,
+       d.day_name AS ship_day_name, d.quarter AS ship_quarter
+FROM fact_sales f
+JOIN dim_date d ON CAST(strftime(&#x27;%Y%m%d&#x27;, f.ship_date) AS INTEGER) = d.datekey
+WHERE f.ship_date IS NOT NULL
+ORDER BY f.order_id
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>order_date</th><th>ship_date</th><th>ship_day_name</th><th>ship_quarter</th></tr></thead><tbody><tr><td>1</td><td>1</td><td>2024-03-05</td><td>2024-03-15</td><td>Friday</td><td>1</td></tr><tr><td>1</td><td>2</td><td>2024-03-05</td><td>2024-03-15</td><td>Friday</td><td>1</td></tr><tr><td>2</td><td>1</td><td>2021-11-04</td><td>2021-11-11</td><td>Thursday</td><td>4</td></tr><tr><td>2</td><td>2</td><td>2021-11-04</td><td>2021-11-11</td><td>Thursday</td><td>4</td></tr><tr><td>3</td><td>1</td><td>2023-01-13</td><td>2023-01-23</td><td>Monday</td><td>1</td></tr></tbody></table></div>
+The exact same `dim_date` table — no changes, no new object — answers
+"what quarter did this order *ship* in" just as well as "what quarter
+was it *placed* in," simply by joining on a different date column.
+This is the general concept of a **role-playing dimension**: one
+physical dimension table, logically reused under different aliases for
+different roles a single fact row can have (here, "order date" and
+"ship date" are two roles of the same underlying `dim_date`). Wiring
+this permanently into `fact_sales` (e.g., adding a `ship_datekey`
+column) is a fact-table design decision, out of scope for this
+dimension-focused module — but recognizing that the dimension itself
+requires zero changes to support it is the key insight.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/06-designing-the-date-dimension.html" class="nav-btn">6. Designing the Date Dimension</a>. Previous: <a href="05-slowly-changing-dimensions-scd-1-and-2.html" class="nav-btn">5. Slowly Changing Dimensions: Type 1 and Type 2</a>. Next: <a href="07-designing-the-fact-table.html" class="nav-btn">7. Designing the Fact Table</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

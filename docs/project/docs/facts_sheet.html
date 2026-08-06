@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oakhaven Facts Sheet | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="oakhaven-facts-sheet">Oakhaven Facts Sheet</h1>
+
+<p>Ground-truth values from an actual build of <code class="inline-code">project/oakhaven.db</code>,
+verified by running <code class="inline-code">python project/build.py</code> twice in a row and
+diffing <code class="inline-code">sqlite3 oakhaven.db ".dump"</code> output — <strong>byte-identical</strong> both
+times (md5 <code class="inline-code">8a739680c505eb7a732938964a846ef5</code>). Cite these numbers
+directly; do not re-derive them, and do not assume they'll be
+"approximately" this — they are exact for this seed.</p>
+
+<h2 id="build-configuration">Build configuration</h2>
+<ul class="styled-list"><li><code class="inline-code">faker==40.36.0</code> (pinned in <code class="inline-code">project/requirements.txt</code>)</li><li><code class="inline-code">SEED = 20260630</code></li><li><code class="inline-code">SNAPSHOT_DATE = date(2026, 6, 30)</code></li><li>Python: stdlib-only besides Faker (<code class="inline-code">sqlite3</code>, <code class="inline-code">random</code>, <code class="inline-code">datetime</code>)</li><li>Environment note: this sandbox's system Python (3.14) had no <code class="inline-code">pip</code>;</li></ul>  bootstrapped via `apt-get install python3-pip python3.14-venv`, then
+  built/tested inside a venv. `pip install -r project/requirements.txt`
+  is the documented learner path and works standalone.
+
+<h2 id="exact-row-counts">Exact row counts</h2>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Object</th><th>Rows</th></tr></thead><tbody><tr><td><code class="inline-code">bronze_customers</code></td><td>600</td></tr><tr><td><code class="inline-code">bronze_products</code></td><td>150</td></tr><tr><td><code class="inline-code">bronze_employees</code></td><td>35</td></tr><tr><td><code class="inline-code">bronze_sales</code></td><td>12,000</td></tr><tr><td><code class="inline-code">bronze_calendar</code></td><td>7,670</td></tr><tr><td><code class="inline-code">silver_customers</code></td><td>600</td></tr><tr><td><code class="inline-code">silver_products</code></td><td>150</td></tr><tr><td><code class="inline-code">silver_employees</code></td><td>35</td></tr><tr><td><code class="inline-code">silver_sales</code></td><td>12,000</td></tr><tr><td><code class="inline-code">silver_calendar</code></td><td>7,670</td></tr><tr><td><code class="inline-code">dim_customer</code></td><td>600</td></tr><tr><td><code class="inline-code">dim_product</code></td><td>150</td></tr><tr><td><code class="inline-code">dim_employee</code></td><td>35</td></tr><tr><td><code class="inline-code">dim_date</code></td><td>7,670</td></tr><tr><td><code class="inline-code">fact_sales</code></td><td>12,000</td></tr><tr><td><code class="inline-code">agg_monthly_sales_by_category</code></td><td>528</td></tr><tr><td><code class="inline-code">agg_customer_ltv</code></td><td>600</td></tr><tr><td><code class="inline-code">agg_daily_sales</code></td><td>2,007 (days 2021-01-01 through 2026-06-30 inclusive)</td></tr></tbody></table></div>
+Near-duplicate customers: `customer_id` 571–600 (30 rows) are
+intentional near-duplicates of 30 of the base 570 customers.
+
+<p>SKU collisions: 4 products share a duplicated SKU (<code class="inline-code">WAT-0095</code> and
+<code class="inline-code">WIN-0129</code>, each held by 2 different <code class="inline-code">product_id</code>s), i.e.
+<code class="inline-code">sku_is_duplicate = 1</code> for 4 rows in <code class="inline-code">dim_product</code>.</p>
+
+<h2 id="messiness-outcomes-actually-produced-this-seed">Messiness outcomes actually produced (this seed)</h2>
+
+<p>From <code class="inline-code">validate.py</code>'s informational section on the current build:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Metric</th><th>Count</th><th>~% of 12,000 (or relevant base)</th></tr></thead><tbody><tr><td><code class="inline-code">bronze_customers.email</code> NULL</td><td>26</td><td>4.3% of 600</td></tr><tr><td><code class="inline-code">bronze_customers.email</code> = <code class="inline-code">''</code></td><td>9</td><td>1.5% of 600</td></tr><tr><td><code class="inline-code">bronze_products.unit_cost</code> negative</td><td>2</td><td>1.3% of 150</td></tr><tr><td><code class="inline-code">bronze_sales</code> orphan <code class="inline-code">customer_id</code></td><td>103</td><td>0.86%</td></tr><tr><td><code class="inline-code">bronze_sales</code> orphan <code class="inline-code">product_id</code></td><td>122</td><td>1.02%</td></tr><tr><td><code class="inline-code">bronze_sales.employee_id</code> NULL</td><td>1,243</td><td>10.4%</td></tr><tr><td><code class="inline-code">bronze_sales.order_date</code> NULL</td><td>58</td><td>0.48%</td></tr><tr><td><code class="inline-code">bronze_sales.order_total</code> NULL</td><td>210</td><td>1.75%</td></tr><tr><td><code class="inline-code">bronze_sales.order_total = 'TBD'</code></td><td>26</td><td>0.22%</td></tr><tr><td><code class="inline-code">bronze_sales.order_total = 'N/A'</code></td><td>41</td><td>0.34%</td></tr><tr><td><code class="inline-code">bronze_sales.quantity</code> negative</td><td>359</td><td>2.99%</td></tr><tr><td><code class="inline-code">bronze_sales.quantity</code> = 0</td><td>212</td><td>1.77%</td></tr><tr><td><code class="inline-code">bronze_sales.quantity</code> NULL</td><td>198</td><td>1.65%</td></tr><tr><td><code class="inline-code">silver_sales</code> ship_date before order_date (parsed)</td><td>216</td><td>1.8%</td></tr><tr><td><code class="inline-code">bronze_sales.discount_pct</code> whole-number bug (<code class="inline-code">> 1</code>)</td><td>110</td><td>0.92%</td></tr></tbody></table></div>
+<h2 id="minmax-dates-actually-produced">Min/max dates actually produced</h2>
+<ul class="styled-list"><li><code class="inline-code">signup_date</code> (ISO, via <code class="inline-code">silver_customers</code>): <strong>2018-01-13</strong> to <strong>2026-06-20</strong></li><li><code class="inline-code">order_date</code> (ISO, via <code class="inline-code">silver_sales</code>): <strong>2021-01-01</strong> to <strong>2026-06-30</strong></li></ul>
+<h2 id="exact-string-variant-pools-actually-generated">Exact string variant pools actually generated</h2>
+
+<p><strong><code class="inline-code">bronze_products.category</code></strong> (40 distinct raw strings observed, all
+mapping to the 8 canonical names in <code class="inline-code">silver_products.category</code>):
+<code class="inline-code">ACCESSORIES</code>, <code class="inline-code">ACCESSORIES </code> (trailing space), <code class="inline-code">APPAREL</code>, <code class="inline-code">APPAREL </code>,
+<code class="inline-code">Accessories</code>, <code class="inline-code">Apparel</code>, <code class="inline-code">CAMPING & HIKING</code>, <code class="inline-code">CAMPING & HIKING </code>,
+<code class="inline-code">CAMPING AND HIKING </code>, <code class="inline-code">CLIMBING</code>, <code class="inline-code">CLIMBING </code>, <code class="inline-code">Camping & Hiking</code>,
+<code class="inline-code">Camping and Hiking</code>, <code class="inline-code">Climbing</code>, <code class="inline-code">FOOT WEAR </code>, <code class="inline-code">FOOTWEAR</code>, <code class="inline-code">FOOTWEAR </code>,
+<code class="inline-code">Foot Wear</code>, <code class="inline-code">Footwear</code>, <code class="inline-code">NUTRITION & HYDRATION</code>, <code class="inline-code">NUTRITION & HYDRATION </code>,
+<code class="inline-code">NUTRITION AND HYDRATION </code>, <code class="inline-code">Nutrition & Hydration</code>, <code class="inline-code">Nutrition and Hydration</code>,
+<code class="inline-code">WATER SPORTS</code>, <code class="inline-code">WATER SPORTS </code>, <code class="inline-code">WINTER SPORTS</code>, <code class="inline-code">WINTER SPORTS </code>,
+<code class="inline-code">Water Sports</code>, <code class="inline-code">Winter Sports</code>, <code class="inline-code">accessories</code>, <code class="inline-code">apparel</code>,
+<code class="inline-code">camping & hiking</code>, <code class="inline-code">camping and hiking</code>, <code class="inline-code">climbing</code>, <code class="inline-code">footwear</code>,
+<code class="inline-code">nutrition & hydration</code>, <code class="inline-code">nutrition and hydration</code>, <code class="inline-code">water sports</code>,
+<code class="inline-code">winter sports</code>.</p>
+
+<p><strong><code class="inline-code">bronze_employees.department</code></strong>: <code class="inline-code">MANAGEMENT</code>, <code class="inline-code">Management</code>,
+<code class="inline-code">SUPPORT</code>, <code class="inline-code">Sales</code>, <code class="inline-code">Support</code>, <code class="inline-code">WAREHOUSE</code>, <code class="inline-code">Warehouse</code>, <code class="inline-code">management</code>,
+<code class="inline-code">sales</code>, <code class="inline-code">support</code>, <code class="inline-code">warehouse</code>. (Canonical: <code class="inline-code">Sales</code>, <code class="inline-code">Support</code>,
+<code class="inline-code">Warehouse</code>, <code class="inline-code">Management</code>.)</p>
+
+<p><strong><code class="inline-code">bronze_employees.region</code></strong>: <code class="inline-code">CENTRAL</code>, <code class="inline-code">Central</code>, <code class="inline-code">EAST</code>, <code class="inline-code">East</code>,
+<code class="inline-code">NORTHEAST</code>, <code class="inline-code">Northeast</code>, <code class="inline-code">SOUTH</code>, <code class="inline-code">South</code>, <code class="inline-code">WEST</code>, <code class="inline-code">West</code>, <code class="inline-code">central</code>,
+<code class="inline-code">east</code>, <code class="inline-code">south</code>, <code class="inline-code">west</code>. (Canonical: <code class="inline-code">West</code>, <code class="inline-code">East</code>, <code class="inline-code">Central</code>,
+<code class="inline-code">South</code>, <code class="inline-code">Northeast</code>.)</p>
+
+<p><strong><code class="inline-code">bronze_sales.payment_method</code></strong>: <code class="inline-code">CC</code>, <code class="inline-code">Cash</code>, <code class="inline-code">Credit Card</code>,
+<code class="inline-code">Debit Card</code>, <code class="inline-code">Gift Card</code>, <code class="inline-code">PayPal</code>, <code class="inline-code">cash </code> (trailing space),
+<code class="inline-code">credit card</code>, <code class="inline-code">debit card</code>, <code class="inline-code">paypal</code>. (Canonical after cleaning:
+<code class="inline-code">Credit Card</code>, <code class="inline-code">Cash</code>, <code class="inline-code">Debit Card</code>, <code class="inline-code">Gift Card</code>, <code class="inline-code">PayPal</code>.)</p>
+
+<p><strong><code class="inline-code">bronze_sales.order_status</code></strong>: NULL, <code class="inline-code">CANCELLED</code>, <code class="inline-code">Cancelled</code>,
+<code class="inline-code">Completed</code>, <code class="inline-code">Returned</code>, <code class="inline-code">completed</code>. (Canonical after cleaning:
+<code class="inline-code">Completed</code>, <code class="inline-code">Cancelled</code>, <code class="inline-code">Returned</code>.)</p>
+
+<p><strong><code class="inline-code">bronze_sales.channel</code></strong>: <code class="inline-code">In-Store</code>, <code class="inline-code">Online</code>, <code class="inline-code">in store</code>, <code class="inline-code">online</code>.
+(Canonical after cleaning: <code class="inline-code">Online</code>, <code class="inline-code">In-Store</code>.)</p>
+
+<p><strong><code class="inline-code">bronze_customers.is_active</code></strong> (and same pool for <code class="inline-code">is_manager</code>,
+<code class="inline-code">is_discontinued</code>): NULL, <code class="inline-code">0</code>, <code class="inline-code">1</code>, <code class="inline-code">N</code>, <code class="inline-code">Y</code>, <code class="inline-code">false</code>, <code class="inline-code">n</code>, <code class="inline-code">no</code>,
+<code class="inline-code">true</code>, <code class="inline-code">y</code>, <code class="inline-code">yes</code>.</p>
+
+<p><strong><code class="inline-code">bronze_customers.state</code></strong> (sample of the 55+ distinct raw variants —
+full pool includes all 50 states × {full name, lowercase full name,
+2-letter abbrev, lowercase abbrev} plus dotted forms for CA/FL/MA/PA/WA,
+plus NULL/<code class="inline-code">''</code>): <code class="inline-code">''</code>, NULL, <code class="inline-code">AK</code>, <code class="inline-code">AL</code>, <code class="inline-code">AR</code>, <code class="inline-code">AZ</code>, <code class="inline-code">Alaska</code>,
+<code class="inline-code">Arizona</code>, <code class="inline-code">Arkansas</code>, <code class="inline-code">CA</code>, <code class="inline-code">CO</code>, <code class="inline-code">CT</code>, <code class="inline-code">Calif.</code>, <code class="inline-code">California</code>,
+<code class="inline-code">Connecticut</code>, <code class="inline-code">DE</code>, <code class="inline-code">Delaware</code>, <code class="inline-code">FL</code>, <code class="inline-code">Fla.</code>, <code class="inline-code">GA</code>, <code class="inline-code">Georgia</code>, <code class="inline-code">HI</code>,
+<code class="inline-code">IA</code>, <code class="inline-code">ID</code>, <code class="inline-code">IL</code>, ... (continues through all 50 states).</p>
+
+<h2 id="worked-example-queries-actual-output-this-build">Worked example queries (actual output, this build)</h2>
+
+<h3 id="1-overall-sales-totals">1. Overall sales totals</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS order_lines, COUNT(DISTINCT order_id) AS orders,
+       ROUND(SUM(net_amount), 2) AS total_net_amount
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_lines</th><th>orders</th><th>total_net_amount</th></tr></thead><tbody><tr><td>12000</td><td>7199</td><td>8742289.04</td></tr></tbody></table></div>
+<h3 id="2-net-sales-by-channel">2. Net sales by channel</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT channel, COUNT(*) AS lines, ROUND(SUM(net_amount), 2) AS total_net_amount
+FROM fact_sales GROUP BY channel ORDER BY total_net_amount DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>channel</th><th>lines</th><th>total_net_amount</th></tr></thead><tbody><tr><td>In-Store</td><td>5960</td><td>4380739.06</td></tr><tr><td>Online</td><td>6040</td><td>4361549.98</td></tr></tbody></table></div>
+<h3 id="3-total-net-sales-by-category-rolled-up-from-the-monthly-agg-view">3. Total net sales by category (rolled up from the monthly agg view)</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT category, ROUND(SUM(total_net_amount), 2) AS category_total
+FROM agg_monthly_sales_by_category
+GROUP BY category ORDER BY category_total DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>category_total</th></tr></thead><tbody><tr><td>Climbing</td><td>1382563.66</td></tr><tr><td>Winter Sports</td><td>1238465.41</td></tr><tr><td>Apparel</td><td>1232915.57</td></tr><tr><td>Nutrition & Hydration</td><td>1158785.06</td></tr><tr><td>Footwear</td><td>1077329.56</td></tr><tr><td>Accessories</td><td>931075.29</td></tr><tr><td>Camping & Hiking</td><td>904446.02</td></tr><tr><td>Water Sports</td><td>721133.90</td></tr></tbody></table></div>
+<h3 id="4-top-5-customers-by-lifetime-value">4. Top 5 customers by lifetime value</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, full_name, customer_segment, state, order_count,
+       lifetime_net_amount, first_order_date, last_order_date
+FROM agg_customer_ltv ORDER BY lifetime_net_amount DESC LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>full_name</th><th>segment</th><th>state</th><th>order_count</th><th>lifetime_net_amount</th><th>first_order_date</th><th>last_order_date</th></tr></thead><tbody><tr><td>41</td><td>Shannon Strong</td><td>Retail</td><td>OK</td><td>22</td><td>37544.43</td><td>2021-08-14</td><td>2026-03-17</td></tr><tr><td>343</td><td>Jennifer Howard</td><td>VIP</td><td>IA</td><td>25</td><td>35024.55</td><td>2021-07-04</td><td>2026-06-25</td></tr><tr><td>597</td><td>Jessica Simpson</td><td>Wholesale</td><td>NH</td><td>17</td><td>33636.42</td><td>2021-03-08</td><td>2026-06-22</td></tr><tr><td>173</td><td>Ryan Bonilla</td><td>Retail</td><td>SD</td><td>18</td><td>31159.38</td><td>2021-01-24</td><td>2026-05-21</td></tr><tr><td>67</td><td>Derek Roberts</td><td>Retail</td><td>NY</td><td>21</td><td>30799.93</td><td>2021-02-15</td><td>2026-06-05</td></tr></tbody></table></div>
+<h3 id="5-zero-order-day-date-spine-pattern-agg_daily_sales">5. Zero-order-day date-spine pattern (<code class="inline-code">agg_daily_sales</code>)</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM agg_daily_sales WHERE order_line_count = 0;</code></pre></div>
+
+<p>Result: <strong>54</strong> days between 2021-01-01 and 2026-06-30 had zero order
+lines, and still appear as rows (with <code class="inline-code">order_line_count = 0</code>,
+<code class="inline-code">total_net_amount = 0.0</code>) thanks to the <code class="inline-code">LEFT JOIN dim_date ...
+fact_sales</code> pattern in <code class="inline-code">gold/agg_daily_sales.sql</code>, rather than
+disappearing entirely.</p>
+
+<h3 id="6-the-discount_pct-whole-number-bug-beforeafter-silvers-fix">6. The discount_pct whole-number bug, before/after silver's fix</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT b.order_id, b.order_line_id, b.discount_pct AS bronze_discount,
+       s.discount_pct AS silver_discount, s.net_amount
+FROM bronze_sales b
+JOIN silver_sales s ON s.order_id = b.order_id AND s.order_line_id = b.order_line_id
+WHERE b.discount_pct &gt; 1 LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>bronze_discount</th><th>silver_discount</th><th>net_amount</th></tr></thead><tbody><tr><td>21</td><td>1</td><td>25.0</td><td>0.25</td><td>1786.01</td></tr><tr><td>22</td><td>1</td><td>25.0</td><td>0.25</td><td>905.51</td></tr><tr><td>71</td><td>1</td><td>25.0</td><td>0.25</td><td>1357.23</td></tr><tr><td>145</td><td>2</td><td>25.0</td><td>0.25</td><td>152.71</td></tr><tr><td>183</td><td>2</td><td>15.0</td><td>0.15</td><td>1279.74</td></tr></tbody></table></div>
+<h2 id="verification-commands-actually-run">Verification commands actually run</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash"># environment had no pip on system Python 3.14; bootstrapped via apt:
+sudo apt-get install -y python3-pip python3.14-venv
+python3 -m venv .venv-build
+.venv-build/bin/pip install -r project/requirements.txt
+.venv-build/bin/python -c &quot;import faker; print(faker.VERSION)&quot;   # -&gt; 40.36.0
+
+<p>.venv-build/bin/python project/build.py                          # clean run, prints summary, &quot;ALL HARD CHECKS PASSED&quot;
+sqlite3 project/oakhaven.db &quot;.tables&quot;                             # 18 tables/views listed
+<h1 id="-joined-fact_sales-to-each-dim-counted-orphansnulls-see-below-spot-checked">... joined fact_sales to each dim, counted orphans/nulls (see below), spot-checked</h1>
+<h1 id="bronzesilvergold-rows-by-eye">bronze/silver/gold rows by eye</h1></p>
+
+<h1 id="determinism-check-build-twice-diff-the-full-dump">determinism check: build twice, diff the full dump</h1>
+.venv-build/bin/python project/build.py
+sqlite3 project/oakhaven.db &quot;.dump&quot; &gt; /tmp/dump_run1.sql
+.venv-build/bin/python project/build.py
+sqlite3 project/oakhaven.db &quot;.dump&quot; &gt; /tmp/dump_run2.sql
+diff /tmp/dump_run1.sql /tmp/dump_run2.sql   # -&gt; no output; files identical</code></pre></div>
+
+<p><code class="inline-code">fact_sales</code> join-integrity check (confirms every non-orphan row
+resolves against its dimension, and orphan/NULL counts match exactly):</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody><tr><td><code class="inline-code">fact_sales</code> rows</td><td>12000</td></tr><tr><td><code class="inline-code">fact_sales JOIN dim_customer</code> matches</td><td>11897 (= 12000 − 103 orphans)</td></tr><tr><td><code class="inline-code">fact_sales JOIN dim_product</code> matches</td><td>11878 (= 12000 − 122 orphans)</td></tr><tr><td><code class="inline-code">fact_sales JOIN dim_employee</code> matches</td><td>10757 (= 12000 − 1243 NULL employee_id)</td></tr><tr><td><code class="inline-code">fact_sales JOIN dim_date</code> matches</td><td>11942 (= 12000 − 58 NULL datekey)</td></tr></tbody></table></div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>9. Correlated Subqueries, EXISTS, and NOT EXISTS | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="9-correlated-subqueries-exists-and-not-exists">9. Correlated Subqueries, EXISTS, and NOT EXISTS</h1>
+
+<nav class="book-nav">Previous: <a href="08-writing-your-first-silver-view.html" class="nav-btn">8. Writing Your First Silver View</a>. Next: <a href="10-combining-ctes-and-window-functions.html" class="nav-btn">10. Capstone — Combining CTEs and Window Functions</a>. Exercises: <a href="../../exercises/03-advanced/09-correlated-subqueries-exists.html" class="nav-btn">9. Correlated Subqueries, EXISTS, and NOT EXISTS</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>A subquery is <strong>correlated</strong> when it references a column from the outer
+query — meaning it can't be run on its own, because its result depends on
+whatever outer row is currently being evaluated. Conceptually, a
+correlated subquery runs once <em>per outer row</em>, each time filtered down to
+just that row's context.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.product_id, p.product_name, p.category, p.unit_price
+FROM dim_product p
+WHERE p.unit_price &gt; (
+    SELECT AVG(p2.unit_price) FROM dim_product p2 WHERE p2.category = p.category
+);</code></pre></div>
+
+<p>That inner <code class="inline-code">SELECT</code> can't run by itself — <code class="inline-code">p.category</code> only means
+something in the context of the current outer row <code class="inline-code">p</code>. Compare this to an
+<strong>uncorrelated</strong> subquery (every subquery you've used so far in this
+course, including all of Module 1's CTEs): those compute one fixed result,
+independent of any outer row, and can be run standalone to sanity-check
+them.</p>
+
+<p><code class="inline-code">EXISTS</code> and <code class="inline-code">NOT EXISTS</code> are the most common correlated-subquery pattern:
+testing whether <em>any</em> matching row exists in a related table, without
+caring what that row's values actually are.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT ... FROM outer_table o
+WHERE [NOT] EXISTS (
+    SELECT 1 FROM inner_table i WHERE i.key = o.key [AND ...]
+);</code></pre></div>
+
+<p><code class="inline-code">SELECT 1</code> (or <code class="inline-code">SELECT *</code>) inside an <code class="inline-code">EXISTS</code> is conventional — the actual
+selected value is irrelevant, because <code class="inline-code">EXISTS</code> only asks "does at least
+one row match?", not "what are the matching rows?" SQLite stops scanning
+as soon as it finds one match, so this pattern is also efficient: it
+doesn't have to enumerate every match, just find whether one exists.</p>
+
+<h2 id="example-1-products-priced-above-their-own-categorys-average">Example 1: products priced above their own category's average</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.product_id, p.product_name, p.category, p.unit_price
+FROM dim_product p
+WHERE p.unit_price &gt; (
+    SELECT AVG(p2.unit_price) FROM dim_product p2 WHERE p2.category = p.category
+)
+ORDER BY p.category, p.unit_price DESC
+LIMIT 6;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>product_name</th><th>category</th><th>unit_price</th></tr></thead><tbody><tr><td>11</td><td>Switchback Hat</td><td>Accessories</td><td>525.42</td></tr><tr><td>72</td><td>Switchback Multi-Tools</td><td>Accessories</td><td>505.09</td></tr><tr><td>7</td><td>Granite Sunglasse</td><td>Accessories</td><td>490.08</td></tr><tr><td>93</td><td>Basecamp Multi-Tool</td><td>Accessories</td><td>415.92</td></tr><tr><td>83</td><td>Granite Sunglasses</td><td>Accessories</td><td>373.98</td></tr><tr><td>123</td><td>Switchback Headlamps</td><td>Accessories</td><td>370.95</td></tr></tbody></table></div>
+For every outer row (each product `p`), the correlated subquery computes
+`AVG(unit_price)` scoped to just that product's own category — a different
+number for `Accessories` than for `Climbing`. This is genuinely different
+from what a CTE + join would need: there's no single "category averages"
+table being joined here, just a per-row lookup.
+
+<h2 id="example-2-exists-for-has-at-least-one-related-row">Example 2: EXISTS for "has at least one related row"</h2>
+
+<p><em>Question: which customers have never placed an Online order?</em> — note
+"never Online" is different from "always In-Store"; a customer could have
+zero orders of any kind, or a mix that just happens to exclude Online.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT c.customer_id, c.full_name
+FROM dim_customer c
+WHERE EXISTS (SELECT 1 FROM fact_sales f WHERE f.customer_id = c.customer_id)
+  AND NOT EXISTS (
+      SELECT 1 FROM fact_sales f WHERE f.customer_id = c.customer_id AND f.channel = &#x27;Online&#x27;
+  )
+ORDER BY c.customer_id;</code></pre></div>
+
+<p>Verified output — out of 600 customers, only <strong>2</strong> have ordered before but
+never Online:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>full_name</th></tr></thead><tbody><tr><td>481</td><td>Kristi Hayes</td></tr><tr><td>580</td><td>Bradley Davis</td></tr></tbody></table></div>
+The first `EXISTS` filters to customers who've ordered *at all* (excluding
+never-ordered customers from a "never ordered Online" answer, which would
+be misleading — they haven't ordered any way, not specifically avoided
+Online). The `NOT EXISTS` then does the actual exclusion.
+
+<h2 id="example-3-existsnot-exists-vs-innot-in--and-the-null-trap">Example 3: EXISTS/NOT EXISTS vs IN/NOT IN — and the NULL trap</h2>
+
+<p>For simple "is this value in this list" checks, <code class="inline-code">IN</code> and <code class="inline-code">EXISTS</code> usually
+produce identical results and SQLite's query planner often optimizes them
+identically. But <code class="inline-code">NOT IN</code> has a sharp, well-known edge case that
+<code class="inline-code">NOT EXISTS</code> doesn't share: <strong>if the subquery's result list contains even
+one <code class="inline-code">NULL</code>, <code class="inline-code">NOT IN</code> silently returns zero rows for everything</strong> — not an
+error, just quietly wrong.</p>
+
+<p>Minimal reproduction, isolated from Oakhaven's scale so the mechanism is
+easy to see:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH ids(id) AS (VALUES (1), (2), (3)),
+     excluded(id) AS (VALUES (2), (NULL))
+SELECT id FROM ids WHERE id NOT IN (SELECT id FROM excluded);</code></pre></div>
+
+<p>Verified output: <strong>zero rows.</strong> The correct answer is obviously <code class="inline-code">{1, 3}</code>
+(2 is excluded, 1 and 3 aren't) — but SQL's three-valued logic means <code class="inline-code">1
+NOT IN (2, NULL)</code> evaluates to <code class="inline-code">UNKNOWN</code>, not <code class="inline-code">TRUE</code>, because SQL can't
+prove 1 doesn't equal the unknown <code class="inline-code">NULL</code> value. <code class="inline-code">UNKNOWN</code> doesn't pass a
+<code class="inline-code">WHERE</code> filter, so every row is silently dropped.</p>
+
+<p>The <code class="inline-code">NOT EXISTS</code> equivalent doesn't have this problem, because it never
+compares against <code class="inline-code">NULL</code> as a value — it just checks row existence:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH ids(id) AS (VALUES (1), (2), (3)),
+     excluded(id) AS (VALUES (2), (NULL))
+SELECT id FROM ids i WHERE NOT EXISTS (SELECT 1 FROM excluded e WHERE e.id = i.id);</code></pre></div>
+
+<p>Verified output: <code class="inline-code">{1, 3}</code> — correct.</p>
+
+<p>This isn't a purely academic risk in Oakhaven. <code class="inline-code">fact_sales.employee_id</code> is
+<code class="inline-code">NULL</code> for 1,243 rows (~10.4% — online/no-rep sales, per the data
+dictionary). Every one of Oakhaven's 35 employees happens to have at least
+one sale, so a query like <code class="inline-code">SELECT <em> FROM dim_employee e WHERE e.employee_id
+NOT IN (SELECT employee_id FROM fact_sales)</code> currently returns 0 rows — the
+</em>correct* answer, coincidentally. But that query is a latent bug: if
+Oakhaven ever added employee #36 with zero sales, <code class="inline-code">NOT IN</code> against a
+column with NULLs in it would <strong>still</strong> silently report 0 rows — the new
+employee would be invisible to this exact query, not because they made a
+sale, but because the NULL-poisoned list makes <code class="inline-code">NOT IN</code> always return
+false. <code class="inline-code">NOT EXISTS</code> (or <code class="inline-code">NOT IN (... WHERE employee_id IS NOT NULL)</code>, which
+explicitly filters the poison out) would report it correctly.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li>**Reaching for <code class="inline-code">NOT IN</code> against any column/subquery that might contain</li></ul>  `NULL`s, without checking first.** This is the single most common
+  correlated-subquery-adjacent SQL bug in production code — it doesn't
+  error, it just quietly returns wrong (often empty) results. Default to
+  `NOT EXISTS` for "not in this list" checks unless you're certain the
+  subquery's column is `NOT NULL`.
+<ul class="styled-list"><li>**Writing a correlated subquery that could be an uncorrelated CTE</li></ul>  instead.** If the "per-row" computation is really just "per-group" (like
+  Example 1's category averages), a CTE that computes it once per group
+  and joins is often clearer — and sometimes faster, since a correlated
+  subquery conceptually re-evaluates per outer row. Reach for the
+  correlated form when the comparison genuinely can't be pre-computed
+  per-group (e.g. Example 2's "no matching row of any kind" existence
+  checks).
+<ul class="styled-list"><li>*<em>Using <code class="inline-code">SELECT </em></code> inside <code class="inline-code">EXISTS</code> and thinking it matters which columns</li></ul>  come back.** It doesn't — `EXISTS` only cares about row presence. Use
+  `SELECT 1` as the idiomatic convention; it signals "the columns are
+  irrelevant" to anyone reading the query.
+<ul class="styled-list"><li><strong>Forgetting the correlation condition entirely</strong>, accidentally writing</li></ul>  an uncorrelated subquery when a correlated one was intended (e.g.
+  omitting `WHERE f.customer_id = c.customer_id`), which silently changes
+  "does *this* customer have an order" into "does *any* customer have an
+  order."
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>A correlated subquery references a column from its outer query, so it</li></ul>  conceptually re-evaluates per outer row — unlike the uncorrelated
+  subqueries/CTEs used everywhere earlier in this course.
+<ul class="styled-list"><li><code class="inline-code">EXISTS</code>/<code class="inline-code">NOT EXISTS</code> test row <em>presence</em>, not values — <code class="inline-code">SELECT 1</code> is</li></ul>  the idiomatic placeholder inside them.
+<ul class="styled-list"><li><code class="inline-code">NOT IN</code> silently returns zero rows for everything if its subquery's</li></ul>  result list contains a `NULL` — a real risk in Oakhaven wherever a
+  column like `fact_sales.employee_id` (1,243 NULLs) is used as the source
+  list. `NOT EXISTS` doesn't have this failure mode.
+<ul class="styled-list"><li>When in doubt between <code class="inline-code">IN</code>/<code class="inline-code">NOT IN</code> and <code class="inline-code">EXISTS</code>/<code class="inline-code">NOT EXISTS</code>: <code class="inline-code">EXISTS</code></li></ul>  family is safer by default, especially for `NOT` forms.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="08-writing-your-first-silver-view.html" class="nav-btn">8. Writing Your First Silver View</a>. Next: <a href="10-combining-ctes-and-window-functions.html" class="nav-btn">10. Capstone — Combining CTEs and Window Functions</a>. Exercises: <a href="../../exercises/03-advanced/09-correlated-subqueries-exists.html" class="nav-btn">9. Correlated Subqueries, EXISTS, and NOT EXISTS</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

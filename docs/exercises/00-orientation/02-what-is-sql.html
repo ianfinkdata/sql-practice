@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: What Is SQL? | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-what-is-sql">Exercises: What Is SQL?</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/00-orientation/02-what-is-sql.html" class="nav-btn">2. What Is SQL?</a>. Previous: <a href="01-what-is-a-database.html" class="nav-btn">1. What Is a Database?</a>. Next: <a href="03-tools-and-setup.html" class="nav-btn">3. Tools and Setup</a>.</nav>
+
+<p>Still no SQL to run — these are quick checks on the DDL/DML/DQL
+vocabulary and where this course puts its weight.</p>
+
+<h3 id="1-classify-the-statement">1. Classify the statement</h3>
+
+<p>For each of the following, say whether it's DDL, DML, or DQL:</p>
+
+<p>1. <code class="inline-code">SELECT * FROM bronze_products;</code>
+2. <code class="inline-code">CREATE TABLE bronze_customers (...);</code>
+3. <code class="inline-code">DELETE FROM bronze_sales WHERE order_id = 42;</code>
+4. <code class="inline-code">ALTER TABLE bronze_products ADD COLUMN warranty_months INTEGER;</code>
+5. <code class="inline-code">INSERT INTO bronze_employees (...) VALUES (...);</code></p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>1. DQL — asks a question, changes nothing.
+2. DDL — defines a table's structure.
+3. DML — modifies data inside a table (removes rows).
+4. DDL — changes a table's structure (adds a column).
+5. DML — modifies data inside a table (adds a row).</p>
+
+<p></details></p>
+
+<h3 id="2-wheres-the-weight">2. Where's the weight?</h3>
+
+<p>If roughly 90%+ of real-world SQL work is one of DDL, DML, or DQL,
+which one is it, and why does that match how this course is
+structured?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>DQL — <code class="inline-code">SELECT</code> — is where the vast majority of practical SQL work
+happens, because most of the time the data already exists (created by
+some application, import job, or in Oakhaven's case a build script)
+and the job is to <em>ask questions of it</em>: filter, sort, summarize, join,
+clean up. That's why this course spends nearly all its time on
+<code class="inline-code">SELECT</code> and treats <code class="inline-code">oakhaven.db</code> as read-only throughout.</p>
+
+<p></details></p>
+
+<h3 id="3-read-only-on-purpose">3. Read-only, on purpose</h3>
+
+<p>This course's practice database is meant to be queried, not written
+to. Why might that matter specifically for a <em>shared</em> database file
+that many learners (or, in this repo's case, several automated
+processes) might be using at the same time?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>If everyone queries with <code class="inline-code">SELECT</code> only, many people/processes can read
+the same file safely and simultaneously — reads don't conflict with
+each other. But writes (<code class="inline-code">INSERT</code>/<code class="inline-code">UPDATE</code>/<code class="inline-code">DELETE</code>, or <code class="inline-code">CREATE</code>/<code class="inline-code">DROP</code>)
+change the underlying file; if two things tried to write to the same
+SQLite file at the same time, or one person's write ran while another
+was still reading it, you could get locking errors or, worse, corrupt
+the file for everyone. Treating the shared database as read-only
+avoids that entirely.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/00-orientation/02-what-is-sql.html" class="nav-btn">2. What Is SQL?</a>. Previous: <a href="01-what-is-a-database.html" class="nav-btn">1. What Is a Database?</a>. Next: <a href="03-tools-and-setup.html" class="nav-btn">3. Tools and Setup</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

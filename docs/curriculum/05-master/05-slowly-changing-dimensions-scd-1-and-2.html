@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5. Slowly Changing Dimensions: Type 1 and Type 2 | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="5-slowly-changing-dimensions-type-1-and-type-2">5. Slowly Changing Dimensions: Type 1 and Type 2</h1>
+
+<nav class="book-nav">Previous: <a href="04-designing-a-dimension.html" class="nav-btn">4. Designing a Dimension</a>. Next: <a href="06-designing-the-date-dimension.html" class="nav-btn">6. Designing the Date Dimension</a>. Exercises: <a href="../../exercises/05-master/05-slowly-changing-dimensions-scd-1-and-2.html" class="nav-btn">5. Slowly Changing Dimensions: Type 1 and Type 2</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Dimensions don't stay still. A customer moves states. A product gets
+re-categorized. An employee changes department, gets promoted, or
+leaves the company. The question a <strong>Slowly Changing Dimension (SCD)</strong>
+strategy answers is: <em>when a dimension row's attribute changes, what
+happens to the history?</em></p>
+
+<p>There are two dominant strategies, and picking between them is a real
+business decision, not a technical one:</p>
+
+<p><strong>Type 1 — overwrite.</strong> The dimension row is updated in place. The old
+value is simply gone. If you re-run the query tomorrow, you'll never
+know what the value used to be. This is the <em>default</em> behavior of any
+dimension built as a plain <code class="inline-code">SELECT</code> over current source data — which
+is exactly what all of Oakhaven's <code class="inline-code">dim_<em></code> views currently do. Ask
+<code class="inline-code">dim_employee</code> for an employee's department, and you get whatever
+their </em>current* department is, with no way to recover what it was a
+year ago through that view.</p>
+
+<p><strong>Type 2 — historize.</strong> Instead of overwriting, you <em>add a new row</em>
+each time a tracked attribute changes, and keep the old row intact.
+Each version of the dimension row gets an <code class="inline-code">effective_date</code>, an
+<code class="inline-code">expiry_date</code> (or <code class="inline-code">NULL</code>/a far-future sentinel for the current
+version), and usually an <code class="inline-code">is_current</code> flag. A fact table can then join
+to the dimension row that was valid <em>at the time the fact happened</em>,
+not just whatever's current today. This is strictly more powerful than
+Type 1, at the cost of a bigger dimension table and more complex joins
+(and it requires a surrogate key — module 2 — since the natural key,
+like <code class="inline-code">employee_id</code>, now maps to <em>multiple</em> rows).</p>
+
+<p>Type 1 is the right choice when history genuinely doesn't matter (a
+corrected typo in a customer's phone number). Type 2 is the right
+choice when history is the point (was this employee actually employed
+here when this sale happened?).</p>
+
+<h2 id="the-real-data-hook-bronze_employeeshire_date--termination_date">The real data hook: <code class="inline-code">bronze_employees.hire_date</code> / <code class="inline-code">termination_date</code></h2>
+
+<p>Oakhaven doesn't have a dataset that tracks department changes over
+time — <code class="inline-code">bronze_employees</code> only stores each employee's <em>current</em>
+department, one value, no history. So you can't actually reconstruct
+"Alexandria Cunningham was in Sales before she was in Management" from
+this data; that's a real limitation worth stating plainly rather than
+faking.</p>
+
+<p>What Oakhaven <em>does</em> have, natively, is a genuinely Type-2-shaped
+attribute: <strong>employment status</strong>. <code class="inline-code">hire_date</code> is an effective start
+date, and <code class="inline-code">termination_date</code> is an effective end date (<code class="inline-code">NULL</code> meaning
+"still current as of the snapshot date"). This isn't a hypothetical —
+it's real data with a real effective/expiry structure already baked
+in.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total_employees,
+       SUM(CASE WHEN termination_date IS NOT NULL THEN 1 ELSE 0 END) AS terminated,
+       ROUND(100.0 * SUM(CASE WHEN termination_date IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*), 1) AS pct_terminated
+FROM dim_employee;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_employees</th><th>terminated</th><th>pct_terminated</th></tr></thead><tbody><tr><td>35</td><td>8</td><td>22.9</td></tr></tbody></table></div>
+8 of Oakhaven's 35 employees (22.9%) have a populated
+`termination_date` in this build. (`project/docs/data_dictionary.md`
+describes the generation target as "~15%" — the actual count realized
+by this specific random seed is 8/35, and that's the number to cite,
+not the design target.)
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT employee_id, full_name, department, region, hire_date, termination_date
+FROM dim_employee
+WHERE termination_date IS NOT NULL
+ORDER BY employee_id
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>full_name</th><th>department</th><th>region</th><th>hire_date</th><th>termination_date</th></tr></thead><tbody><tr><td>3</td><td>Alexandria Cunningham</td><td>Management</td><td>East</td><td>2018-12-07</td><td>2021-05-01</td></tr><tr><td>6</td><td>Christy Lee</td><td>Sales</td><td>West</td><td>2021-10-04</td><td>2024-01-09</td></tr><tr><td>8</td><td>Wendy Scott</td><td>Sales</td><td>East</td><td>2021-02-11</td><td>2023-03-15</td></tr><tr><td>12</td><td>Elaine Jones</td><td>Warehouse</td><td>East</td><td>2022-07-07</td><td>2025-03-18</td></tr><tr><td>23</td><td>Nicholas Campos</td><td>Management</td><td>West</td><td>2024-10-19</td><td>2025-04-10</td></tr></tbody></table></div>
+<h2 id="shaping-an-scd-type-2-view-of-employment-status-conceptual-verified--not-persisted">Shaping an SCD Type 2 view of employment status (conceptual, verified — not persisted)</h2>
+
+<p>This is a <code class="inline-code">SELECT</code> that reshapes <code class="inline-code">dim_employee</code> into the standard SCD
+Type 2 column vocabulary (<code class="inline-code">effective_date</code>, <code class="inline-code">expiry_date</code>,
+<code class="inline-code">is_current</code>). It's a demonstration of the pattern, run directly
+against the real view, not a new gold object added to <code class="inline-code">project/gold/</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    employee_id,
+    full_name,
+    department,
+    region,
+    hire_date  AS effective_date,
+    COALESCE(termination_date, &#x27;9999-12-31&#x27;) AS expiry_date,
+    CASE WHEN termination_date IS NULL THEN 1 ELSE 0 END AS is_current
+FROM dim_employee
+ORDER BY employee_id
+LIMIT 6;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>full_name</th><th>department</th><th>region</th><th>effective_date</th><th>expiry_date</th><th>is_current</th></tr></thead><tbody><tr><td>1</td><td>Alexa Garcia</td><td>Management</td><td>West</td><td>2024-04-09</td><td>9999-12-31</td><td>1</td></tr><tr><td>2</td><td>Sandra Thompson</td><td>Warehouse</td><td>Northeast</td><td>2018-05-25</td><td>9999-12-31</td><td>1</td></tr><tr><td>3</td><td>Alexandria Cunningham</td><td>Management</td><td>East</td><td>2018-12-07</td><td>2021-05-01</td><td>0</td></tr><tr><td>4</td><td>Laura Williams</td><td>Support</td><td>East</td><td>2020-05-28</td><td>9999-12-31</td><td>1</td></tr><tr><td>5</td><td>Stephanie Reid</td><td>Warehouse</td><td>Central</td><td>2023-08-10</td><td>9999-12-31</td><td>1</td></tr><tr><td>6</td><td>Christy Lee</td><td>Sales</td><td>West</td><td>2021-10-04</td><td>2024-01-09</td><td>0</td></tr></tbody></table></div>
+`9999-12-31` is a common SCD Type 2 convention: a far-future sentinel
+expiry date for the currently-active version, which makes "is this row
+valid as of date X" a single uniform range check
+(`effective_date <= X AND X < expiry_date`) instead of needing special
+`NULL`-handling logic at query time.
+
+<h2 id="why-point-in-time-matters-what-a-naive-join-gets-wrong">Why point-in-time matters: what a naive join gets wrong</h2>
+
+<p>Here's the payoff for thinking in Type 2 terms, even without a fully
+built Type 2 dimension: it tells you when a <em>current-state</em> join is
+misleading you. <code class="inline-code">fact_sales.employee_id</code> records which employee is
+credited with a sale — but nothing about how <code class="inline-code">fact_sales</code> was built
+checks whether that employee was actually employed on <code class="inline-code">order_date</code>.
+Check directly:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT f.order_id, f.order_date, f.employee_id, e.full_name, e.termination_date
+FROM fact_sales f
+JOIN dim_employee e ON f.employee_id = e.employee_id
+WHERE e.termination_date IS NOT NULL
+  AND f.order_date IS NOT NULL
+  AND f.order_date &gt; e.termination_date
+ORDER BY f.order_date
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_date</th><th>employee_id</th><th>full_name</th><th>termination_date</th></tr></thead><tbody><tr><td>2228</td><td>2021-01-16</td><td>27</td><td>Jack Cross</td><td>2020-09-22</td></tr><tr><td>2228</td><td>2021-01-16</td><td>27</td><td>Jack Cross</td><td>2020-09-22</td></tr><tr><td>5503</td><td>2021-01-22</td><td>27</td><td>Jack Cross</td><td>2020-09-22</td></tr><tr><td>312</td><td>2021-01-31</td><td>27</td><td>Jack Cross</td><td>2020-09-22</td></tr><tr><td>312</td><td>2021-01-31</td><td>27</td><td>Jack Cross</td><td>2020-09-22</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS orders_after_termination
+FROM fact_sales f
+JOIN dim_employee e ON f.employee_id = e.employee_id
+WHERE e.termination_date IS NOT NULL
+  AND f.order_date IS NOT NULL
+  AND f.order_date &gt; e.termination_date;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>orders_after_termination</th></tr></thead><tbody><tr><td>1214</td></tr></tbody></table></div>
+1,214 order lines in `fact_sales` are attributed to an employee whose
+`termination_date` (in the *current* dimension) is earlier than the
+order's date. This isn't a documented, intentional data-quality flag
+like `is_customer_orphan` — it's just what falls out of `employee_id`
+being assigned to orders with no temporal correlation to hire/term
+dates, which is itself realistic (plenty of real OLTP systems don't
+enforce that kind of cross-table consistency either). The teaching
+point is what it demonstrates: a plain `fact JOIN dim_employee ON
+employee_id` always shows you the employee's **current** record,
+regardless of whether that record was even valid on the date the fact
+occurred. A true SCD Type 2 `dim_employee`, joined on a
+`BETWEEN effective_date AND expiry_date` condition against
+`order_date` instead of a bare `employee_id` equality join, is what
+protects you from this exact class of mistake.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Calling something "Type 2" when it still just overwrites.</strong> Adding</li></ul>  an `effective_date` column to a table that still gets updated in
+  place isn't Type 2 — the old row must be preserved, not touched.
+<ul class="styled-list"><li>**Forgetting to point historical facts at the version valid at the</li></ul>  time.** Joining a fact table to "whichever dimension row currently
+  has this natural key" instead of "whichever dimension row was valid
+  on this fact's date" silently reintroduces Type 1 behavior even on
+  top of a properly built Type 2 table.
+<ul class="styled-list"><li>**Using <code class="inline-code">NULL</code> for "currently active" expiry dates and forgetting to</li></ul>  handle it.** A range check like `effective_date <= X AND X <
+  expiry_date` silently fails for `NULL` expiry in most SQL engines
+  (`X < NULL` is never true) — either use a sentinel far-future date or
+  explicitly `OR expiry_date IS NULL` everywhere.
+<ul class="styled-list"><li>**Building a Type 2 dimension for an attribute you don't have change</li></ul>  history for.** You cannot retroactively reconstruct department
+  history for Oakhaven's employees — the source data only ever
+  recorded the current value. Type 2 requires either a system that
+  already captures changes, or an audit/event log to build it from.
+  Don't invent history a dataset doesn't have.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><strong>Type 1</strong> overwrites in place — no history. It's what every</li></ul>  `dim_*` view in Oakhaven's gold layer currently does implicitly,
+  since each is a plain `SELECT` over the current source state.
+<ul class="styled-list"><li><strong>Type 2</strong> preserves history via new rows per change, tracked with</li></ul>  `effective_date` / `expiry_date` / `is_current`, and requires a
+  surrogate key because the natural key now maps to multiple rows.
+<ul class="styled-list"><li><code class="inline-code">bronze_employees.hire_date</code> / <code class="inline-code">termination_date</code> is real,</li></ul>  already-Type-2-shaped data for the "employment status" attribute — 8
+  of 35 employees (22.9%) have a populated `termination_date` in this
+  build.
+<ul class="styled-list"><li>A naive <code class="inline-code">fact JOIN dim_employee</code> shows the employee's <em>current</em></li></ul>  state regardless of whether it was valid at the fact's date — proven
+  by 1,214 order lines in Oakhaven attributed to employees whose
+  current record shows a termination date before the order.
+<ul class="styled-list"><li>You can't fabricate Type 2 history for attributes your source system</li></ul>  never tracked changes for (like department) — be honest about what
+  a dataset can and can't support.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="04-designing-a-dimension.html" class="nav-btn">4. Designing a Dimension</a>. Next: <a href="06-designing-the-date-dimension.html" class="nav-btn">6. Designing the Date Dimension</a>. Exercises: <a href="../../exercises/05-master/05-slowly-changing-dimensions-scd-1-and-2.html" class="nav-btn">5. Slowly Changing Dimensions: Type 1 and Type 2</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

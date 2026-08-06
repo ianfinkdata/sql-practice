@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>8. Star vs. Snowflake Schema | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="8-star-vs-snowflake-schema">8. Star vs. Snowflake Schema</h1>
+
+<nav class="book-nav">Previous: <a href="07-designing-the-fact-table.html" class="nav-btn">7. Designing the Fact Table</a>. Next: <a href="09-medallion-pipeline-recap.html" class="nav-btn">9. The Medallion Pipeline, Start to Finish</a>. Exercises: <a href="../../exercises/05-master/08-star-vs-snowflake-schema.html" class="nav-btn">8. Star vs. Snowflake Schema</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Once you have a fact table with foreign keys to several dimensions,
+you face a design choice for <em>those dimensions themselves</em>: keep each
+one flat and denormalized (a <strong>star schema</strong> — fact in the middle,
+dimensions radiating out one join away, like points on a star), or
+break shared attributes out into their own sub-tables and link them
+with further foreign keys (a <strong>snowflake schema</strong> — dimensions that
+themselves branch into smaller dimensions, several joins deep).</p>
+
+<p>Oakhaven's gold layer is a star. <code class="inline-code">dim_product</code> stores <code class="inline-code">category</code>,
+<code class="inline-code">subcategory</code>, and <code class="inline-code">brand</code> as plain text columns sitting directly on
+the product row — not as foreign keys into separate <code class="inline-code">dim_category</code>,
+<code class="inline-code">dim_subcategory</code>, and <code class="inline-code">dim_brand</code> tables. This module explains why
+that's the right call here, what a snowflaked version would look like,
+and the (narrower) cases where snowflaking earns its keep.</p>
+
+<h2 id="star-one-hop-denormalized-and-repetitive-on-purpose">Star: one hop, denormalized, and repetitive on purpose</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, product_name, category, subcategory, brand, unit_price
+FROM dim_product
+LIMIT 5;</code></pre></div>
+
+<p>Every one of the 150 rows in <code class="inline-code">dim_product</code> carries its own copy of
+<code class="inline-code">category</code>, <code class="inline-code">subcategory</code>, and <code class="inline-code">brand</code> as literal text — "Climbing"
+appears on every climbing product's row, over and over. In a normalized
+OLTP schema that repetition would be a design flaw (Tier 5 module 1
+covered exactly why: update anomalies, wasted storage). In a star
+schema it's the point: any query that wants product attributes gets
+them with <strong>one join</strong>, full stop.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.category, COUNT(*) AS lines, ROUND(SUM(f.net_amount), 2) AS net_amount
+FROM fact_sales f
+JOIN dim_product p ON p.product_id = f.product_id
+GROUP BY p.category
+ORDER BY net_amount DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>lines</th><th>net_amount</th></tr></thead><tbody><tr><td>Climbing</td><td>1858</td><td>1389650.95</td></tr><tr><td>Winter Sports</td><td>1834</td><td>1249691.54</td></tr><tr><td>Apparel</td><td>1556</td><td>1237729.99</td></tr><tr><td>Nutrition & Hydration</td><td>1548</td><td>1164289.69</td></tr><tr><td>Footwear</td><td>1402</td><td>1077941.52</td></tr><tr><td>Accessories</td><td>1543</td><td>938846.45</td></tr><tr><td>Camping & Hiking</td><td>1277</td><td>911945.48</td></tr><tr><td>Water Sports</td><td>860</td><td>722662.14</td></tr></tbody></table></div>
+Category rollup, `fact_sales JOIN dim_product`, one hop. Want it by
+brand instead?
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.brand, COUNT(*) AS lines, ROUND(SUM(f.net_amount), 2) AS net_amount
+FROM fact_sales f
+JOIN dim_product p ON p.product_id = f.product_id
+GROUP BY p.brand
+ORDER BY net_amount DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>brand</th><th>lines</th><th>net_amount</th></tr></thead><tbody><tr><td>Foghorn Supply</td><td>644</td><td>633719.91</td></tr><tr><td>Tundraworks</td><td>568</td><td>514288.21</td></tr><tr><td>Ridgeway Co.</td><td>582</td><td>510918.96</td></tr><tr><td>Northfell</td><td>697</td><td>487175.42</td></tr><tr><td>Marrowpeak</td><td>674</td><td>434031.88</td></tr></tbody></table></div>
+Same shape, same single join — just group by a different flat column
+on the same dimension row. That's the whole appeal of a star schema:
+every one of `dim_product`'s attributes (category, subcategory, brand,
+`sku_is_duplicate`, `is_discontinued`, ...) is reachable from
+`fact_sales` in exactly one join, so an analyst — or a BI tool
+generating SQL automatically — never has to know or care how many
+sub-dimensions a "properly normalized" version might have split it
+into.
+
+<h2 id="what-snowflaking-this-would-look-like">What snowflaking this would look like</h2>
+
+<p>Cardinality check first, since it explains the trade-off:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS products, COUNT(DISTINCT category) AS categories,
+       COUNT(DISTINCT brand) AS brands, COUNT(DISTINCT subcategory) AS subcategories
+FROM dim_product;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>products</th><th>categories</th><th>brands</th><th>subcategories</th></tr></thead><tbody><tr><td>150</td><td>8</td><td>24</td><td>38</td></tr></tbody></table></div>
+A snowflaked design would pull `category` out into its own table —
+`dim_category(category_id, category_name)`, 8 rows — and similarly for
+`brand` (24 rows) and `subcategory` (38 rows), with `dim_product`
+holding `category_id`/`brand_id`/`subcategory_id` foreign keys instead
+of the text values themselves (illustrative DDL, not something built
+in this repo's read-only database):
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- illustrative only — not created in Oakhaven&#x27;s database
+CREATE TABLE dim_category (category_id INTEGER PRIMARY KEY, category_name TEXT);
+CREATE TABLE dim_brand (brand_id INTEGER PRIMARY KEY, brand_name TEXT);
+CREATE TABLE dim_product_snowflaked (
+    product_id INTEGER PRIMARY KEY,
+    product_name TEXT,
+    category_id INTEGER REFERENCES dim_category(category_id),
+    brand_id INTEGER REFERENCES dim_brand(brand_id),
+    unit_price REAL
+);</code></pre></div>
+
+<p>Now the "net sales by category" query needs a second join:
+<code class="inline-code">fact_sales → dim_product_snowflaked → dim_category</code>. That's the
+snowflake trade explicitly: you save storage (the string <code class="inline-code">"Climbing"</code>
+is written once instead of 1,858 times across the fact join path) at
+the cost of one more join for <em>every single query</em> that wants a
+category name. For 8 distinct category strings sitting on 150 product
+rows, that storage savings is trivial — a few hundred bytes — and the
+extra join cost is paid by every analyst, every BI dashboard, every
+downstream query, forever. The star wins here by a wide margin.</p>
+
+<h2 id="when-snowflaking-actually-earns-its-keep">When snowflaking actually earns its keep</h2>
+
+<p>Snowflaking isn't wrong, it's situational. It tends to be justified
+when:
+<ul class="styled-list"><li><strong>A sub-dimension is large, independently maintained, and shared</li></ul>  across many fact tables.</strong> A full geography hierarchy
+  (country → state → city → postal code) with its own attributes
+  (population, timezone, tax rate) is a legitimate candidate for its
+  own table if a dozen different fact tables across the warehouse all
+  need to join to it consistently — you want one canonical geography
+  table, not that hierarchy re-flattened and copy-pasted into every
+  dimension that touches a location. This is the <em>conformed
+  dimension</em> idea from earlier in this tier applied at the
+  sub-dimension level.
+<ul class="styled-list"><li><strong>The sub-dimension changes on its own schedule and needs its own</li></ul>  history/versioning</strong> — e.g., a product category taxonomy that
+  Oakhaven's merchandising team revises quarterly, independent of when
+  individual products are added. Splitting it out lets you version the
+  taxonomy (SCD Type 2) without touching every product row.
+<ul class="styled-list"><li><strong>Storage genuinely matters and cardinality is high</strong> — a dimension</li></ul>  with millions of rows and a handful of very repetitive high-cardinality
+  text attributes can make normalizing those attributes out a real,
+  measurable win. This was a much stronger argument in the era of
+  expensive spinning disk than it is today.</p>
+
+<p>In modern columnar cloud warehouses (Snowflake, BigQuery, Databricks),
+storage is cheap and compressed columnar formats make repeated string
+values compress extremely well, while joins remain one of the more
+expensive operations a query planner does. That shifts the default
+firmly toward star schemas almost everywhere — Oakhaven's <code class="inline-code">dim_*</code>
+views are a realistic reflection of how gold layers are actually built
+in production, not a simplification for teaching purposes.</p>
+
+<h2 id="examples">Examples</h2>
+
+<h3 id="1-one-hop-reaches-every-dimension-attribute-at-once">1. One hop reaches every dimension attribute at once</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT f.order_id, p.category, p.brand, c.customer_segment, e.region
+FROM fact_sales f
+JOIN dim_product p ON p.product_id = f.product_id
+JOIN dim_customer c ON c.customer_id = f.customer_id
+JOIN dim_employee e ON e.employee_id = f.employee_id
+WHERE f.order_id = 13;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>category</th><th>brand</th><th>customer_segment</th><th>region</th></tr></thead><tbody><tr><td>13</td><td>Apparel</td><td>Crestline Outdoor</td><td>(NULL)</td><td>West</td></tr><tr><td>13</td><td>Climbing</td><td>Pinepack</td><td>(NULL)</td><td>West</td></tr><tr><td>13</td><td>Climbing</td><td>Elkstone</td><td>(NULL)</td><td>West</td></tr></tbody></table></div>
+(This customer's `customer_segment` happens to be NULL — one of the
+~3% of `bronze_customers` rows with a missing segment, passed straight
+through the star join same as any other attribute.) Three separate
+one-hop joins, each reaching a fully denormalized
+dimension row — no sub-joins needed to get category, segment, or
+region. This is the star schema's defining shape: fact in the middle,
+every dimension attribute exactly one join away, regardless of how
+many logical "categories of category" a normalized purist might
+imagine.
+
+<h3 id="2-cardinality-is-the-deciding-number">2. Cardinality is the deciding number</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT department) AS depts, COUNT(DISTINCT region) AS regions
+FROM dim_employee;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>depts</th><th>regions</th></tr></thead><tbody><tr><td>4</td><td>5</td></tr></tbody></table></div>
+4 departments and 5 regions sitting on 35 employee rows — splitting
+these into `dim_department`/`dim_region` tables would save essentially
+nothing and cost a join on every query that touches `dim_employee`.
+When you're deciding whether to snowflake an attribute, this is the
+first number to check: how many distinct values does it actually have,
+relative to the dimension's row count? Low cardinality relative to the
+dimension almost always means "leave it flat."
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Snowflaking out of habit from OLTP training.</strong> If your instinct</li></ul>  says "this string repeats, normalize it," remember you're in the
+  dimensional-modeling world now, where repetition inside a dimension
+  is an accepted, deliberate cost paid to keep queries at one join.
+<ul class="styled-list"><li>**Confusing "the fact table has many foreign keys" with</li></ul>  "snowflaked."** A star schema can have a dozen dimensions
+  radiating off one fact table — that's still a star. Snowflaking is
+  specifically about a *dimension* branching into further
+  sub-dimensions, not about how many dimensions a fact table has.
+<ul class="styled-list"><li><strong>Snowflaking a dimension that isn't shared or high-cardinality.</strong></li></ul>  If nothing else in the warehouse needs `dim_category` as its own
+  table, and it only has 8 distinct values, breaking it out just adds
+  a join with no corresponding benefit.
+<ul class="styled-list"><li><strong>Assuming snowflaking is never right.</strong> Shared conformed</li></ul>  sub-dimensions (geography, a versioned product taxonomy) are real,
+  legitimate reasons to snowflake — the mistake is doing it reflexively
+  rather than for one of those specific reasons.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>Star schema: dimensions are flat and denormalized, one join away</li></ul>  from the fact table. Snowflake schema: dimensions branch into
+  further normalized sub-dimensions, adding joins.
+<ul class="styled-list"><li>Oakhaven's <code class="inline-code">dim_product</code>, <code class="inline-code">dim_customer</code>, and <code class="inline-code">dim_employee</code> are all</li></ul>  stars — `category`/`brand`/`department`/`region` are plain text
+  columns, not foreign keys to sub-dimension tables — because their
+  attribute cardinality is low relative to the dimension itself.
+<ul class="styled-list"><li>The trade is storage/redundancy (star pays more) vs. join complexity</li></ul>  (snowflake pays more). Modern columnar warehouses make storage cheap
+  and joins comparatively expensive, which is why star is the default
+  in production gold layers, not just in this repo.
+<ul class="styled-list"><li>Snowflaking is justified when a sub-dimension is large, independently</li></ul>  versioned, and genuinely shared/conformed across multiple fact
+  tables — not just because a value repeats.
+<ul class="styled-list"><li>This is a reusable design heuristic: before normalizing an attribute</li></ul>  out of a dimension, check its cardinality relative to the dimension's
+  row count, and ask whether any other fact table in the warehouse
+  needs to share it.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="07-designing-the-fact-table.html" class="nav-btn">7. Designing the Fact Table</a>. Next: <a href="09-medallion-pipeline-recap.html" class="nav-btn">9. The Medallion Pipeline, Start to Finish</a>. Exercises: <a href="../../exercises/05-master/08-star-vs-snowflake-schema.html" class="nav-btn">8. Star vs. Snowflake Schema</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

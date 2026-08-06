@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tier 0 — Orientation | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="tier-0--orientation">Tier 0 — Orientation</h1>
+
+<div class="bluf-card"><div class="bluf-badge">⚡ BLUF (Bottom Line Up Front)</div><div class="bluf-body">Tier 0 introduces foundational database concepts without writing code, guides local setup for <code class="inline-code">oakhaven.db</code>, and outlines the Oakhaven retail database architecture.</div></div>
+
+<nav class="book-nav"><a href="../README.html" class="nav-btn">⏮️ Prev: Curriculum Overview</a> <a href="../../README.html" class="nav-btn">📖 Table of Contents</a> <a href="../01-beginner/README.html" class="nav-btn">⏭️ Next: Tier 1 Beginner</a></nav>
+
+<p>No SQL required yet. This tier gets you oriented: what a database is, what SQL is, how to get the practice database running on your machine, and a first look at Oakhaven — the fictional outdoor-gear retailer whose data you'll be querying for the rest of this course.</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Module</th><th>Topic</th></tr></thead><tbody><tr><td><a href="01-what-is-a-database.html">01</a></td><td>What is a database</td></tr><tr><td><a href="02-what-is-sql.html">02</a></td><td>What is SQL</td></tr><tr><td><a href="03-tools-and-setup.html">03</a></td><td>Tools and setup — opening <code class="inline-code">oakhaven.db</code> (and optionally generating it yourself)</td></tr><tr><td><a href="04-meet-oakhaven.html">04</a></td><td>Meet Oakhaven — the five bronze tables, and a first look at bronze/silver/gold</td></tr></tbody></table></div>
+Matching exercises: [`exercises/00-orientation/`](../../exercises/00-orientation/).
+
+<hr class="divider">
+
+<nav class="book-nav"><a href="../README.html" class="nav-btn">⏮️ Prev: Curriculum Overview</a> <a href="../../README.html" class="nav-btn">📖 Table of Contents</a> <a href="../01-beginner/README.html" class="nav-btn">⏭️ Next: Tier 1 Beginner</a></nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

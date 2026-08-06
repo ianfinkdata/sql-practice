@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Views | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-views">Exercises: Views</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/04-views.html" class="nav-btn">4. Views</a>. Previous: <a href="03-transactions.html" class="nav-btn">3. Transactions</a>. Next: <a href="05-indexes-and-explain-query-plan.html" class="nav-btn">5. Indexes and EXPLAIN QUERY PLAN</a>.</nav>
+
+<p>Exercises 1, 2, 4, and 5 are read-only (querying/reading <code class="inline-code">.sql</code> files
+against the shared <code class="inline-code">project/oakhaven.db</code>). Exercise 3 modifies data —
+use your own scratch copy for that one:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/my_scratch.db
+sqlite3 /tmp/my_scratch.db</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-confirm-silver_calendar-really-is-a-thin-pass-through">1. Confirm <code class="inline-code">silver_calendar</code> really is a thin pass-through</h3>
+
+<p>The lesson claims <code class="inline-code">silver_calendar</code> does almost nothing — just
+renames/passes through <code class="inline-code">bronze_calendar</code>. Verify this two ways: (a)
+compare row counts, (b) compare the first few rows of each.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_calendar;
+SELECT COUNT(*) FROM silver_calendar;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">7670
+7670</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM bronze_calendar LIMIT 3;
+SELECT * FROM silver_calendar LIMIT 3;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">20180101|2018-01-01
+20180102|2018-01-02
+20180103|2018-01-03
+
+<p>20180101|2018-01-01
+20180102|2018-01-02
+20180103|2018-01-03</code></pre></div></p>
+
+<p>Identical row counts and identical values — confirming
+<code class="inline-code">project/silver/silver_calendar.sql</code>'s own comment that it's "a thin
+pass-through view." All the interesting date-part logic (year, month,
+quarter, day names, weekend flag) lives one layer further downstream,
+in <code class="inline-code">gold/dim_date.sql</code>.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-dissect-silver_employeessql">2. Dissect <code class="inline-code">silver_employees.sql</code></h3>
+
+<p>Read <code class="inline-code">project/silver/silver_employees.sql</code>. Identify: (a) which raw
+column gets mapped through a <code class="inline-code">CASE</code> expression to normalize its
+casing, using the same pattern as <code class="inline-code">silver_products.category</code>, and (b)
+which two columns share <em>identical</em> date-parsing logic (down to the
+exact <code class="inline-code">CASE</code> branches) — copy-pasted rather than factored out. Why
+might that duplication be an acceptable trade-off in a SQLite view,
+given SQLite views can't call reusable user-defined functions without
+a custom build?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>(a) <code class="inline-code">department</code> and <code class="inline-code">region</code> are both mapped through <code class="inline-code">CASE</code>
+expressions against their lowercased/trimmed raw values, exactly like
+<code class="inline-code">silver_products.category</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CASE department_key
+    WHEN &#x27;sales&#x27; THEN &#x27;Sales&#x27;
+    WHEN &#x27;support&#x27; THEN &#x27;Support&#x27;
+    WHEN &#x27;warehouse&#x27; THEN &#x27;Warehouse&#x27;
+    WHEN &#x27;management&#x27; THEN &#x27;Management&#x27;
+    ELSE NULL
+END AS department,</code></pre></div>
+
+<p>(b) <code class="inline-code">hire_date</code> and <code class="inline-code">termination_date</code> share identical three-format
+date-parsing <code class="inline-code">CASE</code> logic (<code class="inline-code">MM/DD/YYYY</code>, <code class="inline-code">YYYY-MM-DD HH:MM:SS</code>,
+<code class="inline-code">YYYY-MM-DD</code>) — the exact same pattern also appears independently in
+<code class="inline-code">silver_customers.signup_date</code> and <code class="inline-code">silver_sales.order_date</code>/
+<code class="inline-code">ship_date</code>.</p>
+
+<p>Why it's an acceptable trade-off: SQL views (in standard SQLite,
+without loading a custom extension) have no equivalent of a reusable
+function you can define once and call from multiple views — every
+view's <code class="inline-code">SELECT</code> has to be fully self-contained. The alternative to
+duplicating a handful of <code class="inline-code">CASE</code>/<code class="inline-code">LIKE</code> lines four times is introducing
+a custom SQLite scalar function via the C API/loadable extension,
+which is far more operational complexity than a learning-focused
+project like this needs. Duplication here is a small, contained,
+readable cost — not a maintenance trap, since all four copies are
+short and unlikely to need independent changes.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-watch-a-view-update-the-instant-its-source-data-changes">3. Watch a view update the instant its source data changes</h3>
+
+<p>On your scratch copy, change <code class="inline-code">bronze_employees.department</code> for
+<code class="inline-code">employee_id = 1</code> to a <em>new</em> messy variant not already in the pool —
+say, <code class="inline-code">'  SALES  '</code> (extra whitespace, all-caps). Query <code class="inline-code">silver_employees</code>
+for that employee immediately afterward, with no rebuild step. Does it
+normalize correctly?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">UPDATE bronze_employees SET department = &#x27;  SALES  &#x27; WHERE employee_id = 1;
+SELECT employee_id, department FROM silver_employees WHERE employee_id = 1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">employee_id  department
+-----------  ----------
+1            Sales</code></pre></div>
+
+<p><code class="inline-code">silver_employees</code>'s <code class="inline-code">LOWER(TRIM(e.department))</code> normalization handled
+the extra whitespace and casing correctly, and — because it's a view,
+not a materialized table — there was no refresh step. The next query
+against <code class="inline-code">silver_employees</code> simply re-ran the view's <code class="inline-code">SELECT</code> against
+the now-changed <code class="inline-code">bronze_employees</code> row.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-find-a-view-that-adds-almost-nothing-on-top-of-the-one-below-it">4. Find a view that adds almost nothing on top of the one below it</h3>
+
+<p>Compare <code class="inline-code">project/gold/dim_product.sql</code>'s column list against
+<code class="inline-code">silver_products</code>'s output columns (from Module 4's dissection). Is
+<code class="inline-code">dim_product</code> doing any real transformation, or is it closer to
+<code class="inline-code">silver_calendar</code>'s "thin pass-through" pattern? What does that tell
+you about the difference in <em>purpose</em> between a silver view and a gold
+dimension view, even when the SQL itself barely changes?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">PRAGMA table_info(dim_product);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">0|product_id
+1|product_name
+2|category
+3|subcategory
+4|brand
+5|unit_cost
+6|unit_price
+7|is_discontinued
+8|sku
+9|sku_is_duplicate
+10|weight_kg
+11|created_at</code></pre></div>
+
+<p>This is exactly <code class="inline-code">silver_products</code>'s output column list, unchanged —
+<code class="inline-code">dim_product</code> is <code class="inline-code">SELECT <same 12 columns> FROM silver_products</code>, no
+transformation at all (confirm by reading <code class="inline-code">project/gold/dim_product.sql</code>
+directly).</p>
+
+<p>The distinction is about <em>role</em>, not <em>SQL complexity</em>: <code class="inline-code">silver_products</code>
+exists to answer "is this row's data clean?" — its job is cleaning.
+<code class="inline-code">dim_product</code> exists to answer "is this the customer-facing product
+dimension a report should join against?" — its job is being a stable,
+documented, business-facing name in the star schema, even when (as
+here) it happens to add zero additional logic. A gold dimension view
+can be a thin wrapper and still be doing real work: establishing a
+naming/interface contract that's allowed to diverge from silver later
+without every downstream <code class="inline-code">fact_sales</code>/<code class="inline-code">agg_*</code> query needing to change.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-trace-a-full-dependency-chain">5. Trace a full dependency chain</h3>
+
+<p>Draw out (as text, e.g. <code class="inline-code">a -> b -> c</code>) every view <code class="inline-code">agg_customer_ltv</code>
+transitively depends on, all the way down to bronze tables. You'll
+need to read <code class="inline-code">project/gold/agg_customer_ltv.sql</code>,
+<code class="inline-code">project/gold/dim_customer.sql</code>, <code class="inline-code">project/gold/fact_sales.sql</code>, and
+<code class="inline-code">project/silver/silver_customers.sql</code>/<code class="inline-code">silver_sales.sql</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">agg_customer_ltv
+  -&gt; dim_customer -&gt; silver_customers -&gt; bronze_customers
+  -&gt; fact_sales    -&gt; silver_sales    -&gt; bronze_sales</code></pre></div>
+
+<p><code class="inline-code">agg_customer_ltv</code> joins <code class="inline-code">dim_customer</code> (a thin wrapper over
+<code class="inline-code">silver_customers</code>, itself a cleaning layer over <code class="inline-code">bronze_customers</code>)
+against <code class="inline-code">fact_sales</code> (a thin wrapper over <code class="inline-code">silver_sales</code>, a cleaning +
+<code class="inline-code">net_amount</code>-recomputation layer over <code class="inline-code">bronze_sales</code>). A single query
+against <code class="inline-code">agg_customer_ltv</code> therefore re-executes: <code class="inline-code">bronze_customers</code>'s
+scan, <code class="inline-code">silver_customers</code>'s full name/phone/state/date normalization,
+<code class="inline-code">bronze_sales</code>'s scan, <code class="inline-code">silver_sales</code>'s full date/discount/net_amount
+recomputation, then the final <code class="inline-code">LEFT JOIN</code> and aggregation —  every
+single time it's queried. This is the "recompute cost" trade-off from
+the lesson made concrete: four layers of view logic, all re-run fresh
+on every query, in exchange for zero staleness.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="6-would-a-materialized-table-change-the-answer-or-just-the-cost">6. Would a materialized table change the <em>answer</em>, or just the <em>cost</em>?</h3>
+
+<p>Suppose Oakhaven's gold layer used materialized tables instead of
+views, refreshed once per day. A customer places a new order at
+9:00am; the daily refresh runs at midnight. If someone queries
+<code class="inline-code">agg_customer_ltv</code> for that customer at 10:00am the same day, what
+would they see with materialized tables vs. with the current
+view-based design? Which design would you pick for a project where
+correctness matters more than raw query speed, and why is that the
+right call for a learning-focused practice database specifically?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>With <strong>materialized tables</strong> refreshed once per day: the 10:00am query
+would <strong>not</strong> reflect the 9:00am order — the customer's
+<code class="inline-code">lifetime_net_amount</code> and <code class="inline-code">order_count</code> would be stale until the next
+midnight refresh, up to nearly 24 hours later.</p>
+
+<p>With the current <strong>view-based</strong> design: the 10:00am query recomputes
+<code class="inline-code">agg_customer_ltv</code> from scratch, joining live <code class="inline-code">fact_sales</code> (itself a
+live view over <code class="inline-code">silver_sales</code> over <code class="inline-code">bronze_sales</code>) — the 9:00am order
+is included immediately, with zero staleness.</p>
+
+<p>For a learning project, correctness-over-speed is the right call: the
+whole point of Oakhaven is that every query result should be
+explainable and trustworthy against the current state of the data,
+without a learner needing to reason about "was the aggregate refreshed
+since I last changed something?" At Oakhaven's ~12,000-row scale, the
+recompute cost is invisible anyway — there's no real performance
+trade-off to weigh here, only the conceptual one the lesson describes.
+A production system serving millions of rows to a live dashboard might
+reasonably make the opposite trade for query speed, accepting bounded
+staleness in exchange for not recomputing a four-layer view chain on
+every page load.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/04-views.html" class="nav-btn">4. Views</a>. Previous: <a href="03-transactions.html" class="nav-btn">3. Transactions</a>. Next: <a href="05-indexes-and-explain-query-plan.html" class="nav-btn">5. Indexes and EXPLAIN QUERY PLAN</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

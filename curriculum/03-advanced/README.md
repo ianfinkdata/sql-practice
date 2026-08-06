@@ -1,5 +1,11 @@
 # Tier 3 — Advanced
 
+> **BLUF (Bottom Line Up Front):** Tier 3 introduces advanced analytical SQL: Common Table Expressions (CTEs), window functions (`ROW_NUMBER`, `RANK`, running totals, `LEAD`/`LAG`), recursive date spines, and writing Silver-layer views.
+
+<!-- nav -->
+[⏮️ Prev: Tier 2 Intermediate](../02-intermediate/README.md) | [📖 Table of Contents](../../README.md) | [⏭️ Next: Tier 4 Expert](../04-expert/README.md)
+<!-- /nav -->
+
 CTEs, window functions, recursive CTEs, and time intelligence — and where the **medallion thread** begins. Module 5 dissects the actual recursive CTE that built `bronze_calendar`; module 8 walks you through writing your first silver-layer cleaning query.
 
 | Module | Topic |
@@ -17,4 +23,8 @@ CTEs, window functions, recursive CTEs, and time intelligence — and where the 
 
 Matching exercises: [`exercises/03-advanced/`](../../exercises/03-advanced/).
 
-Previous: [Tier 2 — Intermediate](../02-intermediate/README.md). Next: [Tier 4 — Expert](../04-expert/README.md).
+---
+
+<!-- nav -->
+[⏮️ Prev: Tier 2 Intermediate](../02-intermediate/README.md) | [📖 Table of Contents](../../README.md) | [⏭️ Next: Tier 4 Expert](../04-expert/README.md)
+<!-- /nav -->

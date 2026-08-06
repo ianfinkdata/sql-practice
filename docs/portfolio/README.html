@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>portfolio/ — the reusable SQL pattern library | SQL Practice</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../index.html">📖 Book Index</a>
+        <a href="../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../exercises/README.html">💪 Exercises</a>
+        <a href="../portfolio/README.html">💼 Portfolio</a>
+        <a href="../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="portfolio--the-reusable-sql-pattern-library">portfolio/ — the reusable SQL pattern library</h1>
+
+<div class="bluf-card"><div class="bluf-badge">⚡ BLUF (Bottom Line Up Front)</div><div class="bluf-body">The Portfolio library is an engine-agnostic collection of production SQL design patterns (Bronze ingestion, Silver cleaning, Dimensional modeling, Analytical queries, and Cloud Portability) verified against <code class="inline-code">oakhaven.db</code> and ready for Snowflake, BigQuery, Databricks, and Postgres.</div></div>
+
+<nav class="book-nav"><a href="../exercises/README.html" class="nav-btn">⏮️ Prev: Exercises Workbook</a> <a href="../README.html" class="nav-btn">📖 Table of Contents</a> <a href="../README.html" class="nav-btn">⏮️ Back to Home</a></nav>
+
+<p>This directory is the <strong>takeaway artifact</strong> of the sql-practice repo:
+standalone, heavily annotated SQL files organized by <em>pattern</em>, not by
+curriculum tier. Every file is written to be lifted whole into a
+completely different project on a completely different SQL engine —
+these are the recipes that make up most medallion-architecture lakehouses
+(bronze → silver → gold), independent of any particular business domain.</p>
+
+<h2 id="how-this-relates-to-the-rest-of-the-repo">How this relates to the rest of the repo</h2>
+<ul class="styled-list"><li><code class="inline-code">project/</code> is the fictional Oakhaven outdoor-gear retailer's actual</li></ul>  database and its bronze/silver/gold build scripts — the ground truth
+  this library generalizes *from*.
+<ul class="styled-list"><li><code class="inline-code">curriculum/</code>/<code class="inline-code">exercises/</code> (owned by other parts of this repo) teach the</li></ul>  Oakhaven schema tier-by-tier, as lessons.
+<ul class="styled-list"><li><code class="inline-code">portfolio/</code> (this directory) is neither of those. It doesn't teach</li></ul>  Oakhaven — it extracts the *general, engine-agnostic pattern* behind
+  each Oakhaven-specific technique, verifies that pattern really works
+  against `project/oakhaven.db`, and documents how the same pattern would
+  read on Snowflake, BigQuery, Databricks, or Postgres. Every file here
+  should make sense to someone who has never heard of Oakhaven and never
+  will — the Oakhaven example is evidence the pattern works, not the
+  point of the file.
+
+<h2 id="how-to-use-a-file">How to use a file</h2>
+
+<p>Every <code class="inline-code">.sql</code> file opens with a structured header comment:</p>
+
+<p>1. <strong>Pattern name</strong> and the one-sentence problem it solves.
+2. <strong>When to reach for it</strong> — the situations that should make you think
+   "this is that pattern."
+3. <strong>How it works</strong> — the mechanics, in prose, before you read the SQL.
+4. <strong>A real, verified example</strong> against <code class="inline-code">oakhaven.db</code>, including an actual
+   sample of the output (not invented — every query in this library was
+   run against the real database).
+5. <strong>Portability</strong> — what changes (or doesn't) on Snowflake, BigQuery,
+   Databricks, and Postgres.</p>
+
+<p>Then the file itself is runnable <code class="inline-code">SELECT</code>-only SQL you can paste into any
+SQLite session with <code class="inline-code">oakhaven.db</code> attached and get the shown output back.
+A few files also include illustrative <code class="inline-code">CREATE VIEW</code>/<code class="inline-code">INSERT</code>/<code class="inline-code">MERGE</code>
+statements in comments, for the "here's how you'd wire this into a real
+pipeline" step — those are reference text, not statements meant to be run
+against the shared database.</p>
+
+<h2 id="table-of-contents">Table of contents</h2>
+
+<h3 id="01--bronze-ingestion-patterns">01 — Bronze ingestion patterns</h3>
+Finding and flagging problems in raw, as-landed data.
+<ul class="styled-list"><li><a href="01-bronze-ingestion-patterns/deduplication-with-row-number.sql"><code class="inline-code">deduplication-with-row-number.sql</code></a> — <code class="inline-code">ROW_NUMBER()</code> to find and rank near-duplicate entities by a normalized key (the real 30 near-duplicate Oakhaven customers).</li><li><a href="01-bronze-ingestion-patterns/detecting-orphan-foreign-keys.sql"><code class="inline-code">detecting-orphan-foreign-keys.sql</code></a> — <code class="inline-code">LEFT JOIN ... WHERE ... IS NULL</code> (and the <code class="inline-code">NOT EXISTS</code> equivalent) to find child rows whose foreign key doesn't resolve to any parent row.</li></ul>
+<h3 id="02--silver-cleaning-patterns">02 — Silver cleaning patterns</h3>
+Turning messy, inconsistent TEXT columns into trustworthy typed data.
+<ul class="styled-list"><li><a href="02-silver-cleaning-patterns/standardizing-mixed-booleans.sql"><code class="inline-code">standardizing-mixed-booleans.sql</code></a> — collapsing a Y/N/yes/no/true/false/1/0 text pool into a real 0/1 column.</li><li><a href="02-silver-cleaning-patterns/standardizing-inconsistent-categoricals.sql"><code class="inline-code">standardizing-inconsistent-categoricals.sql</code></a> — collapsing 40 raw casing/spacing variants of a category column down to its true 8 canonical values.</li><li><a href="02-silver-cleaning-patterns/recompute-dont-trust-the-total.sql"><code class="inline-code">recompute-dont-trust-the-total.sql</code></a> — recomputing a derived measure (<code class="inline-code">net_amount</code>) from source columns instead of trusting a stored, drifted total; includes the discount-percent whole-number scale bug.</li><li><a href="02-silver-cleaning-patterns/type-casting-and-validation.sql"><code class="inline-code">type-casting-and-validation.sql</code></a> — parsing a finite set of mixed date formats to ISO 8601, and parsing dirty numeric-as-text values with inconsistent unit suffixes.</li></ul>
+<h3 id="03--date-dimension-patterns">03 — Date dimension patterns</h3>
+Building and using a date spine.
+<ul class="styled-list"><li><a href="03-date-dimension-patterns/recursive-cte-calendar-generation.sql"><code class="inline-code">recursive-cte-calendar-generation.sql</code></a> — generating a gap-free date spine entirely in SQL via <code class="inline-code">WITH RECURSIVE</code>, no external loop needed.</li><li><a href="03-date-dimension-patterns/date-spine-left-join-zero-activity-days.sql"><code class="inline-code">date-spine-left-join-zero-activity-days.sql</code></a> — driving a rollup FROM the date dimension so zero-activity days appear as real rows instead of silently disappearing.</li><li><a href="03-date-dimension-patterns/fiscal-calendar-derivations.sql"><code class="inline-code">fiscal-calendar-derivations.sql</code></a> — deriving year/month/quarter/day-of-week/is_weekend from a date column, plus how to layer a fiscal-year offset on top.</li></ul>
+<h3 id="04--dimensional-modeling-patterns">04 — Dimensional modeling patterns</h3>
+Building the dimension and fact layer of a star schema.
+<ul class="styled-list"><li><a href="04-dimensional-modeling-patterns/conformed-dimension-scd-type-1.sql"><code class="inline-code">conformed-dimension-scd-type-1.sql</code></a> — the default "overwrite in place, one shared dimension" pattern most tables should use.</li><li><a href="04-dimensional-modeling-patterns/scd-type-2-history-tracking.sql"><code class="inline-code">scd-type-2-history-tracking.sql</code></a> — versioned dimension rows with a validity window, for attributes where "what was true at the time" matters.</li><li><a href="04-dimensional-modeling-patterns/star-schema-fact-table-template.sql"><code class="inline-code">star-schema-fact-table-template.sql</code></a> — a fact table checklist: grain declaration, unvalidated FK pass-through, trustworthy measures, explicit orphan/NULL handling.</li><li><a href="04-dimensional-modeling-patterns/surrogate-key-generation.sql"><code class="inline-code">surrogate-key-generation.sql</code></a> — <code class="inline-code">ROW_NUMBER()</code>-based synthetic keys, and how each engine's native identity/autoincrement/sequence mechanism compares.</li></ul>
+<h3 id="05--analytical-query-patterns">05 — Analytical query patterns</h3>
+Common reporting/BI query shapes on top of a built star schema.
+<ul class="styled-list"><li><a href="05-analytical-query-patterns/running-totals-and-moving-averages.sql"><code class="inline-code">running-totals-and-moving-averages.sql</code></a> — cumulative sums and N-period moving averages via window function frame clauses.</li><li><a href="05-analytical-query-patterns/period-over-period-with-lag.sql"><code class="inline-code">period-over-period-with-lag.sql</code></a> — <code class="inline-code">LAG()</code> for month-over-month (or any period-over-period) absolute and percent change.</li><li><a href="05-analytical-query-patterns/cohort-analysis.sql"><code class="inline-code">cohort-analysis.sql</code></a> — signup-month cohorts and months-since-acquisition alignment.</li><li><a href="05-analytical-query-patterns/customer-lifetime-value.sql"><code class="inline-code">customer-lifetime-value.sql</code></a> — a dimension-driven LTV rollup that keeps zero-activity entities visible.</li><li><a href="05-analytical-query-patterns/top-n-per-group.sql"><code class="inline-code">top-n-per-group.sql</code></a> — <code class="inline-code">ROW_NUMBER() OVER (PARTITION BY ...)</code> for "top N per group" instead of a global top N.</li></ul>
+<h3 id="06--portability-notes">06 — Portability notes</h3>
+<ul class="styled-list"><li><a href="06-portability-notes/sqlite-vs-snowflake-bigquery-databricks-postgres.html"><code class="inline-code">sqlite-vs-snowflake-bigquery-databricks-postgres.md</code></a> — the consolidated cross-engine reference: date functions, <code class="inline-code">QUALIFY</code>, <code class="inline-code">MERGE</code>/upsert, <code class="inline-code">CREATE OR REPLACE VIEW</code>, identity/autoincrement/sequences, and type-system gotchas.</li></ul>
+<h2 id="verification">Verification</h2>
+
+<p>Every query in this library was run against <code class="inline-code">project/oakhaven.db</code>
+(SQLite 3.46.1) via <code class="inline-code">sqlite3 project/oakhaven.db "..." -header -column</code>,
+and every numeric claim in a header comment (row counts, percentages,
+sample rows) is copied from that real output — nothing here is invented
+or approximated. Where a file's header cites a count from
+<code class="inline-code">project/docs/facts_sheet.md</code>, that figure was independently
+re-verified against the live database as part of writing this library,
+not merely copied from the doc.</p>
+
+<hr class="divider">
+
+<nav class="book-nav"><a href="../exercises/README.html" class="nav-btn">⏮️ Prev: Exercises Workbook</a> <a href="../README.html" class="nav-btn">📖 Table of Contents</a> <a href="../README.html" class="nav-btn">⏮️ Back to Home</a></nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

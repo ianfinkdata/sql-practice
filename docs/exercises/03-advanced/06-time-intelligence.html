@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Time Intelligence | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-time-intelligence">Exercises: Time Intelligence</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/06-time-intelligence.html" class="nav-btn">6. Time Intelligence</a>. Previous: <a href="05-recursive-ctes.html" class="nav-btn">5. Recursive CTEs</a>. Next: <a href="07-the-date-spine-pattern.html" class="nav-btn">7. The Date-Spine Pattern</a>.</nav>
+
+<p>Query <code class="inline-code">project/oakhaven.db</code> for all of these. Run with:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT ...;&quot; -header -column</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-compute-quarter-without-dim_date">1. Compute quarter without <code class="inline-code">dim_date</code></h3>
+
+<p>Without joining to <code class="inline-code">dim_date</code>, compute the calendar quarter for each of
+the first 5 non-null <code class="inline-code">order_date</code> rows in <code class="inline-code">fact_sales</code>, using
+<code class="inline-code">strftime()</code> and the <code class="inline-code">((month - 1) / 3) + 1</code> formula.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_date,
+       ((CAST(strftime(&#x27;%m&#x27;, order_date) AS INTEGER) - 1) / 3) + 1 AS quarter
+FROM fact_sales
+WHERE order_date IS NOT NULL
+LIMIT 5;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_date</th><th>quarter</th></tr></thead><tbody><tr><td>1</td><td>2024-03-05</td><td>1</td></tr><tr><td>1</td><td>2024-03-05</td><td>1</td></tr><tr><td>2</td><td>2021-11-04</td><td>4</td></tr><tr><td>2</td><td>2021-11-04</td><td>4</td></tr><tr><td>3</td><td>2023-01-13</td><td>1</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="2-weekend-signups">2. Weekend signups</h3>
+
+<p>Count how many <code class="inline-code">silver_customers</code> rows have a <code class="inline-code">signup_date</code> that fell on
+a Saturday or Sunday (<code class="inline-code">strftime('%w', ...)</code> in <code class="inline-code">(0, 6)</code>).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS weekend_signups
+FROM silver_customers
+WHERE signup_date IS NOT NULL
+  AND CAST(strftime(&#x27;%w&#x27;, signup_date) AS INTEGER) IN (0, 6);</code></pre></div>
+
+<p>Verified output: <strong>168</strong> weekend signups.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-average-days-to-ship">3. Average days to ship</h3>
+
+<p>Using <code class="inline-code">julianday()</code>, compute the average number of days between
+<code class="inline-code">order_date</code> and <code class="inline-code">ship_date</code> across all of <code class="inline-code">silver_sales</code> (where both are
+non-null).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT ROUND(AVG(julianday(ship_date) - julianday(order_date)), 2) AS avg_days_to_ship
+FROM silver_sales
+WHERE ship_date IS NOT NULL AND order_date IS NOT NULL;</code></pre></div>
+
+<p>Verified output: <strong>4.89</strong> days average. (This average is pulled down
+slightly by the ~1.8% of orders where <code class="inline-code">ship_date</code> is chronologically
+<em>before</em> <code class="inline-code">order_date</code> — the intentional bad-data rows discussed in the
+curriculum module — since those contribute negative values to the
+average.)</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-employee-tenure-in-years">4. Employee tenure in years</h3>
+
+<p>For every employee with a non-null <code class="inline-code">hire_date</code>, compute their tenure in
+years: from <code class="inline-code">hire_date</code> to <code class="inline-code">termination_date</code> if they've left, or to
+2026-06-30 (Oakhaven's snapshot date) if <code class="inline-code">termination_date</code> is <code class="inline-code">NULL</code>
+(still employed). Use <code class="inline-code">julianday()</code> and divide by 365.25 to account for
+leap years. Show the 5 longest-tenured employees.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT employee_id, first_name, last_name, hire_date, termination_date,
+       ROUND((julianday(COALESCE(termination_date, &#x27;2026-06-30&#x27;)) - julianday(hire_date)) / 365.25, 1)
+           AS tenure_years
+FROM silver_employees
+WHERE hire_date IS NOT NULL
+ORDER BY tenure_years DESC
+LIMIT 5;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>first_name</th><th>last_name</th><th>hire_date</th><th>termination_date</th><th>tenure_years</th></tr></thead><tbody><tr><td>2</td><td>Sandra</td><td>Thompson</td><td>2018-05-25</td><td><em>(null)</em></td><td>8.1</td></tr><tr><td>19</td><td>Keith</td><td>Hunt</td><td>2018-07-14</td><td><em>(null)</em></td><td>8.0</td></tr><tr><td>21</td><td>Ashlee</td><td>Hall</td><td>2018-09-16</td><td><em>(null)</em></td><td>7.8</td></tr><tr><td>32</td><td>Matthew</td><td>Payne</td><td>2018-09-02</td><td><em>(null)</em></td><td>7.8</td></tr><tr><td>22</td><td>Robert</td><td>Anderson</td><td>2018-11-20</td><td><em>(null)</em></td><td>7.6</td></tr></tbody></table></div>
+The `COALESCE(termination_date, '2026-06-30')` trick is the key idea here:
+it treats "still employed" the same as "employed through the snapshot
+date" for the purposes of a tenure calculation, without needing a separate
+`CASE` branch.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-find-the-bad-data-ship-dates-yourself">5. Find the bad-data ship dates yourself</h3>
+
+<p>Using <code class="inline-code">julianday()</code>, write a query that finds every <code class="inline-code">silver_sales</code> row
+where <code class="inline-code">ship_date</code> is chronologically before <code class="inline-code">order_date</code> (the intentional
+bad-data pattern documented in the data dictionary). Confirm your count
+matches the facts sheet's documented figure of 216.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS bad_ship_date_rows
+FROM silver_sales
+WHERE ship_date IS NOT NULL AND order_date IS NOT NULL
+  AND julianday(ship_date) &lt; julianday(order_date);</code></pre></div>
+
+<p>Verified output: <strong>216</strong> — matches the facts sheet exactly.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/06-time-intelligence.html" class="nav-btn">6. Time Intelligence</a>. Previous: <a href="05-recursive-ctes.html" class="nav-btn">5. Recursive CTEs</a>. Next: <a href="07-the-date-spine-pattern.html" class="nav-btn">7. The Date-Spine Pattern</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Sorting with ORDER BY | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-sorting-with-order-by">Exercises: Sorting with ORDER BY</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/03-sorting-with-order-by.html" class="nav-btn">3. Sorting with ORDER BY</a>. Previous: <a href="02-filtering-with-where.html" class="nav-btn">2. Filtering with WHERE</a>. Next: <a href="04-limiting-with-limit.html" class="nav-btn">4. Limiting with LIMIT (and OFFSET)</a>.</nav>
+
+<h3 id="1-alphabetical-by-last-name">1. Alphabetical by last name</h3>
+
+<p>Write a query showing <code class="inline-code">first_name</code> and <code class="inline-code">last_name</code> from
+<code class="inline-code">bronze_employees</code>, sorted alphabetically by last name, first 5 rows.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT first_name, last_name
+FROM bronze_employees
+ORDER BY last_name ASC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>first_name</th><th>last_name</th></tr></thead><tbody><tr><td>Robert</td><td>ANDERSON</td></tr><tr><td>ANTONIO</td><td>Bailey</td></tr><tr><td>Mary</td><td>Boyd</td></tr><tr><td>JENNIFER</td><td>Brown</td></tr><tr><td>Derek</td><td>Brown</td></tr></tbody></table></div>
+</details>
+
+<h3 id="2-top-3-most-expensive">2. Top 3 most expensive</h3>
+
+<p>Write a query for the 3 most expensive products (<code class="inline-code">product_name</code>,
+<code class="inline-code">unit_price</code>).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+ORDER BY unit_price DESC
+LIMIT 3;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Highline Backpacks</td><td>812.71</td></tr><tr><td>Foothill Electrolyte Mixes</td><td>782.32</td></tr><tr><td>Highline Paddle</td><td>696.3</td></tr></tbody></table></div>
+</details>
+
+<h3 id="3-multi-column-sort-and-a-casing-surprise">3. Multi-column sort, and a casing surprise</h3>
+
+<p>Write a query showing <code class="inline-code">department</code>, <code class="inline-code">first_name</code>, <code class="inline-code">last_name</code>,
+<code class="inline-code">hire_date</code> from <code class="inline-code">bronze_employees</code>, sorted by <code class="inline-code">department</code> and then
+by <code class="inline-code">last_name</code>, first 8 rows. Look closely at how the <code class="inline-code">department</code>
+values group — is <code class="inline-code">Management</code> grouped together as one block?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT department, first_name, last_name, hire_date
+FROM bronze_employees
+ORDER BY department ASC, last_name ASC
+LIMIT 8;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>department</th><th>first_name</th><th>last_name</th><th>hire_date</th></tr></thead><tbody><tr><td>MANAGEMENT</td><td>ANTONIO</td><td>Bailey</td><td>04/22/2022</td></tr><tr><td>MANAGEMENT</td><td>Ashlee</td><td>Hall</td><td>09/16/2018</td></tr><tr><td>MANAGEMENT</td><td>Nicholas</td><td>Morris</td><td>11/05/2022</td></tr><tr><td>MANAGEMENT</td><td>DANIEL</td><td>Ramsey</td><td>2025-02-05 00:14:18</td></tr><tr><td>Management</td><td>Mary</td><td>Boyd</td><td>2021-03-01 21:05:46</td></tr><tr><td>Management</td><td>Shannon</td><td>KLEIN</td><td>2021-01-05 09:06:48</td></tr><tr><td>Management</td><td>Amy</td><td>Morrow</td><td>2023-04-02 00:01:01</td></tr><tr><td>Management</td><td>NANCY</td><td>Simmons</td><td>10/28/2025</td></tr></tbody></table></div>
+No — `MANAGEMENT` (all caps) sorts as a separate group *before*
+`Management` (title case), because SQLite's default text sort is
+case-sensitive and uppercase letters sort before lowercase ones. Even
+though these represent the same real department, sorting treats them
+as different values entirely. Another preview of why casing gets
+standardized in Tier 2.
+
+<p></details></p>
+
+<h3 id="4-filter-then-sort">4. Filter, then sort</h3>
+
+<p>Write a query for every product from brand <code class="inline-code">Stonepine Gear</code>, sorted by
+price from highest to lowest.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT brand, product_name, unit_price
+FROM bronze_products
+WHERE brand = &#x27;Stonepine Gear&#x27;
+ORDER BY unit_price DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>brand</th><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Stonepine Gear</td><td>Canyon Hiking Boots</td><td>649.26</td></tr><tr><td>Stonepine Gear</td><td>Highline Winter Gloves</td><td>501.03</td></tr><tr><td>Stonepine Gear</td><td>Alpine Snowshoe</td><td>461.22</td></tr><tr><td>Stonepine Gear</td><td>Basecamp Kayaks</td><td>347.63</td></tr><tr><td>Stonepine Gear</td><td>Northbound Trekking Poles</td><td>189.59</td></tr></tbody></table></div>
+</details>
+
+<h3 id="5-the-single-cheapest-product">5. The single cheapest product</h3>
+
+<p>Write a query that returns just one row: the single cheapest product
+in <code class="inline-code">bronze_products</code> (name and price).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+ORDER BY unit_price ASC
+LIMIT 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Cascade Hiking Boots</td><td>6.67</td></tr></tbody></table></div>
+</details>
+
+<h3 id="6-diagnose-the-bug">6. Diagnose the bug</h3>
+
+<p>A teammate wrote this query, wanting the 5 most recently hired
+employees, and got confused by the result:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT first_name, last_name, hire_date
+FROM bronze_employees
+ORDER BY hire_date ASC
+LIMIT 5;</code></pre></div>
+
+<p>What's wrong with their approach, independent of <code class="inline-code">ASC</code> vs <code class="inline-code">DESC</code>?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>Two separate bugs, actually: first, <code class="inline-code">ASC</code> gives the <em>earliest</em> dates,
+not the most recent — they'd want <code class="inline-code">DESC</code> for "most recently hired."
+But even fixing that wouldn't be enough: <code class="inline-code">hire_date</code> is stored as raw
+<code class="inline-code">TEXT</code> with mixed formats (<code class="inline-code">MM/DD/YYYY</code> and <code class="inline-code">YYYY-MM-DD</code>), so sorting
+it — in either direction — sorts the <em>text</em>, not the actual
+chronological dates. As shown in this module's curriculum content,
+every <code class="inline-code">MM/DD/YYYY</code> value sorts before every <code class="inline-code">YYYY-MM-DD</code> value
+regardless of real date, so neither <code class="inline-code">ASC</code> nor <code class="inline-code">DESC</code> on raw
+<code class="inline-code">hire_date</code> gives a trustworthy chronological answer. A reliable
+answer needs the dates parsed into one consistent format first — which
+is exactly what the silver layer does in Tier 2.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/03-sorting-with-order-by.html" class="nav-btn">3. Sorting with ORDER BY</a>. Previous: <a href="02-filtering-with-where.html" class="nav-btn">2. Filtering with WHERE</a>. Next: <a href="04-limiting-with-limit.html" class="nav-btn">4. Limiting with LIMIT (and OFFSET)</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

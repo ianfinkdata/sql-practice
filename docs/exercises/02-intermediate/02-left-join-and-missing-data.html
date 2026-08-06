@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: LEFT JOIN and Missing Data | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-left-join-and-missing-data">Exercises: LEFT JOIN and Missing Data</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/02-left-join-and-missing-data.html" class="nav-btn">LEFT JOIN and Missing Data</a>. Previous: <a href="01-combining-tables-with-join.html" class="nav-btn">Combining Tables with JOIN</a>. Next: <a href="03-group-by.html" class="nav-btn">GROUP BY</a>.</nav>
+
+<p>Use <code class="inline-code">project/oakhaven.db</code>. Every solution below was run against the
+real database — your output should match exactly.</p>
+
+<hr class="divider">
+
+<p><strong>1. Verify products with zero sales — the honest way</strong></p>
+
+<p>Don't assume every product has sold at least once. Write a <code class="inline-code">LEFT
+JOIN</code> from <code class="inline-code">bronze_products</code> to <code class="inline-code">bronze_sales</code> and check for any
+product with no matching sale row.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.product_id, p.product_name
+FROM bronze_products p
+LEFT JOIN bronze_sales s ON p.product_id = s.product_id
+WHERE s.order_id IS NULL;</code></pre></div>
+
+<p><em>(no rows)</em></p>
+
+<p>Every one of the 150 products in <code class="inline-code">bronze_products</code> has at least one
+matching row in <code class="inline-code">bronze_sales</code>. Worth verifying rather than assuming —
+this is the same <code class="inline-code">LEFT JOIN ... WHERE ... IS NULL</code> pattern used for
+finding orphans, just pointed in the other direction.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>2. Verify employees with zero sales, the same way</strong></p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_employees e
+LEFT JOIN bronze_sales s ON e.employee_id = s.employee_id
+WHERE s.order_id IS NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>0</td></tr></tbody></table></div>
+Same result as products — every employee has at least one sale
+attributed to them in this build. Two "expected gaps" checked, two
+zeros found; both are still useful, verified facts, not wasted
+queries.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>3. The 5 worst offenders for orphan <code class="inline-code">customer_id</code></strong></p>
+
+<p>Using a <code class="inline-code">LEFT JOIN</code> from <code class="inline-code">bronze_sales</code> to <code class="inline-code">bronze_customers</code>, find
+the 5 distinct orphan <code class="inline-code">customer_id</code> values responsible for the most
+order lines, along with how many lines each contributes.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT s.customer_id, COUNT(*) AS orphan_lines
+FROM bronze_sales s
+LEFT JOIN bronze_customers c ON s.customer_id = c.customer_id
+WHERE c.customer_id IS NULL
+GROUP BY s.customer_id
+ORDER BY orphan_lines DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>orphan_lines</th></tr></thead><tbody><tr><td>9498</td><td>3</td></tr><tr><td>8297</td><td>3</td></tr><tr><td>7902</td><td>3</td></tr><tr><td>6718</td><td>3</td></tr><tr><td>6441</td><td>3</td></tr></tbody></table></div>
+Notice these `customer_id` values (9498, 8297, ...) are nowhere close
+to the real range of 1–600 — a strong tell that these are fabricated
+bad ids rather than off-by-one typos of real ones.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>4. How many distinct orders are affected by the orphan <code class="inline-code">customer_id</code> problem?</strong></p>
+
+<p>The 103 orphan rows from Module 1/2's lesson group into how many
+distinct <code class="inline-code">order_id</code>s? (Recall from the data dictionary: bad
+<code class="inline-code">customer_id</code>s are injected at the order level, so every line of a
+bad order shares the same id.)</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT s.order_id)
+FROM bronze_sales s
+LEFT JOIN bronze_customers c ON s.customer_id = c.customer_id
+WHERE c.customer_id IS NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT s.order_id)</th></tr></thead><tbody><tr><td>61</td></tr></tbody></table></div>
+61 distinct orders account for all 103 orphan lines — consistent with
+orders averaging just under 2 lines each, and confirming the "bad id
+at the order level, shared across lines" pattern from the data
+dictionary.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>5. Revenue lost to orphan products — quantify it</strong></p>
+
+<p>Using a <code class="inline-code">LEFT JOIN</code> from <code class="inline-code">bronze_sales</code> to <code class="inline-code">bronze_products</code>, compute
+the rough revenue (<code class="inline-code">quantity * unit_price</code>) split into two groups:
+rows that matched a real product, and rows that didn't (orphan
+<code class="inline-code">product_id</code>). Use a <code class="inline-code">CASE</code> expression to build the grouping label.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT CASE WHEN p.product_id IS NULL THEN &#x27;orphan&#x27; ELSE &#x27;matched&#x27; END AS match_status,
+       COUNT(*) AS n,
+       ROUND(SUM(s.quantity * s.unit_price), 2) AS rough_total
+FROM bronze_sales s
+LEFT JOIN bronze_products p ON s.product_id = p.product_id
+GROUP BY match_status;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>match_status</th><th>n</th><th>rough_total</th></tr></thead><tbody><tr><td>matched</td><td>11878</td><td>9822452.14</td></tr><tr><td>orphan</td><td>122</td><td>57705.04</td></tr></tbody></table></div>
+$57,705.04 worth of "rough total" revenue sits on order lines
+referencing a product that doesn't exist. An `INNER JOIN`-only report
+would have reported the smaller `matched` total as if it were the
+whole picture, with no indication that ~$57.7K was silently excluded.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>6. Combine LEFT JOIN with an aggregate: per-customer orphan-line exposure</strong></p>
+
+<p>For customers who have at least one orphan-<code class="inline-code">product_id</code> order line
+(their <code class="inline-code">customer_id</code> is valid, but some line they ordered references
+a bad <code class="inline-code">product_id</code>), find their <code class="inline-code">customer_id</code>, name, and count of
+affected lines. Order by affected-line count descending, limit 5.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT c.customer_id, c.first_name, c.last_name, COUNT(*) AS orphan_product_lines
+FROM bronze_sales s
+JOIN bronze_customers c ON s.customer_id = c.customer_id
+LEFT JOIN bronze_products p ON s.product_id = p.product_id
+WHERE p.product_id IS NULL
+GROUP BY c.customer_id, c.first_name, c.last_name
+ORDER BY orphan_product_lines DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>first_name</th><th>last_name</th><th>orphan_product_lines</th></tr></thead><tbody><tr><td>68</td><td>michele</td><td>PEREZ</td><td>2</td></tr><tr><td>72</td><td>Molly</td><td>Herrera</td><td>2</td></tr><tr><td>284</td><td>travis</td><td>Lewis</td><td>2</td></tr><tr><td>346</td><td>KELLY</td><td>cruz</td><td>2</td></tr><tr><td>360</td><td>JOHN</td><td>martin</td><td>2</td></tr></tbody></table></div>
+This mixes an `INNER JOIN` (to `bronze_customers`, since we only care
+about real customers) with a `LEFT JOIN` (to `bronze_products`, since
+we're specifically hunting for the non-matches) in the same query —
+a preview of how the two join types combine once you're solving a
+real, specific question instead of demonstrating one concept at a
+time.
+
+<p></details></p>
+
+<hr class="divider">
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/02-left-join-and-missing-data.html" class="nav-btn">LEFT JOIN and Missing Data</a>. Previous: <a href="01-combining-tables-with-join.html" class="nav-btn">Combining Tables with JOIN</a>. Next: <a href="03-group-by.html" class="nav-btn">GROUP BY</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

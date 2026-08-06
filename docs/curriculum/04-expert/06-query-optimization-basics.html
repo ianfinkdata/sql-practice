@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6. Query Optimization Basics | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="6-query-optimization-basics">6. Query Optimization Basics</h1>
+
+<nav class="book-nav">Previous: <a href="05-indexes-and-explain-query-plan.html" class="nav-btn">5. Indexes and EXPLAIN QUERY PLAN</a>. Next: <a href="07-constraints-and-data-integrity.html" class="nav-btn">7. Constraints and Data Integrity</a>. Exercises: <a href="../../exercises/04-expert/06-query-optimization-basics.html" class="nav-btn">6. Query Optimization Basics</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Module 5 showed <em>that</em> indexes change <code class="inline-code">SCAN</code> into <code class="inline-code">SEARCH</code>. This
+module is about writing queries that actually let SQLite use an index
+when one exists — because it's entirely possible to have the right
+index in place and still get a full scan, just by phrasing a
+<code class="inline-code">WHERE</code> clause the wrong way.</p>
+
+<p>A predicate that <em>can</em> use an index is called <strong>sargable</strong> ("Search
+ARGument-able"). The core idea: SQLite can only use an index to jump
+straight to matching rows if it can look up the <em>raw, unmodified</em>
+column value in the index. The moment you wrap the indexed column in a
+function or transform it, the index — which stores the original
+values — can no longer be searched directly; SQLite falls back to
+checking every row.</p>
+
+<h2 id="principle-1-dont-wrap-the-indexed-column-in-a-function">Principle 1: don't wrap the indexed column in a function</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE INDEX idx_bronze_customers_email ON bronze_customers(email);
+
+<p>EXPLAIN QUERY PLAN
+SELECT * FROM bronze_customers WHERE email = &#x27;test@example.com&#x27;;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SEARCH bronze_customers USING INDEX idx_bronze_customers_email (email=?)</code></pre></div>
+
+<p>Now the same logical filter, but wrapped in <code class="inline-code">LOWER()</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN
+SELECT * FROM bronze_customers WHERE LOWER(email) = &#x27;test@example.com&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SCAN bronze_customers</code></pre></div>
+
+<p>Identical intent — "find this email, case-insensitively" — but the
+index on <code class="inline-code">email</code> stores raw values, not <code class="inline-code">LOWER(email)</code> values, so
+SQLite can't use it to look up <code class="inline-code">LOWER(email) = '...'</code> directly. It has
+to compute <code class="inline-code">LOWER(email)</code> for every row to check the match, which
+means visiting every row: a full scan. (SQLite does support
+<em>expression indexes</em> — <code class="inline-code">CREATE INDEX ... ON table(LOWER(column))</code> —
+which would fix this specific case; the point here is that the
+<em>plain</em> index on <code class="inline-code">email</code> doesn't help once you wrap the column.)</p>
+
+<h2 id="principle-2-leading-wildcards-defeat-like-trailing-wildcards-dont">Principle 2: leading wildcards defeat LIKE, trailing wildcards don't</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN
+SELECT * FROM bronze_customers WHERE email LIKE &#x27;%example.com&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SCAN bronze_customers</code></pre></div>
+
+<p>A leading <code class="inline-code">%</code> means "match anything, then this suffix" — there's no
+way to binary-search a sorted index for that, so SQLite scans. But a
+<strong>trailing</strong> wildcard (<code class="inline-code">'test%'</code>, "starts with") is a genuinely
+sargable range condition — SQLite <em>can</em> express <code class="inline-code">LIKE 'test%'</code> as
+<code class="inline-code">email >= 'test' AND email < 'testz...'</code> and search the index. It
+requires case-sensitive comparison to line up with how the index is
+sorted, though, so with SQLite's default case-insensitive <code class="inline-code">LIKE</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN
+SELECT * FROM bronze_customers WHERE email LIKE &#x27;test%&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SCAN bronze_customers</code></pre></div>
+
+<p>...it still scans. Two ways to unlock the index for a prefix search:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">PRAGMA case_sensitive_like = ON;
+EXPLAIN QUERY PLAN
+SELECT * FROM bronze_customers WHERE email LIKE &#x27;test%&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SEARCH bronze_customers USING INDEX idx_bronze_customers_email (email&gt;? AND email&lt;?)</code></pre></div>
+
+<p>or use <code class="inline-code">GLOB</code> instead of <code class="inline-code">LIKE</code> (<code class="inline-code">GLOB</code> is case-sensitive by default,
+no pragma needed):</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">EXPLAIN QUERY PLAN
+SELECT * FROM bronze_customers WHERE email GLOB &#x27;test*&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">QUERY PLAN
+`--SEARCH bronze_customers USING INDEX idx_bronze_customers_email (email&gt;? AND email&lt;?)</code></pre></div>
+
+<p>Same <code class="inline-code">(email>? AND email<?)</code> range search either way — SQLite rewrote
+the prefix match into a range scan it can serve from the index.</p>
+
+<h2 id="principle-3-avoid-select--when-you-dont-need-every-column">Principle 3: avoid <code class="inline-code">SELECT *</code> when you don't need every column</h2>
+
+<p><code class="inline-code">bronze_sales</code> has 14 columns:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM pragma_table_info(&#x27;bronze_sales&#x27;);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">14</code></pre></div>
+
+<p><code class="inline-code">SELECT <em></code> pulls all 14 off disk for every matching row, even if your
+query only needs <code class="inline-code">order_id</code> and <code class="inline-code">net_amount</code>-adjacent fields. This
+matters for three reasons that compound as tables grow:
+<ul class="styled-list"><li><strong>More bytes read off disk</strong> per row, for columns you'll never use.</li><li><strong>More data shipped over the wire</strong> if the database is remote</li></ul>  (irrelevant for a local <code class="inline-code">.db</code> file, but real for client/server
+  engines).
+<ul class="styled-list"><li><strong>Covering indexes stop working.</strong> If you had an index on exactly</li></ul>  the columns a query needs, SQLite can sometimes answer the query
+  </em>entirely from the index<em>, without touching the table at all — but
+  only if every column the query references is in that index.
+  <code class="inline-code">SELECT </em></code> guarantees it needs a column that isn't, forcing a trip
+  back to the full row.</p>
+
+<p>Naming exact columns also documents intent — a reader (or your future
+self) sees exactly what the query depends on, instead of "everything,
+for reasons unstated."</p>
+
+<h2 id="principle-4-where-not-post-filtering--let-sqlite-prune-early">Principle 4: <code class="inline-code">WHERE</code>, not post-filtering — let SQLite prune early</h2>
+
+<p>Filter in the <code class="inline-code">WHERE</code> clause of the innermost query, not by pulling
+everything into a subquery/CTE and filtering afterward, when the two
+are logically equivalent. SQLite's planner is generally good at
+pushing predicates down on its own, but writing the filter where the
+data lives keeps intent clear and avoids relying on the planner
+noticing an equivalence it might not always find, especially across
+views. Recall from Module 4 that <code class="inline-code">agg_monthly_sales_by_category</code> is a
+view over <code class="inline-code">fact_sales</code>, which is a view over <code class="inline-code">silver_sales</code>, which is
+a view over <code class="inline-code">bronze_sales</code> — filtering as early in that chain as
+possible (e.g. filtering <code class="inline-code">WHERE p.category = 'Climbing'</code> in a join
+against <code class="inline-code">dim_product</code>, as in Module 5's Example 3/4) gives the planner
+the best chance to use an index deep in the chain.</p>
+
+<h2 id="when-an-index-wont-help-even-sargable">When an index won't help, even sargable</h2>
+
+<p>Not every filter benefits from an index, even written correctly:
+<ul class="styled-list"><li><strong>Low-selectivity columns.</strong> A column like <code class="inline-code">channel</code> (only <code class="inline-code">Online</code>/</li></ul>  <code class="inline-code">In-Store</code>, i.e. roughly half the table matches either value) rarely
+  benefits — SQLite may reasonably decide a scan is cheaper than
+  jumping around the index and then fetching each matching row
+  individually. Indexes pay off most on high-selectivity columns
+  (unique or near-unique IDs).
+<ul class="styled-list"><li><strong>Small tables.</strong> <code class="inline-code">bronze_employees</code> (~35 rows) will almost always</li></ul>  be scanned regardless of indexing — the entire table already fits
+  in a single page or two, so there's nothing meaningful to save.
+<ul class="styled-list"><li><strong>Queries that need most of the table anyway.</strong> If a query's <code class="inline-code">WHERE</code></li></ul>  clause matches 80% of rows, an index lookup (jump to index, then
+  fetch each matching row from the table) can cost <em>more</em> than simply
+  scanning the table in physical order. This is exactly the kind of
+  call <code class="inline-code">EXPLAIN QUERY PLAN</code> reveals — trust it over intuition.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Wrapping indexed columns in functions in <code class="inline-code">WHERE</code></strong> (<code class="inline-code">LOWER(x) =</code>,</li></ul>  `DATE(x) =`, `x + 1 =`) and then being confused why an index isn't
+  used. Verified above — this alone flips `SEARCH` to `SCAN`.
+<ul class="styled-list"><li><strong>Assuming <code class="inline-code">LIKE</code> with a trailing wildcard always uses an index.</strong></li></ul>  It needs case-sensitive comparison to line up with the index; check
+  `EXPLAIN QUERY PLAN`, don't assume.
+<ul class="styled-list"><li>**Reflexively adding indexes without checking whether the column is</li></ul>  selective enough to benefit** — see Module 5's common mistakes for
+  the flip side of this.
+<ul class="styled-list"><li>*<em><code class="inline-code">SELECT </em></code> out of habit** in application code or reports, then</li></ul>  discarding most of the columns downstream anyway.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>A predicate is <strong>sargable</strong> when SQLite can use it to search an</li></ul>  index directly — wrapping the indexed column in a function
+  (`LOWER(email) = ...`) breaks that, forcing a full scan, verified
+  above.
+<ul class="styled-list"><li>Leading-wildcard <code class="inline-code">LIKE '%x'</code> can never use an index; trailing-wildcard</li></ul>  `LIKE 'x%'` can, but only with case-sensitive comparison
+  (`PRAGMA case_sensitive_like = ON` or `GLOB` instead of `LIKE`).
+<ul class="styled-list"><li>Select only the columns you need — it reduces I/O and keeps covering</li></ul>  indexes usable.
+<ul class="styled-list"><li>Not every filter benefits from an index — low selectivity and small</li></ul>  tables are two real reasons a `SCAN` can beat a `SEARCH`. Always
+  check `EXPLAIN QUERY PLAN` rather than assuming.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="05-indexes-and-explain-query-plan.html" class="nav-btn">5. Indexes and EXPLAIN QUERY PLAN</a>. Next: <a href="07-constraints-and-data-integrity.html" class="nav-btn">7. Constraints and Data Integrity</a>. Exercises: <a href="../../exercises/04-expert/06-query-optimization-basics.html" class="nav-btn">6. Query Optimization Basics</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

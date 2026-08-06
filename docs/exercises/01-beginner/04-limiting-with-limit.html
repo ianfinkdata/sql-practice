@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Limiting with LIMIT (and OFFSET) | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-limiting-with-limit-and-offset">Exercises: Limiting with LIMIT (and OFFSET)</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/04-limiting-with-limit.html" class="nav-btn">4. Limiting with LIMIT (and OFFSET)</a>. Previous: <a href="03-sorting-with-order-by.html" class="nav-btn">3. Sorting with ORDER BY</a>. Next: <a href="05-null-the-absence-of-a-value.html" class="nav-btn">5. NULL: the Absence of a Value</a>.</nav>
+
+<h3 id="1-first-page">1. First page</h3>
+
+<p>Write a query showing the first 3 employees alphabetically by last
+name (<code class="inline-code">first_name</code>, <code class="inline-code">last_name</code>).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT first_name, last_name
+FROM bronze_employees
+ORDER BY last_name ASC
+LIMIT 3;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>first_name</th><th>last_name</th></tr></thead><tbody><tr><td>Robert</td><td>ANDERSON</td></tr><tr><td>ANTONIO</td><td>Bailey</td></tr><tr><td>Mary</td><td>Boyd</td></tr></tbody></table></div>
+</details>
+
+<h3 id="2-second-page">2. Second page</h3>
+
+<p>Using the same sort as exercise 1, write a query for the <em>next</em> 3
+employees (ranks 4–6).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT first_name, last_name
+FROM bronze_employees
+ORDER BY last_name ASC
+LIMIT 3 OFFSET 3;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>first_name</th><th>last_name</th></tr></thead><tbody><tr><td>JENNIFER</td><td>Brown</td></tr><tr><td>Derek</td><td>Brown</td></tr><tr><td>Alexandria</td><td>CUNNINGHAM</td></tr></tbody></table></div>
+</details>
+
+<h3 id="3-the-3rd-most-expensive-product">3. The 3rd most expensive product</h3>
+
+<p>Write a query that returns exactly one row: the 3rd most expensive
+product in <code class="inline-code">bronze_products</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+ORDER BY unit_price DESC
+LIMIT 1 OFFSET 2;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Highline Paddle</td><td>696.3</td></tr></tbody></table></div>
+`OFFSET 2` skips the top 2 (ranks 1 and 2), then `LIMIT 1` takes just
+the next row — rank 3.
+
+<p></details></p>
+
+<h3 id="4-combine-where-order-by-and-limit">4. Combine WHERE, ORDER BY, and LIMIT</h3>
+
+<p>Write a query for all <code class="inline-code">Climbing</code>-category products, sorted by price
+from highest to lowest, with no <code class="inline-code">LIMIT</code> — just to see the whole list
+and how many there are.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+WHERE category = &#x27;Climbing&#x27;
+ORDER BY unit_price DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Meridian Chalk Bags</td><td>669.02</td></tr><tr><td>Alpine Harnesse</td><td>640.45</td></tr><tr><td>Cascade Harnesse</td><td>379.33</td></tr><tr><td>Ridge Carabiners</td><td>198.04</td></tr><tr><td>Meridian Chalk Bags</td><td>155.94</td></tr><tr><td>Backcountry Chalk Bags</td><td>141.92</td></tr><tr><td>Glacier Carabiners</td><td>113.71</td></tr><tr><td>Trailhead Ropes</td><td>87.28</td></tr><tr><td>Alpine Climbing Shoes</td><td>77.97</td></tr></tbody></table></div>
+9 rows total (matching the exact-cased `'Climbing'` count from module
+2's exercises).
+
+<p></details></p>
+
+<h3 id="5-paginate-that-list">5. Paginate that list</h3>
+
+<p>Using the same filter and sort as exercise 4, write a query for just
+the <em>second page</em> of results, using a page size of 5.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>Page 1 is <code class="inline-code">LIMIT 5 OFFSET 0</code> (or just <code class="inline-code">LIMIT 5</code>); page 2 skips the
+first 5:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_name, unit_price
+FROM bronze_products
+WHERE category = &#x27;Climbing&#x27;
+ORDER BY unit_price DESC
+LIMIT 5 OFFSET 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>Backcountry Chalk Bags</td><td>141.92</td></tr><tr><td>Glacier Carabiners</td><td>113.71</td></tr><tr><td>Trailhead Ropes</td><td>87.28</td></tr><tr><td>Alpine Climbing Shoes</td><td>77.97</td></tr></tbody></table></div>
+Only 4 rows come back, not 5 — because there are only 9 matching rows
+total, and page 2 (rows 6–10) only has 4 rows to give (rows 6, 7, 8,
+9). `OFFSET` past the end of the data just returns fewer rows, not an
+error.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/04-limiting-with-limit.html" class="nav-btn">4. Limiting with LIMIT (and OFFSET)</a>. Previous: <a href="03-sorting-with-order-by.html" class="nav-btn">3. Sorting with ORDER BY</a>. Next: <a href="05-null-the-absence-of-a-value.html" class="nav-btn">5. NULL: the Absence of a Value</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

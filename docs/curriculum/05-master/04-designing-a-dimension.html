@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4. Designing a Dimension | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="4-designing-a-dimension">4. Designing a Dimension</h1>
+
+<nav class="book-nav">Previous: <a href="03-grain-the-most-important-decision.html" class="nav-btn">3. Grain: The Most Important Decision in Star Schema Design</a>. Next: <a href="05-slowly-changing-dimensions-scd-1-and-2.html" class="nav-btn">5. Slowly Changing Dimensions: Type 1 and Type 2</a>. Exercises: <a href="../../exercises/05-master/04-designing-a-dimension.html" class="nav-btn">4. Designing a Dimension</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>A well-designed dimension is a <strong>conformed</strong> lookup table: one row per
+instance of the entity it describes, with a stable key that any fact
+table can join to, and a consistent set of attributes that mean the
+same thing everywhere they're used. "Conformed" is the technical term
+for "this dimension means the same thing no matter which fact table
+references it" — if Oakhaven ever added a <code class="inline-code">fact_support_tickets</code> table
+alongside <code class="inline-code">fact_sales</code>, both could join to the <em>same</em> <code class="inline-code">dim_customer</code>
+and get identical customer attributes, rather than each fact
+maintaining its own slightly-different customer lookup. That
+reusability is the entire economic case for building dimensions as
+separate objects instead of just embedding customer details directly
+into every fact table.</p>
+
+<p>Designing a dimension well means answering a short checklist:</p>
+
+<p>1. What's the key other tables will join on?
+2. What are the descriptive attributes worth carrying?
+3. Is it really one row per entity — or does it just look that way?</p>
+
+<p>That third question is where things get interesting, and Oakhaven's
+<code class="inline-code">dim_customer</code> is a real, working example of a dimension that
+<em>doesn't</em> fully answer it.</p>
+
+<h2 id="dissecting-dim_customer">Dissecting <code class="inline-code">dim_customer</code></h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- project/gold/dim_customer.sql
+CREATE VIEW dim_customer AS
+SELECT
+    customer_id,
+    first_name,
+    last_name,
+    full_name,
+    email,
+    phone,
+    state,
+    signup_date,
+    is_active,
+    customer_segment
+FROM silver_customers;</code></pre></div>
+
+<p>This is about as simple as a dimension gets: a straight <code class="inline-code">SELECT</code> over
+the cleaned <code class="inline-code">silver_customers</code> view, with no filtering, deduplication,
+or aggregation. <code class="inline-code">customer_id</code> is the natural key (module 2) other
+tables join on — <code class="inline-code">fact_sales.customer_id</code> references it directly. Every
+other column is a plain attribute: name fields, contact info, <code class="inline-code">state</code>,
+<code class="inline-code">signup_date</code>, <code class="inline-code">is_active</code>, <code class="inline-code">customer_segment</code>. None of them are
+measures; nothing here gets summed.</p>
+
+<p>The view's own header comment is explicit about the one thing it
+deliberately does <em>not</em> do:</p>
+
+<blockquote class="custom-blockquote">One row per bronze_customers row (including the intentional<br>near-duplicate people — deduping them is a dedicated ROW_NUMBER<br>lesson, not baked in here).</blockquote>
+
+<p>That's worth taking seriously as a real design gap, not just a
+throwaway comment — verify it.</p>
+
+<h2 id="the-open-modeling-question-does-dim_customer-really-have-one-row-per-customer">The open modeling question: does <code class="inline-code">dim_customer</code> really have one row per customer?</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total_rows, COUNT(DISTINCT customer_id) AS distinct_ids
+FROM dim_customer;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_rows</th><th>distinct_ids</th></tr></thead><tbody><tr><td>600</td><td>600</td></tr></tbody></table></div>
+Every row has a unique `customer_id` — as a *key*, this dimension is
+fine. But `customer_id` uniqueness only proves "one row per ID," not
+"one row per real person." Check by normalized email instead, which is
+a much better proxy for "the same human being":
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total_rows, COUNT(DISTINCT LOWER(TRIM(email))) AS distinct_people_by_email
+FROM dim_customer
+WHERE email IS NOT NULL AND email &lt;&gt; &#x27;&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_rows</th><th>distinct_people_by_email</th></tr></thead><tbody><tr><td>565</td><td>536</td></tr></tbody></table></div>
+565 rows have a usable email, but only 536 distinct normalized email
+addresses among them — 29 rows are redundant. Here's one concrete
+pair:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, first_name, last_name, email, signup_date, customer_segment
+FROM dim_customer
+WHERE LOWER(TRIM(email)) = &#x27;alexandra.wang@yahoo.com&#x27;
+ORDER BY customer_id;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>first_name</th><th>last_name</th><th>email</th><th>signup_date</th><th>customer_segment</th></tr></thead><tbody><tr><td>165</td><td>Alexandra</td><td>Wang</td><td>alexandra.wang@yahoo.com</td><td>2019-05-29</td><td>Wholesale</td></tr><tr><td>581</td><td>Alexandra</td><td>Wang</td><td>alexandra.wang@yahoo.com</td><td>2025-05-27</td><td>Retail</td></tr></tbody></table></div>
+Same person (same normalized email, same name), two `customer_id`
+values, two different `customer_segment` values (`Wholesale` vs.
+`Retail`) and two different signup dates. This is documented directly
+in `project/docs/data_dictionary.md`: `customer_id` 571–600 (30 rows)
+are intentional near-duplicates of 30 of the base 1–570 rows —
+"same underlying person... but with varied name casing/whitespace...
+mirroring a person who signed up twice."
+
+<p><code class="inline-code">dim_customer</code> passes all 600 rows through untouched. <strong>This is an
+open modeling question, not a bug</strong> — it's flagged in the source
+comment precisely so you notice it and reason about the trade-off
+yourself.</p>
+
+<h2 id="previewing-the-fix-without-changing-dim_customersql">Previewing the fix (without changing <code class="inline-code">dim_customer.sql</code>)</h2>
+
+<p>Tier 3 taught the <code class="inline-code">ROW_NUMBER()</code> deduplication pattern for exactly
+this situation. Here's what applying it <em>would</em> look like — a
+<code class="inline-code">SELECT</code>-only preview, not a change to the actual gold view:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH ranked AS (
+  SELECT
+    customer_id, first_name, last_name, email, signup_date, customer_segment,
+    ROW_NUMBER() OVER (
+      PARTITION BY LOWER(TRIM(email))
+      ORDER BY signup_date ASC, customer_id ASC
+    ) AS rn
+  FROM dim_customer
+  WHERE email IS NOT NULL AND email &lt;&gt; &#x27;&#x27;
+)
+SELECT customer_id, first_name, last_name, email, signup_date, customer_segment, rn
+FROM ranked
+WHERE LOWER(TRIM(email)) = &#x27;alexandra.wang@yahoo.com&#x27;
+ORDER BY customer_id;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>first_name</th><th>last_name</th><th>email</th><th>signup_date</th><th>customer_segment</th><th>rn</th></tr></thead><tbody><tr><td>165</td><td>Alexandra</td><td>Wang</td><td>alexandra.wang@yahoo.com</td><td>2019-05-29</td><td>Wholesale</td><td>1</td></tr><tr><td>581</td><td>Alexandra</td><td>Wang</td><td>alexandra.wang@yahoo.com</td><td>2025-05-27</td><td>Retail</td><td>2</td></tr></tbody></table></div>
+Keeping only `rn = 1` (earliest signup) per normalized email would
+remove:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WITH ranked AS (
+  SELECT customer_id,
+         ROW_NUMBER() OVER (PARTITION BY LOWER(TRIM(email)) ORDER BY signup_date ASC, customer_id ASC) AS rn
+  FROM dim_customer
+  WHERE email IS NOT NULL AND email &lt;&gt; &#x27;&#x27;
+)
+SELECT COUNT(*) AS rows_that_would_be_removed FROM ranked WHERE rn &gt; 1;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>rows_that_would_be_removed</th></tr></thead><tbody><tr><td>29</td></tr></tbody></table></div>
+<h2 id="why-this-isnt-a-trivial-fix--the-real-trade-off">Why this isn't a trivial fix — the real trade-off</h2>
+
+<p>Deduplicating <code class="inline-code">dim_customer</code> sounds free, but it isn't, and this is
+exactly the kind of judgment call real dimensional modeling requires:
+<ul class="styled-list"><li><strong>Conflict resolution.</strong> The two Alexandra Wang rows disagree on</li></ul>  <code class="inline-code">customer_segment</code> (<code class="inline-code">Wholesale</code> vs. <code class="inline-code">Retail</code>) and <code class="inline-code">state</code>. Which one
+  is "true"? Earliest? Most recent? Some business rule you'd need to
+  ask a stakeholder about?
+<ul class="styled-list"><li><strong>Fact table impact.</strong> <code class="inline-code">fact_sales.customer_id</code> references <em>both</em></li></ul>  <code class="inline-code">customer_id</code> values (165 and 581) for orders placed under either
+  registration. If you dedupe the dimension down to one canonical row,
+  you must also redirect the fact table's foreign keys to point at the
+  surviving ID — otherwise you've created orphan foreign keys pointing
+  at rows that no longer exist in the dimension. That redirect step
+  (a "customer_id crosswalk") is itself real work, and it's the core
+  of what's called <strong>master data management (MDM)</strong> in industry.
+<ul class="styled-list"><li><strong>It compounds with grain and key design (modules 2–3).</strong> Once you</li></ul>  dedupe, <code class="inline-code">customer_id</code> alone is no longer a trustworthy natural key
+  for "one row per person" — which is exactly the kind of situation
+  that motivates introducing a proper surrogate key, decoupled from
+  the source system's ID.</p>
+
+<p>This tier leaves <code class="inline-code">dim_customer</code> as-is deliberately, so you can treat
+"should this dimension be deduplicated, and what would it cost to do
+correctly" as a genuine open design exercise rather than a solved
+problem.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li>**Assuming a dimension is conformed just because it has a primary</li></ul>  key.** A unique key guarantees row identity, not entity identity —
+  `dim_customer` proves this directly.
+<ul class="styled-list"><li>**Deduping a dimension without updating the fact table's foreign</li></ul>  keys.** Removing "loser" rows from a dimension without redirecting
+  the fact rows that pointed at them creates orphans where none
+  existed before.
+<ul class="styled-list"><li><strong>Picking a dedup "winner" without a documented rule.</strong> "Keep the</li></ul>  first one" and "keep the most complete one" produce different
+  results — pick a rule deliberately and write it down, don't let it
+  be whatever `ROW_NUMBER()`'s default ordering happens to do.
+<ul class="styled-list"><li><strong>Treating a dimension design as finished just because it compiles.</strong></li></ul>  `dim_customer.sql` runs fine and returns 600 clean-looking rows. It
+  still has an unresolved identity question baked in — "does it run
+  without error" and "is it correctly modeled" are different bars.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>A well-designed dimension is <strong>conformed</strong>: reusable across any fact</li></ul>  table that needs the same entity, with a stable key and consistent
+  attributes.
+<ul class="styled-list"><li><code class="inline-code">dim_customer</code> is a real, working dimension that intentionally</li></ul>  carries an unresolved data quality issue: 30 of its 600 rows are
+  near-duplicate people, verifiable by comparing `COUNT(DISTINCT
+  customer_id)` (600 — looks fine) against `COUNT(DISTINCT
+  LOWER(TRIM(email)))` (536 — reveals the overlap).
+<ul class="styled-list"><li>The <code class="inline-code">ROW_NUMBER() OVER (PARTITION BY ...)</code> pattern from Tier 3 is the</li></ul>  right tool to dedupe it — but doing so correctly requires a
+  conflict-resolution rule and a fact-table key redirect, not just a
+  `WHERE rn = 1` filter.
+<ul class="styled-list"><li>"Does it have a unique key" and "is it correctly modeled" are</li></ul>  different questions — always ask the second one too.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="03-grain-the-most-important-decision.html" class="nav-btn">3. Grain: The Most Important Decision in Star Schema Design</a>. Next: <a href="05-slowly-changing-dimensions-scd-1-and-2.html" class="nav-btn">5. Slowly Changing Dimensions: Type 1 and Type 2</a>. Exercises: <a href="../../exercises/05-master/04-designing-a-dimension.html" class="nav-btn">4. Designing a Dimension</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

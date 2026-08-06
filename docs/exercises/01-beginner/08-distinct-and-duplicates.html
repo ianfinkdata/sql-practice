@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: DISTINCT and Duplicates | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-distinct-and-duplicates">Exercises: DISTINCT and Duplicates</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/08-distinct-and-duplicates.html" class="nav-btn">8. DISTINCT and Duplicates</a>. Previous: <a href="07-pattern-matching-with-like.html" class="nav-btn">7. Pattern Matching with LIKE</a>. Next: <a href="../02-intermediate/01-combining-tables-with-join.html" class="nav-btn">Combining Tables with JOIN</a>.</nav>
+
+<h3 id="1-distinct-regions">1. Distinct regions</h3>
+
+<p>Write a query listing every distinct <code class="inline-code">region</code> value in
+<code class="inline-code">bronze_employees</code>, sorted alphabetically. How many distinct values are
+there, and how many <em>real</em> regions do you think that represents?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT region
+FROM bronze_employees
+ORDER BY region;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>region</th></tr></thead><tbody><tr><td>CENTRAL</td></tr><tr><td>Central</td></tr><tr><td>EAST</td></tr><tr><td>East</td></tr><tr><td>NORTHEAST</td></tr><tr><td>Northeast</td></tr><tr><td>SOUTH</td></tr><tr><td>South</td></tr><tr><td>WEST</td></tr><tr><td>West</td></tr><tr><td>central</td></tr><tr><td>east</td></tr><tr><td>south</td></tr><tr><td>west</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT region) FROM bronze_employees;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT region)</th></tr></thead><tbody><tr><td>14</td></tr></tbody></table></div>
+14 distinct strings, but only 5 real regions (West, East, Central,
+South, Northeast) — the same casing-messiness pattern as `category`
+and `department`.
+
+<h3 id="2-distinct-order-statuses">2. Distinct order statuses</h3>
+
+<p>List every distinct <code class="inline-code">order_status</code> in <code class="inline-code">bronze_sales</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT order_status
+FROM bronze_sales
+ORDER BY order_status;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_status</th></tr></thead><tbody><tr><td>(blank/NULL)</td></tr><tr><td>CANCELLED</td></tr><tr><td>Cancelled</td></tr><tr><td>Completed</td></tr><tr><td>Returned</td></tr><tr><td>completed</td></tr></tbody></table></div>
+Notice one of the "distinct" values is blank — that's `NULL` showing
+up in the `DISTINCT` list, which is expected: `NULL` counts as its own
+distinct "value" for this purpose, separate from any real status
+string.
+
+<p></details></p>
+
+<h3 id="3-distinct-channels">3. Distinct channels</h3>
+
+<p>List every distinct <code class="inline-code">channel</code> value in <code class="inline-code">bronze_sales</code>, and count them.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT channel
+FROM bronze_sales
+ORDER BY channel;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>channel</th></tr></thead><tbody><tr><td>In-Store</td></tr><tr><td>Online</td></tr><tr><td>in store</td></tr><tr><td>online</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT channel) FROM bronze_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT channel)</th></tr></thead><tbody><tr><td>4</td></tr></tbody></table></div>
+4 distinct strings for what's really only 2 channels (Online,
+In-Store) — casing (`online`/`Online`) plus a punctuation difference
+(`In-Store`/`in store`) both contribute here.
+
+<p></details></p>
+
+<h3 id="4-distinct-is_manager-values">4. Distinct is_manager values</h3>
+
+<p>List the distinct values that actually occur in
+<code class="inline-code">bronze_employees.is_manager</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT is_manager
+FROM bronze_employees
+ORDER BY is_manager;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>is_manager</th></tr></thead><tbody><tr><td>(blank/NULL)</td></tr><tr><td>0</td></tr><tr><td>1</td></tr><tr><td>N</td></tr><tr><td>Y</td></tr><tr><td>false</td></tr><tr><td>n</td></tr><tr><td>no</td></tr><tr><td>y</td></tr></tbody></table></div>
+9 distinct values appear among these 35 employees (out of an even
+larger possible pool of mixed-boolean spellings used elsewhere in
+Oakhaven — not every possible spelling has to show up in every
+column).
+
+<p></details></p>
+
+<h3 id="5-distinct-across-two-columns">5. DISTINCT across two columns</h3>
+
+<p>Count how many distinct <code class="inline-code">(category, brand)</code> combinations exist in
+<code class="inline-code">bronze_products</code>. Is that number the same as, smaller than, or larger
+than the total row count (150)? Why?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+    SELECT DISTINCT category, brand FROM bronze_products
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>136</td></tr></tbody></table></div>
+136, smaller than 150. That means some `(category, brand)` pairs
+repeat — e.g. the same brand selling more than one product in the same
+raw category string. (This wraps the `DISTINCT` query in a subquery
+just to count its rows — subqueries are covered properly in a later
+tier; for now, just trust that this counts how many distinct
+`category, brand` pairs came out.)
+
+<p></details></p>
+
+<h3 id="6-duplicate-product-names">6. Duplicate product names</h3>
+
+<p>Count how many distinct <code class="inline-code">product_name</code> values exist versus the total
+row count. Does every product have a unique name?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT product_name) FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT product_name)</th></tr></thead><tbody><tr><td>141</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>150</td></tr></tbody></table></div>
+141 distinct names out of 150 rows — so no, product names are **not**
+guaranteed unique. At least a few names (like "Canyon Backpacks,"
+generated from an `{adjective} {subcategory}` pattern) repeat across
+different `product_id`s. This is worth remembering: `product_name`
+alone is not a safe way to identify "one specific product" — you'd
+want `product_id` for that.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/01-beginner/08-distinct-and-duplicates.html" class="nav-btn">8. DISTINCT and Duplicates</a>. Previous: <a href="07-pattern-matching-with-like.html" class="nav-btn">7. Pattern Matching with LIKE</a>. Next: <a href="../02-intermediate/01-combining-tables-with-join.html" class="nav-btn">Combining Tables with JOIN</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

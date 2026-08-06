@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>8. DISTINCT and Duplicates | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="8-distinct-and-duplicates">8. DISTINCT and Duplicates</h1>
+
+<nav class="book-nav">Previous: <a href="07-pattern-matching-with-like.html" class="nav-btn">7. Pattern Matching with LIKE</a>. Next: <a href="../02-intermediate/README.html" class="nav-btn">Tier 2 — Intermediate</a>. Exercises: <a href="../../exercises/01-beginner/08-distinct-and-duplicates.html" class="nav-btn">8. DISTINCT and Duplicates</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p><code class="inline-code">DISTINCT</code> removes duplicate rows from a result — if the same value
+(or combination of values) appears more than once, you only see it
+once. It's the tool for questions like "what are all the different
+categories we have?" rather than "list every product's category,
+including repeats."</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT column_name FROM table_name;</code></pre></div>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p><code class="inline-code">bronze_products</code> has 150 rows but far fewer <em>distinct</em> categories.
+<code class="inline-code">DISTINCT</code> is how you go from "150 rows of category text" to "the set
+of category values that actually occur." It's a natural fit for
+exploring what values live in a column before you decide how to filter
+or group by it — and, as you're about to see, it's also an excellent
+tool for <em>revealing</em> messiness, since a column you expect to have 8
+values might turn out to have many more once you actually ask.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT column_name
+FROM table_name;</code></pre></div>
+
+<p><code class="inline-code">DISTINCT</code> applies to the whole row of selected columns, not just one
+column in isolation — with multiple columns, it removes rows only
+where <em>every</em> selected column matches another row exactly:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT column_a, column_b
+FROM table_name;</code></pre></div>
+
+<p>You can also count distinct values directly:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT column_name) FROM table_name;</code></pre></div>
+
+<h2 id="try-it">Try it</h2>
+
+<h3 id="every-distinct-department">Every distinct department</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT department
+FROM bronze_employees
+ORDER BY department;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>department</th></tr></thead><tbody><tr><td>MANAGEMENT</td></tr><tr><td>Management</td></tr><tr><td>SUPPORT</td></tr><tr><td>Sales</td></tr><tr><td>Support</td></tr><tr><td>WAREHOUSE</td></tr><tr><td>Warehouse</td></tr><tr><td>management</td></tr><tr><td>sales</td></tr><tr><td>support</td></tr><tr><td>warehouse</td></tr></tbody></table></div>
+11 distinct values for what should conceptually be **4** departments
+(Sales, Support, Warehouse, Management). `DISTINCT` did exactly what
+it promised — it removed *exact* duplicate rows — but each casing
+variant of the same real department (`MANAGEMENT`, `Management`,
+`management`) is a *different* exact string, so `DISTINCT` treats them
+as different values. This is the seed of the dedup/standardization
+work coming in later tiers.
+
+<h3 id="how-many-distinct-brands">How many distinct brands?</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT brand) FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT brand)</th></tr></thead><tbody><tr><td>24</td></tr></tbody></table></div>
+24 distinct brand names across 150 products — a much more useful
+number than "150 rows of brand text," most of which repeat.
+
+<h3 id="the-category-column-a-near-duplicate-showcase">The category column: a near-duplicate showcase</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT category) FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT category)</th></tr></thead><tbody><tr><td>40</td></tr></tbody></table></div>
+**40.** Not 8 — even though Oakhaven really only sells 8 canonical
+categories of gear (Footwear, Apparel, Camping & Hiking, Climbing,
+Water Sports, Winter Sports, Accessories, Nutrition & Hydration).
+`DISTINCT` isn't wrong here — it's accurately reporting that there
+really are 40 different exact strings in this column. The gap between
+"40 distinct strings" and "8 real categories" *is* the messiness: same
+underlying category, spelled/cased/spaced differently. A few examples
+of what's hiding in there: `FOOTWEAR`, `Footwear`, `footwear`, `Foot
+Wear`, and even `FOOT WEAR ` (with a trailing space) all mean the same
+thing to a human, but are 5 separate values to `DISTINCT`. You may
+even notice what look like duplicate rows in a raw `SELECT DISTINCT
+category` listing — that's usually a value with invisible trailing
+whitespace sitting right next to its trimmed twin.
+
+<p>This is a preview, not the fix. Actually collapsing these 40 strings
+down to 8 clean categories — trimming whitespace, standardizing case,
+handling "and" vs "&" — is exactly what Tier 2 (and the real
+<code class="inline-code">silver_products</code> view in this project) does. For now, the skill worth
+taking away is simpler: <strong><code class="inline-code">COUNT(DISTINCT column)</code> is a fast, reliable
+way to check "is this column messier than I expect?"</strong> before you rely
+on it for anything.</p>
+
+<h3 id="distinct-combinations-across-two-columns">Distinct combinations across two columns</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT payment_method
+FROM bronze_sales
+ORDER BY payment_method;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>payment_method</th></tr></thead><tbody><tr><td>CC</td></tr><tr><td>Cash</td></tr><tr><td>Credit Card</td></tr><tr><td>Debit Card</td></tr><tr><td>Gift Card</td></tr><tr><td>PayPal</td></tr><tr><td>cash</td></tr><tr><td>credit card</td></tr><tr><td>debit card</td></tr><tr><td>paypal</td></tr></tbody></table></div>
+10 distinct raw values for what should be 5 real payment methods
+(Credit Card, Cash, Debit Card, Gift Card, PayPal) — the same pattern
+as `category`, on a different column, in the biggest table in the
+database.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Assuming DISTINCT understands meaning, not just exact text.</strong></li></ul>  `DISTINCT` deduplicates by exact value — it has no idea that
+  `'Footwear'` and `'FOOTWEAR'` "mean" the same category. If you want
+  that, you need to standardize the values first (case-folding,
+  trimming, etc.) — coming in Tier 2.
+<ul class="styled-list"><li>**Trusting <code class="inline-code">COUNT(DISTINCT column)</code> as "the number of real-world</li></ul>  categories."** As shown above, it tells you how many distinct
+  *strings* exist, which is a ceiling on the number of real categories
+  — never fewer than the real count, often quite a bit more.
+<ul class="styled-list"><li><strong>Forgetting DISTINCT applies to the whole selected row.</strong></li></ul>  `SELECT DISTINCT category, brand FROM ...` doesn't independently
+  dedupe each column — it only removes rows where *both* columns
+  together exactly match another row.
+<ul class="styled-list"><li><strong>Reaching for DISTINCT to hide a bug in filtering/joining logic.</strong></li></ul>  If a query is producing more rows than expected, slapping `DISTINCT`
+  on top can mask (rather than fix) a real problem elsewhere in the
+  query — worth keeping in mind once you get to joins in a later tier.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">DISTINCT</code> removes exact-duplicate rows from a result.</li><li><code class="inline-code">COUNT(DISTINCT column)</code> counts how many distinct exact values a</li></ul>  column has — a quick, useful "how messy is this?" check.
+<ul class="styled-list"><li><code class="inline-code">bronze_products.category</code> has 40 distinct raw strings representing</li></ul>  only 8 real categories, and `bronze_sales.payment_method` shows the
+  same pattern — a direct, concrete preview of the cleanup work in
+  Tier 2.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="07-pattern-matching-with-like.html" class="nav-btn">7. Pattern Matching with LIKE</a>. Next: <a href="../02-intermediate/README.html" class="nav-btn">Tier 2 — Intermediate</a>. Exercises: <a href="../../exercises/01-beginner/08-distinct-and-duplicates.html" class="nav-btn">8. DISTINCT and Duplicates</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

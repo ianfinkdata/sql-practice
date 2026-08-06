@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3. Window Functions II — Running Totals &amp; Moving Aggregates | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="3-window-functions-ii--running-totals--moving-aggregates">3. Window Functions II — Running Totals & Moving Aggregates</h1>
+
+<nav class="book-nav">Previous: <a href="02-window-functions-i-row-number-rank.html" class="nav-btn">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</a>. Next: <a href="04-lead-lag-period-over-period.html" class="nav-btn">4. LEAD, LAG, and Period-over-Period Comparisons</a>. Exercises: <a href="../../exercises/03-advanced/03-window-functions-ii-running-totals.html" class="nav-btn">3. Window Functions II — Running Totals & Moving Aggregates</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>The previous lesson used window functions to rank rows. This lesson uses
+the exact same <code class="inline-code">OVER (...)</code> mechanism for a different job: accumulating a
+value as you move down a sorted list — a <strong>running total</strong> — or averaging
+over a sliding slice of nearby rows — a <strong>moving average</strong>.</p>
+
+<p>The key new idea is the <strong>frame</strong>: the specific slice of rows, relative to
+the current row, that a window function considers. So far we've used the
+default frame implicitly. This lesson makes it explicit.</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SUM(value_column) OVER (
+    [PARTITION BY grouping_column]
+    ORDER BY sort_column
+    [ROWS BETWEEN frame_start AND frame_end]
+)</code></pre></div>
+
+<p>When you add <code class="inline-code">ORDER BY</code> inside <code class="inline-code">OVER (...)</code> to an aggregate function like
+<code class="inline-code">SUM()</code>, <code class="inline-code">AVG()</code>, <code class="inline-code">MAX()</code>, or <code class="inline-code">MIN()</code>, its <strong>default frame</strong> becomes "from
+the start of the partition through the current row" — which is exactly
+what a running total needs, with no extra syntax required.</p>
+
+<p>To compute something over a fixed-size sliding window instead (a moving
+average, say), specify the frame explicitly:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ROWS BETWEEN 6 PRECEDING AND CURRENT ROW   -- current row + 6 before it = 7-row window</code></pre></div>
+
+<h2 id="example-1-a-running-total-of-daily-sales">Example 1: a running total of daily sales</h2>
+
+<p><code class="inline-code">agg_daily_sales</code> is Oakhaven's date-spine view — one row per calendar
+day, including zero-order days (that pattern is dissected fully in a later
+module). Running <code class="inline-code">SUM(total_net_amount)</code> ordered by date gives a
+cumulative total:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_date, total_net_amount,
+       ROUND(SUM(total_net_amount) OVER (ORDER BY order_date), 2) AS running_total
+FROM agg_daily_sales
+WHERE order_date BETWEEN &#x27;2021-01-01&#x27; AND &#x27;2021-01-10&#x27;
+ORDER BY order_date;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_date</th><th>total_net_amount</th><th>running_total</th></tr></thead><tbody><tr><td>2021-01-01</td><td>2318.71</td><td>2318.71</td></tr><tr><td>2021-01-02</td><td>3381.01</td><td>5699.72</td></tr><tr><td>2021-01-03</td><td>1914.65</td><td>7614.37</td></tr><tr><td>2021-01-04</td><td>3594.94</td><td>11209.31</td></tr><tr><td>2021-01-05</td><td>3059.74</td><td>14269.05</td></tr><tr><td>2021-01-06</td><td>7591.42</td><td>21860.47</td></tr><tr><td>2021-01-07</td><td>8585.33</td><td>30445.80</td></tr><tr><td>2021-01-08</td><td>0.0</td><td>30445.80</td></tr><tr><td>2021-01-09</td><td>4533.02</td><td>34978.82</td></tr><tr><td>2021-01-10</td><td>6908.29</td><td>41887.11</td></tr></tbody></table></div>
+Notice 2021-01-08: `total_net_amount` is 0.0 (a zero-order day), and the
+running total simply doesn't move that day — exactly the behavior you'd
+want, and a preview of why the date-spine pattern (a later module) matters
+for this kind of query to be *complete* in the first place.
+
+<h2 id="example-2-a-7-day-moving-average">Example 2: a 7-day moving average</h2>
+
+<p>Sales are noisy day to day. A trailing moving average smooths that out.
+This needs an explicit frame — <code class="inline-code">ROWS BETWEEN 6 PRECEDING AND CURRENT ROW</code>
+means "the current row plus the 6 before it," i.e. a 7-day window:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_date, total_net_amount,
+       ROUND(AVG(total_net_amount) OVER (
+           ORDER BY order_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+       ), 2) AS moving_avg_7d
+FROM agg_daily_sales
+WHERE order_date BETWEEN &#x27;2021-01-01&#x27; AND &#x27;2021-01-14&#x27;
+ORDER BY order_date;</code></pre></div>
+
+<p>Verified output (first few rows):</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_date</th><th>total_net_amount</th><th>moving_avg_7d</th></tr></thead><tbody><tr><td>2021-01-01</td><td>2318.71</td><td>2318.71</td></tr><tr><td>2021-01-02</td><td>3381.01</td><td>2849.86</td></tr><tr><td>2021-01-03</td><td>1914.65</td><td>2538.12</td></tr><tr><td>2021-01-04</td><td>3594.94</td><td>2802.33</td></tr><tr><td>2021-01-05</td><td>3059.74</td><td>2853.81</td></tr><tr><td>2021-01-06</td><td>7591.42</td><td>3643.41</td></tr><tr><td>2021-01-07</td><td>8585.33</td><td>4349.40</td></tr><tr><td>2021-01-08</td><td>0.0</td><td>4018.16</td></tr></tbody></table></div>
+Early rows (before 7 days of history exist) average over however many rows
+*are* available — SQLite doesn't require a full 7-row frame; it uses
+whatever's there. That's usually what you want, but it's worth knowing so
+a thin early average doesn't surprise you.
+
+<h2 id="example-3-running-totals-partitioned-by-category">Example 3: running totals partitioned by category</h2>
+
+<p>Add <code class="inline-code">PARTITION BY</code> and the running total resets per group — same
+mechanism as Module 2's ranking, applied to <code class="inline-code">SUM()</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT category, year, month, total_net_amount,
+       ROUND(SUM(total_net_amount) OVER (PARTITION BY category ORDER BY year, month), 2)
+           AS category_running_total
+FROM agg_monthly_sales_by_category
+WHERE category = &#x27;Climbing&#x27; AND year = 2021
+ORDER BY month
+LIMIT 6;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>year</th><th>month</th><th>total_net_amount</th><th>category_running_total</th></tr></thead><tbody><tr><td>Climbing</td><td>2021</td><td>1</td><td>17972.83</td><td>17972.83</td></tr><tr><td>Climbing</td><td>2021</td><td>2</td><td>33663.09</td><td>51635.92</td></tr><tr><td>Climbing</td><td>2021</td><td>3</td><td>28847.21</td><td>80483.13</td></tr><tr><td>Climbing</td><td>2021</td><td>4</td><td>14295.57</td><td>94778.70</td></tr><tr><td>Climbing</td><td>2021</td><td>5</td><td>22400.84</td><td>117179.54</td></tr><tr><td>Climbing</td><td>2021</td><td>6</td><td>22866.67</td><td>140046.21</td></tr></tbody></table></div>
+Each `category`'s running total is independent — this is `agg_monthly_sales_by_category`
+grouped by `category, year, month` in the gold layer, then window-summed
+per category here.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li>**Assuming <code class="inline-code">SUM(x) OVER (ORDER BY y)</code> (no explicit frame) behaves like</li></ul>  `SUM(x) OVER ()` (no `ORDER BY` at all).** Adding `ORDER BY` silently
+  changes the default frame from "the whole partition" to "start of
+  partition through current row." This is the single most common window
+  function surprise — always ask "does this have an `ORDER BY`, and if so,
+  what frame does that imply?"
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">PARTITION BY</code> and getting one giant running total</strong> across</li></ul>  categories/customers/whatever should have been independent groups.
+<ul class="styled-list"><li><strong>Off-by-one frame errors.</strong> <code class="inline-code">ROWS BETWEEN 6 PRECEDING AND CURRENT ROW</code></li></ul>  is a 7-row window (6 + the current row), not 6. `ROWS BETWEEN 7
+  PRECEDING AND 1 PRECEDING` would be a genuinely-preceding 7-day window
+  that excludes today — useful when you don't want "today" polluting an
+  average meant to represent "typical."
+<ul class="styled-list"><li><strong>Applying a moving average to a date range with gaps</strong> and not</li></ul>  realizing the "7 rows" aren't necessarily "7 calendar days" unless the
+  underlying rows already form a complete date spine (as `agg_daily_sales`
+  does, but a raw `GROUP BY order_date` over `fact_sales` would not).
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>Adding <code class="inline-code">ORDER BY</code> inside <code class="inline-code">OVER (...)</code> to an aggregate changes its</li></ul>  default frame to "start of partition through current row" — that's what
+  makes a running total work with no extra syntax.
+<ul class="styled-list"><li><code class="inline-code">ROWS BETWEEN n PRECEDING AND CURRENT ROW</code> defines a fixed-size trailing</li></ul>  window of `n + 1` rows, for moving averages/sums.
+<ul class="styled-list"><li><code class="inline-code">PARTITION BY</code> resets the running total/moving aggregate per group,</li></ul>  exactly as it resets ranks in `ROW_NUMBER()`/`RANK()`.
+<ul class="styled-list"><li>Running totals and moving averages are only meaningful over a <em>complete</em></li></ul>  ordered sequence — gaps in the underlying data (missing dates, missing
+  months) will silently distort them unless you're working from a
+  gap-free spine.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="02-window-functions-i-row-number-rank.html" class="nav-btn">2. Window Functions I — ROW_NUMBER, RANK, DENSE_RANK</a>. Next: <a href="04-lead-lag-period-over-period.html" class="nav-btn">4. LEAD, LAG, and Period-over-Period Comparisons</a>. Exercises: <a href="../../exercises/03-advanced/03-window-functions-ii-running-totals.html" class="nav-btn">3. Window Functions II — Running Totals & Moving Aggregates</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

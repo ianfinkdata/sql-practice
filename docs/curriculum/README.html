@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Curriculum | SQL Practice</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../index.html">📖 Book Index</a>
+        <a href="../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../exercises/README.html">💪 Exercises</a>
+        <a href="../portfolio/README.html">💼 Portfolio</a>
+        <a href="../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="curriculum">Curriculum</h1>
+
+<div class="bluf-card"><div class="bluf-badge">⚡ BLUF (Bottom Line Up Front)</div><div class="bluf-body">The SQL Practice curriculum is a 6-tier progressive guide (Beginner → Master) taking you from basic <code class="inline-code">SELECT</code> statements to designing enterprise star schemas and medallion pipelines.</div></div>
+
+<nav class="book-nav"><a href="../README.html" class="nav-btn">⏮️ Prev: Home</a> <a href="../README.html" class="nav-btn">📖 Table of Contents</a> <a href="00-orientation/README.html" class="nav-btn">⏭️ Next: Tier 0 Orientation</a></nav>
+
+<p>Six tiers, beginner to master, each building on the last. Start at <a href="00-orientation/"><code class="inline-code">00-orientation/</code></a> if you're new; jump to whichever tier matches where you are otherwise.</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Tier</th><th>Name</th><th>Focus</th></tr></thead><tbody><tr><td>0</td><td><a href="00-orientation/">Orientation</a></td><td>What a database is, no code required; generating the practice database</td></tr><tr><td>1</td><td><a href="01-beginner/">Beginner</a></td><td>Asking a database simple questions</td></tr><tr><td>2</td><td><a href="02-intermediate/">Intermediate</a></td><td>Combining tables, summarizing, cleaning messy real-world data</td></tr><tr><td>3</td><td><a href="03-advanced/">Advanced</a></td><td>Window functions, CTEs, recursive CTEs, time intelligence — the medallion thread begins</td></tr><tr><td>4</td><td><a href="04-expert/">Expert</a></td><td>DDL, transactions, views, indexes, query optimization</td></tr><tr><td>5</td><td><a href="05-master/">Master</a></td><td>Dimensional modeling, star schema design, and the medallion architecture, end to end</td></tr></tbody></table></div>
+Starting at Tier 3, lessons lean on the real [Oakhaven database](../project/) instead of hypothetical tables — every example and every exercise solution in this curriculum was run against `project/oakhaven.db` and its output verified, not invented.
+
+<p>Each tier's modules are paired 1:1 with practice prompts in <a href="../exercises/"><code class="inline-code">exercises/</code></a> — same tier folder, same file name.</p>
+
+<hr class="divider">
+
+<nav class="book-nav"><a href="../README.html" class="nav-btn">⏮️ Prev: Home</a> <a href="../README.html" class="nav-btn">📖 Table of Contents</a> <a href="00-orientation/README.html" class="nav-btn">⏭️ Next: Tier 0 Orientation</a></nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

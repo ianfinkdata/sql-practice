@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Cleaning Text (TRIM, UPPER, LOWER, REPLACE) | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-cleaning-text-trim-upper-lower-replace">Exercises: Cleaning Text (TRIM, UPPER, LOWER, REPLACE)</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/06-cleaning-text-trim-upper-replace.html" class="nav-btn">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</a>. Previous: <a href="05-case-expressions.html" class="nav-btn">CASE Expressions</a>. Next: <a href="07-coalesce-and-nullif.html" class="nav-btn">COALESCE and NULLIF</a>.</nav>
+
+<p>Use <code class="inline-code">project/oakhaven.db</code>. Every solution below was run against the
+real database — your output should match exactly.</p>
+
+<hr class="divider">
+
+<p><strong>1. How many raw <code class="inline-code">payment_method</code> spellings exist?</strong></p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT payment_method) FROM bronze_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT payment_method)</th></tr></thead><tbody><tr><td>10</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<p><strong>2. TRIM + UPPER — how far does that get you?</strong></p>
+
+<p>Apply <code class="inline-code">UPPER(TRIM(payment_method))</code> and count the distinct results.
+List them.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT UPPER(TRIM(payment_method))) FROM bronze_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(...)</th></tr></thead><tbody><tr><td>6</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT UPPER(TRIM(payment_method)) AS cleaned
+FROM bronze_sales ORDER BY cleaned;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>cleaned</th></tr></thead><tbody><tr><td>CASH</td></tr><tr><td>CC</td></tr><tr><td>CREDIT CARD</td></tr><tr><td>DEBIT CARD</td></tr><tr><td>GIFT CARD</td></tr><tr><td>PAYPAL</td></tr></tbody></table></div>
+10 → 6. Casing and whitespace are fully resolved, but `CC` is still
+sitting there as its own group, separate from `CREDIT CARD` — they
+mean the same payment method but aren't the same *substring*, so
+`UPPER`/`TRIM` alone can't merge them.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>3. Finish the job: fold <code class="inline-code">CC</code> into <code class="inline-code">CREDIT CARD</code>, and total revenue per clean method</strong></p>
+
+<p>Add one <code class="inline-code">REPLACE</code> to the chain from #2 to merge <code class="inline-code">CC</code> into <code class="inline-code">CREDIT
+CARD</code>, getting down to the 5 real payment methods. Then compute order
+line count and rough revenue (<code class="inline-code">quantity * unit_price</code>) per clean
+method.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT REPLACE(UPPER(TRIM(payment_method)), &#x27;CC&#x27;, &#x27;CREDIT CARD&#x27;) AS clean_method,
+       COUNT(*) AS n, ROUND(SUM(quantity * unit_price), 2) AS rough_total
+FROM bronze_sales
+GROUP BY clean_method
+ORDER BY rough_total DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>clean_method</th><th>n</th><th>rough_total</th></tr></thead><tbody><tr><td>CREDIT CARD</td><td>3568</td><td>2949162.22</td></tr><tr><td>DEBIT CARD</td><td>2426</td><td>2010484.07</td></tr><tr><td>PAYPAL</td><td>2401</td><td>1989985.17</td></tr><tr><td>CASH</td><td>2373</td><td>1981618.13</td></tr><tr><td>GIFT CARD</td><td>1232</td><td>948907.59</td></tr></tbody></table></div>
+Exactly 5 rows now, matching the canonical payment methods from the
+data dictionary (`Credit Card`, `Cash`, `Debit Card`, `Gift Card`,
+`PayPal`). Compare this cleanly-summed `CREDIT CARD` total against
+Module 3's messy per-spelling breakdown — this is what that report
+should have looked like all along.
+
+<p><em>Careful with <code class="inline-code">REPLACE</code> order here:</em> because <code class="inline-code">REPLACE</code> matches
+substrings, replacing <code class="inline-code">'CC'</code> with <code class="inline-code">'CREDIT CARD'</code> on the already-fully
+uppercased string is safe — but if you ever apply a <code class="inline-code">'CC'</code> replacement
+<em>before</em> fully normalizing case or on a column where <code class="inline-code">'CC'</code> could
+appear as a substring of something else, double check it isn't
+matching more than you intend.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>4. Measure (don't fully fix) the <code class="inline-code">state</code> mess</strong></p>
+
+<p>Count distinct raw <code class="inline-code">state</code> values, then count distinct
+<code class="inline-code">TRIM(UPPER(state))</code> values. Report both numbers.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT state) FROM bronze_customers;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT state)</th></tr></thead><tbody><tr><td>190</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(DISTINCT TRIM(UPPER(state))) FROM bronze_customers;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(DISTINCT TRIM(UPPER(state)))</th></tr></thead><tbody><tr><td>105</td></tr></tbody></table></div>
+190 → 105. Real, measurable progress from just two functions — but
+still nearly double the ~50 states that should exist, because
+`TRIM`/`UPPER` can't merge `'CA'` and `'California'` (different words,
+not just different case). That gap is the honest limit of this
+module's toolkit, called out directly in the lesson.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>5. Standardize <code class="inline-code">channel</code> into 2 canonical values, then total revenue</strong></p>
+
+<p><code class="inline-code">channel</code> has 4 raw spellings (<code class="inline-code">Online</code>, <code class="inline-code">online</code>, <code class="inline-code">In-Store</code>, <code class="inline-code">in
+store</code>) but only 2 real values. Use a <code class="inline-code">CASE</code> expression built on
+<code class="inline-code">LOWER(TRIM(channel))</code> to standardize, then total rough revenue per
+clean channel.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT CASE WHEN LOWER(TRIM(channel)) = &#x27;online&#x27; THEN &#x27;Online&#x27; ELSE &#x27;In-Store&#x27; END AS clean_channel,
+       COUNT(*) AS n, ROUND(SUM(quantity * unit_price), 2) AS rough_total
+FROM bronze_sales
+GROUP BY clean_channel
+ORDER BY rough_total DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>clean_channel</th><th>n</th><th>rough_total</th></tr></thead><tbody><tr><td>In-Store</td><td>5960</td><td>4961504.4</td></tr><tr><td>Online</td><td>6040</td><td>4918652.78</td></tr></tbody></table></div>
+Notice this uses `LOWER(TRIM(...))` inside a `CASE`, not a chain of
+`REPLACE`s — for a column with only two real outcomes, a `CASE`
+expression built on the normalized value is often more direct than
+trying to `REPLACE` your way to the exact target spelling.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>6. Two-dimensional clean report: category × channel revenue</strong></p>
+
+<p>Combine the full <code class="inline-code">category</code> cleaning chain from the lesson (<code class="inline-code">TRIM</code> +
+<code class="inline-code">UPPER</code> + the two <code class="inline-code">REPLACE</code>s, getting to the 8 canonical categories)
+with the <code class="inline-code">channel</code> cleaning from #5, and produce a clean revenue
+breakdown by both dimensions together.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+  REPLACE(REPLACE(TRIM(UPPER(p.category)), &#x27; AND &#x27;, &#x27; &amp; &#x27;), &#x27;FOOT WEAR&#x27;, &#x27;FOOTWEAR&#x27;) AS clean_category,
+  CASE WHEN LOWER(TRIM(s.channel)) = &#x27;online&#x27; THEN &#x27;Online&#x27; ELSE &#x27;In-Store&#x27; END AS clean_channel,
+  ROUND(SUM(s.quantity * s.unit_price), 2) AS rough_total
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id
+GROUP BY clean_category, clean_channel
+ORDER BY clean_category, clean_channel;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>clean_category</th><th>clean_channel</th><th>rough_total</th></tr></thead><tbody><tr><td>ACCESSORIES</td><td>In-Store</td><td>531919.33</td></tr><tr><td>ACCESSORIES</td><td>Online</td><td>536556.35</td></tr><tr><td>APPAREL</td><td>In-Store</td><td>720531.61</td></tr><tr><td>APPAREL</td><td>Online</td><td>678295.03</td></tr><tr><td>CAMPING & HIKING</td><td>In-Store</td><td>520629.27</td></tr><tr><td>CAMPING & HIKING</td><td>Online</td><td>503526.77</td></tr><tr><td>CLIMBING</td><td>In-Store</td><td>754222.58</td></tr><tr><td>CLIMBING</td><td>Online</td><td>810813.14</td></tr><tr><td>FOOTWEAR</td><td>In-Store</td><td>607592.55</td></tr><tr><td>FOOTWEAR</td><td>Online</td><td>603656.97</td></tr><tr><td>NUTRITION & HYDRATION</td><td>In-Store</td><td>664561.18</td></tr><tr><td>NUTRITION & HYDRATION</td><td>Online</td><td>663290.56</td></tr><tr><td>WATER SPORTS</td><td>In-Store</td><td>405760.59</td></tr><tr><td>WATER SPORTS</td><td>Online</td><td>412633.11</td></tr><tr><td>WINTER SPORTS</td><td>In-Store</td><td>729704.99</td></tr><tr><td>WINTER SPORTS</td><td>Online</td><td>678758.11</td></tr></tbody></table></div>
+Exactly 16 rows — 8 real categories times 2 real channels, no more,
+no less. Both messy columns cleaned in the same query, joined
+together, and grouped on the cleaned versions rather than the raw
+ones. This is the shape a real report should take; compare it against
+what Module 3's raw `GROUP BY p.category` produced (25+ noisy rows)
+to see the full value of this module end to end.
+
+<p></details></p>
+
+<hr class="divider">
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/06-cleaning-text-trim-upper-replace.html" class="nav-btn">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</a>. Previous: <a href="05-case-expressions.html" class="nav-btn">CASE Expressions</a>. Next: <a href="07-coalesce-and-nullif.html" class="nav-btn">COALESCE and NULLIF</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

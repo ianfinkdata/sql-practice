@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Meet Oakhaven | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-meet-oakhaven">Exercises: Meet Oakhaven</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/00-orientation/04-meet-oakhaven.html" class="nav-btn">4. Meet Oakhaven</a>. Previous: <a href="03-tools-and-setup.html" class="nav-btn">3. Tools and Setup</a>. Next: <a href="../01-beginner/01-select-and-from.html" class="nav-btn">1. SELECT and FROM</a>.</nav>
+
+<p>Your first real queries — nothing fancy yet, just <code class="inline-code">SELECT *</code> and
+<code class="inline-code">LIMIT</code> to get comfortable looking around. Run these against
+<code class="inline-code">project/oakhaven.db</code>.</p>
+
+<h3 id="1-look-at-employees">1. Look at employees</h3>
+
+<p>Write a query that shows the first 5 rows of <code class="inline-code">bronze_employees</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM bronze_employees LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>first_name</th><th>last_name</th><th>department</th><th>region</th><th>hire_date</th><th>termination_date</th><th>is_manager</th><th>email</th></tr></thead><tbody><tr><td>1</td><td>Alexa</td><td>garcia</td><td>Management</td><td>West</td><td>04/09/2024</td><td></td><td>N</td><td>alexa.garcia@oakhaven.com</td></tr><tr><td>2</td><td>sandra</td><td>Thompson</td><td>WAREHOUSE</td><td>NORTHEAST</td><td>05/25/2018</td><td></td><td>false</td><td>sandra.thompson@oakhaven.com</td></tr><tr><td>3</td><td>Alexandria</td><td>CUNNINGHAM</td><td>management</td><td>East</td><td>2018-12-07</td><td>2021-05-01 06:37:09</td><td>false</td><td>alexandria.cunningham@oakhaven.com</td></tr><tr><td>4</td><td>Laura</td><td>williams</td><td>Support</td><td>EAST</td><td>2020-05-28</td><td></td><td>1</td><td>laura.williams@oakhaven.com</td></tr><tr><td>5</td><td>stephanie</td><td>REID</td><td>Warehouse</td><td>CENTRAL</td><td>2023-08-10 03:22:34</td><td></td><td>y</td><td>(blank)</td></tr></tbody></table></div>
+Already you can spot the same messiness pattern as customers:
+`department` and `region` cased inconsistently (`WAREHOUSE`,
+`management`, `EAST`), `is_manager` spelled multiple ways (`N`,
+`false`, `1`, `y`), and employee 5's `email` is blank.
+
+<p></details></p>
+
+<h3 id="2-look-at-products-fewer-columns-worth-of-rows">2. Look at products, fewer columns worth of rows</h3>
+
+<p>Write a query that shows the first 3 rows of <code class="inline-code">bronze_products</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM bronze_products LIMIT 3;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>product_name</th><th>category</th><th>subcategory</th><th>brand</th><th>unit_cost</th><th>unit_price</th><th>is_discontinued</th><th>sku</th><th>weight_kg</th><th>created_at</th></tr></thead><tbody><tr><td>1</td><td>Canyon Hiking Boots</td><td>footwear</td><td>Hiking Boots</td><td>Stonepine Gear</td><td>269.63</td><td>649.26</td><td>true</td><td>FOO-0001</td><td>24.7 kg</td><td>2019-12-09</td></tr><tr><td>2</td><td>Ridge Jackets</td><td>APPAREL</td><td>Jackets</td><td>Northfell</td><td>231.98</td><td>348.55</td><td>false</td><td>APP-0002</td><td>5.3</td><td>2024-01-30 06:07:49</td></tr><tr><td>3</td><td>Trailhead Trekking Pole</td><td>CAMPING & HIKING</td><td>Trekking Poles</td><td>Kestrel Outdoor</td><td>136.25</td><td>286.86</td><td>n</td><td>CAM-0003</td><td>3.43 kg</td><td>2022-01-18 09:54:16</td></tr></tbody></table></div>
+Notice `category` casing varies even within these 3 rows (`footwear`
+lowercase, `APPAREL` all-caps), and `weight_kg` mixes `"24.7 kg"` (with
+units as text) and `"5.3"` (no units) — that's the "dirty TEXT, not a
+clean number" behavior mentioned in the data dictionary.
+
+<p></details></p>
+
+<h3 id="3-count-something">3. Count something</h3>
+
+<p>Write a query that counts how many rows are in <code class="inline-code">bronze_employees</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS employee_count FROM bronze_employees;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_count</th></tr></thead><tbody><tr><td>35</td></tr></tbody></table></div>
+</details>
+
+<h3 id="4-the-non-messy-table">4. The non-messy table</h3>
+
+<p><code class="inline-code">bronze_calendar</code> is the one bronze table that <em>isn't</em> messy — it's a
+manufactured date spine. Confirm that for yourself: look at its first
+3 rows.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM bronze_calendar LIMIT 3;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>datekey</th><th>date</th></tr></thead><tbody><tr><td>20180101</td><td>2018-01-01</td></tr><tr><td>20180102</td><td>2018-01-02</td></tr><tr><td>20180103</td><td>2018-01-03</td></tr></tbody></table></div>
+Clean, sequential, one row per day — no casing quirks, no missing
+values. You'll come back to this table much later when doing
+date-based reporting.
+
+<p></details></p>
+
+<h3 id="5-put-it-together">5. Put it together</h3>
+
+<p>Without running it first, guess what this query returns, then run it
+to check:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM bronze_sales LIMIT 2;</code></pre></div>
+
+<p>What's the relationship between <code class="inline-code">order_id</code> and <code class="inline-code">order_line_id</code> for
+these two rows — are they the same order or different orders?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM bronze_sales LIMIT 2;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>customer_id</th><th>product_id</th><th>employee_id</th><th>order_date</th><th>ship_date</th><th>quantity</th><th>unit_price</th><th>discount_pct</th><th>order_total</th><th>payment_method</th><th>order_status</th><th>channel</th></tr></thead><tbody><tr><td>1</td><td>1</td><td>23</td><td>3</td><td>32</td><td>2024-03-05 21:30:50</td><td>2024-03-15 18:14:26</td><td>4</td><td>306.83</td><td>0.3</td><td>859.12</td><td>Credit Card</td><td>Completed</td><td>online</td></tr><tr><td>1</td><td>2</td><td>23</td><td>38</td><td>32</td><td>2024-03-05 21:30:50</td><td>2024-03-15 18:14:26</td><td>5</td><td>241.65</td><td>0.2</td><td>966.60</td><td>Credit Card</td><td>Completed</td><td>online</td></tr></tbody></table></div>
+Both rows share `order_id = 1` but have different `order_line_id`
+values (1 and 2) — this is the same order (same customer, same
+order_date), with two different products (`product_id` 3 and 38) as
+separate line items. This is the "one row per order line" grain
+mentioned in the curriculum module.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/00-orientation/04-meet-oakhaven.html" class="nav-btn">4. Meet Oakhaven</a>. Previous: <a href="03-tools-and-setup.html" class="nav-btn">3. Tools and Setup</a>. Next: <a href="../01-beginner/01-select-and-from.html" class="nav-btn">1. SELECT and FROM</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

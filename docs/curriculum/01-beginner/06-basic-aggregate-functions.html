@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6. Basic Aggregate Functions | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="6-basic-aggregate-functions">6. Basic Aggregate Functions</h1>
+
+<nav class="book-nav">Previous: <a href="05-null-the-absence-of-a-value.html" class="nav-btn">5. NULL: the Absence of a Value</a>. Next: <a href="07-pattern-matching-with-like.html" class="nav-btn">7. Pattern Matching with LIKE</a>. Exercises: <a href="../../exercises/01-beginner/06-basic-aggregate-functions.html" class="nav-btn">6. Basic Aggregate Functions</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Everything so far has returned a set of individual rows — filtered,
+sorted, limited, but still one row per record. Aggregate functions do
+something different: they collapse many rows down into a single
+summary number. "How many products do we have?" "What's our average
+price?" "What's the cheapest and most expensive item we sell?" — these
+aren't questions about any one row, they're questions about the whole
+table (or a filtered slice of it).</p>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>Aggregates are how you go from a pile of rows to an actual answer.
+"150 products" is more useful than scrolling through 150 rows and
+counting by eye. This is also the foundation for <code class="inline-code">GROUP BY</code> later
+(Tier 2/3), where you'll compute these same summaries <em>per category</em>
+or <em>per employee</em> instead of across the whole table — but that's a
+later step. For now: one summary number per query, computed over
+every row that makes it past any <code class="inline-code">WHERE</code> clause.</p>
+
+<h2 id="syntax-the-five-essentials">Syntax: the five essentials</h2>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Function</th><th>What it computes</th></tr></thead><tbody><tr><td><code class="inline-code">COUNT(*)</code></td><td>Number of rows</td></tr><tr><td><code class="inline-code">COUNT(column)</code></td><td>Number of rows where <code class="inline-code">column</code> is <strong>not NULL</strong></td></tr><tr><td><code class="inline-code">SUM(column)</code></td><td>Total of a numeric column</td></tr><tr><td><code class="inline-code">AVG(column)</code></td><td>Average of a numeric column</td></tr><tr><td><code class="inline-code">MIN(column)</code></td><td>Smallest value</td></tr><tr><td><code class="inline-code">MAX(column)</code></td><td>Largest value</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*), SUM(column_name), AVG(column_name)
+FROM table_name;</code></pre></div>
+
+<p>You can compute several aggregates in one query — each one collapses
+the same set of rows down to one number, and they all show up as one
+combined output row.</p>
+
+<p>Note the important asymmetry between <code class="inline-code">COUNT(<em>)</code> and <code class="inline-code">COUNT(column)</code>:
+<code class="inline-code">COUNT(</em>)</code> counts <em>rows</em>, full stop. <code class="inline-code">COUNT(column)</code> counts rows where
+that specific column has a non-NULL value — which you learned about
+last module. These can (and often do) give different numbers on the
+same table.</p>
+
+<h2 id="try-it">Try it</h2>
+
+<h3 id="how-many-products-total">How many products, total?</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>150</td></tr></tbody></table></div>
+<h3 id="how-many-products-actually-have-a-recorded-cost">How many products actually have a recorded cost?</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(unit_cost) FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(unit_cost)</th></tr></thead><tbody><tr><td>143</td></tr></tbody></table></div>
+150 total rows, but only 143 have a non-NULL `unit_cost` — the
+remaining 7 are exactly the `NULL` rows you found in the previous
+module. `COUNT(*)` and `COUNT(unit_cost)` disagreeing by 7 *is* the
+NULL count, without having to write a separate `WHERE unit_cost IS
+NULL` query.
+
+<h3 id="the-full-spread-of-prices-in-one-query">The full spread of prices, in one query</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    SUM(unit_price) AS total,
+    AVG(unit_price) AS avg_price,
+    MIN(unit_price) AS min_price,
+    MAX(unit_price) AS max_price
+FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total</th><th>avg_price</th><th>min_price</th><th>max_price</th></tr></thead><tbody><tr><td>45056.1</td><td>300.374</td><td>6.67</td><td>812.71</td></tr></tbody></table></div>
+One query, four different summary numbers about the same column —
+`unit_price` across all 150 products sums to $45,056.10, averages
+$300.37, and ranges from $6.67 to $812.71. Note the aliases (`AS
+total`, `AS avg_price`, etc.) — without them, the output columns would
+just be labeled with the raw expression (`SUM(unit_price)`), which
+works but reads worse.
+
+<h3 id="rounding-a-noisy-average">Rounding a noisy average</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT ROUND(AVG(unit_price), 2) AS avg_price
+FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>avg_price</th></tr></thead><tbody><tr><td>300.37</td></tr></tbody></table></div>
+`AVG` on real data almost always produces more decimal places than
+you want to look at. `ROUND(expression, decimal_places)` isn't an
+aggregate function itself — it's a regular function that happens to
+work nicely wrapped around one. You'll use this combination constantly.
+
+<h3 id="multiple-aggregates-mixing-count-and-avg">Multiple aggregates, mixing COUNT and AVG</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    COUNT(*) AS n_products,
+    COUNT(unit_cost) AS n_with_cost,
+    ROUND(AVG(unit_cost), 2) AS avg_cost
+FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>n_products</th><th>n_with_cost</th><th>avg_cost</th></tr></thead><tbody><tr><td>150</td><td>143</td><td>159.05</td></tr></tbody></table></div>
+Worth noticing: `AVG(unit_cost)` only averages over the 143 rows that
+*have* a cost — the 7 NULL rows are excluded from the average
+entirely, not treated as zero. That's usually exactly what you want,
+but it's worth being deliberate about, since it can be easy to assume
+"average over all 150 products" when it's really "average over the
+143 that had data."
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li>**Mixing an aggregate with a plain column in <code class="inline-code">SELECT</code>, without</li></ul>  `GROUP BY`.** `SELECT product_name, AVG(unit_price) FROM
+  bronze_products;` doesn't do what it looks like — SQLite (unlike
+  some databases) will actually let this run, but it silently picks an
+  arbitrary `product_name` to pair with the single aggregated average,
+  which is almost never meaningful. Combining row-level and
+  whole-table-aggregate columns properly needs `GROUP BY`, which
+  you'll meet in a later tier — for now, keep aggregate queries as
+  *only* aggregate functions (plus maybe a `WHERE`), not a mix.
+<ul class="styled-list"><li><strong>Assuming NULLs count as zero in SUM/AVG.</strong> They don't — they're</li></ul>  excluded entirely, which changes the denominator for `AVG`
+  specifically. `AVG` is `SUM / COUNT(column)`, not `SUM /
+  COUNT(*)`.
+<ul class="styled-list"><li>*<em>Forgetting <code class="inline-code">COUNT(</em>)</code> vs <code class="inline-code">COUNT(column)</code> are different</li></ul>  questions.** `COUNT(*)` = "how many rows." `COUNT(column)` = "how
+  many rows have a value in this column." Mixing them up gives you a
+  subtly wrong row count whenever NULLs are present.
+<ul class="styled-list"><li><strong>Not rounding.</strong> <code class="inline-code">AVG</code> and <code class="inline-code">SUM</code> on <code class="inline-code">REAL</code> columns often produce</li></ul>  long, ugly decimals. `ROUND(x, 2)` is cheap and makes output far
+  more readable, especially for money.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">COUNT</code>, <code class="inline-code">SUM</code>, <code class="inline-code">AVG</code>, <code class="inline-code">MIN</code>, <code class="inline-code">MAX</code> collapse many rows into one</li></ul>  summary number.
+<ul class="styled-list"><li><code class="inline-code">COUNT(*)</code> counts rows; <code class="inline-code">COUNT(column)</code> counts non-NULL values in</li></ul>  that column — they can differ.
+<ul class="styled-list"><li><code class="inline-code">SUM</code> and <code class="inline-code">AVG</code> silently skip <code class="inline-code">NULL</code> values rather than treating</li></ul>  them as zero.
+<ul class="styled-list"><li><code class="inline-code">ROUND(expression, n)</code> is your friend for cleaning up aggregate</li></ul>  output.
+<ul class="styled-list"><li>This module only covers whole-table aggregates — summarizing *per</li></ul>  group* (e.g. per category) is `GROUP BY`, coming in a later tier.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="05-null-the-absence-of-a-value.html" class="nav-btn">5. NULL: the Absence of a Value</a>. Next: <a href="07-pattern-matching-with-like.html" class="nav-btn">7. Pattern Matching with LIKE</a>. Exercises: <a href="../../exercises/01-beginner/06-basic-aggregate-functions.html" class="nav-btn">6. Basic Aggregate Functions</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

@@ -1,5 +1,11 @@
 # Tier 4 — Expert
 
+> **BLUF (Bottom Line Up Front):** Tier 4 covers data engineering tooling: DDL schema design, transactions, views vs. physical tables, index tuning (`EXPLAIN QUERY PLAN`), data constraints, and building Gold-layer views.
+
+<!-- nav -->
+[⏮️ Prev: Tier 3 Advanced](../03-advanced/README.md) | [📖 Table of Contents](../../README.md) | [⏭️ Next: Tier 5 Master](../05-master/README.md)
+<!-- /nav -->
+
 DDL, transactions, views, indexes, and query optimization — the tooling behind the pipeline, not just the queries. Module 7 uses Oakhaven's real orphan foreign keys to motivate constraints; module 8 has you write your first gold-layer view.
 
 | Module | Topic |
@@ -16,4 +22,8 @@ DDL, transactions, views, indexes, and query optimization — the tooling behind
 
 Matching exercises: [`exercises/04-expert/`](../../exercises/04-expert/).
 
-Previous: [Tier 3 — Advanced](../03-advanced/README.md). Next: [Tier 5 — Master](../05-master/README.md).
+---
+
+<!-- nav -->
+[⏮️ Prev: Tier 3 Advanced](../03-advanced/README.md) | [📖 Table of Contents](../../README.md) | [⏭️ Next: Tier 5 Master](../05-master/README.md)
+<!-- /nav -->

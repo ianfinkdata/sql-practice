@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1. What Is a Database? | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="1-what-is-a-database">1. What Is a Database?</h1>
+
+<nav class="book-nav">Previous: <a href="../../README.html" class="nav-btn">sql-practice</a>. Next: <a href="02-what-is-sql.html" class="nav-btn">2. What Is SQL?</a>. Exercises: <a href="../../exercises/00-orientation/01-what-is-a-database.html" class="nav-btn">1. What Is a Database?</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>A database is just an organized place to store information so that you
+can find it again reliably, even when there's a lot of it.</p>
+
+<p>You already know a messier version of this problem. Imagine trying to
+run an outdoor-gear store using a stack of spreadsheets: one for
+customers, one for products, one for orders, one for employees. Every
+time someone places an order, you'd have to flip between sheets to
+look up the customer's info, check the product's price, and note which
+employee helped them. Now imagine doing that thousands of times a day,
+without ever mistyping a customer ID or losing track of which
+spreadsheet is the current one.</p>
+
+<p>A database solves this by keeping related information in <strong>tables</strong> —
+think of a table as one very disciplined spreadsheet — and giving you
+a language (SQL) to ask precise questions across all of them at once:
+"which customers in Colorado bought a tent in the last 90 days?" A
+spreadsheet can technically hold that answer somewhere in its cells.
+A database can <em>compute</em> it for you, correctly, in a fraction of a
+second, no matter how big the pile of data gets.</p>
+
+<h2 id="tables-rows-and-columns">Tables, rows, and columns</h2>
+
+<p>A table has:
+<ul class="styled-list"><li><strong>Columns</strong> — the fields every record shares. A <code class="inline-code">products</code> table</li></ul>  might have columns for <code class="inline-code">product_name</code>, <code class="inline-code">category</code>, <code class="inline-code">unit_price</code>.
+  Columns are fixed: every row has the same set of columns.
+<ul class="styled-list"><li><strong>Rows</strong> — one individual record. One row in <code class="inline-code">products</code> is one</li></ul>  specific product, like a pair of hiking boots.</p>
+
+<p>So a table is a grid: columns going across, rows going down. That's
+it — nearly everything else in SQL is about selecting, filtering,
+combining, and summarizing grids like this.</p>
+
+<p>A <strong>database</strong> is a collection of tables like this, usually related to
+each other. Our practice database, Oakhaven, has separate tables for
+customers, products, employees, and sales — and part of what makes SQL
+powerful is being able to ask questions that span more than one table
+at once (you'll get to that in a later tier — for now, one table at a
+time is plenty).</p>
+
+<h2 id="why-sql-exists">Why SQL exists</h2>
+
+<p>"SQL" stands for <strong>Structured Query Language</strong>. It was designed in the
+1970s for exactly one job: letting a person describe <em>what</em> data they
+want, without having to write a program describing <em>how</em> to go get it.</p>
+
+<p>That distinction matters. You don't tell a database "loop through
+every row, check if the category column equals 'Footwear', and if so
+add it to a list." You just say:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT * FROM bronze_products WHERE category = &#x27;Footwear&#x27;;</code></pre></div>
+
+<p>You describe the <em>result</em> you want. The database software figures out
+the fastest way to actually produce it. That's what makes SQL readable
+even to people who've never written a line of any other programming
+language — and it's why, decades later, it's still the standard way to
+talk to structured data almost everywhere: banks, hospitals, airlines,
+and — in this course — a small fictional outdoor-gear retailer called
+Oakhaven.</p>
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>A database organizes information into <strong>tables</strong>: grids of</li></ul>  **columns** (fields) and **rows** (records).
+<ul class="styled-list"><li>Databases let you ask precise, fast questions across large amounts</li></ul>  of data — something spreadsheets get unwieldy at.
+<ul class="styled-list"><li><strong>SQL</strong> is the language for asking those questions. You describe</li></ul>  *what* you want; the database figures out *how* to get it.
+<ul class="styled-list"><li>The rest of this course is about learning to read and write SQL</li></ul>  against one real (if fictional, if intentionally messy) database:
+  Oakhaven.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="../../README.html" class="nav-btn">sql-practice</a>. Next: <a href="02-what-is-sql.html" class="nav-btn">2. What Is SQL?</a>. Exercises: <a href="../../exercises/00-orientation/01-what-is-a-database.html" class="nav-btn">1. What Is a Database?</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

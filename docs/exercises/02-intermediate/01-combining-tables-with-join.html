@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Combining Tables with JOIN | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-combining-tables-with-join">Exercises: Combining Tables with JOIN</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/01-combining-tables-with-join.html" class="nav-btn">Combining Tables with JOIN</a>. Previous: <a href="../01-beginner/08-distinct-and-duplicates.html" class="nav-btn">8. DISTINCT and Duplicates</a>. Next: <a href="02-left-join-and-missing-data.html" class="nav-btn">LEFT JOIN and Missing Data</a>.</nav>
+
+<p>Use <code class="inline-code">project/oakhaven.db</code>. Every solution below was run against the
+real database — your output should match exactly.</p>
+
+<hr class="divider">
+
+<p><strong>1. Product names for the first 5 order lines</strong></p>
+
+<p>Join <code class="inline-code">bronze_sales</code> to <code class="inline-code">bronze_products</code> and return <code class="inline-code">order_id</code>,
+<code class="inline-code">order_line_id</code>, and <code class="inline-code">product_name</code> for the first 5 rows, ordered by
+<code class="inline-code">order_id</code> then <code class="inline-code">order_line_id</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT s.order_id, s.order_line_id, p.product_name
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id
+ORDER BY s.order_id, s.order_line_id
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>product_name</th></tr></thead><tbody><tr><td>1</td><td>1</td><td>Trailhead Trekking Pole</td></tr><tr><td>1</td><td>2</td><td>Alpine Water Filters</td></tr><tr><td>2</td><td>1</td><td>Switchback Trail Running Shoes</td></tr><tr><td>2</td><td>2</td><td>Ironpeak Fleece</td></tr><tr><td>3</td><td>1</td><td>Canyon Backpack</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<p><strong>2. Everything about order 5</strong></p>
+
+<p>Join <code class="inline-code">bronze_sales</code>, <code class="inline-code">bronze_customers</code>, and <code class="inline-code">bronze_products</code> to show
+the customer's full name, the product name, and the quantity for
+every line of <code class="inline-code">order_id = 5</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT s.order_id, c.first_name || &#x27; &#x27; || c.last_name AS customer,
+       p.product_name, s.quantity
+FROM bronze_sales s
+JOIN bronze_customers c ON s.customer_id = c.customer_id
+JOIN bronze_products p ON s.product_id = p.product_id
+WHERE s.order_id = 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>customer</th><th>product_name</th><th>quantity</th></tr></thead><tbody><tr><td>5</td><td>Susan TURNER</td><td>Driftwood Base Layers</td><td>3</td></tr></tbody></table></div>
+(Just one line for this order — and note `TURNER` is uppercase, a
+reminder that `bronze_customers` names are messy too, unrelated to
+today's topic.)
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>3. Rough total revenue for exactly-spelled <code class="inline-code">'Footwear'</code></strong></p>
+
+<p>Join sales to products and sum <code class="inline-code">quantity * unit_price</code> for rows where
+<code class="inline-code">category</code> is exactly <code class="inline-code">'Footwear'</code> (don't worry about other spellings
+yet — that's later modules).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT ROUND(SUM(s.quantity * s.unit_price), 2) AS rough_total
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id
+WHERE p.category = &#x27;Footwear&#x27;;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>rough_total</th></tr></thead><tbody><tr><td>116142.88</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<p><strong>4. How many order lines have a real employee attached?</strong></p>
+
+<p><code class="inline-code">bronze_sales.employee_id</code> is <code class="inline-code">NULL</code> for ~10% of rows (representing an
+online/no-rep sale). Join <code class="inline-code">bronze_sales</code> to <code class="inline-code">bronze_employees</code> with an
+<code class="inline-code">INNER JOIN</code> and count the result. Then separately count how many
+<code class="inline-code">bronze_sales</code> rows have <code class="inline-code">employee_id IS NULL</code>. Confirm the two
+numbers plus each other roughly reconstruct 12,000.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales s
+JOIN bronze_employees e ON s.employee_id = e.employee_id;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>10757</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales WHERE employee_id IS NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>1243</td></tr></tbody></table></div>
+10757 + 1243 = 12000 — every row is accounted for either as a
+successful join match or a `NULL` employee_id. `INNER JOIN` alone
+drops the 1,243 `NULL`-employee rows with no explanation; if your goal
+was "sales with or without a rep," `INNER JOIN` would silently give
+you the wrong denominator.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>5. Stack two INNER JOINs — how much data survives both?</strong></p>
+
+<p>Join <code class="inline-code">bronze_sales</code> to <em>both</em> <code class="inline-code">bronze_customers</code> and <code class="inline-code">bronze_products</code>
+(two <code class="inline-code">INNER JOIN</code>s in one query) and count the rows. Compare against
+the individual counts from the lesson (11,897 for the customers join
+alone, 11,878 for the products join alone) and explain in a comment
+why the combined count isn't just <code class="inline-code">12000 - 103 - 122</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_sales s
+JOIN bronze_customers c ON s.customer_id = c.customer_id
+JOIN bronze_products p ON s.product_id = p.product_id;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>11776</td></tr></tbody></table></div>
+`12000 - 103 - 122 = 11775`, one row off from the actual 11776. The
+orphan `customer_id` and orphan `product_id` rows aren't guaranteed to
+be entirely separate sets of rows — in general they *could* overlap
+(a single order line could have both a bad `customer_id` and a bad
+`product_id`), and simple subtraction assumes no overlap. Always
+verify the combined count directly rather than assuming losses add up
+linearly.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>6. Which product categories does customer 41 (the top spender from
+earlier modules) actually buy?</strong></p>
+
+<p>Join <code class="inline-code">bronze_sales</code> to <code class="inline-code">bronze_products</code> for <code class="inline-code">customer_id = 41</code>, and
+return the distinct raw <code class="inline-code">category</code> values that appear, along with how
+many lines each contributed.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.category, COUNT(*) AS line_count
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id
+WHERE s.customer_id = 41
+GROUP BY p.category
+ORDER BY line_count DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>line_count</th></tr></thead><tbody><tr><td>ACCESSORIES</td><td>5</td></tr><tr><td>apparel</td><td>3</td></tr><tr><td>Winter Sports</td><td>3</td></tr><tr><td>Apparel</td><td>3</td></tr><tr><td>water sports</td><td>2</td></tr><tr><td>nutrition & hydration</td><td>2</td></tr><tr><td>camping and hiking</td><td>2</td></tr><tr><td>WINTER SPORTS</td><td>2</td></tr><tr><td>FOOTWEAR</td><td>2</td></tr><tr><td>CAMPING & HIKING</td><td>2</td></tr><tr><td>...(16 more rows, one per remaining raw spelling)</td><td></td></tr></tbody></table></div>
+26 groups for one customer's order history, most with just 1-2 lines
+— notice how many *different raw spellings* of the same category show
+up even at this small scale, foreshadowing Module 3 and Module 6.
+
+<p></details></p>
+
+<hr class="divider">
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/01-combining-tables-with-join.html" class="nav-btn">Combining Tables with JOIN</a>. Previous: <a href="../01-beginner/08-distinct-and-duplicates.html" class="nav-btn">8. DISTINCT and Duplicates</a>. Next: <a href="02-left-join-and-missing-data.html" class="nav-btn">LEFT JOIN and Missing Data</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

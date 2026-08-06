@@ -1,5 +1,11 @@
 # Tier 5 — Master
 
+> **BLUF (Bottom Line Up Front):** Tier 5 is the capstone: enterprise dimensional modeling (star schemas, fact/dimension design, grain, Slowly Changing Dimensions SCD 1 & 2), full medallion pipeline recap, capstone view creation, and cloud database portability notes.
+
+<!-- nav -->
+[⏮️ Prev: Tier 4 Expert](../04-expert/README.md) | [📖 Table of Contents](../../README.md) | [⏭️ Next: Exercises Workbook](../../exercises/README.md)
+<!-- /nav -->
+
 The capstone: dimensional modeling and star schema design. This is the tier meant to outlive this repo — a portable, professional data-modeling skillset (dimensions, facts, grain, SCD, star vs. snowflake) capped by a full medallion-pipeline recap, a graded capstone, and a portability reference for taking these patterns to Snowflake, BigQuery, Databricks, or Postgres.
 
 | Module | Topic |
@@ -18,4 +24,8 @@ The capstone: dimensional modeling and star schema design. This is the tier mean
 
 Matching exercises: [`exercises/05-master/`](../../exercises/05-master/). See also the standalone [`portfolio/`](../../portfolio/) pattern library this tier feeds into.
 
-Previous: [Tier 4 — Expert](../04-expert/README.md).
+---
+
+<!-- nav -->
+[⏮️ Prev: Tier 4 Expert](../04-expert/README.md) | [📖 Table of Contents](../../README.md) | [⏭️ Next: Exercises Workbook](../../exercises/README.md)
+<!-- /nav -->

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Tools and Setup | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-tools-and-setup">Exercises: Tools and Setup</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/00-orientation/03-tools-and-setup.html" class="nav-btn">3. Tools and Setup</a>. Previous: <a href="02-what-is-sql.html" class="nav-btn">2. What Is SQL?</a>. Next: <a href="04-meet-oakhaven.html" class="nav-btn">4. Meet Oakhaven</a>.</nav>
+
+<p>Confirm your environment actually works before moving on — these are
+short, practical checks rather than reflection questions.</p>
+
+<h3 id="1-build-it">1. Build it</h3>
+
+<p>Run the setup steps from the curriculum module (creating a virtual
+environment first if <code class="inline-code">pip install</code> gives you an
+"externally-managed-environment" error), then build the database:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">pip install -r project/requirements.txt
+python project/build.py</code></pre></div>
+
+<p>What's the last line or two the script prints when it finishes
+successfully?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>You should see a summary of what was built, ending with something like
+<code class="inline-code">ALL HARD CHECKS PASSED</code> (exact wording may vary slightly by build
+script version, but it should clearly indicate success, not an error
+or traceback). If you instead see a Python traceback, re-check that
+<code class="inline-code">pip install -r project/requirements.txt</code> completed without errors
+first.</p>
+
+<p></details></p>
+
+<h3 id="2-connect">2. Connect</h3>
+
+<p>Open <code class="inline-code">project/oakhaven.db</code> using whichever tool you chose (the
+<code class="inline-code">sqlite3</code> CLI or DB Browser for SQLite), and confirm you can see a list
+of tables. With the CLI:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;.tables&quot;</code></pre></div>
+
+<p>How many tables/views does it list?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;.tables&quot;</code></pre></div>
+
+<p>Real output (18 total tables/views — 5 bronze, 5 silver, 4 dim/fact,
+3 agg — you'll meet the rest of these in later tiers):</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">agg_customer_ltv               dim_date
+agg_daily_sales                dim_employee
+agg_monthly_sales_by_category  dim_product
+bronze_calendar                fact_sales
+bronze_customers               silver_calendar
+bronze_employees               silver_customers
+bronze_products                silver_employees
+bronze_sales                   silver_products
+dim_customer                   silver_sales</code></pre></div>
+
+<p>If you see far fewer tables, or none, <code class="inline-code">python project/build.py</code> likely
+didn't complete — re-run it.</p>
+
+<p></details></p>
+
+<h3 id="3-sanity-check-the-row-count">3. Sanity-check the row count</h3>
+
+<p>Run this and confirm you get exactly the number below — it should
+match regardless of who builds it or when, since generation is
+deterministic:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT COUNT(*) FROM bronze_sales;&quot;</code></pre></div>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT COUNT(*) FROM bronze_sales;&quot;</code></pre></div>
+
+<p>Result: <code class="inline-code">12000</code>. If your number differs, your database wasn't built
+from a clean run of <code class="inline-code">project/build.py</code> — rebuild it (note that
+rebuilding deletes and recreates <code class="inline-code">oakhaven.db</code> from scratch).</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/00-orientation/03-tools-and-setup.html" class="nav-btn">3. Tools and Setup</a>. Previous: <a href="02-what-is-sql.html" class="nav-btn">2. What Is SQL?</a>. Next: <a href="04-meet-oakhaven.html" class="nav-btn">4. Meet Oakhaven</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

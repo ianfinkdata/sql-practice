@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1. Why We Model Data: OLTP vs. Analytical Schemas | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="1-why-we-model-data-oltp-vs-analytical-schemas">1. Why We Model Data: OLTP vs. Analytical Schemas</h1>
+
+<nav class="book-nav">Previous: <a href="../04-expert/README.html" class="nav-btn">Tier 4 — Expert</a>. Next: <a href="02-dimensions-and-facts-core-vocabulary.html" class="nav-btn">2. Dimensions and Facts: Core Vocabulary</a>. Exercises: <a href="../../exercises/05-master/01-why-model-data-oltp-vs-analytical.html" class="nav-btn">1. Why We Model Data: OLTP vs. Analytical Schemas</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Every database serves one of two very different jobs, and the shape
+that fits one job badly fits the other.</p>
+
+<p><strong>OLTP</strong> (Online Transaction Processing) systems run the business
+minute to minute: ringing up a sale, updating an address, marking an
+order shipped. They're optimized for a huge number of small, fast
+writes touching one entity at a time, and they're designed — usually
+via normalization (3NF and friends) — so that a fact is stored in
+exactly one place. If a customer moves, you update <em>one</em> row in a
+<code class="inline-code">customers</code> table, and every order that references that customer
+automatically "sees" the new address through a foreign key. That's the
+whole point of normalization: eliminate duplication so updates can't
+go inconsistent.</p>
+
+<p><strong>Analytical</strong> systems (OLAP, data warehouses, BI layers) run the
+business over weeks, quarters, years: "how much did we sell by
+category last quarter," "which customers are most valuable," "is
+revenue trending up." They're optimized for a small number of very
+large reads that scan and aggregate millions of rows. Nobody is
+updating a single customer's address here — they're summing
+<code class="inline-code">net_amount</code> across a hundred thousand orders. This is a completely
+different access pattern, and it wants a completely different shape:
+<strong>dimensional modeling</strong>, organized around wide, denormalized fact and
+dimension tables (the "star schema" this whole tier is about).</p>
+
+<p>This tier teaches you to design that second shape — and to do it in a
+way that transfers to any dataset, any warehouse engine, any industry.
+Dimensional modeling is one of the most portable skills in data work:
+the same handful of concepts (fact, dimension, grain, measure,
+surrogate key) show up whether you're modeling retail sales, hospital
+admissions, or ad impressions.</p>
+
+<h2 id="why-a-normalized-oltp-schema-is-wrong-for-analytics">Why a normalized OLTP schema is wrong for analytics</h2>
+
+<p>Imagine Oakhaven's real production system stores orders the way a
+transactional app would: an <code class="inline-code">orders</code> header table (one row per order,
+holding <code class="inline-code">order_date</code>, <code class="inline-code">customer_id</code>, <code class="inline-code">payment_method</code>, <code class="inline-code">channel</code>) and
+a separate <code class="inline-code">order_items</code> table (one row per line, holding
+<code class="inline-code">product_id</code>, <code class="inline-code">quantity</code>, <code class="inline-code">unit_price</code>). That's the <em>correct</em> design
+for the app that takes orders — it avoids repeating <code class="inline-code">order_date</code> and
+<code class="inline-code">payment_method</code> on every line.</p>
+
+<p>Now ask an analytical question against it: "total net sales by product
+category, by month." You'd need to join <code class="inline-code">order_items</code> → <code class="inline-code">orders</code> (for
+the date) → <code class="inline-code">products</code> (for the category), then group and aggregate.
+That's a three-table join for one of the simplest possible business
+questions. Now add customer segment, employee region, and a
+year-over-year comparison, and the query becomes a wall of joins that
+every analyst has to re-derive by hand, every time, correctly.</p>
+
+<p>Normalization optimizes for <strong>write safety</strong> (no duplicate data to go
+stale) at the cost of <strong>read complexity</strong> (many joins to reassemble
+the full picture). Analytics inverts that trade: reads vastly
+outnumber writes, correctness is enforced upstream once during
+loading, and duplication in a dimension table is a deliberate,
+accepted cost in exchange for one-join, star-shaped queries.</p>
+
+<h2 id="why-oakhavens-bronze-tables-are-a-reasonable-oltp-stand-in">Why Oakhaven's bronze tables are a reasonable OLTP stand-in</h2>
+
+<p>Oakhaven doesn't literally ship an <code class="inline-code">orders</code> + <code class="inline-code">order_items</code> pair. But
+<code class="inline-code">bronze_sales</code> is built to <em>behave</em> like a flattened export from one:
+its grain is one row per order line, and every order-level attribute
+(<code class="inline-code">order_date</code>, <code class="inline-code">customer_id</code>, <code class="inline-code">employee_id</code>, <code class="inline-code">payment_method</code>,
+<code class="inline-code">order_status</code>, <code class="inline-code">channel</code>) is generated once per <code class="inline-code">order_id</code> and
+repeated identically across that order's lines. That repetition is
+exactly what you'd get if you took a normalized <code class="inline-code">orders</code> +
+<code class="inline-code">order_items</code> system and joined them flat for an extract — which is a
+very common shape for real-world data arriving in a warehouse's raw
+layer. <code class="inline-code">bronze_sales</code> also has no primary keys, foreign keys, or CHECK
+constraints (see <code class="inline-code">project/bronze/schema.sql</code>), which mirrors how raw,
+as-ingested source extracts usually look: unconstrained, structurally
+loose, and only made trustworthy by the transformation layers built on
+top of them (<code class="inline-code">silver_<em></code>, then <code class="inline-code">gold/</em></code>).</p>
+
+<p>Oakhaven's gold layer — <code class="inline-code">dim_customer</code>, <code class="inline-code">dim_product</code>, <code class="inline-code">dim_employee</code>,
+<code class="inline-code">dim_date</code>, and <code class="inline-code">fact_sales</code> — is the analytical shape built <em>from</em>
+that raw layer. That's the journey this tier is about: taking
+OLTP-shaped (or OLTP-flattened) source data and deliberately
+re-modeling it into a star schema built for fast, simple aggregate
+queries.</p>
+
+<h2 id="examples">Examples</h2>
+
+<h3 id="1-an-orders-lines-repeat-their-header-attributes-the-flattened-oltp-export-signature">1. An order's lines repeat their header attributes (the "flattened OLTP export" signature)</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, order_line_id, product_id, quantity, unit_price,
+       order_date, customer_id, channel
+FROM bronze_sales
+WHERE order_id = 13
+ORDER BY order_line_id;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>order_line_id</th><th>product_id</th><th>quantity</th><th>unit_price</th><th>order_date</th><th>customer_id</th><th>channel</th></tr></thead><tbody><tr><td>13</td><td>1</td><td>21</td><td>4</td><td>412.55</td><td>2022-01-16</td><td>523</td><td>in store</td></tr><tr><td>13</td><td>2</td><td>46</td><td>1</td><td>623.11</td><td>2022-01-16</td><td>523</td><td>in store</td></tr><tr><td>13</td><td>3</td><td>67</td><td>5</td><td>88.99</td><td>2022-01-16</td><td>523</td><td>in store</td></tr></tbody></table></div>
+`order_date`, `customer_id`, and `channel` are identical across all
+three lines — they're order-level facts, generated once and copied
+down to every line. `product_id`, `quantity`, and `unit_price` vary
+per line. This split between "shared per order" and "varies per line"
+is the exact seam a real OLTP header/detail table pair would have —
+Oakhaven just delivers it already flattened, which is what module 3
+will formalize as **grain**.
+
+<h3 id="2-what-normalization-would-have-cost-you-here">2. What normalization would have cost you here</h3>
+
+<p>If Oakhaven really stored orders normalized, answering "total sales
+lines per order" would require a join. Flattened, you can just count:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total_order_lines,
+       COUNT(DISTINCT order_id) AS total_orders
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_order_lines</th><th>total_orders</th></tr></thead><tbody><tr><td>12000</td><td>7199</td></tr></tbody></table></div>
+12,000 line-grain fact rows collapse from 7,199 distinct orders — in a
+normalized system this is literally two tables (`orders` with 7,199
+rows, `order_items` with 12,000). The dimensional model keeps them as
+one fact table at a clearly stated grain (module 3), trading the
+"single source of truth per order attribute" guarantee for
+"everything's in one place, one join away."
+
+<h3 id="3-the-payoff-one-join-answers-a-real-business-question">3. The payoff: one join answers a real business question</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.category, COUNT(*) AS lines, ROUND(SUM(f.net_amount), 2) AS total_net_amount
+FROM fact_sales f
+JOIN dim_product p ON f.product_id = p.product_id
+GROUP BY p.category
+ORDER BY total_net_amount DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>category</th><th>lines</th><th>total_net_amount</th></tr></thead><tbody><tr><td>Climbing</td><td>1858</td><td>1389650.95</td></tr><tr><td>Winter Sports</td><td>1834</td><td>1249691.54</td></tr><tr><td>Apparel</td><td>1556</td><td>1237729.99</td></tr><tr><td>Nutrition & Hydration</td><td>1548</td><td>1164289.69</td></tr><tr><td>Footwear</td><td>1402</td><td>1077941.52</td></tr></tbody></table></div>
+One fact table, one dimension, one join. This is the entire value
+proposition of dimensional modeling: business questions that would
+require several joins across a normalized OLTP schema collapse to a
+`fact JOIN dim ... GROUP BY` pattern that any analyst, any BI tool, and
+any SQL engine can execute efficiently and predictably.
+
+<h3 id="4-bronze-tables-have-no-constraints--by-design-like-a-raw-export">4. Bronze tables have no constraints — by design, like a raw export</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT sql FROM sqlite_master WHERE name = &#x27;bronze_sales&#x27;;</code></pre></div>
+
+<p>Running this shows <code class="inline-code">bronze_sales</code> declared with plain column types and
+no <code class="inline-code">PRIMARY KEY</code>, <code class="inline-code">FOREIGN KEY</code>, or <code class="inline-code">NOT NULL</code> — because it's meant to
+represent data as it lands from an external system, before anyone has
+vouched for its integrity. Compare that to <code class="inline-code">fact_sales</code>, which is
+built entirely on top of the cleaned <code class="inline-code">silver_sales</code> view, never
+directly on <code class="inline-code">bronze_sales</code> — the messiness gets handled once, upstream,
+not re-solved by every analytical query.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Designing a warehouse fact table in 3NF.</strong> If your analytical</li></ul>  schema needs five joins to answer "revenue by category by month,"
+  you've built an OLTP schema and put a BI tool in front of it. Star
+  schemas denormalize on purpose.
+<ul class="styled-list"><li><strong>Assuming "normalized" always means "better."</strong> Normalization is</li></ul>  the right call for the system taking the order. It's the wrong call
+  for the system reporting on a year of orders. Context — read volume
+  vs. write volume — decides, not a universal rule.
+<ul class="styled-list"><li><strong>Querying bronze directly for analysis.</strong> Bronze tables are</li></ul>  intentionally unclean and unconstrained. Real questions should be
+  asked of the silver/gold layers, which is exactly why those layers
+  exist.
+<ul class="styled-list"><li><strong>Treating "flat" as automatically "denormalized correctly."</strong> A</li></ul>  flattened OLTP export like `bronze_sales` looks superficially like a
+  fact table already, but it isn't one yet — it hasn't had its grain
+  declared, its measures identified, or its keys connected to real
+  dimensions. That transformation is the rest of this tier.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>OLTP schemas optimize for many small, safe writes; analytical</li></ul>  schemas optimize for large, fast aggregate reads. They're solving
+  different problems and should not share a design.
+<ul class="styled-list"><li>Normalization (3NF) is the right tool for OLTP because it prevents</li></ul>  update anomalies. It's the wrong tool for analytics because it
+  forces every question through many joins.
+<ul class="styled-list"><li>Dimensional modeling deliberately denormalizes: wide dimension</li></ul>  tables and fact tables joined in as few hops as possible.
+<ul class="styled-list"><li>Oakhaven's <code class="inline-code">bronze_sales</code> table — one row per order line, with</li></ul>  order-level attributes repeated across lines, no constraints — is a
+  realistic stand-in for a flattened OLTP export, and the gold layer
+  (`dim_*` + `fact_sales`) is the analytical re-modeling of it.
+<ul class="styled-list"><li>The skills in this tier — thinking in facts, dimensions, and grain —</li></ul>  apply to any dataset you'll ever model, not just Oakhaven.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="../04-expert/README.html" class="nav-btn">Tier 4 — Expert</a>. Next: <a href="02-dimensions-and-facts-core-vocabulary.html" class="nav-btn">2. Dimensions and Facts: Core Vocabulary</a>. Exercises: <a href="../../exercises/05-master/01-why-model-data-oltp-vs-analytical.html" class="nav-btn">1. Why We Model Data: OLTP vs. Analytical Schemas</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

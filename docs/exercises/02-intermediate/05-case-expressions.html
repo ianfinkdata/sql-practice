@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: CASE Expressions | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-case-expressions">Exercises: CASE Expressions</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/05-case-expressions.html" class="nav-btn">CASE Expressions</a>. Previous: <a href="04-having.html" class="nav-btn">HAVING</a>. Next: <a href="06-cleaning-text-trim-upper-replace.html" class="nav-btn">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</a>.</nav>
+
+<p>Use <code class="inline-code">project/oakhaven.db</code>. Every solution below was run against the
+real database — your output should match exactly.</p>
+
+<hr class="divider">
+
+<p><strong>1. Bucket products into price tiers</strong></p>
+
+<p>Using <code class="inline-code">unit_price</code>, bucket every product into <code class="inline-code">'Budget'</code> (< 100),
+<code class="inline-code">'Mid-range'</code> (< 400), or <code class="inline-code">'Premium'</code> (everything else), and count how
+many products fall into each.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+  CASE
+    WHEN unit_price &lt; 100 THEN &#x27;Budget&#x27;
+    WHEN unit_price &lt; 400 THEN &#x27;Mid-range&#x27;
+    ELSE &#x27;Premium&#x27;
+  END AS price_tier,
+  COUNT(*) AS n
+FROM bronze_products
+GROUP BY price_tier
+ORDER BY n DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>price_tier</th><th>n</th></tr></thead><tbody><tr><td>Mid-range</td><td>80</td></tr><tr><td>Premium</td><td>49</td></tr><tr><td>Budget</td><td>21</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<p><strong>2. Standardize <code class="inline-code">order_status</code> into 4 clean buckets</strong></p>
+
+<p><code class="inline-code">bronze_sales.order_status</code> has 6 raw values: <code class="inline-code">Completed</code>, <code class="inline-code">completed</code>,
+<code class="inline-code">CANCELLED</code>, <code class="inline-code">Cancelled</code>, <code class="inline-code">Returned</code>, and <code class="inline-code">NULL</code>. Collapse them into
+<code class="inline-code">'Completed'</code>, <code class="inline-code">'Cancelled'</code>, <code class="inline-code">'Returned'</code>, and <code class="inline-code">'Unknown'</code> (for
+<code class="inline-code">NULL</code>), then count each bucket.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+  CASE
+    WHEN LOWER(order_status) = &#x27;completed&#x27; THEN &#x27;Completed&#x27;
+    WHEN LOWER(order_status) = &#x27;cancelled&#x27; THEN &#x27;Cancelled&#x27;
+    WHEN order_status = &#x27;Returned&#x27; THEN &#x27;Returned&#x27;
+    ELSE &#x27;Unknown&#x27;
+  END AS clean_status,
+  COUNT(*) AS n
+FROM bronze_sales
+GROUP BY clean_status
+ORDER BY n DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>clean_status</th><th>n</th></tr></thead><tbody><tr><td>Completed</td><td>7108</td></tr><tr><td>Cancelled</td><td>1916</td></tr><tr><td>Returned</td><td>1736</td></tr><tr><td>Unknown</td><td>1240</td></tr></tbody></table></div>
+7108 + 1916 + 1736 + 1240 = 12000 — every row lands in exactly one
+bucket, `NULL` included, thanks to the `ELSE 'Unknown'` catch-all.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>3. Flag the <code class="inline-code">discount_pct</code> whole-number bug</strong></p>
+
+<p>The data dictionary documents a known bug: ~1% of rows with a nonzero
+discount stored the whole-number form (e.g. <code class="inline-code">25</code> instead of <code class="inline-code">0.25</code>).
+Use <code class="inline-code">CASE</code> to flag every row as <code class="inline-code">'likely_bugged'</code> (<code class="inline-code">discount_pct > 1</code>)
+or <code class="inline-code">'normal'</code>, and count each group.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+  CASE WHEN discount_pct &gt; 1 THEN &#x27;likely_bugged&#x27; ELSE &#x27;normal&#x27; END AS discount_flag,
+  COUNT(*) AS n
+FROM bronze_sales
+GROUP BY discount_flag;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>discount_flag</th><th>n</th></tr></thead><tbody><tr><td>likely_bugged</td><td>110</td></tr><tr><td>normal</td><td>11890</td></tr></tbody></table></div>
+Exactly 110 rows — matching the facts sheet's documented count for
+this exact bug (`bronze_sales.discount_pct whole-number bug (> 1)` =
+110, ~0.92% of 12,000).
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>4. CASE inside ORDER BY: list active customers first</strong></p>
+
+<p>Using the same active/inactive logic from the lesson
+(<code class="inline-code">LOWER(TRIM(is_active)) IN ('y','yes','true','1')</code>), sort
+<code class="inline-code">bronze_customers</code> so likely-active customers come first, then by
+<code class="inline-code">customer_id</code> ascending within each group. Show <code class="inline-code">customer_id</code> and
+<code class="inline-code">is_active</code> for the first 5 rows.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, is_active
+FROM bronze_customers
+ORDER BY CASE WHEN LOWER(TRIM(is_active)) IN (&#x27;y&#x27;, &#x27;yes&#x27;, &#x27;true&#x27;, &#x27;1&#x27;) THEN 0 ELSE 1 END,
+         customer_id
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>is_active</th></tr></thead><tbody><tr><td>1</td><td>yes</td></tr><tr><td>2</td><td>yes</td></tr><tr><td>3</td><td>true</td></tr><tr><td>4</td><td>1</td></tr><tr><td>5</td><td>true</td></tr></tbody></table></div>
+`CASE` doesn't have to appear in `SELECT` — here it's used directly
+inside `ORDER BY` to compute a sort key (`0` for likely-active, `1`
+for everything else) without needing a subquery or a separate column.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>5. Conditional SUM: revenue split by the discount bug flag</strong></p>
+
+<p>Using <code class="inline-code">SUM(CASE WHEN ... THEN ... ELSE 0 END)</code>, compute two totals in
+one query: rough revenue (<code class="inline-code">quantity * unit_price</code>) for rows flagged as
+<code class="inline-code">likely_bugged</code> (<code class="inline-code">discount_pct > 1</code>), and rough revenue for everything
+else.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+  SUM(CASE WHEN discount_pct &gt; 1 THEN quantity * unit_price ELSE 0 END) AS bugged_total,
+  SUM(CASE WHEN discount_pct &lt;= 1 OR discount_pct IS NULL THEN quantity * unit_price ELSE 0 END) AS normal_total
+FROM bronze_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>bugged_total</th><th>normal_total</th></tr></thead><tbody><tr><td>97127.55</td><td>9783029.63</td></tr></tbody></table></div>
+Two conditional sums, one pass over the table, no `GROUP BY` needed —
+a common pattern once you need multiple differently-filtered totals
+side by side in a single row instead of stacked as separate groups.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>6. Bucket order-line size AND standardize channel, together</strong></p>
+
+<p>Combine two <code class="inline-code">CASE</code> expressions in one query: bucket <code class="inline-code">quantity *
+unit_price</code> into <code class="inline-code">'Small'</code> (< 50), <code class="inline-code">'Medium'</code> (< 200), <code class="inline-code">'Large'</code>
+(everything else), and standardize <code class="inline-code">channel</code> into <code class="inline-code">'Online'</code> or
+<code class="inline-code">'In-Store'</code> (collapsing the 4 raw spellings). Count rows for each
+combination.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+  CASE
+    WHEN quantity * unit_price &lt; 50 THEN &#x27;Small&#x27;
+    WHEN quantity * unit_price &lt; 200 THEN &#x27;Medium&#x27;
+    ELSE &#x27;Large&#x27;
+  END AS size_bucket,
+  CASE
+    WHEN LOWER(TRIM(channel)) = &#x27;online&#x27; THEN &#x27;Online&#x27;
+    ELSE &#x27;In-Store&#x27;
+  END AS clean_channel,
+  COUNT(*) AS n
+FROM bronze_sales
+GROUP BY size_bucket, clean_channel
+ORDER BY size_bucket, clean_channel;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>size_bucket</th><th>clean_channel</th><th>n</th></tr></thead><tbody><tr><td>Large</td><td>In-Store</td><td>4858</td></tr><tr><td>Large</td><td>Online</td><td>4897</td></tr><tr><td>Medium</td><td>In-Store</td><td>684</td></tr><tr><td>Medium</td><td>Online</td><td>724</td></tr><tr><td>Small</td><td>In-Store</td><td>418</td></tr><tr><td>Small</td><td>Online</td><td>419</td></tr></tbody></table></div>
+Two independent `CASE` expressions sitting side by side in the same
+`SELECT`/`GROUP BY`, each solving its own piece of messiness (numeric
+bucketing and text standardization), combining into one clean,
+six-row summary out of what would otherwise be dozens of noisy raw
+groups.
+
+<p></details></p>
+
+<hr class="divider">
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/05-case-expressions.html" class="nav-btn">CASE Expressions</a>. Previous: <a href="04-having.html" class="nav-btn">HAVING</a>. Next: <a href="06-cleaning-text-trim-upper-replace.html" class="nav-btn">Cleaning Text: TRIM, UPPER, LOWER, REPLACE</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

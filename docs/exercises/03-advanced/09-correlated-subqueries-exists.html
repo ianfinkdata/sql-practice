@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Correlated Subqueries, EXISTS, and NOT EXISTS | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-correlated-subqueries-exists-and-not-exists">Exercises: Correlated Subqueries, EXISTS, and NOT EXISTS</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/09-correlated-subqueries-exists.html" class="nav-btn">9. Correlated Subqueries, EXISTS, and NOT EXISTS</a>. Previous: <a href="08-writing-your-first-silver-view.html" class="nav-btn">8. Writing Your First Silver View</a>. Next: <a href="10-combining-ctes-and-window-functions.html" class="nav-btn">10. Capstone — Combining CTEs and Window Functions</a>.</nav>
+
+<p>Query <code class="inline-code">project/oakhaven.db</code> for all of these. Run with:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT ...;&quot; -header -column</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-products-priced-below-their-category-average">1. Products priced below their category average</h3>
+
+<p>Using a correlated subquery, find products whose <code class="inline-code">unit_price</code> is <em>below</em>
+their own category's average price (the mirror image of the curriculum's
+worked example, which found products <em>above</em> average). Show 6 rows.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT p.product_id, p.product_name, p.category, p.unit_price
+FROM dim_product p
+WHERE p.unit_price &lt; (
+    SELECT AVG(p2.unit_price) FROM dim_product p2 WHERE p2.category = p.category
+)
+ORDER BY p.category, p.unit_price
+LIMIT 6;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>product_name</th><th>category</th><th>unit_price</th></tr></thead><tbody><tr><td>122</td><td>Canyon Hats</td><td>Accessories</td><td>21.03</td></tr><tr><td>31</td><td>Cascade Water Bottle</td><td>Accessories</td><td>47.99</td></tr><tr><td>124</td><td>Trailhead Hats</td><td>Accessories</td><td>67.00</td></tr><tr><td>128</td><td>Granite Headlamps</td><td>Accessories</td><td>122.88</td></tr><tr><td>22</td><td>Northbound Headlamps</td><td>Accessories</td><td>123.99</td></tr><tr><td>76</td><td>Wayfinder Multi-Tools</td><td>Accessories</td><td>145.45</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="2-customers-who-never-bought-in-store">2. Customers who never bought In-Store</h3>
+
+<p>Using <code class="inline-code">EXISTS</code>/<code class="inline-code">NOT EXISTS</code>, find customers who have placed at least one
+order, but never through the <code class="inline-code">In-Store</code> channel.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT c.customer_id, c.full_name
+FROM dim_customer c
+WHERE EXISTS (SELECT 1 FROM fact_sales f WHERE f.customer_id = c.customer_id)
+  AND NOT EXISTS (
+      SELECT 1 FROM fact_sales f WHERE f.customer_id = c.customer_id AND f.channel = &#x27;In-Store&#x27;
+  )
+ORDER BY c.customer_id;</code></pre></div>
+
+<p>Verified output — exactly <strong>1</strong> customer out of 600:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>full_name</th></tr></thead><tbody><tr><td>235</td><td>Veronica Singleton</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="3-every-employee-has-processed-a-cancelled-order--confirm-it">3. Every employee has processed a Cancelled order — confirm it</h3>
+
+<p>Using <code class="inline-code">EXISTS</code>, count how many of Oakhaven's 35 employees have processed
+at least one order line with <code class="inline-code">order_status = 'Cancelled'</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM dim_employee e
+WHERE EXISTS (
+    SELECT 1 FROM fact_sales f WHERE f.employee_id = e.employee_id AND f.order_status = &#x27;Cancelled&#x27;
+);</code></pre></div>
+
+<p>Verified output: <strong>35</strong> — every single employee has at least one
+<code class="inline-code">Cancelled</code> order line on record. With 35 employees, 12,000 order lines,
+and cancellations spread fairly evenly (<code class="inline-code">order_status</code> has no
+employee-specific skew built into the data generator), this isn't
+surprising — but it's worth confirming with a query rather than assuming.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-reproduce-the-not-in--null-trap-yourself">4. Reproduce the NOT IN / NULL trap yourself</h3>
+
+<p>Using the minimal <code class="inline-code">VALUES</code>-based reproduction from the curriculum lesson
+(<code class="inline-code">ids</code> = <code class="inline-code">{1, 2, 3}</code>, <code class="inline-code">excluded</code> = <code class="inline-code">{2, NULL}</code>), write both the broken
+<code class="inline-code">NOT IN</code> version and the correct <code class="inline-code">NOT EXISTS</code> version, and confirm their
+outputs differ.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- broken: NOT IN, subquery result list contains a NULL
+WITH ids(id) AS (VALUES (1), (2), (3)),
+     excluded(id) AS (VALUES (2), (NULL))
+SELECT id FROM ids WHERE id NOT IN (SELECT id FROM excluded);</code></pre></div>
+
+<p>Verified output: <strong>zero rows</strong> (incorrect — should be <code class="inline-code">{1, 3}</code>).</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- correct: NOT EXISTS, immune to the NULL trap
+WITH ids(id) AS (VALUES (1), (2), (3)),
+     excluded(id) AS (VALUES (2), (NULL))
+SELECT id FROM ids i WHERE NOT EXISTS (SELECT 1 FROM excluded e WHERE e.id = i.id);</code></pre></div>
+
+<p>Verified output: <code class="inline-code">{1, 3}</code> (correct).</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-find-the-real-latent-risk-in-oakhaven">5. Find the real latent risk in Oakhaven</h3>
+
+<p><code class="inline-code">fact_sales.employee_id</code> is <code class="inline-code">NULL</code> for 1,243 rows (online/no-rep sales).
+Write a query that demonstrates the risk this creates: use <code class="inline-code">NOT IN</code>
+(against the raw, un-filtered <code class="inline-code">employee_id</code> column from <code class="inline-code">fact_sales</code>) to
+try to find employees with zero sales, then rewrite it as <code class="inline-code">NOT EXISTS</code>.
+Confirm both currently return the same (empty) result — then explain, in
+a sentence, why the <code class="inline-code">NOT IN</code> version is still a latent bug even though its
+current output happens to be correct.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- NOT IN version (dangerous — employee_id has 1,243 NULLs in fact_sales)
+SELECT e.employee_id, e.full_name
+FROM dim_employee e
+WHERE e.employee_id NOT IN (SELECT employee_id FROM fact_sales);
+
+<p>-- NOT EXISTS version (safe)
+SELECT e.employee_id, e.full_name
+FROM dim_employee e
+WHERE NOT EXISTS (SELECT 1 FROM fact_sales f WHERE f.employee_id = e.employee_id);</code></pre></div></p>
+
+<p>Verified output: both return <strong>zero rows</strong> currently, because every one
+of Oakhaven's 35 employees has at least one sale.</p>
+
+<p>That agreement is coincidental, not a guarantee: the <code class="inline-code">NOT IN</code> version's
+subquery (<code class="inline-code">SELECT employee_id FROM fact_sales</code>) includes 1,243 <code class="inline-code">NULL</code>
+values in its result list, which poisons every <code class="inline-code">NOT IN</code> comparison to
+<code class="inline-code">UNKNOWN</code> regardless of whether a real, non-<code class="inline-code">NULL</code> match exists. If a new
+employee were added who genuinely had zero sales, the <code class="inline-code">NOT IN</code> query would
+<em>still</em> silently report zero rows — hiding that employee — while the
+<code class="inline-code">NOT EXISTS</code> version would correctly surface them. The bug is dormant
+today only because the current data happens not to trigger it.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/09-correlated-subqueries-exists.html" class="nav-btn">9. Correlated Subqueries, EXISTS, and NOT EXISTS</a>. Previous: <a href="08-writing-your-first-silver-view.html" class="nav-btn">8. Writing Your First Silver View</a>. Next: <a href="10-combining-ctes-and-window-functions.html" class="nav-btn">10. Capstone — Combining CTEs and Window Functions</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

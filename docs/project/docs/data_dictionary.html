@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oakhaven Bronze Layer — Data Dictionary | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="oakhaven-bronze-layer--data-dictionary">Oakhaven Bronze Layer — Data Dictionary</h1>
+
+<p>Bronze tables are the raw, as-ingested layer: no primary keys, no
+foreign keys, no CHECK constraints. That absence is deliberate — the
+Tier 4 constraints lesson later contrasts this against proper DDL. All
+five tables are created by <code class="inline-code">project/bronze/schema.sql</code>
+(<code class="inline-code">bronze_calendar</code> is re-created by <code class="inline-code">project/bronze/calendar_recursive_cte.sql</code>,
+which also populates it).</p>
+
+<p>Generation is fully deterministic: <code class="inline-code">SEED = 20260630</code> and
+<code class="inline-code">SNAPSHOT_DATE = date(2026, 6, 30)</code> (<code class="inline-code">project/build_lib/config.py</code>).
+Rerunning <code class="inline-code">python project/build.py</code> produces byte-identical data every
+time — verified by diffing <code class="inline-code">sqlite3 oakhaven.db ".dump"</code> output across
+two consecutive runs.</p>
+
+<p>For exact generated values (row counts, min/max dates, the literal
+string variants that came out of this seed), see <code class="inline-code">facts_sheet.md</code>.</p>
+
+<hr class="divider">
+
+<h2 id="bronze_customers-600-rows">bronze_customers (~600 rows)</h2>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead><tbody><tr><td><code class="inline-code">customer_id</code></td><td>INTEGER</td><td>Sequential 1..600. No PK constraint.</td></tr><tr><td><code class="inline-code">first_name</code></td><td>TEXT</td><td>Mixed casing (UPPER/lower/Title) and occasional stray/doubled internal whitespace.</td></tr><tr><td><code class="inline-code">last_name</code></td><td>TEXT</td><td>Same messiness pattern as <code class="inline-code">first_name</code>.</td></tr><tr><td><code class="inline-code">email</code></td><td>TEXT</td><td>~4% NULL, ~2% empty string <code class="inline-code">''</code>. Otherwise <code class="inline-code">first.last@domain</code> form, lowercase.</td></tr><tr><td><code class="inline-code">phone</code></td><td>TEXT</td><td>Mixed formats: <code class="inline-code">(555) 123-4567</code>, <code class="inline-code">555-123-4567</code>, <code class="inline-code">5551234567</code>, <code class="inline-code">555.123.4567</code>, <code class="inline-code">+1 555 123 4567</code>. ~8% NULL. All non-null values are exactly 3-3-4 digit groups (area/prefix/line), which is what makes format-based re-parsing in <code class="inline-code">silver_customers.sql</code> reliable.</td></tr><tr><td><code class="inline-code">state</code></td><td>TEXT</td><td>Mix of full name, 2-letter abbreviation, lowercase, dotted abbreviation (<code class="inline-code">Calif.</code>, <code class="inline-code">Fla.</code>, <code class="inline-code">Mass.</code>, <code class="inline-code">Penn.</code>, <code class="inline-code">Wash.</code>), empty string, NULL.</td></tr><tr><td><code class="inline-code">signup_date</code></td><td>TEXT</td><td>Mixed formats: <code class="inline-code">YYYY-MM-DD</code>, <code class="inline-code">MM/DD/YYYY</code>, <code class="inline-code">YYYY-MM-DD HH:MM:SS</code>. Range 2018-01-01 through SNAPSHOT_DATE.</td></tr><tr><td><code class="inline-code">is_active</code></td><td>TEXT</td><td>Mixed-boolean text pool: <code class="inline-code">{Y, N, y, n, true, false, 1, 0, yes, no, NULL}</code>.</td></tr><tr><td><code class="inline-code">customer_segment</code></td><td>TEXT</td><td><code class="inline-code">Retail</code> / <code class="inline-code">Wholesale</code> / <code class="inline-code">VIP</code> with inconsistent casing. ~3% NULL.</td></tr></tbody></table></div>
+**Intentional near-duplicate people:** customer_ids 571–600 (30 rows)
+are near-duplicates of 30 of the base 1–570 rows — same underlying
+person (same normalized/lowercased email), but with varied name
+casing/whitespace and an email rendered with different casing or stray
+whitespace (still equal after `LOWER(TRIM(email))`). Other fields
+(phone, state, signup_date, is_active, segment) are independently
+regenerated, mirroring a person who signed up twice. This is the
+dedup-with-`ROW_NUMBER()` lesson hook.
+
+<hr class="divider">
+
+<h2 id="bronze_products-150-rows">bronze_products (~150 rows)</h2>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead><tbody><tr><td><code class="inline-code">product_id</code></td><td>INTEGER</td><td>Sequential 1..150.</td></tr><tr><td><code class="inline-code">product_name</code></td><td>TEXT</td><td><code class="inline-code">{adjective} {subcategory}</code>, e.g. "Summit Hiking Boots". Not guaranteed unique.</td></tr><tr><td><code class="inline-code">category</code></td><td>TEXT</td><td>Inconsistent casing/spacing variants of the 8 canonical categories: <code class="inline-code">Footwear</code>, <code class="inline-code">Apparel</code>, <code class="inline-code">Camping & Hiking</code>, <code class="inline-code">Climbing</code>, <code class="inline-code">Water Sports</code>, <code class="inline-code">Winter Sports</code>, <code class="inline-code">Accessories</code>, <code class="inline-code">Nutrition & Hydration</code>. Variants include upper/lower/title casing, trailing space, and (for 3 categories) an "and" spelled out instead of "&", or a split compound word (<code class="inline-code">Foot Wear</code>).</td></tr><tr><td><code class="inline-code">subcategory</code></td><td>TEXT</td><td>~10% NULL.</td></tr><tr><td><code class="inline-code">brand</code></td><td>TEXT</td><td>Drawn from a curated pool of ~25 realistic-sounding fictional outdoor-gear brand names.</td></tr><tr><td><code class="inline-code">unit_cost</code></td><td>REAL</td><td>~3% NULL. ~1% deliberately negative (data-entry error — not "fixed" downstream).</td></tr><tr><td><code class="inline-code">unit_price</code></td><td>REAL</td><td>Always positive; computed as <code class="inline-code">unit_cost * markup</code> where markup ∈ [1.3, 2.6] at generation time (before any cost corruption), so price is always sensible even when the stored cost is null/negative.</td></tr><tr><td><code class="inline-code">is_discontinued</code></td><td>TEXT</td><td>Same mixed-boolean text pool as <code class="inline-code">is_active</code>.</td></tr><tr><td><code class="inline-code">sku</code></td><td>TEXT</td><td>Mostly unique (<code class="inline-code">{3-letter category code}-{product_id:04d}</code>); ~1% of products (2 products, in the seeded run) are picked to have their SKU overwritten with another product's SKU, producing ~2% of products (4 rows) sharing a duplicated SKU. Surfaced via <code class="inline-code">silver_products.sku_is_duplicate</code>.</td></tr><tr><td><code class="inline-code">weight_kg</code></td><td>TEXT</td><td>Dirty TEXT, not a clean REAL: e.g. <code class="inline-code">"1.2"</code>, <code class="inline-code">"1.2 kg"</code>, or NULL (~8%).</td></tr><tr><td><code class="inline-code">created_at</code></td><td>TEXT</td><td>Mixed date formats, same 3-format pattern as <code class="inline-code">signup_date</code>.</td></tr></tbody></table></div>
+---
+
+<h2 id="bronze_employees-35-rows">bronze_employees (~35 rows)</h2>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead><tbody><tr><td><code class="inline-code">employee_id</code></td><td>INTEGER</td><td>Sequential 1..35.</td></tr><tr><td><code class="inline-code">first_name</code> / <code class="inline-code">last_name</code></td><td>TEXT</td><td>Mixed casing (no whitespace injection, unlike customers).</td></tr><tr><td><code class="inline-code">department</code></td><td>TEXT</td><td><code class="inline-code">Sales</code> / <code class="inline-code">Support</code> / <code class="inline-code">Warehouse</code> / <code class="inline-code">Management</code> with inconsistent casing.</td></tr><tr><td><code class="inline-code">region</code></td><td>TEXT</td><td><code class="inline-code">West</code> / <code class="inline-code">East</code> / <code class="inline-code">Central</code> / <code class="inline-code">South</code> / <code class="inline-code">Northeast</code> with inconsistent casing.</td></tr><tr><td><code class="inline-code">hire_date</code></td><td>TEXT</td><td>Mixed formats, 2018-01-01 through SNAPSHOT_DATE.</td></tr><tr><td><code class="inline-code">termination_date</code></td><td>TEXT</td><td>NULL for ~85% (still employed as of SNAPSHOT_DATE). Populated with a date strictly after <code class="inline-code">hire_date</code> for ~15% — this is the SCD Type 2 hook for a later lesson.</td></tr><tr><td><code class="inline-code">is_manager</code></td><td>TEXT</td><td>Mixed-boolean text pool.</td></tr><tr><td><code class="inline-code">email</code></td><td>TEXT</td><td><code class="inline-code">first.last@oakhaven.com</code>, lowercase. ~5% NULL.</td></tr></tbody></table></div>
+---
+
+<h2 id="bronze_sales-12000-order-line-rows--the-messiest-table">bronze_sales (~12,000 order-line rows — the messiest table)</h2>
+
+<p>Grain: one row per order line. Order-level attributes (<code class="inline-code">order_date</code>,
+<code class="inline-code">customer_id</code>, <code class="inline-code">employee_id</code>, <code class="inline-code">payment_method</code>, <code class="inline-code">order_status</code>,
+<code class="inline-code">channel</code>, and the ship-date behavior) are generated once per
+<code class="inline-code">order_id</code> and shared across that order's lines, mirroring a flattened
+order-header/order-line system.</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead><tbody><tr><td><code class="inline-code">order_id</code></td><td>INTEGER</td><td>Groups 1–3 order lines. Not sequential-per-line — repeats across an order's lines.</td></tr><tr><td><code class="inline-code">order_line_id</code></td><td>INTEGER</td><td>1-based within <code class="inline-code">order_id</code>.</td></tr><tr><td><code class="inline-code">customer_id</code></td><td>INTEGER</td><td>~1% reference a <code class="inline-code">customer_id</code> that does not exist in <code class="inline-code">bronze_customers</code> (intentional orphan FK, at the order level — all lines of an orphan order share the bad id).</td></tr><tr><td><code class="inline-code">product_id</code></td><td>INTEGER</td><td>~1% reference a <code class="inline-code">product_id</code> that does not exist in <code class="inline-code">bronze_products</code> (intentional orphan FK, per line).</td></tr><tr><td><code class="inline-code">employee_id</code></td><td>INTEGER</td><td>~10% NULL — represents an online/no-rep sale.</td></tr><tr><td><code class="inline-code">order_date</code></td><td>TEXT</td><td>Mixed formats, 2021-01-01 through SNAPSHOT_DATE. ~0.5% NULL.</td></tr><tr><td><code class="inline-code">ship_date</code></td><td>TEXT</td><td>NULL for ~15% of orders. For a further ~2% of orders, chronologically <strong>before</strong> <code class="inline-code">order_date</code> (intentional bad data — do not "fix" this in bronze). Otherwise <code class="inline-code">order_date</code> + 0–10 days.</td></tr><tr><td><code class="inline-code">quantity</code></td><td>INTEGER</td><td>Mostly positive small ints (1–5). ~3% negative (returns, -1 to -3). A few rows 0 or NULL.</td></tr><tr><td><code class="inline-code">unit_price</code></td><td>REAL</td><td>Price <strong>at time of sale</strong> — drift-adjusted from the product's current <code class="inline-code">bronze_products.unit_price</code> by a random ±15% factor. Intentionally may differ from the product's current price; this is real-world price drift, not a bug.</td></tr><tr><td><code class="inline-code">discount_pct</code></td><td>REAL</td><td>Usually a fraction 0–1 (drawn from <code class="inline-code">{0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30}</code>, weighted toward 0). ~1% of rows with a nonzero discount erroneously store the whole-number form (e.g. <code class="inline-code">15</code> instead of <code class="inline-code">0.15</code>) — a data-entry bug that <code class="inline-code">silver_sales.sql</code> detects and fixes (<code class="inline-code">> 1</code> → <code class="inline-code">/ 100.0</code>).</td></tr><tr><td><code class="inline-code">order_total</code></td><td>TEXT</td><td><strong>Deliberately untrustworthy.</strong> ~57% correctly computed (plain text), ~13% correct but <code class="inline-code">$</code>-prefixed/whitespace-padded, ~20% computed <strong>pre-discount</strong> (stale/wrong, plain text), ~7% pre-discount stale with <code class="inline-code">$</code> formatting, ~2% NULL, ~0.3% literal <code class="inline-code">"TBD"</code>, ~0.3% literal <code class="inline-code">"N/A"</code>. Never trust this column — <code class="inline-code">silver_sales.net_amount</code> recomputes from <code class="inline-code">quantity <em> unit_price </em> (1 - discount_pct)</code> instead.</td></tr><tr><td><code class="inline-code">payment_method</code></td><td>TEXT</td><td>Pool: <code class="inline-code">Credit Card</code>, <code class="inline-code">credit card</code>, <code class="inline-code">CC</code>, <code class="inline-code">Cash</code>, <code class="inline-code">cash </code>, <code class="inline-code">Debit Card</code>, <code class="inline-code">debit card</code>, <code class="inline-code">PayPal</code>, <code class="inline-code">paypal</code>, <code class="inline-code">Gift Card</code>.</td></tr><tr><td><code class="inline-code">order_status</code></td><td>TEXT</td><td>Pool: <code class="inline-code">Completed</code>, <code class="inline-code">completed</code>, <code class="inline-code">CANCELLED</code>, <code class="inline-code">Cancelled</code>, <code class="inline-code">Returned</code>, NULL (weighted, NULL ~10%).</td></tr><tr><td><code class="inline-code">channel</code></td><td>TEXT</td><td>Pool: <code class="inline-code">Online</code>, <code class="inline-code">In-Store</code>, <code class="inline-code">online</code>, <code class="inline-code">in store</code>.</td></tr></tbody></table></div>
+---
+
+<h2 id="bronze_calendar-7670-rows--not-messy">bronze_calendar (~7,670 rows — NOT messy)</h2>
+
+<p>A manufactured date spine, not raw/messy ingested data. Built entirely
+in SQL via <code class="inline-code">project/bronze/calendar_recursive_cte.sql</code> (a <code class="inline-code">WITH
+RECURSIVE</code> INSERT — no Python loop), one row per day from 2018-01-01
+through 2038-12-31 inclusive.</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead><tbody><tr><td><code class="inline-code">datekey</code></td><td>INTEGER</td><td><code class="inline-code">YYYYMMDD</code>, e.g. <code class="inline-code">20260630</code>.</td></tr><tr><td><code class="inline-code">date</code></td><td>TEXT</td><td>ISO <code class="inline-code">YYYY-MM-DD</code>.</td></tr></tbody></table></div>
+---
+
+<h2 id="known-limitations--deliberate-simplifications">Known limitations / deliberate simplifications</h2>
+<ul class="styled-list"><li>Name title-casing in the silver layer (<code class="inline-code">UPPER(first char) + LOWER(rest)</code>)</li></ul>  only handles single-token names correctly. Faker occasionally
+  generates names with internal punctuation (e.g. `O'Brien`); these
+  render as `O'brien` after cleaning. This is a known, accepted
+  limitation — not a bug to "fix" upstream.
+<ul class="styled-list"><li><code class="inline-code">discount_pct</code>'s whole-number bug is only injected on rows where the</li></ul>  *true* discount is nonzero (a 0% "bug" would be indistinguishable
+  from a clean 0% row), so its effective rate is slightly lower than a
+  flat 1% of all rows. See `facts_sheet.md` for the actual count.
+<ul class="styled-list"><li>Bronze category messiness variants were generated per-row</li></ul>  independently, so not every possible casing/spacing permutation is
+  guaranteed to appear for every category — see `facts_sheet.md` for
+  the exact list that came out of this seed.
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

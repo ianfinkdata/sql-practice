@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: GROUP BY | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-group-by">Exercises: GROUP BY</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/03-group-by.html" class="nav-btn">GROUP BY</a>. Previous: <a href="02-left-join-and-missing-data.html" class="nav-btn">LEFT JOIN and Missing Data</a>. Next: <a href="04-having.html" class="nav-btn">HAVING</a>.</nav>
+
+<p>Use <code class="inline-code">project/oakhaven.db</code>. Every solution below was run against the
+real database — your output should match exactly.</p>
+
+<hr class="divider">
+
+<p><strong>1. Order lines and rough revenue per raw <code class="inline-code">payment_method</code></strong></p>
+
+<p>Group <code class="inline-code">bronze_sales</code> by <code class="inline-code">payment_method</code> and return the count of rows
+and the rough total (<code class="inline-code">quantity * unit_price</code>, rounded to 2 decimals)
+for each, sorted by count descending.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT payment_method, COUNT(*) AS n,
+       ROUND(SUM(quantity * unit_price), 2) AS rough_total
+FROM bronze_sales
+GROUP BY payment_method
+ORDER BY n DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>payment_method</th><th>n</th><th>rough_total</th></tr></thead><tbody><tr><td>CC</td><td>1265</td><td>1039585.67</td></tr><tr><td>Debit Card</td><td>1233</td><td>1028691.86</td></tr><tr><td>cash</td><td>1232</td><td>1035060.17</td></tr><tr><td>Gift Card</td><td>1232</td><td>948907.59</td></tr><tr><td>paypal</td><td>1208</td><td>1015870.61</td></tr><tr><td>debit card</td><td>1193</td><td>981792.21</td></tr><tr><td>PayPal</td><td>1193</td><td>974114.56</td></tr><tr><td>Credit Card</td><td>1157</td><td>975831.67</td></tr><tr><td>credit card</td><td>1146</td><td>933744.88</td></tr><tr><td>Cash</td><td>1141</td><td>946557.96</td></tr></tbody></table></div>
+10 raw groups for what's really 5 payment methods (`Credit Card`,
+`Cash`, `Debit Card`, `Gift Card`, `PayPal`) — the same messy-column
+pattern as `category`, just on a different column this time.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>2. Average quantity per <code class="inline-code">order_status</code></strong></p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_status, COUNT(*) AS n, ROUND(AVG(quantity), 2) AS avg_qty
+FROM bronze_sales
+GROUP BY order_status
+ORDER BY n DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_status</th><th>n</th><th>avg_qty</th></tr></thead><tbody><tr><td>Completed</td><td>5304</td><td>2.77</td></tr><tr><td>completed</td><td>1804</td><td>2.78</td></tr><tr><td>Returned</td><td>1736</td><td>2.84</td></tr><tr><td><em>(NULL)</em></td><td>1240</td><td>2.77</td></tr><tr><td>Cancelled</td><td>1031</td><td>2.79</td></tr><tr><td>CANCELLED</td><td>885</td><td>2.87</td></tr></tbody></table></div>
+Note the blank/NULL row: `GROUP BY` treats `NULL` as its own group
+(it doesn't get dropped or error), which is worth knowing before you
+assume a grouped report accounts for 100% of rows just because the
+numbers "look complete."
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>3. Customers per raw <code class="inline-code">customer_segment</code></strong></p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_segment, COUNT(*) AS n
+FROM bronze_customers
+GROUP BY customer_segment
+ORDER BY n DESC;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_segment</th><th>n</th></tr></thead><tbody><tr><td>VIP</td><td>110</td></tr><tr><td>Wholesale</td><td>95</td></tr><tr><td>Retail</td><td>95</td></tr><tr><td>WHOLESALE</td><td>67</td></tr><tr><td>vip</td><td>58</td></tr><tr><td>wholesale</td><td>44</td></tr><tr><td>retail</td><td>41</td></tr><tr><td>Vip</td><td>39</td></tr><tr><td>RETAIL</td><td>37</td></tr><tr><td><em>(blank)</em></td><td>14</td></tr></tbody></table></div>
+10 groups for 3 real segments (VIP, Retail, Wholesale) plus a blank
+group for the ~3% documented as NULL/empty in the data dictionary.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>4. Two-column GROUP BY: employee count per department + region combination</strong></p>
+
+<p>Group <code class="inline-code">bronze_employees</code> by both <code class="inline-code">department</code> and <code class="inline-code">region</code> together,
+and return the first 10 rows ordered by <code class="inline-code">department</code>, then <code class="inline-code">region</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT department, region, COUNT(*) AS n
+FROM bronze_employees
+GROUP BY department, region
+ORDER BY department, region
+LIMIT 10;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>department</th><th>region</th><th>n</th></tr></thead><tbody><tr><td>MANAGEMENT</td><td>Northeast</td><td>1</td></tr><tr><td>MANAGEMENT</td><td>West</td><td>1</td></tr><tr><td>MANAGEMENT</td><td>central</td><td>1</td></tr><tr><td>MANAGEMENT</td><td>west</td><td>1</td></tr><tr><td>Management</td><td>Central</td><td>1</td></tr><tr><td>Management</td><td>SOUTH</td><td>1</td></tr><tr><td>Management</td><td>South</td><td>1</td></tr><tr><td>Management</td><td>West</td><td>2</td></tr><tr><td>Management</td><td>east</td><td>1</td></tr><tr><td>Management</td><td>west</td><td>1</td></tr></tbody></table></div>
+Grouping by two columns produces one row per unique *combination* —
+with only 35 employees split across ~11 raw department spellings and
+~14 raw region spellings, most combinations end up with just 1 or 2
+people. Small groups like this are exactly why Module 4's `HAVING`
+exists — to filter down to only the combinations worth looking at.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>5. Top 5 brands by product count, with their price range</strong></p>
+
+<p>Group <code class="inline-code">bronze_products</code> by <code class="inline-code">brand</code>, returning count of products,
+minimum <code class="inline-code">unit_price</code>, and maximum <code class="inline-code">unit_price</code> — top 5 by product
+count.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT brand, COUNT(*) AS n, MIN(unit_price) AS min_price, MAX(unit_price) AS max_price
+FROM bronze_products
+GROUP BY brand
+ORDER BY n DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>brand</th><th>n</th><th>min_price</th><th>max_price</th></tr></thead><tbody><tr><td>Elkstone</td><td>10</td><td>23.52</td><td>518.48</td></tr><tr><td>Northfell</td><td>9</td><td>47.09</td><td>645.99</td></tr><tr><td>Marrowpeak</td><td>9</td><td>123.99</td><td>426.17</td></tr><tr><td>Ironwood Trail Co.</td><td>9</td><td>67.0</td><td>505.09</td></tr><tr><td>Highmark Supply Co.</td><td>9</td><td>22.65</td><td>553.01</td></tr></tbody></table></div>
+`brand` is a clean column (no casing/whitespace mess like `category`
+or `payment_method`) — this is what a "well-behaved" `GROUP BY` looks
+like, for contrast.
+
+<p></details></p>
+
+<hr class="divider">
+
+<p><strong>6. Which raw category spellings does each channel favor?</strong></p>
+
+<p>Group <code class="inline-code">bronze_sales</code> joined to <code class="inline-code">bronze_products</code> by both <code class="inline-code">channel</code> and
+<code class="inline-code">category</code>, restricted to the three raw spellings of "Climbing"
+(<code class="inline-code">'Climbing'</code>, <code class="inline-code">'CLIMBING'</code>, <code class="inline-code">'climbing'</code>), returning line counts.
+Order by <code class="inline-code">channel</code>, then <code class="inline-code">category</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT s.channel, p.category, COUNT(*) AS n
+FROM bronze_sales s
+JOIN bronze_products p ON s.product_id = p.product_id
+WHERE p.category IN (&#x27;Climbing&#x27;, &#x27;CLIMBING&#x27;, &#x27;climbing&#x27;)
+GROUP BY s.channel, p.category
+ORDER BY s.channel, p.category;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>channel</th><th>category</th><th>n</th></tr></thead><tbody><tr><td>In-Store</td><td>CLIMBING</td><td>79</td></tr><tr><td>In-Store</td><td>Climbing</td><td>198</td></tr><tr><td>In-Store</td><td>climbing</td><td>123</td></tr><tr><td>Online</td><td>CLIMBING</td><td>73</td></tr><tr><td>Online</td><td>Climbing</td><td>180</td></tr><tr><td>Online</td><td>climbing</td><td>150</td></tr><tr><td>in store</td><td>CLIMBING</td><td>74</td></tr><tr><td>in store</td><td>Climbing</td><td>149</td></tr><tr><td>in store</td><td>climbing</td><td>137</td></tr><tr><td>online</td><td>CLIMBING</td><td>91</td></tr><tr><td>online</td><td>Climbing</td><td>190</td></tr><tr><td>online</td><td>climbing</td><td>147</td></tr></tbody></table></div>
+4 raw `channel` spellings times 3 raw `Climbing` spellings gives
+exactly the 12 rows predicted — a direct, hands-on look at how
+uncleaned text on *both* sides of a join multiplies the number of
+groups in your result, well past what the underlying real-world
+question ("channel by category") actually has to offer.
+
+<p></details></p>
+
+<hr class="divider">
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/02-intermediate/03-group-by.html" class="nav-btn">GROUP BY</a>. Previous: <a href="02-left-join-and-missing-data.html" class="nav-btn">LEFT JOIN and Missing Data</a>. Next: <a href="04-having.html" class="nav-btn">HAVING</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

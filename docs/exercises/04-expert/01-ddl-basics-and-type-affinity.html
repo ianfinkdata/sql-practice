@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: DDL Basics and Type Affinity | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-ddl-basics-and-type-affinity">Exercises: DDL Basics and Type Affinity</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/01-ddl-basics-and-type-affinity.html" class="nav-btn">1. DDL Basics and Type Affinity</a>. Previous: <a href="../03-advanced/10-combining-ctes-and-window-functions.html" class="nav-btn">10. Capstone — Combining CTEs and Window Functions</a>. Next: <a href="02-alter-table-and-schema-evolution.html" class="nav-btn">2. ALTER TABLE and Schema Evolution</a>.</nav>
+
+<p>Exercises 1 and 4–5 are read-only (query the shared <code class="inline-code">project/oakhaven.db</code>
+directly). Exercises 2, 3, and 6 create/modify tables — work against
+your own scratch copy for those:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/my_scratch.db
+sqlite3 /tmp/my_scratch.db</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-read-the-real-schema">1. Read the real schema</h3>
+
+<p>Using <code class="inline-code">PRAGMA table_info</code>, list every column name and declared type
+for <code class="inline-code">bronze_employees</code>. Which columns store dates, and what declared
+type are they — <code class="inline-code">DATE</code>, or something else? What does that tell you
+about how SQLite represents dates?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">PRAGMA table_info(bronze_employees);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">0|employee_id|INTEGER|0||0
+1|first_name|TEXT|0||0
+2|last_name|TEXT|0||0
+3|department|TEXT|0||0
+4|region|TEXT|0||0
+5|hire_date|TEXT|0||0
+6|termination_date|TEXT|0||0
+7|is_manager|TEXT|0||0
+8|email|TEXT|0||0</code></pre></div>
+
+<p><code class="inline-code">hire_date</code> and <code class="inline-code">termination_date</code> are both <code class="inline-code">TEXT</code>, not <code class="inline-code">DATE</code> —
+SQLite has no native date/datetime storage class. Dates are just
+strings, interpreted as dates only when a date function like
+<code class="inline-code">strftime()</code> or <code class="inline-code">date()</code> is applied to them. This is also <em>why</em>
+bronze can get away with storing dates in three different formats
+(<code class="inline-code">YYYY-MM-DD</code>, <code class="inline-code">MM/DD/YYYY</code>, <code class="inline-code">YYYY-MM-DD HH:MM:SS</code>) — nothing at the
+storage layer distinguishes a valid date string from any other text.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-watch-affinity-coerce-values-on-insert">2. Watch affinity coerce values on insert</h3>
+
+<p>On your scratch copy, create a table with one column of each of three
+declared types — <code class="inline-code">INTEGER</code>, <code class="inline-code">TEXT</code>, and <code class="inline-code">VARCHAR(10)</code> — then insert a
+single row where each value's <em>actual</em> type doesn't match its
+column's declared type (a numeric string into the <code class="inline-code">INTEGER</code> column, a
+number into the <code class="inline-code">TEXT</code> column, a number into <code class="inline-code">VARCHAR(10)</code>). Use
+<code class="inline-code">typeof()</code> to see what actually got stored in each column.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE ex_affinity (a INTEGER, b TEXT, c VARCHAR(10));
+INSERT INTO ex_affinity VALUES (&#x27;42&#x27;, 99, 100);
+SELECT a, typeof(a), b, typeof(b), c, typeof(c) FROM ex_affinity;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">a   typeof(a)  b   typeof(b)  c    typeof(c)
+--  ---------  --  ---------  ---  ---------
+42  integer    99  text       100  text</code></pre></div>
+<ul class="styled-list"><li>Column <code class="inline-code">a</code> (<code class="inline-code">INTEGER</code> affinity) received the <em>string</em> <code class="inline-code">'42'</code>, and</li></ul>  converted it to a real integer — `typeof(a)` reports `integer`.
+<ul class="styled-list"><li>Column <code class="inline-code">b</code> (<code class="inline-code">TEXT</code> affinity) received the <em>number</em> <code class="inline-code">99</code>, and</li></ul>  converted it to the string `'99'` — `typeof(b)` reports `text`.
+<ul class="styled-list"><li>Column <code class="inline-code">c</code> (<code class="inline-code">VARCHAR(10)</code> — note this still gets <code class="inline-code">TEXT</code> affinity,</li></ul>  since SQLite's affinity rules only look for the substrings `CHAR`,
+  `CLOB`, or `TEXT` anywhere in the declared type, and `VARCHAR`
+  contains `CHAR`) behaves identically to `b`: the number `100`
+  became the string `'100'`.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-break-numeric-affinity-on-purpose">3. Break <code class="inline-code">NUMERIC</code> affinity on purpose</h3>
+
+<p><code class="inline-code">NUMERIC</code> affinity tries to convert text to a number, but only when
+the text is losslessly convertible. On your scratch copy, create a
+table with one <code class="inline-code">NUMERIC</code> column and insert two rows: one with a value
+that converts cleanly (e.g. <code class="inline-code">'7'</code>), and one with a value that can't be
+converted losslessly (e.g. <code class="inline-code">'7 apples'</code>). What does <code class="inline-code">typeof()</code> report
+for each?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE ex_numeric (val NUMERIC);
+INSERT INTO ex_numeric VALUES (&#x27;7&#x27;), (&#x27;7 apples&#x27;);
+SELECT val, typeof(val) FROM ex_numeric;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">val       typeof(val)
+--------  -----------
+7         integer
+7 apples  text</code></pre></div>
+
+<p><code class="inline-code">'7'</code> converts cleanly to the integer <code class="inline-code">7</code>. <code class="inline-code">'7 apples'</code> cannot be
+losslessly converted back to the exact same text from a number, so
+<code class="inline-code">NUMERIC</code> affinity leaves it stored as <code class="inline-code">TEXT</code>, unchanged — no error,
+no rejection, just a silent fallback to storing it as-is.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-why-is-bronze_productsweight_kg-text-not-real">4. Why is <code class="inline-code">bronze_products.weight_kg</code> <code class="inline-code">TEXT</code>, not <code class="inline-code">REAL</code>?</h3>
+
+<p>Query <code class="inline-code">bronze_products</code> for a handful of distinct <code class="inline-code">weight_kg</code> values
+that include the literal <code class="inline-code">" kg"</code> suffix. Explain, in one or two
+sentences, why declaring this column <code class="inline-code">REAL</code> at generation time
+wouldn't have worked for these particular values.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT weight_kg
+FROM bronze_products
+WHERE weight_kg LIKE &#x27;% kg&#x27;
+LIMIT 5;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">24.7 kg
+3.43 kg
+18.5 kg
+7.4 kg
+19.7 kg</code></pre></div>
+
+<p>Values like <code class="inline-code">"24.7 kg"</code> are not valid numeric literals — they're a
+number followed by a unit suffix. A <code class="inline-code">REAL</code>-affinity column would try
+to coerce this text to a float and, since it can't be losslessly
+converted (see Exercise 3's <code class="inline-code">NUMERIC</code> behavior — <code class="inline-code">REAL</code> affinity works
+the same way), it would be stored unchanged as <code class="inline-code">TEXT</code> anyway — or, in
+engines with rigid typing, rejected outright at insert time. Declaring
+the column <code class="inline-code">TEXT</code> from the start is honest about the fact that the raw
+data isn't uniformly numeric; <code class="inline-code">silver_products.sql</code>'s <code class="inline-code">CASE</code> expression
+is what actually strips the <code class="inline-code">" kg"</code> suffix and produces a clean <code class="inline-code">REAL</code>.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-cast-doesnt-fail-the-way-you-might-expect">5. <code class="inline-code">CAST</code> doesn't fail the way you might expect</h3>
+
+<p>Run <code class="inline-code">SELECT CAST('1.2 kg' AS REAL);</code> directly (read-only, no writes
+needed). What value comes back? Is this a rejection, a <code class="inline-code">NULL</code>, or
+something else — and what does that tell you about relying on <code class="inline-code">CAST</code>
+to validate data rather than to convert it?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT CAST(&#x27;1.2 kg&#x27; AS REAL) AS cast_result, typeof(CAST(&#x27;1.2 kg&#x27; AS REAL));</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">cast_result  typeof(...)
+-----------  -----------
+1.2          real</code></pre></div>
+
+<p><code class="inline-code">CAST</code> doesn't fail or return <code class="inline-code">NULL</code> here — it silently parses as much
+of a valid numeric prefix as it can (<code class="inline-code">"1.2"</code>) and discards the rest
+(<code class="inline-code">" kg"</code>), returning <code class="inline-code">1.2</code> as a real <code class="inline-code">REAL</code>. This is exactly why
+<code class="inline-code">silver_products.sql</code> doesn't rely on a bare <code class="inline-code">CAST(weight_kg_raw AS
+REAL)</code> for every row — it explicitly checks <code class="inline-code">LIKE '% kg'</code> first and
+strips the suffix, rather than trusting <code class="inline-code">CAST</code>'s permissive
+best-effort parsing to always do the right thing. <code class="inline-code">CAST</code> is a
+conversion tool, not a validation tool — it will very often give you
+<em>a</em> number back even from input that shouldn't be considered valid.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="6-design-a-properly-typed-products-table-then-find-where-it-would-still-lie-to-you">6. Design a "properly typed" products table, then find where it would still lie to you</h3>
+
+<p>On your scratch copy, create a <code class="inline-code">demo_products</code> table with <code class="inline-code">unit_cost</code>
+and <code class="inline-code">unit_price</code> declared <code class="inline-code">REAL</code>, and <code class="inline-code">weight_kg</code> declared <code class="inline-code">REAL</code> too
+(unlike bronze's <code class="inline-code">TEXT</code>). Insert one row using a real <code class="inline-code">bronze_products</code>
+row's <code class="inline-code">unit_cost</code> (pick any negative one — the facts sheet says ~1.3%
+of products have a negative <code class="inline-code">unit_cost</code>, a deliberate data-entry
+error). Does the <code class="inline-code">REAL</code> affinity column stop you from inserting a
+negative cost? What kind of constraint (from Module 7) would be needed
+to actually prevent it?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, unit_cost FROM bronze_products WHERE unit_cost &lt; 0;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">product_id  unit_cost
+----------  ---------
+19          -4.19
+30          -131.94</code></pre></div>
+
+<p>Matches the facts sheet exactly: 2 rows with negative <code class="inline-code">unit_cost</code>.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE demo_products (unit_cost REAL, unit_price REAL, weight_kg REAL);
+INSERT INTO demo_products (unit_cost, unit_price, weight_kg) VALUES (-4.19, 24.99, 1.2);
+SELECT * FROM demo_products;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">unit_cost  unit_price  weight_kg
+---------  ----------  ---------
+-4.19      24.99       1.2</code></pre></div>
+
+<p>The insert succeeds without complaint — <code class="inline-code">REAL</code> affinity only cares
+that the value <em>is</em> a number, not whether it's a <em>sensible</em> number.
+Nothing about declaring a column <code class="inline-code">REAL</code> (or any other type) stops a
+negative cost from being stored. Preventing this requires a <code class="inline-code">CHECK</code>
+constraint, e.g. <code class="inline-code">unit_cost REAL CHECK (unit_cost >= 0 OR unit_cost IS
+NULL)</code> — see Module 7 for exactly this kind of business-rule
+enforcement, demonstrated against the real orphan-FK problem in
+<code class="inline-code">bronze_sales</code>.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/01-ddl-basics-and-type-affinity.html" class="nav-btn">1. DDL Basics and Type Affinity</a>. Previous: <a href="../03-advanced/10-combining-ctes-and-window-functions.html" class="nav-btn">10. Capstone — Combining CTEs and Window Functions</a>. Next: <a href="02-alter-table-and-schema-evolution.html" class="nav-btn">2. ALTER TABLE and Schema Evolution</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

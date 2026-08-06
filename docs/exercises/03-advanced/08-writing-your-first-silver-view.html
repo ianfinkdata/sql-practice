@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: Writing Your First Silver View | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-writing-your-first-silver-view">Exercises: Writing Your First Silver View</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/08-writing-your-first-silver-view.html" class="nav-btn">8. Writing Your First Silver View</a>. Previous: <a href="07-the-date-spine-pattern.html" class="nav-btn">7. The Date-Spine Pattern</a>. Next: <a href="09-correlated-subqueries-exists.html" class="nav-btn">9. Correlated Subqueries, EXISTS, and NOT EXISTS</a>.</nav>
+
+<p>Query <code class="inline-code">project/oakhaven.db</code> for all of these. Run these as plain
+<code class="inline-code">SELECT</code> statements — <strong>never</strong> run <code class="inline-code">CREATE VIEW</code>, <code class="inline-code">DROP</code>, or any DDL
+against the shared <code class="inline-code">oakhaven.db</code>. Run with:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">sqlite3 project/oakhaven.db &quot;SELECT ...;&quot; -header -column</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-normalize-bronze_employeesdepartment">1. Normalize <code class="inline-code">bronze_employees.department</code></h3>
+
+<p>Write a <code class="inline-code">SELECT</code> that shows every distinct raw <code class="inline-code">department</code> value from
+<code class="inline-code">bronze_employees</code> alongside its normalized canonical form (<code class="inline-code">Sales</code>,
+<code class="inline-code">Support</code>, <code class="inline-code">Warehouse</code>, <code class="inline-code">Management</code>), using the
+<code class="inline-code">LOWER(TRIM(...))</code>-key-then-<code class="inline-code">CASE</code> pattern from <code class="inline-code">silver_customers.sql</code>'s
+<code class="inline-code">customer_segment</code> cleaning.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT department AS raw_department,
+       CASE LOWER(TRIM(department))
+           WHEN &#x27;sales&#x27; THEN &#x27;Sales&#x27;
+           WHEN &#x27;support&#x27; THEN &#x27;Support&#x27;
+           WHEN &#x27;warehouse&#x27; THEN &#x27;Warehouse&#x27;
+           WHEN &#x27;management&#x27; THEN &#x27;Management&#x27;
+           ELSE NULL
+       END AS clean_department
+FROM bronze_employees
+ORDER BY raw_department;</code></pre></div>
+
+<p>Verified output (11 distinct raw variants, all correctly mapped):</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>raw_department</th><th>clean_department</th></tr></thead><tbody><tr><td>MANAGEMENT</td><td>Management</td></tr><tr><td>Management</td><td>Management</td></tr><tr><td>SUPPORT</td><td>Support</td></tr><tr><td>Sales</td><td>Sales</td></tr><tr><td>Support</td><td>Support</td></tr><tr><td>WAREHOUSE</td><td>Warehouse</td></tr><tr><td>Warehouse</td><td>Warehouse</td></tr><tr><td>management</td><td>Management</td></tr><tr><td>sales</td><td>Sales</td></tr><tr><td>support</td><td>Support</td></tr><tr><td>warehouse</td><td>Warehouse</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="2-normalize-bronze_employeesregion">2. Normalize <code class="inline-code">bronze_employees.region</code></h3>
+
+<p>Same idea, for <code class="inline-code">region</code> (canonical forms: <code class="inline-code">West</code>, <code class="inline-code">East</code>, <code class="inline-code">Central</code>,
+<code class="inline-code">South</code>, <code class="inline-code">Northeast</code>).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT DISTINCT region AS raw_region,
+       CASE LOWER(TRIM(region))
+           WHEN &#x27;west&#x27; THEN &#x27;West&#x27;
+           WHEN &#x27;east&#x27; THEN &#x27;East&#x27;
+           WHEN &#x27;central&#x27; THEN &#x27;Central&#x27;
+           WHEN &#x27;south&#x27; THEN &#x27;South&#x27;
+           WHEN &#x27;northeast&#x27; THEN &#x27;Northeast&#x27;
+           ELSE NULL
+       END AS clean_region
+FROM bronze_employees
+ORDER BY raw_region;</code></pre></div>
+
+<p>Verified output (14 distinct raw variants):</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>raw_region</th><th>clean_region</th></tr></thead><tbody><tr><td>CENTRAL</td><td>Central</td></tr><tr><td>Central</td><td>Central</td></tr><tr><td>EAST</td><td>East</td></tr><tr><td>East</td><td>East</td></tr><tr><td>NORTHEAST</td><td>Northeast</td></tr><tr><td>Northeast</td><td>Northeast</td></tr><tr><td>SOUTH</td><td>South</td></tr><tr><td>South</td><td>South</td></tr><tr><td>WEST</td><td>West</td></tr><tr><td>West</td><td>West</td></tr><tr><td>central</td><td>Central</td></tr><tr><td>east</td><td>East</td></tr><tr><td>south</td><td>South</td></tr><tr><td>west</td><td>West</td></tr></tbody></table></div>
+</details>
+
+<hr class="divider">
+
+<h3 id="3-combine-both-prove-full-coverage">3. Combine both, prove full coverage</h3>
+
+<p>Write one <code class="inline-code">SELECT</code> over <code class="inline-code">bronze_employees</code> (all 35 rows) that produces
+both <code class="inline-code">clean_department</code> and <code class="inline-code">clean_region</code> side by side, then a second
+query that counts how many rows end up with a <code class="inline-code">NULL</code> <code class="inline-code">clean_department</code>
+(there should be zero — every raw value should be covered by your
+<code class="inline-code">CASE</code>).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT e.employee_id,
+       e.department AS raw_department,
+       CASE LOWER(TRIM(e.department))
+           WHEN &#x27;sales&#x27; THEN &#x27;Sales&#x27; WHEN &#x27;support&#x27; THEN &#x27;Support&#x27;
+           WHEN &#x27;warehouse&#x27; THEN &#x27;Warehouse&#x27; WHEN &#x27;management&#x27; THEN &#x27;Management&#x27;
+           ELSE NULL
+       END AS clean_department,
+       e.region AS raw_region,
+       CASE LOWER(TRIM(e.region))
+           WHEN &#x27;west&#x27; THEN &#x27;West&#x27; WHEN &#x27;east&#x27; THEN &#x27;East&#x27;
+           WHEN &#x27;central&#x27; THEN &#x27;Central&#x27; WHEN &#x27;south&#x27; THEN &#x27;South&#x27;
+           WHEN &#x27;northeast&#x27; THEN &#x27;Northeast&#x27;
+           ELSE NULL
+       END AS clean_region
+FROM bronze_employees e
+ORDER BY e.employee_id
+LIMIT 8;</code></pre></div>
+
+<p>Verified output (first 8 rows):</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>raw_department</th><th>clean_department</th><th>raw_region</th><th>clean_region</th></tr></thead><tbody><tr><td>1</td><td>Management</td><td>Management</td><td>West</td><td>West</td></tr><tr><td>2</td><td>WAREHOUSE</td><td>Warehouse</td><td>NORTHEAST</td><td>Northeast</td></tr><tr><td>3</td><td>management</td><td>Management</td><td>East</td><td>East</td></tr><tr><td>4</td><td>Support</td><td>Support</td><td>EAST</td><td>East</td></tr><tr><td>5</td><td>Warehouse</td><td>Warehouse</td><td>CENTRAL</td><td>Central</td></tr><tr><td>6</td><td>Sales</td><td>Sales</td><td>West</td><td>West</td></tr><tr><td>7</td><td>Management</td><td>Management</td><td>South</td><td>South</td></tr><tr><td>8</td><td>Sales</td><td>Sales</td><td>EAST</td><td>East</td></tr></tbody></table></div>
+Coverage check:
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS unmapped
+FROM bronze_employees e
+WHERE CASE LOWER(TRIM(e.department))
+           WHEN &#x27;sales&#x27; THEN &#x27;Sales&#x27; WHEN &#x27;support&#x27; THEN &#x27;Support&#x27;
+           WHEN &#x27;warehouse&#x27; THEN &#x27;Warehouse&#x27; WHEN &#x27;management&#x27; THEN &#x27;Management&#x27;
+           ELSE NULL END IS NULL;</code></pre></div>
+
+<p>Verified output: <strong>0</strong> — every one of the 35 employees' <code class="inline-code">department</code>
+values is covered by the <code class="inline-code">CASE</code>.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-clean-a-dirty-text-to-real-column">4. Clean a dirty-TEXT-to-REAL column</h3>
+
+<p><code class="inline-code">bronze_products.weight_kg</code> has the same problem as
+<code class="inline-code">bronze_customers.phone</code> conceptually (a <code class="inline-code">TEXT</code> column masking a real
+underlying value) but a different shape: values like <code class="inline-code">"1.2"</code>, <code class="inline-code">"1.2 kg"</code>,
+or <code class="inline-code">NULL</code>. Write a <code class="inline-code">SELECT</code> that parses it to a clean <code class="inline-code">REAL</code> — strip a
+trailing <code class="inline-code">" kg"</code> suffix if present, then <code class="inline-code">CAST</code> to <code class="inline-code">REAL</code>. Show 5 rows
+where the raw value had the <code class="inline-code">" kg"</code> suffix, to prove the stripping worked.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, weight_kg AS raw_weight,
+       CASE
+           WHEN weight_kg IS NULL THEN NULL
+           WHEN weight_kg LIKE &#x27;% kg&#x27; THEN CAST(TRIM(REPLACE(weight_kg, &#x27; kg&#x27;, &#x27;&#x27;)) AS REAL)
+           ELSE CAST(weight_kg AS REAL)
+       END AS clean_weight_kg
+FROM bronze_products
+WHERE weight_kg LIKE &#x27;% kg&#x27;
+LIMIT 5;</code></pre></div>
+
+<p>Verified output:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>raw_weight</th><th>clean_weight_kg</th></tr></thead><tbody><tr><td>1</td><td>24.7 kg</td><td>24.7</td></tr><tr><td>3</td><td>3.43 kg</td><td>3.43</td></tr><tr><td>4</td><td>18.5 kg</td><td>18.5</td></tr><tr><td>8</td><td>7.4 kg</td><td>7.4</td></tr><tr><td>18</td><td>19.7 kg</td><td>19.7</td></tr></tbody></table></div>
+(This is, not coincidentally, exactly the technique `silver_products.sql`
+actually uses for this column — write it yourself first, then compare.)
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-design-question--why-not-delete-the-unmapped-rows">5. Design question — why not delete the unmapped rows?</h3>
+
+<p>Suppose your <code class="inline-code">CASE</code> in Exercise 1 or 2 <em>did</em> produce a <code class="inline-code">NULL</code> for some
+unanticipated raw value (say a typo <code class="inline-code">"Slaes"</code> slipped into the data).
+Would it be acceptable for your cleaning query to silently <code class="inline-code">WHERE
+clean_department IS NOT NULL</code> and drop that row? Write 2–3 sentences
+explaining your answer in terms of the silver-layer contract described in
+this module's curriculum lesson.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>No — dropping the row would violate silver's core contract: clean and
+standardize, but never delete rows or silently hide problems you can't
+resolve. A silver view should still return that row, with
+<code class="inline-code">clean_department = NULL</code> and <code class="inline-code">raw_department</code> (or the original column)
+still visible, so a downstream consumer can see there's an unmapped value
+and decide how to handle it — flag it for review, fix the mapping, or
+escalate to whoever owns the source data. <code class="inline-code">silver_customers.sql</code>
+demonstrates exactly this discipline with its <code class="inline-code">is_active</code> cleaning: an
+unrecognized value falls through to <code class="inline-code">ELSE NULL</code>, not a default guess and
+not a dropped row.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/03-advanced/08-writing-your-first-silver-view.html" class="nav-btn">8. Writing Your First Silver View</a>. Previous: <a href="07-the-date-spine-pattern.html" class="nav-btn">7. The Date-Spine Pattern</a>. Next: <a href="09-correlated-subqueries-exists.html" class="nav-btn">9. Correlated Subqueries, EXISTS, and NOT EXISTS</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

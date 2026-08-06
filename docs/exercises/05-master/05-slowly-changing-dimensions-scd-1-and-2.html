@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: 5. Slowly Changing Dimensions: Type 1 and Type 2 | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-5-slowly-changing-dimensions-type-1-and-type-2">Exercises: 5. Slowly Changing Dimensions: Type 1 and Type 2</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/05-slowly-changing-dimensions-scd-1-and-2.html" class="nav-btn">5. Slowly Changing Dimensions: Type 1 and Type 2</a>. Previous: <a href="04-designing-a-dimension.html" class="nav-btn">4. Designing a Dimension</a>. Next: <a href="06-designing-the-date-dimension.html" class="nav-btn">6. Designing the Date Dimension</a>.</nav>
+
+<p>Work against <code class="inline-code">project/oakhaven.db</code>. Read-only — every query below is a
+<code class="inline-code">SELECT</code>. None of these persist a new table or view; they're all
+demonstrations of the SCD Type 2 shape, run directly as queries.</p>
+
+<hr class="divider">
+
+<h3 id="1-verify-the-termination-rate-yourself">1. Verify the termination rate yourself</h3>
+
+<p>Confirm how many of Oakhaven's 35 employees have a populated
+<code class="inline-code">termination_date</code>, and what percentage that is.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total_employees,
+       SUM(CASE WHEN termination_date IS NOT NULL THEN 1 ELSE 0 END) AS terminated,
+       ROUND(100.0 * SUM(CASE WHEN termination_date IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*), 1) AS pct_terminated
+FROM dim_employee;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_employees</th><th>terminated</th><th>pct_terminated</th></tr></thead><tbody><tr><td>35</td><td>8</td><td>22.9</td></tr></tbody></table></div>
+8 of 35 employees (22.9%) have left the company as of the snapshot
+date — this is the real, seed-specific number to cite (the data
+dictionary's "~15%" is a generation *target*, not the realized count).
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-compare-tenure-length-active-vs-terminated-employees">2. Compare tenure length: active vs. terminated employees</h3>
+
+<p>For each employment status (<code class="inline-code">active</code> = <code class="inline-code">termination_date IS NULL</code>,
+<code class="inline-code">terminated</code> = otherwise), compute the average tenure in days —
+<code class="inline-code">hire_date</code> to either <code class="inline-code">termination_date</code> or the snapshot date
+(<code class="inline-code">2026-06-30</code>) for still-active employees.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    CASE WHEN termination_date IS NULL THEN &#x27;active&#x27; ELSE &#x27;terminated&#x27; END AS status,
+    COUNT(*) AS n,
+    ROUND(AVG(julianday(COALESCE(termination_date, &#x27;2026-06-30&#x27;)) - julianday(hire_date)), 1) AS avg_tenure_days
+FROM dim_employee
+GROUP BY status;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>status</th><th>n</th><th>avg_tenure_days</th></tr></thead><tbody><tr><td>active</td><td>27</td><td>1650.9</td></tr><tr><td>terminated</td><td>8</td><td>689.3</td></tr></tbody></table></div>
+Active employees average about 4.5 years of tenure so far (and
+counting — their "current" span is still open); terminated employees
+averaged about 1.9 years before leaving. This is a direct payoff of
+treating `hire_date`/`termination_date` as an effective/expiry pair,
+rather than just checking `termination_date IS NULL` as a flat
+boolean: you get a genuine duration measure out of it, computed the
+same way SCD Type 2 tooling would compute "how long was this version
+of the row valid."
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-build-the-full-scd-type-2-shaping-query">3. Build the full SCD Type 2 shaping query</h3>
+
+<p>Reshape all 35 rows of <code class="inline-code">dim_employee</code> into the standard SCD Type 2
+column vocabulary: <code class="inline-code">effective_date</code>, <code class="inline-code">expiry_date</code> (using <code class="inline-code">9999-12-31</code>
+as the sentinel for currently-active employees), and <code class="inline-code">is_current</code>.
+Order by <code class="inline-code">employee_id</code>.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT
+    employee_id,
+    full_name,
+    department,
+    hire_date AS effective_date,
+    COALESCE(termination_date, &#x27;9999-12-31&#x27;) AS expiry_date,
+    CASE WHEN termination_date IS NULL THEN 1 ELSE 0 END AS is_current
+FROM dim_employee
+ORDER BY employee_id
+LIMIT 6;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>full_name</th><th>department</th><th>effective_date</th><th>expiry_date</th><th>is_current</th></tr></thead><tbody><tr><td>1</td><td>Alexa Garcia</td><td>Management</td><td>2024-04-09</td><td>9999-12-31</td><td>1</td></tr><tr><td>2</td><td>Sandra Thompson</td><td>Warehouse</td><td>2018-05-25</td><td>9999-12-31</td><td>1</td></tr><tr><td>3</td><td>Alexandria Cunningham</td><td>Management</td><td>2018-12-07</td><td>2021-05-01</td><td>0</td></tr><tr><td>4</td><td>Laura Williams</td><td>Support</td><td>2020-05-28</td><td>9999-12-31</td><td>1</td></tr><tr><td>5</td><td>Stephanie Reid</td><td>Warehouse</td><td>2023-08-10</td><td>9999-12-31</td><td>1</td></tr><tr><td>6</td><td>Christy Lee</td><td>Sales</td><td>2021-10-04</td><td>2024-01-09</td><td>0</td></tr></tbody></table></div>
+This is the pattern any real SCD Type 2 dimension follows, applied
+here to the one attribute Oakhaven's data actually supports historizing:
+employment status. `is_current = 1` marks the version valid right now;
+`expiry_date` marks when a version stopped (or would stop) being
+valid.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-naive-equality-join-vs-a-point-in-time-correct-join">4. Naive equality join vs. a point-in-time-correct join</h3>
+
+<p>Join <code class="inline-code">fact_sales</code> to <code class="inline-code">dim_employee</code> two ways: (a) the naive way, on
+<code class="inline-code">employee_id</code> alone, and (b) the point-in-time-correct way, additionally
+requiring <code class="inline-code">f.order_date</code> to fall between the employee's <code class="inline-code">hire_date</code>
+and <code class="inline-code">termination_date</code> (or <code class="inline-code">9999-12-31</code> if still active). Compare the
+row counts.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- (a) naive: employee_id equality only
+SELECT COUNT(*) AS naive_join_lines
+FROM fact_sales f
+JOIN dim_employee e ON f.employee_id = e.employee_id;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>naive_join_lines</th></tr></thead><tbody><tr><td>10757</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- (b) point-in-time-correct: order_date must fall within the employee&#x27;s tenure
+SELECT COUNT(*) AS point_in_time_valid_lines
+FROM fact_sales f
+JOIN dim_employee e ON f.employee_id = e.employee_id
+WHERE f.order_date &gt;= e.hire_date
+  AND f.order_date &lt;= COALESCE(e.termination_date, &#x27;9999-12-31&#x27;);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>point_in_time_valid_lines</th></tr></thead><tbody><tr><td>6379</td></tr></tbody></table></div>
+Only 6,379 of the 10,757 naively-joined order lines (about 59%) are
+actually attributed to an employee during a period when that employee
+was genuinely employed at Oakhaven. The other ~41% are order lines
+where `employee_id` matches, but the order happened either before the
+employee was hired or after they left — invisible in a plain equality
+join, and only surfaced by treating `hire_date`/`termination_date` as
+the effective/expiry window they actually represent.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-find-the-worst-offenders">5. Find the worst offenders</h3>
+
+<p>For each terminated employee, compute what percentage of their
+attributed <code class="inline-code">fact_sales</code> order lines fall <em>after</em> their
+<code class="inline-code">termination_date</code>. Show the 5 employees with the highest percentage.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT e.employee_id, e.full_name, e.termination_date,
+       COUNT(*) AS total_lines,
+       SUM(CASE WHEN f.order_date &gt; e.termination_date THEN 1 ELSE 0 END) AS lines_after_term,
+       ROUND(100.0 * SUM(CASE WHEN f.order_date &gt; e.termination_date THEN 1 ELSE 0 END) / COUNT(*), 1) AS pct_after_term
+FROM fact_sales f
+JOIN dim_employee e ON f.employee_id = e.employee_id
+WHERE e.termination_date IS NOT NULL AND f.order_date IS NOT NULL
+GROUP BY e.employee_id
+ORDER BY pct_after_term DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>employee_id</th><th>full_name</th><th>termination_date</th><th>total_lines</th><th>lines_after_term</th><th>pct_after_term</th></tr></thead><tbody><tr><td>27</td><td>Jack Cross</td><td>2020-09-22</td><td>283</td><td>283</td><td>100.0</td></tr><tr><td>3</td><td>Alexandria Cunningham</td><td>2021-05-01</td><td>300</td><td>278</td><td>92.7</td></tr><tr><td>8</td><td>Wendy Scott</td><td>2023-03-15</td><td>291</td><td>190</td><td>65.3</td></tr><tr><td>25</td><td>Brian Ray</td><td>2023-02-02</td><td>268</td><td>170</td><td>63.4</td></tr><tr><td>6</td><td>Christy Lee</td><td>2024-01-09</td><td>315</td><td>142</td><td>45.1</td></tr></tbody></table></div>
+Jack Cross is the extreme case: **100%** of the 283 order lines
+attributed to `employee_id = 27` occurred after his recorded
+termination date of 2020-09-22 — meaning a naive current-state join
+would credit an ex-employee with every single one of his sales, with
+no signal anything is wrong, because the equality join on `employee_id`
+succeeds regardless of dates. This is precisely the failure mode SCD
+Type 2 modeling exists to prevent: a fact should join to the dimension
+row (or, informally here, the dimension *state*) that was valid at the
+time the fact happened, not whichever row currently shares the natural
+key.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/05-slowly-changing-dimensions-scd-1-and-2.html" class="nav-btn">5. Slowly Changing Dimensions: Type 1 and Type 2</a>. Previous: <a href="04-designing-a-dimension.html" class="nav-btn">4. Designing a Dimension</a>. Next: <a href="06-designing-the-date-dimension.html" class="nav-btn">6. Designing the Date Dimension</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

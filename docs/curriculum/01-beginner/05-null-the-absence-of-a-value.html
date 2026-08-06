@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5. NULL: the Absence of a Value | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="5-null-the-absence-of-a-value">5. NULL: the Absence of a Value</h1>
+
+<nav class="book-nav">Previous: <a href="04-limiting-with-limit.html" class="nav-btn">4. Limiting with LIMIT (and OFFSET)</a>. Next: <a href="06-basic-aggregate-functions.html" class="nav-btn">6. Basic Aggregate Functions</a>. Exercises: <a href="../../exercises/01-beginner/05-null-the-absence-of-a-value.html" class="nav-btn">5. NULL: the Absence of a Value</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p><code class="inline-code">NULL</code> is SQL's way of saying "no value here." Not zero, not an empty
+string, not "unknown but exists somewhere" — genuinely, nothing was
+recorded. A product with no <code class="inline-code">subcategory</code> recorded isn't saying its
+subcategory is blank text; it's saying that piece of information was
+never captured at all.</p>
+
+<p>This distinction trips up almost everyone at first, because <code class="inline-code">NULL</code>
+doesn't behave like a normal value in comparisons — and that's worth
+slowing down for, because getting it wrong produces <em>wrong answers
+that don't look like errors</em>, which is the most dangerous kind of
+mistake in SQL.</p>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>Real data has gaps. Oakhaven's bronze layer has them everywhere by
+design: <code class="inline-code">bronze_products.subcategory</code> is missing for about 10% of
+products, <code class="inline-code">bronze_products.unit_cost</code> is missing for a few percent,
+<code class="inline-code">bronze_sales.employee_id</code> is missing for online orders with no rep
+involved. Learning to find, filter on, and reason correctly about
+<code class="inline-code">NULL</code> is not optional — it's a core skill for working with any
+real-world table, and Oakhaven's tables have plenty of practice
+material.</p>
+
+<h2 id="why--null-never-works">Why <code class="inline-code">= NULL</code> never works</h2>
+
+<p>This is the single most important fact in this module: <strong>you cannot
+test for <code class="inline-code">NULL</code> with <code class="inline-code">=</code>.</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- This does NOT find rows where subcategory is missing:
+WHERE subcategory = NULL</code></pre></div>
+
+<p>Why not? <code class="inline-code">NULL</code> represents "unknown," and SQL treats any comparison
+<em>involving</em> an unknown as itself unknown — not true, not false,
+genuinely undetermined. <code class="inline-code">unit_cost = NULL</code> doesn't evaluate to true or
+false; it evaluates to unknown, and <code class="inline-code">WHERE</code> only keeps rows where the
+condition is <em>true</em> — so a row with an unknown result is silently
+dropped, same as if it were false. The query doesn't error. It just
+quietly returns nothing useful, every time, for any column.</p>
+
+<p>The right tools are dedicated operators built for exactly this:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">WHERE column_name IS NULL
+WHERE column_name IS NOT NULL</code></pre></div>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT columns FROM table_name
+WHERE column_name IS NULL;
+
+<p>SELECT columns FROM table_name
+WHERE column_name IS NOT NULL;</code></pre></div></p>
+
+<h2 id="try-it">Try it</h2>
+
+<h3 id="products-missing-a-subcategory">Products missing a subcategory</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, product_name, subcategory
+FROM bronze_products
+WHERE subcategory IS NULL
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>product_name</th><th>subcategory</th></tr></thead><tbody><tr><td>5</td><td>Canyon Life Jackets</td><td></td></tr><tr><td>28</td><td>Basecamp Tents</td><td></td></tr><tr><td>44</td><td>Highline Approach Shoe</td><td></td></tr><tr><td>45</td><td>Canyon Water Filters</td><td></td></tr><tr><td>51</td><td>Alpine Camp Stove</td><td></td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE subcategory IS NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>27</td></tr></tbody></table></div>
+27 out of 150 products (18%) have no `subcategory` recorded — close to
+the "~10% NULL" documented, and well within normal variance for a
+generated dataset of this size.
+
+<h3 id="products-missing-a-unit-cost">Products missing a unit cost</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, product_name, unit_cost
+FROM bronze_products
+WHERE unit_cost IS NULL
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>product_name</th><th>unit_cost</th></tr></thead><tbody><tr><td>9</td><td>Ironpeak Base Layers</td><td></td></tr><tr><td>20</td><td>Switchback Sandals</td><td></td></tr><tr><td>81</td><td>Outrider Dry Bag</td><td></td></tr><tr><td>88</td><td>Glacier Jackets</td><td></td></tr><tr><td>114</td><td>Cascade Ski</td><td></td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE unit_cost IS NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>7</td></tr></tbody></table></div>
+<h3 id="the-flip-side-is-not-null">The flip side: IS NOT NULL</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE subcategory IS NOT NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>123</td></tr></tbody></table></div>
+123 + 27 = 150 — every product accounted for, either having a
+subcategory or explicitly not.
+
+<h3 id="proving--null-doesnt-work">Proving <code class="inline-code">= NULL</code> doesn't work</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products WHERE subcategory = NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>0</td></tr></tbody></table></div>
+Zero — even though we just showed 27 rows really do have a `NULL`
+subcategory. This is the trap in action: `subcategory = NULL` isn't
+"wrong syntax" that errors out, it's *valid* SQL that always silently
+returns nothing, for any column, in any table. If you ever see a query
+using `= NULL` and getting suspiciously empty results, this is almost
+certainly why.
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Writing <code class="inline-code">WHERE column = NULL</code> or <code class="inline-code">WHERE column != NULL</code>.</strong> Both</li></ul>  silently return nothing useful. Always use `IS NULL` / `IS NOT
+  NULL`.
+<ul class="styled-list"><li><strong>Assuming NULL means zero or empty string.</strong> They're three</li></ul>  different things. `bronze_customers.email` can be `NULL` (missing
+  entirely) *or* `''` (an empty string that was recorded) — those are
+  different states, and `WHERE email IS NULL` won't catch the empty
+  string case, or vice versa.
+<ul class="styled-list"><li><strong>Forgetting NULLs when counting "everything."</strong> <code class="inline-code">COUNT(*)</code> counts</li></ul>  all rows regardless of NULLs, but `COUNT(column_name)` only counts
+  rows where that specific column is *not* NULL — worth knowing now,
+  and you'll use it directly in the next module.
+<ul class="styled-list"><li><strong>Assuming NULL propagates predictably through arithmetic.</strong> Not</li></ul>  covered in depth here, but a preview: `5 + NULL` is `NULL`, not `5`.
+  Unknown-plus-anything is still unknown.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li><code class="inline-code">NULL</code> means "no value recorded" — not zero, not empty string,</li></ul>  genuinely absent.
+<ul class="styled-list"><li>You can never test for <code class="inline-code">NULL</code> with <code class="inline-code">=</code> or <code class="inline-code">!=</code> — always use `IS</li></ul>  NULL` / `IS NOT NULL`.
+<ul class="styled-list"><li><code class="inline-code">WHERE column = NULL</code> is valid SQL that silently matches nothing,</li></ul>  which makes it a dangerous, quiet bug rather than a loud error.
+<ul class="styled-list"><li>Oakhaven's bronze layer has real, meaningful NULLs throughout —</li></ul>  `bronze_products.subcategory` and `bronze_products.unit_cost` are
+  two of many you'll run into.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="04-limiting-with-limit.html" class="nav-btn">4. Limiting with LIMIT (and OFFSET)</a>. Next: <a href="06-basic-aggregate-functions.html" class="nav-btn">6. Basic Aggregate Functions</a>. Exercises: <a href="../../exercises/01-beginner/05-null-the-absence-of-a-value.html" class="nav-btn">5. NULL: the Absence of a Value</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

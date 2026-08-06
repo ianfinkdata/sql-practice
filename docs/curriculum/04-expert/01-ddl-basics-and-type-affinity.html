@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1. DDL Basics and Type Affinity | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="1-ddl-basics-and-type-affinity">1. DDL Basics and Type Affinity</h1>
+
+<nav class="book-nav">Previous: <a href="../03-advanced/README.html" class="nav-btn">Tier 3 — Advanced</a>. Next: <a href="02-alter-table-and-schema-evolution.html" class="nav-btn">2. ALTER TABLE and Schema Evolution</a>. Exercises: <a href="../../exercises/04-expert/01-ddl-basics-and-type-affinity.html" class="nav-btn">1. DDL Basics and Type Affinity</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>Every query you've written so far in this course has been DQL
+(<code class="inline-code">SELECT</code>) against tables that already existed. This tier steps back
+one layer: <strong>DDL — Data Definition Language</strong> — the statements that
+create and modify the structure a <code class="inline-code">SELECT</code> runs against. <code class="inline-code">CREATE
+TABLE</code>, <code class="inline-code">ALTER TABLE</code>, and <code class="inline-code">DROP TABLE</code> are the core verbs.</p>
+
+<p>Oakhaven's bronze tables are themselves defined by DDL you can read
+right now: <code class="inline-code">project/bronze/schema.sql</code>. That file is worth opening —
+it's five <code class="inline-code">CREATE TABLE</code> statements, each preceded by <code class="inline-code">DROP TABLE IF
+EXISTS</code>, and nothing more. No primary keys, no foreign keys, no <code class="inline-code">NOT
+NULL</code>, no <code class="inline-code">CHECK</code>. That's not an oversight; it's the whole point of
+the bronze layer, and it's why bronze data is as messy as the facts
+sheet describes. You'll see the constrained version of this table
+design in Module 7.</p>
+
+<p>This module covers two things: the <code class="inline-code">CREATE TABLE</code> syntax itself, and
+something that trips up SQL learners coming from other engines —
+<strong>SQLite doesn't enforce column types the way Postgres, MySQl, or SQL
+Server do.</strong></p>
+
+<h2 id="create-table-syntax">CREATE TABLE syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE table_name (
+    column1 TYPE1,
+    column2 TYPE2,
+    ...
+);</code></pre></div>
+
+<p>Bronze's actual definition for <code class="inline-code">bronze_customers</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE bronze_customers (
+    customer_id     INTEGER,
+    first_name      TEXT,
+    last_name       TEXT,
+    email           TEXT,
+    phone           TEXT,
+    state           TEXT,
+    signup_date     TEXT,
+    is_active       TEXT,
+    customer_segment TEXT
+);</code></pre></div>
+
+<p>Notice <code class="inline-code">signup_date</code> is <code class="inline-code">TEXT</code>, not a <code class="inline-code">DATE</code> type — SQLite has no
+native date/datetime type. Dates are stored as text (or integers/reals
+if you choose), and functions like <code class="inline-code">strftime()</code> and <code class="inline-code">date()</code> interpret
+ISO-8601-formatted text as dates. That's <em>why</em> bronze can get away
+with storing <code class="inline-code">signup_date</code> in three different formats (<code class="inline-code">YYYY-MM-DD</code>,
+<code class="inline-code">MM/DD/YYYY</code>, <code class="inline-code">YYYY-MM-DD HH:MM:SS</code>) — SQLite never rejects any of them
+at insert time, because as far as the storage engine is concerned
+they're all just strings.</p>
+
+<h2 id="type-affinity-sqlites-take-on-typing">Type affinity: SQLite's take on typing</h2>
+
+<p>Most database engines are <strong>rigidly typed</strong>: declare a column
+<code class="inline-code">INTEGER</code>, and the engine refuses to store anything that isn't an
+integer. SQLite is <strong>dynamically typed with type affinity</strong>: every
+<em>value</em> carries its own storage class (<code class="inline-code">NULL</code>, <code class="inline-code">INTEGER</code>, <code class="inline-code">REAL</code>,
+<code class="inline-code">TEXT</code>, <code class="inline-code">BLOB</code>), and a column's declared type is only a <em>preference</em> —
+an "affinity" — that SQLite uses to <em>try</em> to coerce an incoming value,
+not a hard rule that rejects it.</p>
+
+<p>There are five affinities:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Affinity</th><th>Triggered by declared type containing...</th><th>Behavior</th></tr></thead><tbody><tr><td><code class="inline-code">TEXT</code></td><td><code class="inline-code">CHAR</code>, <code class="inline-code">CLOB</code>, <code class="inline-code">TEXT</code></td><td>Numeric values are converted to text before storing.</td></tr><tr><td><code class="inline-code">NUMERIC</code></td><td>anything not matching the other four (e.g. <code class="inline-code">NUMERIC</code>, <code class="inline-code">DECIMAL</code>, <code class="inline-code">BOOLEAN</code>, <code class="inline-code">DATE</code>)</td><td>Text that looks like an integer or real is converted; otherwise stored as-is.</td></tr><tr><td><code class="inline-code">INTEGER</code></td><td><code class="inline-code">INT</code></td><td>Same as NUMERIC, but integer values are preferred when a real has no fractional part.</td></tr><tr><td><code class="inline-code">REAL</code></td><td><code class="inline-code">REAL</code>, <code class="inline-code">FLOA</code>, <code class="inline-code">DOUB</code></td><td>Numeric values are stored as floating point.</td></tr><tr><td><code class="inline-code">BLOB</code></td><td>declared type is empty, or affinity keyword <code class="inline-code">BLOB</code></td><td>No coercion at all — stored exactly as given.</td></tr></tbody></table></div>
+The practical consequence: **you can insert a string into an `INTEGER`
+column and SQLite will not stop you** — it will store it as `TEXT` if
+it can't be losslessly converted to a number. This is the portability
+trap: SQL that "works" against SQLite because it silently accepts a
+malformed value would be rejected outright by Postgres or MySQL with a
+type error. Bronze's messy `weight_kg` (declared `TEXT`, but semantically
+a number formatted as `"1.2"`, `"1.2 kg"`, or NULL) and `order_total`
+(declared `TEXT`, holding numbers, `$`-prefixed numbers, and literal
+strings like `"TBD"`) both lean on this looseness. Nothing in the DDL
+stops it.
+
+<h2 id="verified-examples">Verified examples</h2>
+
+<p>All of these run against a <strong>scratch copy</strong> of the database — never
+the shared <code class="inline-code">project/oakhaven.db</code> — because <code class="inline-code">CREATE TABLE</code>/<code class="inline-code">INSERT</code> are
+writes:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/scratch_expert.db
+sqlite3 /tmp/scratch_expert.db</code></pre></div>
+
+<h3 id="example-1--a-table-with-every-affinity-and-what-actually-gets-stored">Example 1 — a table with every affinity, and what actually gets stored</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE demo_type_affinity (
+    id INTEGER PRIMARY KEY,
+    label TEXT,
+    price REAL,
+    ratio NUMERIC,
+    raw BLOB
+);
+INSERT INTO demo_type_affinity (id, label, price, ratio, raw) VALUES
+    (1, &#x27;hello&#x27;, 19.99, 5, &#x27;stored as text but column is INTEGER-ish&#x27;),
+    (2, 12345, &#x27;3.14&#x27;, &#x27;2/3&#x27;, 42);
+SELECT id, label, typeof(label), price, typeof(price),
+       ratio, typeof(ratio), raw, typeof(raw)
+FROM demo_type_affinity;</code></pre></div>
+
+<p>Real output:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">id  label  typeof(label)  price  typeof(price)  ratio  typeof(ratio)  raw                                        typeof(raw)
+--  -----  -------------  -----  -------------  -----  -------------  -----------------------------------------  -----------
+1   hello  text           19.99  real           5      integer        stored as text but column is INTEGER-ish  text
+2   12345  text           3.14   real           2/3    text           42                                         integer</code></pre></div>
+
+<p>Read that carefully — it's the whole lesson in one table:
+<ul class="styled-list"><li>Row 2's <code class="inline-code">label</code> column is <code class="inline-code">TEXT</code> affinity: we inserted the <em>integer</em></li></ul>  <code class="inline-code">12345</code>, and SQLite converted it to the string <code class="inline-code">'12345'</code> before
+  storing — <code class="inline-code">typeof()</code> reports <code class="inline-code">text</code>.
+<ul class="styled-list"><li><code class="inline-code">price</code> is <code class="inline-code">REAL</code> affinity: row 2 inserted the <em>string</em> <code class="inline-code">'3.14'</code>,</li></ul>  and SQLite converted it to the floating-point value <code class="inline-code">3.14</code>.
+<ul class="styled-list"><li><code class="inline-code">ratio</code> is <code class="inline-code">NUMERIC</code> affinity: row 1's integer <code class="inline-code">5</code> stayed an</li></ul>  integer; row 2's string <code class="inline-code">'2/3'</code> could <strong>not</strong> be losslessly
+  converted to a number (it's not numeric text), so it was stored
+  as-is — <code class="inline-code">typeof()</code> reports <code class="inline-code">text</code>. NUMERIC affinity converts <em>when
+  it can</em>, and gives up silently when it can't.
+<ul class="styled-list"><li><code class="inline-code">raw</code> is <code class="inline-code">BLOB</code> affinity (an untyped/<code class="inline-code">BLOB</code>-declared column gets no</li></ul>  affinity at all): both a text value and an integer value were
+  stored completely unchanged.</p>
+
+<h3 id="example-2--typeof-on-literals-for-reference">Example 2 — <code class="inline-code">typeof()</code> on literals, for reference</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT typeof(1), typeof(1.5), typeof(&#x27;abc&#x27;), typeof(NULL), typeof(x&#x27;0011&#x27;);</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">typeof(1)  typeof(1.5)  typeof(&#x27;abc&#x27;)  typeof(NULL)  typeof(x&#x27;0011&#x27;)
+---------  -----------  -------------  ------------  ---------------
+integer    real         text           null          blob</code></pre></div>
+
+<h3 id="example-3--bronze_sales-proves-the-point-in-production-data">Example 3 — <code class="inline-code">bronze_sales</code> proves the point in production data</h3>
+
+<p>Read-only against the real database — no writes needed, since bronze
+already demonstrates this:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">.schema bronze_sales</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE bronze_sales (
+    order_id        INTEGER,
+    order_line_id   INTEGER,
+    customer_id     INTEGER,
+    product_id      INTEGER,
+    employee_id     INTEGER,
+    order_date      TEXT,
+    ship_date       TEXT,
+    quantity        INTEGER,
+    unit_price      REAL,
+    discount_pct    REAL,
+    order_total     TEXT,
+    payment_method  TEXT,
+    order_status    TEXT,
+    channel         TEXT
+);</code></pre></div>
+
+<p><code class="inline-code">order_total</code> is declared <code class="inline-code">TEXT</code> and, per the data dictionary, holds
+correctly-computed numbers, <code class="inline-code">$</code>-prefixed numbers, stale pre-discount
+numbers, <code class="inline-code">NULL</code>, and the literal strings <code class="inline-code">"TBD"</code> / <code class="inline-code">"N/A"</code> — all in
+the same column, none of it rejected at insert time, because <code class="inline-code">TEXT</code>
+affinity accepts anything. This is precisely why <code class="inline-code">silver_sales.sql</code>
+never trusts <code class="inline-code">order_total</code> and recomputes <code class="inline-code">net_amount</code> from
+<code class="inline-code">quantity <em> unit_price </em> (1 - discount_pct)</code> instead (see Tier 3 /
+<code class="inline-code">project/silver/silver_sales.sql</code>).</p>
+
+<h3 id="example-4--no-pk-means-no-uniqueness-is-enforced">Example 4 — no PK means no uniqueness is enforced</h3>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">CREATE TABLE demo_pk (id INTEGER PRIMARY KEY, name TEXT);
+INSERT INTO demo_pk (name) VALUES (&#x27;auto1&#x27;), (&#x27;auto2&#x27;);
+SELECT * FROM demo_pk;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">id  name
+--  -----
+1   auto1
+2   auto2</code></pre></div>
+
+<p><code class="inline-code">INTEGER PRIMARY KEY</code> in SQLite is special-cased as an alias for the
+table's internal <code class="inline-code">rowid</code> and auto-increments when omitted — that part
+behaves like other engines' auto-increment PK. But bronze's tables
+declare <em>no</em> primary key at all (just <code class="inline-code">customer_id INTEGER</code>, a plain
+typed column), so nothing prevents duplicate <code class="inline-code">customer_id</code> values,
+duplicate <code class="inline-code">(order_id, order_line_id)</code> pairs, or gaps. Module 7
+contrasts this directly against a properly constrained schema.</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>Assuming a declared type is enforced.</strong> <code class="inline-code">price REAL</code> does not mean</li></ul>  "only numbers allowed" — it means "numbers get converted to
+  floating point; text that doesn't look numeric is stored as text
+  unchanged." Always verify with `typeof()` if you're unsure what's
+  really in a column.
+<ul class="styled-list"><li>**Porting SQLite schemas to a rigidly-typed engine (or vice versa)</li></ul>  and assuming behavior transfers.** SQL that loads cleanly into
+  SQLite because of loose type affinity can fail outright against
+  Postgres/MySQL, which validate types at insert time. This project's
+  bronze layer intentionally exploits SQLite's looseness to model
+  real-world messy ingestion — don't assume production systems on
+  other engines behave the same way.
+<ul class="styled-list"><li><strong>Confusing "no type enforcement" with "no types."</strong> Every value</li></ul>  still has a concrete storage class (`typeof()` never lies) — it's
+  the *column* that doesn't enforce a match between its declared type
+  and what's stored in it.
+<ul class="styled-list"><li><strong>Forgetting <code class="inline-code">IF EXISTS</code>/<code class="inline-code">IF NOT EXISTS</code> guards.</strong> Bronze's</li></ul>  `schema.sql` prefixes every `CREATE TABLE` with `DROP TABLE IF
+  EXISTS` so the script is safely rerunnable. Module 9 covers this
+  idempotent-DDL pattern in depth.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>DDL (<code class="inline-code">CREATE</code>, <code class="inline-code">ALTER</code>, <code class="inline-code">DROP</code>) defines structure; DML/DQL operate</li></ul>  on data within that structure.
+<ul class="styled-list"><li>SQLite has <strong>no rigid type enforcement</strong> — every column has a *type</li></ul>  affinity* (`TEXT`, `NUMERIC`, `INTEGER`, `REAL`, `BLOB`) that
+  *tries* to coerce inserted values, but never rejects a value it
+  can't coerce.
+<ul class="styled-list"><li><code class="inline-code">typeof(value)</code> tells you the actual storage class SQLite used —</li></ul>  use it whenever you're unsure what's really in a column.
+<ul class="styled-list"><li>Bronze's tables have no PK/FK/CHECK constraints by design — that's</li></ul>  what makes bronze bronze, and Module 7 shows what changes once you
+  add them back.
+<ul class="styled-list"><li>Always demo <code class="inline-code">CREATE</code>/<code class="inline-code">INSERT</code>/<code class="inline-code">ALTER</code> against a scratch copy of the</li></ul>  database, never the shared `project/oakhaven.db`.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="../03-advanced/README.html" class="nav-btn">Tier 3 — Advanced</a>. Next: <a href="02-alter-table-and-schema-evolution.html" class="nav-btn">2. ALTER TABLE and Schema Evolution</a>. Exercises: <a href="../../exercises/04-expert/01-ddl-basics-and-type-affinity.html" class="nav-btn">1. DDL Basics and Type Affinity</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

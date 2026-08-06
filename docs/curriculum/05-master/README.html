@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tier 5 — Master | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="tier-5--master">Tier 5 — Master</h1>
+
+<div class="bluf-card"><div class="bluf-badge">⚡ BLUF (Bottom Line Up Front)</div><div class="bluf-body">Tier 5 is the capstone: enterprise dimensional modeling (star schemas, fact/dimension design, grain, Slowly Changing Dimensions SCD 1 & 2), full medallion pipeline recap, capstone view creation, and cloud database portability notes.</div></div>
+
+<nav class="book-nav"><a href="../04-expert/README.html" class="nav-btn">⏮️ Prev: Tier 4 Expert</a> <a href="../../README.html" class="nav-btn">📖 Table of Contents</a> <a href="../../exercises/README.html" class="nav-btn">⏭️ Next: Exercises Workbook</a></nav>
+
+<p>The capstone: dimensional modeling and star schema design. This is the tier meant to outlive this repo — a portable, professional data-modeling skillset (dimensions, facts, grain, SCD, star vs. snowflake) capped by a full medallion-pipeline recap, a graded capstone, and a portability reference for taking these patterns to Snowflake, BigQuery, Databricks, or Postgres.</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Module</th><th>Topic</th></tr></thead><tbody><tr><td><a href="01-why-model-data-oltp-vs-analytical.html">01</a></td><td>Why model data: OLTP vs. analytical modeling</td></tr><tr><td><a href="02-dimensions-and-facts-core-vocabulary.html">02</a></td><td>Dimensions and facts: core vocabulary</td></tr><tr><td><a href="03-grain-the-most-important-decision.html">03</a></td><td>Grain: the most important decision in a star schema</td></tr><tr><td><a href="04-designing-a-dimension.html">04</a></td><td>Designing a dimension</td></tr><tr><td><a href="05-slowly-changing-dimensions-scd-1-and-2.html">05</a></td><td>Slowly Changing Dimensions (Types 1 & 2)</td></tr><tr><td><a href="06-designing-the-date-dimension.html">06</a></td><td>Designing the date dimension</td></tr><tr><td><a href="07-designing-the-fact-table.html">07</a></td><td>Designing the fact table</td></tr><tr><td><a href="08-star-vs-snowflake-schema.html">08</a></td><td>Star vs. snowflake schema</td></tr><tr><td><a href="09-medallion-pipeline-recap.html">09</a></td><td>Medallion thread: the full pipeline, recapped end to end</td></tr><tr><td><a href="10-capstone-build-a-novel-gold-view.html">10</a></td><td>Capstone: build a novel gold view from scratch</td></tr><tr><td><a href="11-beyond-sqlite-portability-notes.html">11</a></td><td>Beyond SQLite: a syntax-translation reference</td></tr></tbody></table></div>
+Matching exercises: [`exercises/05-master/`](../../exercises/05-master/). See also the standalone [`portfolio/`](../../portfolio/) pattern library this tier feeds into.
+
+<hr class="divider">
+
+<nav class="book-nav"><a href="../04-expert/README.html" class="nav-btn">⏮️ Prev: Tier 4 Expert</a> <a href="../../README.html" class="nav-btn">📖 Table of Contents</a> <a href="../../exercises/README.html" class="nav-btn">⏭️ Next: Exercises Workbook</a></nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

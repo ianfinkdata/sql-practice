@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: 3. Grain: The Most Important Decision in Star Schema Design | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-3-grain-the-most-important-decision-in-star-schema-design">Exercises: 3. Grain: The Most Important Decision in Star Schema Design</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/03-grain-the-most-important-decision.html" class="nav-btn">3. Grain: The Most Important Decision in Star Schema Design</a>. Previous: <a href="02-dimensions-and-facts-core-vocabulary.html" class="nav-btn">2. Dimensions and Facts: Core Vocabulary</a>. Next: <a href="04-designing-a-dimension.html" class="nav-btn">4. Designing a Dimension</a>.</nav>
+
+<p>Work against <code class="inline-code">project/oakhaven.db</code>. Read-only — every query below is a
+<code class="inline-code">SELECT</code>.</p>
+
+<hr class="divider">
+
+<h3 id="1-verify-the-grain-yourself">1. Verify the grain yourself</h3>
+
+<p>Confirm that <code class="inline-code">(order_id, order_line_id)</code> uniquely identifies every row
+in <code class="inline-code">fact_sales</code>, and confirm that <code class="inline-code">order_id</code> alone does not.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) AS total_rows,
+       COUNT(DISTINCT order_id || &#x27;-&#x27; || order_line_id) AS distinct_order_lines,
+       COUNT(DISTINCT order_id) AS distinct_orders
+FROM fact_sales;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>total_rows</th><th>distinct_order_lines</th><th>distinct_orders</th></tr></thead><tbody><tr><td>12000</td><td>12000</td><td>7199</td></tr></tbody></table></div>
+`total_rows` equals `distinct_order_lines` (12,000 = 12,000) — the
+composite key `(order_id, order_line_id)` is unique, confirming the
+declared grain. `distinct_orders` (7,199) is smaller than
+`total_rows`, confirming `order_id` alone is *not* a valid grain key —
+it repeats across an order's multiple lines.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-test-a-plausible-but-wrong-grain-hypothesis">2. Test a plausible-but-wrong grain hypothesis</h3>
+
+<p>Someone claims <code class="inline-code">fact_sales</code>'s grain could just as well be described as
+"one row per customer-product combination." Test that claim: is
+<code class="inline-code">(customer_id, product_id)</code> unique across <code class="inline-code">fact_sales</code>?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, product_id, COUNT(*) AS n
+FROM fact_sales
+GROUP BY customer_id, product_id
+HAVING COUNT(*) &gt; 1
+ORDER BY n DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>product_id</th><th>n</th></tr></thead><tbody><tr><td>44</td><td>100</td><td>4</td></tr><tr><td>233</td><td>34</td><td>4</td></tr><tr><td>402</td><td>92</td><td>4</td></tr><tr><td>32</td><td>71</td><td>3</td></tr><tr><td>55</td><td>9</td><td>3</td></tr></tbody></table></div>
+The claim is false: plenty of `(customer_id, product_id)` pairs appear
+multiple times (a customer who bought the same product across several
+separate orders over time). `(customer_id, product_id)` is a
+reasonable thing to *group by* for analysis ("how many times has this
+customer bought this product"), but it is not the fact table's grain —
+grain is about what a single stored row represents, not about every
+possible way you might later aggregate the data.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-another-count-grain-trap">3. Another <code class="inline-code">COUNT(*)</code> grain trap</h3>
+
+<p>How many distinct customers have placed at least one order line in
+<code class="inline-code">fact_sales</code>? Write the naive version first (a plain row count) and
+then the correct version, and compare.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- naive: counts LINES, not customers
+SELECT COUNT(*) AS naive_row_count
+FROM fact_sales
+WHERE customer_id IS NOT NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>naive_row_count</th></tr></thead><tbody><tr><td>12000</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- correct: counts distinct customers
+SELECT COUNT(DISTINCT customer_id) AS true_distinct_customers
+FROM fact_sales
+WHERE customer_id IS NOT NULL;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>true_distinct_customers</th></tr></thead><tbody><tr><td>661</td></tr></tbody></table></div>
+12,000 vs. 661 — an enormous gap, for exactly the reason covered in
+the lesson: `fact_sales`'s grain is order line, so counting rows never
+directly answers "how many customers." (661 is also slightly higher
+than `dim_customer`'s 600 rows — a reminder that `fact_sales.customer_id`
+includes the ~1% of intentionally orphaned IDs that don't resolve to
+any real row in `dim_customer` at all, per the data dictionary.)
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-reconcile-an-order-grain-rollup-against-the-known-total">4. Reconcile an order-grain rollup against the known total</h3>
+
+<p>Aggregate <code class="inline-code">fact_sales</code> up to order grain (<code class="inline-code">SUM(net_amount)</code> per
+<code class="inline-code">order_id</code>), then sum those order totals into one grand total. Does it
+match the known total net sales figure for Oakhaven
+(<code class="inline-code">project/docs/facts_sheet.md</code> reports <code class="inline-code">8742289.04</code>)?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT ROUND(SUM(order_total), 2) AS grand_total
+FROM (
+    SELECT order_id, SUM(net_amount) AS order_total
+    FROM fact_sales
+    GROUP BY order_id
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>grand_total</th></tr></thead><tbody><tr><td>8742289.04</td></tr></tbody></table></div>
+It matches exactly. This confirms an important property of a
+correctly declared grain: aggregating *up* from the true grain
+(order line) to any coarser grain (order) via `SUM`/`GROUP BY` is
+always safe and never double-counts or loses money, because every
+dollar lives in exactly one row at the true grain. This is exactly
+what would break (double-counting, or silently wrong totals) if the
+fact table secretly mixed grains — e.g., if it also included pre-
+aggregated "order summary" rows alongside the line-level rows.
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-find-a-case-where-the-grain-still-holds-but-feels-surprising">5. Find a case where the grain still holds, but <em>feels</em> surprising</h3>
+
+<p>Within a single order, can the same <code class="inline-code">product_id</code> appear on two
+<em>different</em> lines? (This wouldn't violate the <code class="inline-code">(order_id,
+order_line_id)</code> grain — it would just mean a customer ordered the same
+product twice within one order, as two separate line entries.) Find
+how often this happens.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT order_id, product_id, COUNT(*) AS n
+FROM fact_sales
+GROUP BY order_id, product_id
+HAVING COUNT(*) &gt; 1
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>order_id</th><th>product_id</th><th>n</th></tr></thead><tbody><tr><td>90</td><td>74</td><td>2</td></tr><tr><td>209</td><td>137</td><td>2</td></tr><tr><td>270</td><td>9</td><td>2</td></tr><tr><td>663</td><td>95</td><td>2</td></tr><tr><td>716</td><td>21</td><td>2</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM (
+    SELECT order_id, product_id
+    FROM fact_sales
+    GROUP BY order_id, product_id
+    HAVING COUNT(*) &gt; 1
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>43</td></tr></tbody></table></div>
+43 `(order_id, product_id)` combinations appear on more than one
+line within the same order. This is perfectly consistent with the
+declared grain — each occurrence is still a distinct, individually
+identified `order_line_id` — but it's a good reminder that "grain" and
+"uniqueness of every column combination you can think of" are
+different concepts. The grain key (`order_id`, `order_line_id`) is
+what's guaranteed unique; other column combinations (like
+`customer_id, product_id`, or `order_id, product_id`) are not, and
+were never claimed to be.
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/05-master/03-grain-the-most-important-decision.html" class="nav-btn">3. Grain: The Most Important Decision in Star Schema Design</a>. Previous: <a href="02-dimensions-and-facts-core-vocabulary.html" class="nav-btn">2. Dimensions and Facts: Core Vocabulary</a>. Next: <a href="04-designing-a-dimension.html" class="nav-btn">4. Designing a Dimension</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

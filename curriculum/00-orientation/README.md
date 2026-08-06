@@ -1,5 +1,11 @@
 # Tier 0 — Orientation
 
+> **BLUF (Bottom Line Up Front):** Tier 0 introduces foundational database concepts without writing code, guides local setup for `oakhaven.db`, and outlines the Oakhaven retail database architecture.
+
+<!-- nav -->
+[⏮️ Prev: Curriculum Overview](../README.md) | [📖 Table of Contents](../../README.md) | [⏭️ Next: Tier 1 Beginner](../01-beginner/README.md)
+<!-- /nav -->
+
 No SQL required yet. This tier gets you oriented: what a database is, what SQL is, how to get the practice database running on your machine, and a first look at Oakhaven — the fictional outdoor-gear retailer whose data you'll be querying for the rest of this course.
 
 | Module | Topic |
@@ -11,4 +17,8 @@ No SQL required yet. This tier gets you oriented: what a database is, what SQL i
 
 Matching exercises: [`exercises/00-orientation/`](../../exercises/00-orientation/).
 
-Next: [Tier 1 — Beginner](../01-beginner/README.md).
+---
+
+<!-- nav -->
+[⏮️ Prev: Curriculum Overview](../README.md) | [📖 Table of Contents](../../README.md) | [⏭️ Next: Tier 1 Beginner](../01-beginner/README.md)
+<!-- /nav -->

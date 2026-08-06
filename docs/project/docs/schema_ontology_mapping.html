@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oakhaven Schema, Ontology &amp; Business Definition Mapping | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="oakhaven-schema-ontology--business-definition-mapping">Oakhaven Schema, Ontology & Business Definition Mapping</h1>
+
+<blockquote class="custom-blockquote"><strong>Document Status:</strong> Verified against <code class="inline-code">project/oakhaven.db</code> snapshot (Seed <code class="inline-code">20260630</code>).<br><strong>Target Audience:</strong> Analytics Engineers, Data Modelers, and AI Assistants building ontology / semantic layers.</blockquote>
+
+<hr class="divider">
+
+<h2 id="1-executive-summary">1. Executive Summary</h2>
+
+<p>This document maps the <strong>Oakhaven</strong> SQLite database pipeline—a medallion architecture (Bronze → Silver → Gold)—to a domain <strong>Ontology Layer</strong> (Entities, Relationships, and Attributes) and a <strong>Business Definition Layer</strong> (Semantic Metrics, KPI Formulas, and Transformation Logic).</p>
+
+<h3 id="data-pipeline-overview">Data Pipeline Overview</h3>
+<ul class="styled-list"><li><strong>Bronze (Raw Ingestion):</strong> 5 raw tables populated with synthetic retail data containing deliberate data-quality defects (inconsistent text casing, mixed booleans, bad discounts, untrustworthy totals, and orphan foreign keys).</li><li><strong>Silver (Standardized & Cleaned):</strong> 5 views that standardize string formats, correct domain errors, derive full names, and flag anomaly records without dropping rows.</li><li><strong>Gold (Star-Schema & Aggregates):</strong> 5 dimensional/fact views and 4 pre-aggregated reporting views engineered for analytics consumption.</li></ul>
+---
+
+<h2 id="2-catalog-metadata--object-inventory">2. Catalog Metadata & Object Inventory</h2>
+
+<p>Every row count and column count below is an empirical, verified snapshot from <code class="inline-code">project/oakhaven.db</code>:</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Layer</th><th>Object Name</th><th>Object Type</th><th>Primary Key / Grain</th><th>Row Count</th><th>Column Count</th></tr></thead><tbody><tr><td><strong>Bronze</strong></td><td><a href="file:///home/ian/github/sql-practice/project/docs/data_dictionary.md#L21"><code class="inline-code">bronze_customers</code></a></td><td>Table</td><td><code class="inline-code">customer_id</code> (raw 1..600)</td><td>600</td><td>9</td></tr><tr><td><strong>Bronze</strong></td><td><a href="file:///home/ian/github/sql-practice/project/docs/data_dictionary.md#L46"><code class="inline-code">bronze_products</code></a></td><td>Table</td><td><code class="inline-code">product_id</code> (raw 1..150)</td><td>150</td><td>11</td></tr><tr><td><strong>Bronze</strong></td><td><a href="file:///home/ian/github/sql-practice/project/docs/data_dictionary.md#L64"><code class="inline-code">bronze_employees</code></a></td><td>Table</td><td><code class="inline-code">employee_id</code> (raw 1..35)</td><td>35</td><td>9</td></tr><tr><td><strong>Bronze</strong></td><td><a href="file:///home/ian/github/sql-practice/project/docs/data_dictionary.md#L79"><code class="inline-code">bronze_sales</code></a></td><td>Table</td><td>Order line (<code class="inline-code">order_id</code>, <code class="inline-code">order_line_id</code>)</td><td>12,000</td><td>14</td></tr><tr><td><strong>Bronze</strong></td><td><a href="file:///home/ian/github/sql-practice/project/docs/data_dictionary.md#L106"><code class="inline-code">bronze_calendar</code></a></td><td>Table</td><td>Date key (<code class="inline-code">datekey</code> <code class="inline-code">YYYYMMDD</code>)</td><td>7,670</td><td>2</td></tr><tr><td><strong>Silver</strong></td><td><code class="inline-code">silver_customers</code></td><td>View</td><td><code class="inline-code">customer_id</code></td><td>600</td><td>10</td></tr><tr><td><strong>Silver</strong></td><td><code class="inline-code">silver_products</code></td><td>View</td><td><code class="inline-code">product_id</code></td><td>150</td><td>12</td></tr><tr><td><strong>Silver</strong></td><td><code class="inline-code">silver_employees</code></td><td>View</td><td><code class="inline-code">employee_id</code></td><td>35</td><td>10</td></tr><tr><td><strong>Silver</strong></td><td><code class="inline-code">silver_sales</code></td><td>View</td><td>Order line (<code class="inline-code">order_id</code>, <code class="inline-code">order_line_id</code>)</td><td>12,000</td><td>17</td></tr><tr><td><strong>Silver</strong></td><td><code class="inline-code">silver_calendar</code></td><td>View</td><td><code class="inline-code">datekey</code></td><td>7,670</td><td>2</td></tr><tr><td><strong>Gold</strong></td><td><code class="inline-code">dim_customer</code></td><td>View</td><td><code class="inline-code">customer_id</code></td><td>600</td><td>10</td></tr><tr><td><strong>Gold</strong></td><td><code class="inline-code">dim_product</code></td><td>View</td><td><code class="inline-code">product_id</code></td><td>150</td><td>12</td></tr><tr><td><strong>Gold</strong></td><td><code class="inline-code">dim_employee</code></td><td>View</td><td><code class="inline-code">employee_id</code></td><td>35</td><td>10</td></tr><tr><td><strong>Gold</strong></td><td><code class="inline-code">dim_date</code></td><td>View</td><td><code class="inline-code">datekey</code></td><td>7,670</td><td>10</td></tr><tr><td><strong>Gold</strong></td><td><code class="inline-code">dim_date_revised</code></td><td>View</td><td><code class="inline-code">datekey</code></td><td>7,670</td><td>12</td></tr><tr><td><strong>Gold</strong></td><td><code class="inline-code">fact_sales</code></td><td>View</td><td>Order line (<code class="inline-code">order_id</code>, <code class="inline-code">order_line_id</code>)</td><td>12,000</td><td>17</td></tr><tr><td><strong>Gold</strong></td><td><code class="inline-code">agg_customer_ltv</code></td><td>View</td><td><code class="inline-code">customer_id</code></td><td>600</td><td>9</td></tr><tr><td><strong>Gold</strong></td><td><code class="inline-code">agg_daily_sales</code></td><td>View</td><td><code class="inline-code">date</code></td><td>2,007</td><td>7</td></tr><tr><td><strong>Gold</strong></td><td><code class="inline-code">agg_monthly_sales_by_category</code></td><td>View</td><td>(<code class="inline-code">year_month</code>, <code class="inline-code">category</code>)</td><td>528</td><td>7</td></tr></tbody></table></div>
+---
+
+<h2 id="3-domain-ontology-layer">3. Domain Ontology Layer</h2>
+
+<p>The Ontology Layer models the core business concepts, their relationships, and properties.</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">+-------------------+
+                        |    Date Entity    |
+                        |   (dim_date)      |
+                        +-------------------+
+                        | PK: datekey       |
+                        +---------+---------+
+                                  |
+                                  | 1:N (order_date)
+                                  v
++-------------------+   +-------------------+   +-------------------+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Customer Entity</th><th></th><th>Sales Event Line</th><th></th><th>Product Entity</th></tr></thead><tbody></tbody></table></div>+-------------------+   +-------------------+   +-------------------+
+| PK: customer_id   |&lt;--| FK: customer_id   |--&gt;| PK: product_id    |
++-------------------+ 1:N| FK: product_id    |1:N+-------------------+
+                        | FK: employee_id   |
+                        | FK: datekey       |
+                        +---------+---------+
+                                  ^
+                                  | 1:N (optional)
+                        +---------+---------+
+                        |  Employee Entity  |
+                        |  (dim_employee)   |
+                        +-------------------+
+                        | PK: employee_id   |
+                        +-------------------+</code></pre></div>
+
+<h3 id="31-entities-nodes">3.1 Entities (Nodes)</h3>
+
+<p>1. <strong>Customer (<code class="inline-code">Customer</code>)</strong>
+<ul class="styled-list"><li><strong>Source:</strong> <code class="inline-code">dim_customer</code> / <code class="inline-code">silver_customers</code></li><li><strong>Key Attributes:</strong> <code class="inline-code">customer_id</code> (ID), <code class="inline-code">full_name</code> (Text), <code class="inline-code">email</code> (Text), <code class="inline-code">state</code> (ISO Code), <code class="inline-code">signup_date</code> (ISO Date), <code class="inline-code">customer_segment</code> (<code class="inline-code">Retail</code> / <code class="inline-code">Wholesale</code> / <code class="inline-code">VIP</code>).</li><li><strong>Description:</strong> Individual or organization purchasing outdoor products from Oakhaven.</li></ul>
+2. <strong>Product (<code class="inline-code">Product</code>)</strong>
+<ul class="styled-list"><li><strong>Source:</strong> <code class="inline-code">dim_product</code> / <code class="inline-code">silver_products</code></li><li><strong>Key Attributes:</strong> <code class="inline-code">product_id</code> (ID), <code class="inline-code">product_name</code> (Text), <code class="inline-code">category</code> (Text), <code class="inline-code">subcategory</code> (Text), <code class="inline-code">brand</code> (Text), <code class="inline-code">unit_cost</code> (Currency), <code class="inline-code">unit_price</code> (Currency), <code class="inline-code">sku</code> (Text), <code class="inline-code">is_discontinued</code> (Boolean).</li><li><strong>Description:</strong> Retail item offered for purchase across 8 outdoor categories.</li></ul>
+3. <strong>Employee (<code class="inline-code">Employee</code>)</strong>
+<ul class="styled-list"><li><strong>Source:</strong> <code class="inline-code">dim_employee</code> / <code class="inline-code">silver_employees</code></li><li><strong>Key Attributes:</strong> <code class="inline-code">employee_id</code> (ID), <code class="inline-code">full_name</code> (Text), <code class="inline-code">department</code> (Text), <code class="inline-code">region</code> (Text), <code class="inline-code">hire_date</code> (ISO Date), <code class="inline-code">termination_date</code> (ISO Date / Null), <code class="inline-code">is_manager</code> (Boolean).</li><li><strong>Description:</strong> Oakhaven staff member associated with point-of-sale transactions and regional management.</li></ul>
+4. <strong>Date / Time Spine (<code class="inline-code">CalendarDay</code>)</strong>
+<ul class="styled-list"><li><strong>Source:</strong> <code class="inline-code">dim_date</code> / <code class="inline-code">dim_date_revised</code></li><li><strong>Key Attributes:</strong> <code class="inline-code">datekey</code> (Integer <code class="inline-code">YYYYMMDD</code>), <code class="inline-code">date</code> (ISO Date), <code class="inline-code">year</code> (Integer), <code class="inline-code">quarter</code> (Text), <code class="inline-code">month</code> (Integer), <code class="inline-code">day_of_week</code> (Text), <code class="inline-code">is_weekend</code> (Boolean).</li><li><strong>Description:</strong> Continuous date spine spanning 2018-01-01 through 2038-12-31 for trend analysis and zero-order day filling.</li></ul>
+5. <strong>Sales Transaction Line Event (<code class="inline-code">OrderLineEvent</code>)</strong>
+<ul class="styled-list"><li><strong>Source:</strong> <code class="inline-code">fact_sales</code> / <code class="inline-code">silver_sales</code></li><li><strong>Key Attributes:</strong> <code class="inline-code">order_id</code> (ID), <code class="inline-code">order_line_id</code> (Integer), <code class="inline-code">quantity</code> (Integer), <code class="inline-code">unit_price</code> (Currency), <code class="inline-code">discount_pct</code> (Percentage), <code class="inline-code">net_amount</code> (Currency), <code class="inline-code">payment_method</code> (Text), <code class="inline-code">order_status</code> (Text), <code class="inline-code">channel</code> (<code class="inline-code">Online</code> / <code class="inline-code">In-Store</code>).</li><li><strong>Description:</strong> Granular event capturing item purchases, quantities, pricing, and fulfillment.</li></ul>
+---</p>
+
+<h2 id="4-business-definition--semantic-layer">4. Business Definition & Semantic Layer</h2>
+
+<h3 id="41-core-metric-definitions">4.1 Core Metric Definitions</h3>
+
+<p>1. <strong>Net Revenue (<code class="inline-code">net_amount</code>)</strong>
+<ul class="styled-list"><li><strong>Formula:</strong> $\text{quantity} \times \text{unit\_price} \times (1 - \text{discount\_pct})$</li><li><strong>Business Rule:</strong> Raw <code class="inline-code">order_total</code> from Bronze is untrustworthy due to missing discounts, formatted strings (<code class="inline-code">$</code>), or pre-discount values. All revenue metrics MUST recompute from this formula.</li></ul>
+2. <strong>Customer Lifetime Value (LTV)</strong>
+<ul class="styled-list"><li><strong>Formula:</strong> $\sum \text{net\_amount} \quad \text{WHERE order\_status} \neq \text{'CANCELLED'}$</li><li><strong>Aggregation Grain:</strong> Per <code class="inline-code">customer_id</code>.</li></ul>
+3. <strong>Daily Sales Volume</strong>
+<ul class="styled-list"><li><strong>Formula:</strong> Total net revenue per date joined against <code class="inline-code">dim_date</code> spine to preserve days with zero orders (<code class="inline-code">net_amount</code> coerced to <code class="inline-code">0.0</code>).</li></ul>
+4. <strong>Channel Classification</strong>
+<ul class="styled-list"><li><strong>Online Channel:</strong> <code class="inline-code">channel = 'Online'</code> (represented by <code class="inline-code">employee_id IS NULL</code>).</li><li><strong>In-Store Channel:</strong> <code class="inline-code">channel = 'In-Store'</code> (serviced by an on-site employee).</li></ul>
+<h3 id="42-data-quality--transformation-rules-silver--gold">4.2 Data Quality & Transformation Rules (Silver → Gold)</h3>
+<ul class="styled-list"><li><strong>Discount Rate Normalization:</strong> If $\text{discount\_pct} > 1.0$, transform using $\frac{\text{discount\_pct}}{100.0}$ (fixing whole-number entry errors like <code class="inline-code">15</code> $\rightarrow$ <code class="inline-code">0.15</code>).</li><li><strong>Orphan Foreign Key Handling:</strong></li><li><code class="inline-code">is_customer_orphan = 1</code> if <code class="inline-code">customer_id</code> is not present in <code class="inline-code">bronze_customers</code>.</li><li><code class="inline-code">is_product_orphan = 1</code> if <code class="inline-code">product_id</code> is not present in <code class="inline-code">bronze_products</code>.</li><li><strong>SKU Duplicate Flagging:</strong> <code class="inline-code">sku_is_duplicate = 1</code> when an identical SKU string is shared across multiple <code class="inline-code">product_id</code> records.</li></ul>
+---</p>
+
+<h2 id="5-summary--verification">5. Summary & Verification</h2>
+
+<p>This mapping has been derived empirically from <code class="inline-code">project/oakhaven.db</code>. Any downstream semantic tools, metadata cataloging, or ontology definitions can safely rely on these explicit table views, metric definitions, and column schemas.</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

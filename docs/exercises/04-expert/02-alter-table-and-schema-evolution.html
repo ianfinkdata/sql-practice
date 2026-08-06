@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercises: ALTER TABLE and Schema Evolution | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="exercises-alter-table-and-schema-evolution">Exercises: ALTER TABLE and Schema Evolution</h1>
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/02-alter-table-and-schema-evolution.html" class="nav-btn">2. ALTER TABLE and Schema Evolution</a>. Previous: <a href="01-ddl-basics-and-type-affinity.html" class="nav-btn">1. DDL Basics and Type Affinity</a>. Next: <a href="03-transactions.html" class="nav-btn">3. Transactions</a>.</nav>
+
+<p>Every exercise here modifies a table's structure — work against your
+own scratch copy for all of them, never <code class="inline-code">project/oakhaven.db</code>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">cp project/oakhaven.db /tmp/my_scratch.db
+sqlite3 /tmp/my_scratch.db</code></pre></div>
+
+<hr class="divider">
+
+<h3 id="1-read-the-limitations-before-you-hit-them">1. Read the limitations before you hit them</h3>
+
+<p>From memory (or by testing on your scratch copy), list the five things
+SQLite's <code class="inline-code">ALTER TABLE</code> can do, and name at least two things it
+<em>cannot</em> do that you'd be able to do in Postgres or MySQL.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<p>What it <strong>can</strong> do:</p>
+
+<p>1. <code class="inline-code">RENAME TO</code> — rename the table.
+2. <code class="inline-code">RENAME COLUMN ... TO ...</code> — rename a column.
+3. <code class="inline-code">ADD COLUMN ...</code> — add a new column (with restrictions, see below).
+4. <code class="inline-code">DROP COLUMN ...</code> — drop an existing column (SQLite ≥ 3.35.0).</p>
+
+<p>What it <strong>cannot</strong> do, unlike Postgres/MySQL:
+<ul class="styled-list"><li>No <code class="inline-code">ALTER COLUMN</code> / <code class="inline-code">MODIFY COLUMN</code> — you cannot change an existing</li></ul>  column's declared type directly.
+<ul class="styled-list"><li><code class="inline-code">ADD COLUMN</code> cannot add <code class="inline-code">UNIQUE</code> or <code class="inline-code">PRIMARY KEY</code> constraints.</li><li>Adding a <code class="inline-code">NOT NULL</code> column requires a non-<code class="inline-code">NULL</code> constant <code class="inline-code">DEFAULT</code></li></ul>  — SQLite won't guess a backfill value.
+<ul class="styled-list"><li>No way to add a <code class="inline-code">CHECK</code> or <code class="inline-code">FOREIGN KEY</code> constraint to an existing</li></ul>  table via <code class="inline-code">ALTER TABLE</code> at all.</p>
+
+<p>Anything beyond the four supported forms requires the rename →
+recreate → copy → drop rebuild pattern (Exercise 5).</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="2-add-a-column-with-a-default-and-confirm-it-backfills">2. Add a column with a default, and confirm it backfills</h3>
+
+<p>On your scratch copy, add a <code class="inline-code">loyalty_tier TEXT</code> column to
+<code class="inline-code">bronze_employees</code>, defaulting to <code class="inline-code">'standard'</code>. Confirm the default
+was backfilled onto existing rows.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ALTER TABLE bronze_employees ADD COLUMN loyalty_tier TEXT DEFAULT &#x27;standard&#x27;;
+SELECT employee_id, first_name, loyalty_tier FROM bronze_employees LIMIT 3;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">employee_id  first_name  loyalty_tier
+-----------  ----------  ------------
+1            Alexa       standard
+2            sandra      standard
+3            Alexandria  standard</code></pre></div>
+
+<p>All three pre-existing rows picked up <code class="inline-code">'standard'</code> without any
+<code class="inline-code">UPDATE</code> statement — <code class="inline-code">ADD COLUMN ... DEFAULT</code> backfills automatically.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="3-rename-a-column-you-just-added">3. Rename a column you just added</h3>
+
+<p>Rename <code class="inline-code">loyalty_tier</code> (from Exercise 2) to <code class="inline-code">tier</code>, and confirm the
+data survived the rename.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ALTER TABLE bronze_employees RENAME COLUMN loyalty_tier TO tier;
+SELECT employee_id, tier FROM bronze_employees LIMIT 2;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">employee_id  tier
+-----------  --------
+1            standard
+2            standard</code></pre></div>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="4-trigger-the-not-null-restriction-on-purpose">4. Trigger the <code class="inline-code">NOT NULL</code> restriction on purpose</h3>
+
+<p>Try to add a <code class="inline-code">badge_number TEXT NOT NULL</code> column to <code class="inline-code">bronze_employees</code>
+with no <code class="inline-code">DEFAULT</code>. What error do you get, and why does it make sense
+given that <code class="inline-code">bronze_employees</code> already has 35 rows?</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ALTER TABLE bronze_employees ADD COLUMN badge_number TEXT NOT NULL;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: stepping, Cannot add a NOT NULL column with default value NULL</code></pre></div>
+
+<p>The 35 existing rows have no <code class="inline-code">badge_number</code> value yet — if SQLite
+allowed this, every existing row would need a <code class="inline-code">NULL</code> in a column
+declared <code class="inline-code">NOT NULL</code>, which is a contradiction. SQLite requires a
+constant <code class="inline-code">DEFAULT</code> precisely so it has <em>something</em> non-<code class="inline-code">NULL</code> to
+backfill into every pre-existing row.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="5-use-the-rebuild-pattern-to-add-a-check-constraint">5. Use the rebuild pattern to add a CHECK constraint</h3>
+
+<p><code class="inline-code">ALTER TABLE</code> cannot add a <code class="inline-code">CHECK</code> constraint to an existing table.
+On your scratch copy, use the rename → recreate → copy → drop pattern
+(inside a transaction) to rebuild <code class="inline-code">bronze_employees</code> with a <code class="inline-code">CHECK</code>
+constraint on <code class="inline-code">department</code> restricting it to <code class="inline-code">'Sales'</code>, <code class="inline-code">'Support'</code>,
+<code class="inline-code">'Warehouse'</code>, <code class="inline-code">'Management'</code>, or <code class="inline-code">NULL</code>. Confirm the row count is
+unchanged after the rebuild, then confirm the constraint actually
+blocks an invalid value.</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">BEGIN;
+ALTER TABLE bronze_employees RENAME TO bronze_employees_old;
+CREATE TABLE bronze_employees (
+    employee_id       INTEGER,
+    first_name        TEXT,
+    last_name         TEXT,
+    department        TEXT CHECK (department IN (&#x27;Sales&#x27;,&#x27;Support&#x27;,&#x27;Warehouse&#x27;,&#x27;Management&#x27;) OR department IS NULL),
+    region            TEXT,
+    hire_date         TEXT,
+    termination_date  TEXT,
+    is_manager        TEXT,
+    email             TEXT
+);
+INSERT INTO bronze_employees (employee_id, first_name, last_name, department, region, hire_date, termination_date, is_manager, email)
+SELECT employee_id, first_name, last_name, NULL, region, hire_date, termination_date, is_manager, email
+FROM bronze_employees_old;
+DROP TABLE bronze_employees_old;
+COMMIT;
+
+<p>SELECT COUNT(*) FROM bronze_employees;</code></pre></div></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">35</code></pre></div>
+
+<p>(Note: real <code class="inline-code">bronze_employees.department</code> values are messy strings
+like <code class="inline-code">'MANAGEMENT'</code>/<code class="inline-code">'sales'</code> that wouldn't pass this exact <code class="inline-code">CHECK</code> as
+written — this solution copies <code class="inline-code">NULL</code> into <code class="inline-code">department</code> instead of the
+raw messy value, to isolate the schema-rebuild mechanics from
+<code class="inline-code">silver_employees</code>'s casing-normalization job. In practice you'd
+normalize the values as part of the <code class="inline-code">INSERT ... SELECT</code>, the same way
+<code class="inline-code">silver_employees.sql</code> does with its <code class="inline-code">CASE</code> expression.)</p>
+
+<p>Row count is unchanged: 35 in, 35 out. Now confirm the constraint is
+real:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">UPDATE bronze_employees SET department = &#x27;NotADept&#x27; WHERE employee_id = 1;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: stepping, CHECK constraint failed: department IN (&#x27;Sales&#x27;,&#x27;Support&#x27;,&#x27;Warehouse&#x27;,&#x27;Management&#x27;) OR department IS NULL (19)</code></pre></div>
+
+<p>Rejected — something <code class="inline-code">ALTER TABLE</code> alone could never have added to
+the existing table.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<h3 id="6-diagnose-a-broken-migration-script">6. Diagnose a broken migration script</h3>
+
+<p>A teammate wrote this migration and says it "doesn't work":</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ALTER TABLE bronze_products ADD COLUMN discount_tier TEXT UNIQUE DEFAULT &#x27;none&#x27;;</code></pre></div>
+
+<p>Run it on your scratch copy, capture the real error, and explain in
+one sentence which specific restriction it violates (there are two
+candidate restrictions from this module — identify which one actually
+fires first).</p>
+
+<p><details>
+<summary>Show solution</summary></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">ALTER TABLE bronze_products ADD COLUMN discount_tier TEXT UNIQUE DEFAULT &#x27;none&#x27;;</code></pre></div>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">Error: in prepare, Cannot add a UNIQUE column</code></pre></div>
+
+<p>This hits the <code class="inline-code">UNIQUE</code> restriction, not the <code class="inline-code">NOT NULL</code>/default
+restriction — <code class="inline-code">ADD COLUMN</code> rejects a <code class="inline-code">UNIQUE</code> constraint outright, at
+<code class="inline-code">prepare</code> time, before SQLite even gets to considering the default
+value. (It's also worth noting <code class="inline-code">UNIQUE</code> wouldn't make sense here even
+if it were allowed: backfilling every one of the 150 existing rows
+with the identical default value <code class="inline-code">'none'</code> would immediately violate
+uniqueness across those rows anyway.) The fix is the same rebuild
+pattern from Exercise 5 — create a new table with <code class="inline-code">discount_tier TEXT
+UNIQUE</code> from the start, and populate distinct values as part of the
+copy.</p>
+
+<p></details></p>
+
+<hr class="divider">
+
+<nav class="book-nav">Curriculum: <a href="../../curriculum/04-expert/02-alter-table-and-schema-evolution.html" class="nav-btn">2. ALTER TABLE and Schema Evolution</a>. Previous: <a href="01-ddl-basics-and-type-affinity.html" class="nav-btn">1. DDL Basics and Type Affinity</a>. Next: <a href="03-transactions.html" class="nav-btn">3. Transactions</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

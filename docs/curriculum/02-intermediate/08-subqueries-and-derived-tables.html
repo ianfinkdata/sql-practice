@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subqueries and Derived Tables | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="subqueries-and-derived-tables">Subqueries and Derived Tables</h1>
+
+<nav class="book-nav">Previous: <a href="07-coalesce-and-nullif.html" class="nav-btn">COALESCE and NULLIF</a>. Next: <a href="09-set-operations.html" class="nav-btn">Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT</a>. Exercises: <a href="../../exercises/02-intermediate/08-subqueries-and-derived-tables.html" class="nav-btn">Subqueries and Derived Tables</a>.</nav>
+
+<h2 id="the-idea">The idea</h2>
+
+<p>A subquery is a <code class="inline-code">SELECT</code> nested inside another query. You've already
+seen the simplest cousin of this idea in Module 2 and 7's examples
+without naming it. There are three shapes worth knowing by name:</p>
+
+<p>1. <strong>Scalar subquery</strong> — a subquery that returns exactly one value
+   (one row, one column). Used anywhere a single value is expected:
+   <code class="inline-code">WHERE price > (SELECT AVG(price) FROM ...)</code>.
+2. <strong>Subquery in <code class="inline-code">WHERE</code></strong> — often paired with <code class="inline-code">IN</code>, filtering rows
+   based on a <em>list</em> a subquery produces:
+   <code class="inline-code">WHERE customer_id IN (SELECT ...)</code>.
+3. <strong>Derived table</strong> — a subquery used in the <code class="inline-code">FROM</code> clause, standing
+   in for a table. It has to be given an alias, and the outer query
+   treats it exactly like a real table.</p>
+
+<p>The common thread: a subquery runs first, produces a result, and the
+outer query works with that result.</p>
+
+<h2 id="why-it-matters">Why it matters</h2>
+
+<p>Some Oakhaven questions genuinely need two steps. "Which products are
+priced above average?" needs the average computed first, then
+compared against — one query, two logical steps, a scalar subquery
+ties them together. "Which customers have bought Climbing gear?"
+needs the Climbing product ids first, then the customers who bought
+any of them — a subquery in <code class="inline-code">WHERE ... IN</code>. "Which customers'
+lifetime order-line total exceeds some threshold?" needs the per-customer
+totals <em>computed first</em>, then filtered — you can't <code class="inline-code">WHERE</code> on an
+aggregate that doesn't exist until after grouping (Module 4 covered
+exactly this with <code class="inline-code">HAVING</code> for simple cases; a derived table gives you
+the same power for more complex, multi-step logic).</p>
+
+<h2 id="syntax">Syntax</h2>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">-- Scalar subquery — used as a single value
+SELECT * FROM t WHERE col &gt; (SELECT AVG(col) FROM t);
+
+<p>-- Subquery in WHERE with IN — used as a list
+SELECT * FROM t WHERE id IN (SELECT id FROM other_table WHERE ...);</p>
+
+<p>-- Derived table — subquery in FROM, must be aliased
+SELECT alias.col
+FROM (SELECT ... FROM t GROUP BY ...) AS alias
+WHERE alias.col &gt; 10;</code></pre></div></p>
+
+<p>A subquery can appear almost anywhere a value, list, or table is
+expected. SQLite evaluates the inner query as needed to satisfy the
+outer one.</p>
+
+<h2 id="try-it">Try it</h2>
+
+<p><strong>1. Scalar subquery: products priced above the average</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT ROUND(AVG(unit_price), 2) AS avg_price FROM bronze_products;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>avg_price</th></tr></thead><tbody><tr><td>300.37</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id, product_name, unit_price
+FROM bronze_products
+WHERE unit_price &gt; (SELECT AVG(unit_price) FROM bronze_products)
+ORDER BY unit_price DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>product_id</th><th>product_name</th><th>unit_price</th></tr></thead><tbody><tr><td>18</td><td>Highline Backpacks</td><td>812.71</td></tr><tr><td>34</td><td>Foothill Electrolyte Mixes</td><td>782.32</td></tr><tr><td>43</td><td>Highline Paddle</td><td>696.3</td></tr><tr><td>135</td><td>Canyon Backpacks</td><td>687.96</td></tr><tr><td>90</td><td>Meridian Chalk Bags</td><td>669.02</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_products
+WHERE unit_price &gt; (SELECT AVG(unit_price) FROM bronze_products);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>69</td></tr></tbody></table></div>
+The inner query `(SELECT AVG(unit_price) FROM bronze_products)` runs
+once, returns a single number (300.37), and the outer query compares
+every row's `unit_price` against it — as if you'd typed `WHERE
+unit_price > 300.37` directly, except it stays correct if the data
+changes.
+
+<p><strong>2. Subquery in WHERE with IN: customers who bought Climbing gear</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT customer_id, first_name, last_name
+FROM bronze_customers
+WHERE customer_id IN (
+  SELECT DISTINCT customer_id FROM bronze_sales
+  WHERE product_id IN (
+    SELECT product_id FROM bronze_products WHERE category = &#x27;Climbing&#x27;
+  )
+)
+ORDER BY customer_id
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>first_name</th><th>last_name</th></tr></thead><tbody><tr><td>5</td><td>John</td><td>harris</td></tr><tr><td>6</td><td>ANTHONY</td><td>Reed</td></tr><tr><td>7</td><td>Brian</td><td>Schultz</td></tr><tr><td>10</td><td>ryan</td><td>Gonzalez</td></tr><tr><td>11</td><td>brian</td><td>Miller</td></tr></tbody></table></div>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT COUNT(*) FROM bronze_customers
+WHERE customer_id IN (
+  SELECT DISTINCT customer_id FROM bronze_sales
+  WHERE product_id IN (
+    SELECT product_id FROM bronze_products WHERE category = &#x27;Climbing&#x27;
+  )
+);</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>COUNT(*)</th></tr></thead><tbody><tr><td>403</td></tr></tbody></table></div>
+Two nested subqueries here: the innermost finds Climbing
+`product_id`s, the middle one finds `customer_id`s from `bronze_sales`
+that bought one of those products, and the outer query filters
+`bronze_customers` down to that list. Worth flagging honestly: `category
+= 'Climbing'` matches only the one exact-cased spelling — Module 3
+showed `category` has 6+ raw variants meaning "Climbing." A fully
+correct version of this query would use the cleaning chain from Module
+6 inside that innermost subquery. This version undercounts on purpose,
+to keep the subquery pattern itself the focus.
+
+<p><strong>3. Derived table: per-customer totals, computed then filtered</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT *
+FROM (
+  SELECT customer_id, COUNT(*) AS line_count,
+         ROUND(SUM(quantity * unit_price), 2) AS rough_total
+  FROM bronze_sales
+  GROUP BY customer_id
+) AS totals
+WHERE totals.line_count &gt; 30
+ORDER BY totals.rough_total DESC
+LIMIT 5;</code></pre></div>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>customer_id</th><th>line_count</th><th>rough_total</th></tr></thead><tbody><tr><td>41</td><td>43</td><td>44030.55</td></tr><tr><td>343</td><td>39</td><td>39539.78</td></tr><tr><td>597</td><td>34</td><td>38494.27</td></tr><tr><td>572</td><td>39</td><td>34442.36</td></tr><tr><td>173</td><td>37</td><td>34371.42</td></tr></tbody></table></div>
+The inner query computes `line_count` and `rough_total` per customer
+first, as its own independent result. The outer query then treats that
+result as if it were a table named `totals`, filtering and sorting on
+columns (`line_count`, `rough_total`) that only exist *because* they
+were computed inside the subquery. You could get the same `line_count
+<blockquote class="custom-blockquote">30<code class="inline-code"> result with </code>HAVING COUNT(*) > 30` directly (Module 4) — derived</blockquote>
+tables earn their keep once you need to filter or join on a computed
+value *after* other logic has already run on top of it.
+
+<p><strong>4. A subquery is just a query — test it standalone first</strong></p>
+
+<p>Before nesting a subquery, run it by itself to make sure it returns
+what you expect:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT product_id FROM bronze_products WHERE category = &#x27;Climbing&#x27;;</code></pre></div>
+
+<p>Confirming the inner piece works in isolation, on its own, before
+wrapping an outer query around it, is the single best debugging habit
+for subqueries — it turns "this complicated query returns nothing,
+somehow" into "step 2 of 3 is the problem."</p>
+
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul class="styled-list"><li><strong>A scalar subquery returning more than one row.</strong> `WHERE unit_price</li></ul>  > (SELECT unit_price FROM bronze_products)` (no `AVG`, no filter to
+  guarantee one row) is an error in SQLite if the subquery finds
+  multiple rows — scalar-subquery position needs a query guaranteed to
+  return exactly one row/column, typically via an aggregate.
+<ul class="styled-list"><li><strong>Forgetting to alias a derived table.</strong> `FROM (SELECT ...) WHERE</li></ul>  ...` without `AS alias` is invalid in SQLite — every subquery in
+  `FROM` needs a name so the outer query can refer to its columns.
+<ul class="styled-list"><li>**Using <code class="inline-code">=</code> instead of <code class="inline-code">IN</code> when the subquery can return multiple</li></ul>  rows.** `WHERE product_id = (SELECT product_id FROM bronze_products
+  WHERE category = 'Climbing')` breaks the moment more than one row
+  matches — `IN` is the safe default whenever the inner query's row
+  count isn't guaranteed to be exactly one.
+<ul class="styled-list"><li><strong>Not testing the inner query by itself first.</strong> A subquery buried</li></ul>  three levels deep that returns nothing is much easier to debug one
+  level at a time (see example 4) than by staring at the whole nested
+  query at once.
+
+<h2 id="key-takeaways">Key takeaways</h2>
+<ul class="styled-list"><li>Scalar subqueries return a single value and slot in anywhere a</li></ul>  literal value would go.
+<ul class="styled-list"><li>Subqueries in <code class="inline-code">WHERE ... IN (...)</code> filter against a list produced by</li></ul>  another query.
+<ul class="styled-list"><li>Derived tables (<code class="inline-code">FROM (subquery) AS alias</code>) let the outer query</li></ul>  build on top of an already-computed, already-aggregated result.
+<ul class="styled-list"><li>Test the innermost subquery standalone before nesting — it's the</li></ul>  fastest way to isolate a broken piece.
+<ul class="styled-list"><li>Subqueries and <code class="inline-code">HAVING</code>/<code class="inline-code">JOIN</code> often solve overlapping problems;</li></ul>  reach for a derived table specifically when you need to filter or
+  join on something computed by an earlier step.
+
+<hr class="divider">
+
+<nav class="book-nav">Previous: <a href="07-coalesce-and-nullif.html" class="nav-btn">COALESCE and NULLIF</a>. Next: <a href="09-set-operations.html" class="nav-btn">Set Operations: UNION, UNION ALL, INTERSECT, EXCEPT</a>. Exercises: <a href="../../exercises/02-intermediate/08-subqueries-and-derived-tables.html" class="nav-btn">Subqueries and Derived Tables</a>.</nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

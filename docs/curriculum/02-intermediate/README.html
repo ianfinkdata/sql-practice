@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tier 2 — Intermediate | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="tier-2--intermediate">Tier 2 — Intermediate</h1>
+
+<div class="bluf-card"><div class="bluf-badge">⚡ BLUF (Bottom Line Up Front)</div><div class="bluf-body">Tier 2 focuses on multi-table queries and data cleaning: <code class="inline-code">JOIN</code> types, <code class="inline-code">GROUP BY</code>, conditional logic (<code class="inline-code">CASE</code>), string scrubbing (<code class="inline-code">TRIM</code>, <code class="inline-code">UPPER</code>), and handling missing values with <code class="inline-code">COALESCE</code>.</div></div>
+
+<nav class="book-nav"><a href="../01-beginner/README.html" class="nav-btn">⏮️ Prev: Tier 1 Beginner</a> <a href="../../README.html" class="nav-btn">📖 Table of Contents</a> <a href="../03-advanced/README.html" class="nav-btn">⏭️ Next: Tier 3 Advanced</a></nav>
+
+<p>Combining tables, summarizing data, and confronting the messy parts of <code class="inline-code">bronze_customers</code> and <code class="inline-code">bronze_sales</code> head-on. This is the tier where "the data doesn't look right" stops being a surprise and starts being something you know how to fix.</p>
+
+<div class="table-container"><table class="styled-table"><thead><tr><th>Module</th><th>Topic</th></tr></thead><tbody><tr><td><a href="01-combining-tables-with-join.html">01</a></td><td>Combining tables with JOIN</td></tr><tr><td><a href="02-left-join-and-missing-data.html">02</a></td><td>LEFT JOIN and missing data</td></tr><tr><td><a href="03-group-by.html">03</a></td><td>GROUP BY</td></tr><tr><td><a href="04-having.html">04</a></td><td>HAVING</td></tr><tr><td><a href="05-case-expressions.html">05</a></td><td>CASE expressions</td></tr><tr><td><a href="06-cleaning-text-trim-upper-replace.html">06</a></td><td>Cleaning text: TRIM, UPPER/LOWER, REPLACE</td></tr><tr><td><a href="07-coalesce-and-nullif.html">07</a></td><td>COALESCE and NULLIF</td></tr><tr><td><a href="08-subqueries-and-derived-tables.html">08</a></td><td>Subqueries and derived tables</td></tr><tr><td><a href="09-set-operations.html">09</a></td><td>Set operations: UNION, INTERSECT, EXCEPT</td></tr></tbody></table></div>
+Matching exercises: [`exercises/02-intermediate/`](../../exercises/02-intermediate/).
+
+<hr class="divider">
+
+<nav class="book-nav"><a href="../01-beginner/README.html" class="nav-btn">⏮️ Prev: Tier 1 Beginner</a> <a href="../../README.html" class="nav-btn">📖 Table of Contents</a> <a href="../03-advanced/README.html" class="nav-btn">⏭️ Next: Tier 3 Advanced</a></nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>
