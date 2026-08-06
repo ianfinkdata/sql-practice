@@ -20,7 +20,7 @@ Combining tables, summarizing data, and confronting the messy parts of `bronze_c
 | [08](08-subqueries-and-derived-tables.md) | Subqueries and derived tables |
 | [09](09-set-operations.md) | Set operations: UNION, INTERSECT, EXCEPT |
 
-Matching exercises: [`exercises/02-intermediate/`](../../exercises/02-intermediate/).
+Matching exercises: `exercises/02-intermediate/`.
 
 ---
 

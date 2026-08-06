@@ -20,7 +20,7 @@ DDL, transactions, views, indexes, and query optimization — the tooling behind
 | [08](08-writing-your-first-gold-view.md) | Medallion thread: writing your first gold view |
 | [09](09-portable-idempotent-ddl-patterns.md) | Portable, idempotent DDL patterns |
 
-Matching exercises: [`exercises/04-expert/`](../../exercises/04-expert/).
+Matching exercises: `exercises/04-expert/`.
 
 ---
 

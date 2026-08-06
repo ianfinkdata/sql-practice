@@ -31,12 +31,12 @@ reproduces it byte-for-byte.
 
 | Part | What it is | Where |
 |---|---|---|
-| **Curriculum** | Beginner → master, six tiers | [`curriculum/`](curriculum/README.md) |
-| **Exercises** | Hands-on practice, tier-paired with the curriculum | [`exercises/`](exercises/README.md) |
-| **Applied project** | Oakhaven: a fictional retailer, modeled bronze → silver → gold, as one SQLite file you generate | [`project/`](project/docs/data_dictionary.md) |
-| **Portfolio** | A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact | [`portfolio/`](portfolio/README.md) |
-| **AI assistant guide** | Tool-agnostic instructions for any AI helping in this repo | [`AGENTS.md`](AGENTS.md) |
-| **Web version** | Browsable GitHub Pages site | [`docs/`](README.md) (enable Pages on your fork, or browse the source directly) |
+| **Curriculum** | Beginner → master, six tiers | `curriculum/` |
+| **Exercises** | Hands-on practice, tier-paired with the curriculum | `exercises/` |
+| **Applied project** | Oakhaven: a fictional retailer, modeled bronze → silver → gold, as one SQLite file you generate | `project/` |
+| **Portfolio** | A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact | `portfolio/` |
+| **AI assistant guide** | Tool-agnostic instructions for any AI helping in this repo | `AGENTS.md` |
+| **Web version** | Browsable GitHub Pages site | `docs/` (enable Pages on your fork, or browse the source directly) |
 
 ---
 
@@ -46,12 +46,12 @@ Six tiers, each building on the last:
 
 | Tier | Name | Focus |
 |---|---|---|
-| 0 | [Orientation](curriculum/00-orientation/README.md) | What a database is, no code required; generating the practice database |
-| 1 | [Beginner](curriculum/01-beginner/README.md) | Asking a database simple questions |
-| 2 | [Intermediate](curriculum/02-intermediate/README.md) | Combining tables, summarizing, cleaning messy real-world data |
-| 3 | [Advanced](curriculum/03-advanced/README.md) | Window functions, CTEs, recursive CTEs, time intelligence — the medallion thread begins |
-| 4 | [Expert](curriculum/04-expert/README.md) | DDL, transactions, views, indexes, query optimization |
-| 5 | [Master](curriculum/05-master/README.md) | Dimensional modeling, star schema design, and the medallion architecture, end to end |
+| 0 | Orientation | What a database is, no code required; generating the practice database |
+| 1 | Beginner | Asking a database simple questions |
+| 2 | Intermediate | Combining tables, summarizing, cleaning messy real-world data |
+| 3 | Advanced | Window functions, CTEs, recursive CTEs, time intelligence — the medallion thread begins |
+| 4 | Expert | DDL, transactions, views, indexes, query optimization |
+| 5 | Master | Dimensional modeling, star schema design, and the medallion architecture, end to end |
 
 Start at Orientation if you're brand new or jump into any tier from the above list.
 
@@ -65,7 +65,7 @@ verified; nothing is invented.
 
 ## The applied project
 
-[`project/`](project/docs/data_dictionary.md) is **Oakhaven** — a small, fictional outdoor-gear
+`project/` is **Oakhaven** — a small, fictional outdoor-gear
 retailer. You generate its database yourself, deterministically, with:
 
 ```bash
@@ -79,7 +79,7 @@ scale you can actually hold in your head:
 
 - **Bronze** — five raw tables (`bronze_customers`, `bronze_products`,
   `bronze_employees`, `bronze_sales`, `bronze_calendar`), generated with
-  [Faker](https://faker.readthedocs.io/) and deliberately messy:
+  Faker and deliberately messy:
   inconsistent state/phone formatting, mixed-format booleans, an
   untrustworthy order-total column, orphan foreign keys, and more.
   `bronze_calendar` is the one exception — a clean, manufactured date
@@ -103,19 +103,17 @@ reproduces it byte-for-byte.
 **Note on `pip install`:** modern Debian/Ubuntu systems refuse
 `pip install` outside a virtual environment with an
 `externally-managed-environment` error. Creating a venv first (as shown
-above) avoids this — see
-[`curriculum/00-orientation/03-tools-and-setup.md`](curriculum/00-orientation/03-tools-and-setup.md)
+above) avoids this — see `curriculum/00-orientation/03-tools-and-setup.md`
 for the full walkthrough.
 
-See [`project/docs/data_dictionary.md`](project/docs/data_dictionary.md)
-for the full schema and [`project/docs/erd.md`](project/docs/erd.md) for
+See `project/docs/data_dictionary.md` for the full schema and `project/docs/erd.md` for
 an entity-relationship diagram.
 
 ---
 
 ## The portfolio
 
-[`portfolio/`](portfolio/README.md) is the repo's explicit takeaway: a standalone
+`portfolio/` is the repo's explicit takeaway: a standalone
 library of annotated, engine-agnostic SQL patterns — deduplication,
 orphan-FK detection, silver-style cleaning, recursive-CTE calendars,
 SCD Type 1/2, star-schema fact tables, cohort analysis, LTV, and more —
@@ -129,26 +127,22 @@ for building most medallion lakehouses."
 ## How to use this repo
 
 ### If you're learning on your own
-1. Read [Orientation](curriculum/00-orientation/README.md).
-   `oakhaven.db` is already sitting in [`project/`](project/docs/data_dictionary.md), or
+1. Read Orientation (`curriculum/00-orientation/`).
+   `oakhaven.db` is already sitting in `project/`, or
    generate your own copy as the Tier 0 exercise.
 2. Work tier by tier. Each module ends with matching exercises.
-3. From Tier 3 on, query [`project/`](project/docs/data_dictionary.md) alongside the lesson.
-4. Once you've finished Tier 5, browse [`portfolio/`](portfolio/README.md) as a
+3. From Tier 3 on, query `project/` alongside the lesson.
+4. Once you've finished Tier 5, browse `portfolio/` as a
    reference you can keep using long after this repo.
 
 ### If you just want the database, no setup at all
 No Python, no Claude Code, no CLI. Download or clone the repo, then
-open [`project/oakhaven.db`](project/oakhaven.db) directly in
-[DB Browser for SQLite](https://sqlitebrowser.org/) or
-[Beekeeper Studio](https://www.beekeeperstudio.io/) and start
-querying against [`exercises/`](exercises/README.md) and
-[`project/docs/data_dictionary.md`](project/docs/data_dictionary.md).
+open `project/oakhaven.db` directly in DB Browser for SQLite or Beekeeper Studio and start
+querying against `exercises/` and `project/docs/data_dictionary.md`.
 
 ### If you want the web version
 Enable GitHub Pages on your fork pointing at `docs/` — see
-[`docs/INSTRUCTIONS.md`](docs/INSTRUCTIONS.md) — or just open
-[`docs/index.html`](docs/index.html) directly in a browser.
+`docs/INSTRUCTIONS.md` — or just open `docs/index.html` directly in a browser.
 
 ---
 
@@ -184,15 +178,10 @@ sql-practice/
 ## Resources
 
 **Opening the project database**
-- [DB Browser for SQLite](https://sqlitebrowser.org/) — free GUI, works
-  on Windows/Mac/Linux, no install expertise required.
-- [Beekeeper Studio](https://www.beekeeperstudio.io/) — free, modern
-  SQL editor/GUI with SQLite support, also cross-platform.
-- [`sqlite.org/lang.html`](https://sqlite.org/lang.html) — SQLite's own
-  SQL language reference.
-- [`project/docs/sqlite_cli_guide.md`](project/docs/sqlite_cli_guide.md) —
-  a quick guide to the `sqlite3` command-line tool: dot-commands,
-  one-liner syntax, common gotchas.
+- DB Browser for SQLite — free GUI, works on Windows/Mac/Linux, no install expertise required.
+- Beekeeper Studio — free, modern SQL editor/GUI with SQLite support, also cross-platform.
+- `sqlite.org/lang.html` — SQLite's own SQL language reference.
+- `project/docs/sqlite_cli_guide.md` — a quick guide to the `sqlite3` command-line tool: dot-commands, one-liner syntax, common gotchas.
 
 **Videos on the topics that trip people up most**
 - [7 Window Functions MASTERED in 17 Minutes](https://youtu.be/vlltZIgn284)

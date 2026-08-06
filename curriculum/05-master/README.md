@@ -22,7 +22,7 @@ The capstone: dimensional modeling and star schema design. This is the tier mean
 | [10](10-capstone-build-a-novel-gold-view.md) | Capstone: build a novel gold view from scratch |
 | [11](11-beyond-sqlite-portability-notes.md) | Beyond SQLite: a syntax-translation reference |
 
-Matching exercises: [`exercises/05-master/`](../../exercises/05-master/). See also the standalone [`portfolio/`](../../portfolio/) pattern library this tier feeds into.
+Matching exercises: `exercises/05-master/`. See also the standalone `portfolio/` pattern library this tier feeds into.
 
 ---
 

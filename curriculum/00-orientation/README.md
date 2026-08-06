@@ -15,7 +15,7 @@ No SQL required yet. This tier gets you oriented: what a database is, what SQL i
 | [03](03-tools-and-setup.md) | Tools and setup — opening `oakhaven.db` (and optionally generating it yourself) |
 | [04](04-meet-oakhaven.md) | Meet Oakhaven — the five bronze tables, and a first look at bronze/silver/gold |
 
-Matching exercises: [`exercises/00-orientation/`](../../exercises/00-orientation/).
+Matching exercises: `exercises/00-orientation/`.
 
 ---
 

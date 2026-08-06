@@ -19,7 +19,7 @@ Your first real SQL. This tier covers the core `SELECT` toolkit — filtering, s
 | [07](07-pattern-matching-with-like.md) | Pattern matching with LIKE |
 | [08](08-distinct-and-duplicates.md) | DISTINCT and duplicates |
 
-Matching exercises: [`exercises/01-beginner/`](../../exercises/01-beginner/).
+Matching exercises: `exercises/01-beginner/`.
 
 ---
 

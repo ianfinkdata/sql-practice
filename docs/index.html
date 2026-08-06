@@ -55,14 +55,14 @@ reproduces it byte-for-byte.</p>
 
 <h2 id="whats-inside">What's inside</h2>
 
-<div class="table-container"><table class="styled-table"><thead><tr><th>Part</th><th>What it is</th><th>Where</th></tr></thead><tbody><tr><td><strong>Curriculum</strong></td><td>Beginner → master, six tiers</td><td><a href="curriculum/README.html"><code class="inline-code">curriculum/</code></a></td></tr><tr><td><strong>Exercises</strong></td><td>Hands-on practice, tier-paired with the curriculum</td><td><a href="exercises/README.html"><code class="inline-code">exercises/</code></a></td></tr><tr><td><strong>Applied project</strong></td><td>Oakhaven: a fictional retailer, modeled bronze → silver → gold, as one SQLite file you generate</td><td><a href="project/docs/data_dictionary.html"><code class="inline-code">project/</code></a></td></tr><tr><td><strong>Portfolio</strong></td><td>A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact</td><td><a href="portfolio/README.html"><code class="inline-code">portfolio/</code></a></td></tr><tr><td><strong>AI assistant guide</strong></td><td>Tool-agnostic instructions for any AI helping in this repo</td><td><a href="AGENTS.html"><code class="inline-code">AGENTS.md</code></a></td></tr><tr><td><strong>Web version</strong></td><td>Browsable GitHub Pages site</td><td><a href="index.html"><code class="inline-code">docs/</code></a> (enable Pages on your fork, or browse the source directly)</td></tr></tbody></table></div>
+<div class="table-container"><table class="styled-table"><thead><tr><th>Part</th><th>What it is</th><th>Where</th></tr></thead><tbody><tr><td><strong>Curriculum</strong></td><td>Beginner → master, six tiers</td><td><code class="inline-code">curriculum/</code></td></tr><tr><td><strong>Exercises</strong></td><td>Hands-on practice, tier-paired with the curriculum</td><td><code class="inline-code">exercises/</code></td></tr><tr><td><strong>Applied project</strong></td><td>Oakhaven: a fictional retailer, modeled bronze → silver → gold, as one SQLite file you generate</td><td><code class="inline-code">project/</code></td></tr><tr><td><strong>Portfolio</strong></td><td>A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact</td><td><code class="inline-code">portfolio/</code></td></tr><tr><td><strong>AI assistant guide</strong></td><td>Tool-agnostic instructions for any AI helping in this repo</td><td><code class="inline-code">AGENTS.md</code></td></tr><tr><td><strong>Web version</strong></td><td>Browsable GitHub Pages site</td><td><code class="inline-code">docs/</code> (enable Pages on your fork, or browse the source directly)</td></tr></tbody></table></div>
 ---
 
 <h2 id="curriculum">Curriculum</h2>
 
 <p>Six tiers, each building on the last:</p>
 
-<div class="table-container"><table class="styled-table"><thead><tr><th>Tier</th><th>Name</th><th>Focus</th></tr></thead><tbody><tr><td>0</td><td><a href="curriculum/00-orientation/README.html">Orientation</a></td><td>What a database is, no code required; generating the practice database</td></tr><tr><td>1</td><td><a href="curriculum/01-beginner/README.html">Beginner</a></td><td>Asking a database simple questions</td></tr><tr><td>2</td><td><a href="curriculum/02-intermediate/README.html">Intermediate</a></td><td>Combining tables, summarizing, cleaning messy real-world data</td></tr><tr><td>3</td><td><a href="curriculum/03-advanced/README.html">Advanced</a></td><td>Window functions, CTEs, recursive CTEs, time intelligence — the medallion thread begins</td></tr><tr><td>4</td><td><a href="curriculum/04-expert/README.html">Expert</a></td><td>DDL, transactions, views, indexes, query optimization</td></tr><tr><td>5</td><td><a href="curriculum/05-master/README.html">Master</a></td><td>Dimensional modeling, star schema design, and the medallion architecture, end to end</td></tr></tbody></table></div>
+<div class="table-container"><table class="styled-table"><thead><tr><th>Tier</th><th>Name</th><th>Focus</th></tr></thead><tbody><tr><td>0</td><td>Orientation</td><td>What a database is, no code required; generating the practice database</td></tr><tr><td>1</td><td>Beginner</td><td>Asking a database simple questions</td></tr><tr><td>2</td><td>Intermediate</td><td>Combining tables, summarizing, cleaning messy real-world data</td></tr><tr><td>3</td><td>Advanced</td><td>Window functions, CTEs, recursive CTEs, time intelligence — the medallion thread begins</td></tr><tr><td>4</td><td>Expert</td><td>DDL, transactions, views, indexes, query optimization</td></tr><tr><td>5</td><td>Master</td><td>Dimensional modeling, star schema design, and the medallion architecture, end to end</td></tr></tbody></table></div>
 Start at Orientation if you're brand new or jump into any tier from the above list.
 
 <p>Starting at Tier 3, lessons lean on the applied project below instead of
@@ -75,7 +75,7 @@ verified; nothing is invented.</p>
 
 <h2 id="the-applied-project">The applied project</h2>
 
-<p><a href="project/docs/data_dictionary.html"><code class="inline-code">project/</code></a> is <strong>Oakhaven</strong> — a small, fictional outdoor-gear
+<p><code class="inline-code">project/</code> is <strong>Oakhaven</strong> — a small, fictional outdoor-gear
 retailer. You generate its database yourself, deterministically, with:</p>
 
 <div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">python3 -m venv .venv &amp;&amp; source .venv/bin/activate   # see note below
@@ -85,7 +85,7 @@ python project/build.py</code></pre></div>
 <p>This produces <code class="inline-code">project/oakhaven.db</code> — a real medallion pipeline at a
 scale you can actually hold in your head:
 <ul class="styled-list"><li><strong>Bronze</strong> — five raw tables (<code class="inline-code">bronze_customers</code>, <code class="inline-code">bronze_products</code>,</li></ul>  <code class="inline-code">bronze_employees</code>, <code class="inline-code">bronze_sales</code>, <code class="inline-code">bronze_calendar</code>), generated with
-  <a href="https://faker.readthedocs.io/">Faker</a> and deliberately messy:
+  Faker and deliberately messy:
   inconsistent state/phone formatting, mixed-format booleans, an
   untrustworthy order-total column, orphan foreign keys, and more.
   <code class="inline-code">bronze_calendar</code> is the one exception — a clean, manufactured date
@@ -107,19 +107,17 @@ reproduces it byte-for-byte.</p>
 <p><strong>Note on <code class="inline-code">pip install</code>:</strong> modern Debian/Ubuntu systems refuse
 <code class="inline-code">pip install</code> outside a virtual environment with an
 <code class="inline-code">externally-managed-environment</code> error. Creating a venv first (as shown
-above) avoids this — see
-<a href="curriculum/00-orientation/03-tools-and-setup.html"><code class="inline-code">curriculum/00-orientation/03-tools-and-setup.md</code></a>
+above) avoids this — see <code class="inline-code">curriculum/00-orientation/03-tools-and-setup.md</code>
 for the full walkthrough.</p>
 
-<p>See <a href="project/docs/data_dictionary.html"><code class="inline-code">project/docs/data_dictionary.md</code></a>
-for the full schema and <a href="project/docs/erd.html"><code class="inline-code">project/docs/erd.md</code></a> for
+<p>See <code class="inline-code">project/docs/data_dictionary.md</code> for the full schema and <code class="inline-code">project/docs/erd.md</code> for
 an entity-relationship diagram.</p>
 
 <hr class="divider">
 
 <h2 id="the-portfolio">The portfolio</h2>
 
-<p><a href="portfolio/README.html"><code class="inline-code">portfolio/</code></a> is the repo's explicit takeaway: a standalone
+<p><code class="inline-code">portfolio/</code> is the repo's explicit takeaway: a standalone
 library of annotated, engine-agnostic SQL patterns — deduplication,
 orphan-FK detection, silver-style cleaning, recursive-CTE calendars,
 SCD Type 1/2, star-schema fact tables, cohort analysis, LTV, and more —
@@ -133,26 +131,22 @@ for building most medallion lakehouses."</p>
 <h2 id="how-to-use-this-repo">How to use this repo</h2>
 
 <h3 id="if-youre-learning-on-your-own">If you're learning on your own</h3>
-1. Read [Orientation](curriculum/00-orientation/README.md).
-   `oakhaven.db` is already sitting in [`project/`](project/docs/data_dictionary.md), or
+1. Read Orientation (`curriculum/00-orientation/`).
+   `oakhaven.db` is already sitting in `project/`, or
    generate your own copy as the Tier 0 exercise.
 2. Work tier by tier. Each module ends with matching exercises.
-3. From Tier 3 on, query [`project/`](project/docs/data_dictionary.md) alongside the lesson.
-4. Once you've finished Tier 5, browse [`portfolio/`](portfolio/README.md) as a
+3. From Tier 3 on, query `project/` alongside the lesson.
+4. Once you've finished Tier 5, browse `portfolio/` as a
    reference you can keep using long after this repo.
 
 <h3 id="if-you-just-want-the-database-no-setup-at-all">If you just want the database, no setup at all</h3>
 No Python, no Claude Code, no CLI. Download or clone the repo, then
-open [`project/oakhaven.db`](project/oakhaven.db) directly in
-[DB Browser for SQLite](https://sqlitebrowser.org/) or
-[Beekeeper Studio](https://www.beekeeperstudio.io/) and start
-querying against [`exercises/`](exercises/README.md) and
-[`project/docs/data_dictionary.md`](project/docs/data_dictionary.md).
+open `project/oakhaven.db` directly in DB Browser for SQLite or Beekeeper Studio and start
+querying against `exercises/` and `project/docs/data_dictionary.md`.
 
 <h3 id="if-you-want-the-web-version">If you want the web version</h3>
 Enable GitHub Pages on your fork pointing at `docs/` — see
-[`docs/INSTRUCTIONS.md`](docs/INSTRUCTIONS.md) — or just open
-[`docs/index.html`](docs/index.html) directly in a browser.
+`docs/INSTRUCTIONS.md` — or just open `docs/index.html` directly in a browser.
 
 <hr class="divider">
 
@@ -186,13 +180,8 @@ Enable GitHub Pages on your fork pointing at `docs/` — see
 <h2 id="resources">Resources</h2>
 
 <p><strong>Opening the project database</strong>
-<ul class="styled-list"><li><a href="https://sqlitebrowser.org/">DB Browser for SQLite</a> — free GUI, works</li></ul>  on Windows/Mac/Linux, no install expertise required.
-<ul class="styled-list"><li><a href="https://www.beekeeperstudio.io/">Beekeeper Studio</a> — free, modern</li></ul>  SQL editor/GUI with SQLite support, also cross-platform.
-<ul class="styled-list"><li><a href="https://sqlite.org/lang.html"><code class="inline-code">sqlite.org/lang.html</code></a> — SQLite's own</li></ul>  SQL language reference.
-<ul class="styled-list"><li><a href="project/docs/sqlite_cli_guide.html"><code class="inline-code">project/docs/sqlite_cli_guide.md</code></a> —</li></ul>  a quick guide to the <code class="inline-code">sqlite3</code> command-line tool: dot-commands,
-  one-liner syntax, common gotchas.</p>
-
-<p><strong>Videos on the topics that trip people up most</strong>
+<ul class="styled-list"><li>DB Browser for SQLite — free GUI, works on Windows/Mac/Linux, no install expertise required.</li><li>Beekeeper Studio — free, modern SQL editor/GUI with SQLite support, also cross-platform.</li><li><code class="inline-code">sqlite.org/lang.html</code> — SQLite's own SQL language reference.</li><li><code class="inline-code">project/docs/sqlite_cli_guide.md</code> — a quick guide to the <code class="inline-code">sqlite3</code> command-line tool: dot-commands, one-liner syntax, common gotchas.</li></ul>
+<strong>Videos on the topics that trip people up most</strong>
 <ul class="styled-list"><li><a href="https://youtu.be/vlltZIgn284">7 Window Functions MASTERED in 17 Minutes</a></li><li><a href="https://www.youtube.com/watch?v=XUxBKO25ZyA">What are CTEs in SQL, in 13 Minutes</a></li><li><a href="https://www.youtube.com/watch?v=m1KcNV-Zhmc">Advanced SQL Tutorial: Subqueries</a></li></ul>
 <strong>Web-based SQL practice exercises</strong>
 <ul class="styled-list"><li><a href="https://www.sqlzoo.net/wiki/SQL_Tutorial">SQL Zoo</a></li><li><a href="https://www.w3schools.com/sql/">w3schools</a></li></ul>

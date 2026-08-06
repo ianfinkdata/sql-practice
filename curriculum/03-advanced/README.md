@@ -21,7 +21,7 @@ CTEs, window functions, recursive CTEs, and time intelligence — and where the 
 | [09](09-correlated-subqueries-exists.md) | Correlated subqueries, EXISTS/NOT EXISTS |
 | [10](10-combining-ctes-and-window-functions.md) | Combining CTEs and window functions |
 
-Matching exercises: [`exercises/03-advanced/`](../../exercises/03-advanced/).
+Matching exercises: `exercises/03-advanced/`.
 
 ---
 
