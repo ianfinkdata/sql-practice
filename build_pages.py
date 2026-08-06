@@ -18,7 +18,7 @@ DOCS_DIR = REPO_ROOT / "docs"
 
 # HTML Template with theme toggle, responsive layout, and navigation
 HTML_TEMPLATE = """<!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -66,7 +66,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <script>
     // Simple theme switcher script
     const toggleBtn = document.getElementById('theme-toggle');
-    const currentTheme = localStorage.getItem('theme') || 'dark';
+    const currentTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', currentTheme);
     toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
 
