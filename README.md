@@ -31,12 +31,12 @@ reproduces it byte-for-byte.
 
 | Part | What it is | Where |
 |---|---|---|
-| **Curriculum** | Beginner → master, six tiers | [`curriculum/`](curriculum/) |
-| **Exercises** | Hands-on practice, tier-paired with the curriculum | [`exercises/`](exercises/) |
-| **Applied project** | Oakhaven: a fictional retailer, modeled bronze → silver → gold, as one SQLite file you generate | [`project/`](project/) |
-| **Portfolio** | A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact | [`portfolio/`](portfolio/) |
+| **Curriculum** | Beginner → master, six tiers | [`curriculum/`](curriculum/README.md) |
+| **Exercises** | Hands-on practice, tier-paired with the curriculum | [`exercises/`](exercises/README.md) |
+| **Applied project** | Oakhaven: a fictional retailer, modeled bronze → silver → gold, as one SQLite file you generate | [`project/`](project/docs/data_dictionary.md) |
+| **Portfolio** | A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact | [`portfolio/`](portfolio/README.md) |
 | **AI assistant guide** | Tool-agnostic instructions for any AI helping in this repo | [`AGENTS.md`](AGENTS.md) |
-| **Web version** | Browsable GitHub Pages site | [`docs/`](docs/) (enable Pages on your fork, or browse the source directly) |
+| **Web version** | Browsable GitHub Pages site | [`docs/`](docs/index.html) (enable Pages on your fork, or browse the source directly) |
 
 ---
 
@@ -46,14 +46,14 @@ Six tiers, each building on the last:
 
 | Tier | Name | Focus |
 |---|---|---|
-| 0 | [Orientation](curriculum/00-orientation/) | What a database is, no code required; generating the practice database |
-| 1 | [Beginner](curriculum/01-beginner/) | Asking a database simple questions |
-| 2 | [Intermediate](curriculum/02-intermediate/) | Combining tables, summarizing, cleaning messy real-world data |
-| 3 | [Advanced](curriculum/03-advanced/) | Window functions, CTEs, recursive CTEs, time intelligence — the medallion thread begins |
-| 4 | [Expert](curriculum/04-expert/) | DDL, transactions, views, indexes, query optimization |
-| 5 | [Master](curriculum/05-master/) | Dimensional modeling, star schema design, and the medallion architecture, end to end |
+| 0 | [Orientation](curriculum/00-orientation/README.md) | What a database is, no code required; generating the practice database |
+| 1 | [Beginner](curriculum/01-beginner/README.md) | Asking a database simple questions |
+| 2 | [Intermediate](curriculum/02-intermediate/README.md) | Combining tables, summarizing, cleaning messy real-world data |
+| 3 | [Advanced](curriculum/03-advanced/README.md) | Window functions, CTEs, recursive CTEs, time intelligence — the medallion thread begins |
+| 4 | [Expert](curriculum/04-expert/README.md) | DDL, transactions, views, indexes, query optimization |
+| 5 | [Master](curriculum/05-master/README.md) | Dimensional modeling, star schema design, and the medallion architecture, end to end |
 
-Start at [`curriculum/00-orientation/`](curriculum/00-orientation/) if
+Start at [`curriculum/00-orientation/`](curriculum/00-orientation/README.md) if
 you're brand new, or jump to any tier you're ready for — see
 [`curriculum/README.md`](curriculum/README.md) for the full module list.
 
@@ -131,12 +131,12 @@ for building most medallion lakehouses."
 ## How to use this repo
 
 ### If you're learning on your own
-1. Read [`curriculum/00-orientation/`](curriculum/00-orientation/).
-   `oakhaven.db` is already sitting in [`project/`](project/), or
+1. Read [`curriculum/00-orientation/`](curriculum/00-orientation/README.md).
+   `oakhaven.db` is already sitting in [`project/`](project/docs/data_dictionary.md), or
    generate your own copy as the Tier 0 exercise.
 2. Work tier by tier. Each module ends with matching exercises.
-3. From Tier 3 on, query [`project/`](project/) alongside the lesson.
-4. Once you've finished Tier 5, browse [`portfolio/`](portfolio/) as a
+3. From Tier 3 on, query [`project/`](project/docs/data_dictionary.md) alongside the lesson.
+4. Once you've finished Tier 5, browse [`portfolio/`](portfolio/README.md) as a
    reference you can keep using long after this repo.
 
 ### If you just want the database, no setup at all

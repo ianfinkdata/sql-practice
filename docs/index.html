@@ -55,15 +55,15 @@ reproduces it byte-for-byte.</p>
 
 <h2 id="whats-inside">What's inside</h2>
 
-<div class="table-container"><table class="styled-table"><thead><tr><th>Part</th><th>What it is</th><th>Where</th></tr></thead><tbody><tr><td><strong>Curriculum</strong></td><td>Beginner → master, six tiers</td><td><a href="curriculum/"><code class="inline-code">curriculum/</code></a></td></tr><tr><td><strong>Exercises</strong></td><td>Hands-on practice, tier-paired with the curriculum</td><td><a href="exercises/"><code class="inline-code">exercises/</code></a></td></tr><tr><td><strong>Applied project</strong></td><td>Oakhaven: a fictional retailer, modeled bronze → silver → gold, as one SQLite file you generate</td><td><a href="project/"><code class="inline-code">project/</code></a></td></tr><tr><td><strong>Portfolio</strong></td><td>A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact</td><td><a href="portfolio/"><code class="inline-code">portfolio/</code></a></td></tr><tr><td><strong>AI assistant guide</strong></td><td>Tool-agnostic instructions for any AI helping in this repo</td><td><a href="AGENTS.html"><code class="inline-code">AGENTS.md</code></a></td></tr><tr><td><strong>Web version</strong></td><td>Browsable GitHub Pages site</td><td><a href="docs/"><code class="inline-code">docs/</code></a> (enable Pages on your fork, or browse the source directly)</td></tr></tbody></table></div>
+<div class="table-container"><table class="styled-table"><thead><tr><th>Part</th><th>What it is</th><th>Where</th></tr></thead><tbody><tr><td><strong>Curriculum</strong></td><td>Beginner → master, six tiers</td><td><a href="curriculum/README.html"><code class="inline-code">curriculum/</code></a></td></tr><tr><td><strong>Exercises</strong></td><td>Hands-on practice, tier-paired with the curriculum</td><td><a href="exercises/README.html"><code class="inline-code">exercises/</code></a></td></tr><tr><td><strong>Applied project</strong></td><td>Oakhaven: a fictional retailer, modeled bronze → silver → gold, as one SQLite file you generate</td><td><a href="project/docs/data_dictionary.html"><code class="inline-code">project/</code></a></td></tr><tr><td><strong>Portfolio</strong></td><td>A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact</td><td><a href="portfolio/README.html"><code class="inline-code">portfolio/</code></a></td></tr><tr><td><strong>AI assistant guide</strong></td><td>Tool-agnostic instructions for any AI helping in this repo</td><td><a href="AGENTS.html"><code class="inline-code">AGENTS.md</code></a></td></tr><tr><td><strong>Web version</strong></td><td>Browsable GitHub Pages site</td><td><a href="docs/index.html"><code class="inline-code">docs/</code></a> (enable Pages on your fork, or browse the source directly)</td></tr></tbody></table></div>
 ---
 
 <h2 id="curriculum">Curriculum</h2>
 
 <p>Six tiers, each building on the last:</p>
 
-<div class="table-container"><table class="styled-table"><thead><tr><th>Tier</th><th>Name</th><th>Focus</th></tr></thead><tbody><tr><td>0</td><td><a href="curriculum/00-orientation/">Orientation</a></td><td>What a database is, no code required; generating the practice database</td></tr><tr><td>1</td><td><a href="curriculum/01-beginner/">Beginner</a></td><td>Asking a database simple questions</td></tr><tr><td>2</td><td><a href="curriculum/02-intermediate/">Intermediate</a></td><td>Combining tables, summarizing, cleaning messy real-world data</td></tr><tr><td>3</td><td><a href="curriculum/03-advanced/">Advanced</a></td><td>Window functions, CTEs, recursive CTEs, time intelligence — the medallion thread begins</td></tr><tr><td>4</td><td><a href="curriculum/04-expert/">Expert</a></td><td>DDL, transactions, views, indexes, query optimization</td></tr><tr><td>5</td><td><a href="curriculum/05-master/">Master</a></td><td>Dimensional modeling, star schema design, and the medallion architecture, end to end</td></tr></tbody></table></div>
-Start at [`curriculum/00-orientation/`](curriculum/00-orientation/) if
+<div class="table-container"><table class="styled-table"><thead><tr><th>Tier</th><th>Name</th><th>Focus</th></tr></thead><tbody><tr><td>0</td><td><a href="curriculum/00-orientation/README.html">Orientation</a></td><td>What a database is, no code required; generating the practice database</td></tr><tr><td>1</td><td><a href="curriculum/01-beginner/README.html">Beginner</a></td><td>Asking a database simple questions</td></tr><tr><td>2</td><td><a href="curriculum/02-intermediate/README.html">Intermediate</a></td><td>Combining tables, summarizing, cleaning messy real-world data</td></tr><tr><td>3</td><td><a href="curriculum/03-advanced/README.html">Advanced</a></td><td>Window functions, CTEs, recursive CTEs, time intelligence — the medallion thread begins</td></tr><tr><td>4</td><td><a href="curriculum/04-expert/README.html">Expert</a></td><td>DDL, transactions, views, indexes, query optimization</td></tr><tr><td>5</td><td><a href="curriculum/05-master/README.html">Master</a></td><td>Dimensional modeling, star schema design, and the medallion architecture, end to end</td></tr></tbody></table></div>
+Start at [`curriculum/00-orientation/`](curriculum/00-orientation/README.md) if
 you're brand new, or jump to any tier you're ready for — see
 [`curriculum/README.md`](curriculum/README.md) for the full module list.
 
@@ -77,7 +77,7 @@ verified; nothing is invented.</p>
 
 <h2 id="the-applied-project">The applied project</h2>
 
-<p><a href="project/"><code class="inline-code">project/</code></a> is <strong>Oakhaven</strong> — a small, fictional outdoor-gear
+<p><a href="project/README.html"><code class="inline-code">project/</code></a> is <strong>Oakhaven</strong> — a small, fictional outdoor-gear
 retailer. You generate its database yourself, deterministically, with:</p>
 
 <div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">python3 -m venv .venv &amp;&amp; source .venv/bin/activate   # see note below
@@ -121,7 +121,7 @@ an entity-relationship diagram.</p>
 
 <h2 id="the-portfolio">The portfolio</h2>
 
-<p><a href="portfolio/"><code class="inline-code">portfolio/</code></a> is the repo's explicit takeaway: a standalone
+<p><a href="portfolio/README.html"><code class="inline-code">portfolio/</code></a> is the repo's explicit takeaway: a standalone
 library of annotated, engine-agnostic SQL patterns — deduplication,
 orphan-FK detection, silver-style cleaning, recursive-CTE calendars,
 SCD Type 1/2, star-schema fact tables, cohort analysis, LTV, and more —
@@ -135,12 +135,12 @@ for building most medallion lakehouses."</p>
 <h2 id="how-to-use-this-repo">How to use this repo</h2>
 
 <h3 id="if-youre-learning-on-your-own">If you're learning on your own</h3>
-1. Read [`curriculum/00-orientation/`](curriculum/00-orientation/).
-   `oakhaven.db` is already sitting in [`project/`](project/), or
+1. Read [`curriculum/00-orientation/`](curriculum/00-orientation/README.md).
+   `oakhaven.db` is already sitting in [`project/`](project/docs/data_dictionary.md), or
    generate your own copy as the Tier 0 exercise.
 2. Work tier by tier. Each module ends with matching exercises.
-3. From Tier 3 on, query [`project/`](project/) alongside the lesson.
-4. Once you've finished Tier 5, browse [`portfolio/`](portfolio/) as a
+3. From Tier 3 on, query [`project/`](project/docs/data_dictionary.md) alongside the lesson.
+4. Once you've finished Tier 5, browse [`portfolio/`](portfolio/README.md) as a
    reference you can keep using long after this repo.
 
 <h3 id="if-you-just-want-the-database-no-setup-at-all">If you just want the database, no setup at all</h3>

@@ -189,21 +189,23 @@ def parse_markdown_to_html(md_text, current_rel_dir="."):
 
 def parse_inline_markdown(text):
     """Converts inline markdown like bold, italics, code, and links."""
-    # Convert .md links to .html links
+    # Convert links FIRST so backticks inside link labels don't interfere with link regex
     def link_repl(m):
         label = m.group(1)
         url = m.group(2)
         new_url = convert_link_path(url)
-        return f'<a href="{new_url}">{label}</a>'
+        # Parse inline code/bold/italic inside the label
+        label_html = re.sub(r'`([^`]+)`', r'<code class="inline-code">\1</code>', label)
+        label_html = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', label_html)
+        label_html = re.sub(r'\*([^*]+)\*', r'<em>\1</em>', label_html)
+        return f'<a href="{new_url}">{label_html}</a>'
 
-    # Code
-    text = re.sub(r'`([^`]+)`', r'<code class="inline-code">\1</code>', text)
-    # Bold
-    text = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', text)
-    # Italic
-    text = re.sub(r'\*([^*]+)\*', r'<em>\1</em>', text)
-    # Links
+    # Process links first
     text = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', link_repl, text)
+    # Process remaining inline formatting
+    text = re.sub(r'`([^`]+)`', r'<code class="inline-code">\1</code>', text)
+    text = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', text)
+    text = re.sub(r'\*([^*]+)\*', r'<em>\1</em>', text)
     return text
 
 def convert_link_path(url):
@@ -212,6 +214,11 @@ def convert_link_path(url):
         return url
     if url.endswith('.md'):
         return url[:-3] + '.html'
+    if url.endswith('/'):
+        return url + 'README.html'
+    # Handle folder path without trailing slash
+    if not url.endswith(('.html', '.md', '.sql', '.py', '.db', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.txt', '.csv')):
+        return url + '/README.html'
     return url
 
 def process_file(file_path):
