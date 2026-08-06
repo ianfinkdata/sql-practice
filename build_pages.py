@@ -212,6 +212,17 @@ def convert_link_path(url):
     """Converts local markdown relative paths to html relative paths."""
     if url.startswith(('http://', 'https://', '#', 'mailto:')):
         return url
+    
+    # Map references to root README.md -> index.html
+    if url == 'README.md':
+        return 'index.html'
+    if url == '../README.md':
+        return '../index.html'
+    if url == '../../README.md':
+        return '../../index.html'
+    if url == '../../../README.md':
+        return '../../../index.html'
+
     if url.endswith('.md'):
         return url[:-3] + '.html'
     if url.endswith('/'):
