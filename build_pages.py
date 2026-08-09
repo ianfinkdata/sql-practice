@@ -90,7 +90,7 @@ def parse_markdown_to_html(md_text, current_rel_dir="."):
         # Convert links inside nav
         nav_content = re.sub(
             r'\[(.*?)\]\((.*?)\)',
-            lambda m: f'<a href="{convert_link_path(m.group(2))}" class="nav-btn">{m.group(1)}</a>',
+            lambda m: f'<a href="{convert_link_path(m.group(2), current_rel_dir)}" class="nav-btn">{m.group(1)}</a>',
             nav_content
         )
         # Split links separated by '|'
@@ -104,7 +104,7 @@ def parse_markdown_to_html(md_text, current_rel_dir="."):
     def convert_bluf_block(match):
         bluf_content = match.group(1).strip()
         # Parse inline markdown inside BLUF
-        bluf_content = parse_inline_markdown(bluf_content)
+        bluf_content = parse_inline_markdown(bluf_content, current_rel_dir)
         return f'<div class="bluf-card"><div class="bluf-badge">⚡ BLUF (Bottom Line Up Front)</div><div class="bluf-body">{bluf_content}</div></div>'
 
     md_text = re.sub(r'^\>\s*\*\*BLUF\s*\(Bottom Line Up Front\):\*\*\s*(.*(?:\n\>\s*.*)*)', convert_bluf_block, md_text, flags=re.MULTILINE)
@@ -124,7 +124,7 @@ def parse_markdown_to_html(md_text, current_rel_dir="."):
         bq = match.group(1).strip()
         lines = [line.lstrip('> ').strip() for line in bq.split('\n')]
         bq_content = "<br>".join(lines)
-        bq_content = parse_inline_markdown(bq_content)
+        bq_content = parse_inline_markdown(bq_content, current_rel_dir)
         return f'<blockquote class="custom-blockquote">{bq_content}</blockquote>'
 
     md_text = re.sub(r'(^\>.*(?:\n\>.*)*)', convert_blockquote, md_text, flags=re.MULTILINE)
@@ -143,10 +143,10 @@ def parse_markdown_to_html(md_text, current_rel_dir="."):
             cols = [c.strip() for c in line.strip('|').split('|')]
             rows.append(cols)
         
-        header_html = "".join([f'<th>{parse_inline_markdown(h)}</th>' for h in headers])
+        header_html = "".join([f'<th>{parse_inline_markdown(h, current_rel_dir)}</th>' for h in headers])
         rows_html = ""
         for r in rows:
-            cells_html = "".join([f'<td>{parse_inline_markdown(c)}</td>' for c in r])
+            cells_html = "".join([f'<td>{parse_inline_markdown(c, current_rel_dir)}</td>' for c in r])
             rows_html += f'<tr>{cells_html}</tr>'
         
         return f'<div class="table-container"><table class="styled-table"><thead><tr>{header_html}</tr></thead><tbody>{rows_html}</tbody></table></div>'
@@ -158,7 +158,7 @@ def parse_markdown_to_html(md_text, current_rel_dir="."):
         level = len(match.group(1))
         header_text = match.group(2).strip()
         header_id = re.sub(r'[^\w\-]', '', header_text.lower().replace(' ', '-'))
-        inline_html = parse_inline_markdown(header_text)
+        inline_html = parse_inline_markdown(header_text, current_rel_dir)
         return f'<h{level} id="{header_id}">{inline_html}</h{level}>'
 
     md_text = re.sub(r'^(#{1,6})\s+(.*)$', convert_headers, md_text, flags=re.MULTILINE)
@@ -167,7 +167,7 @@ def parse_markdown_to_html(md_text, current_rel_dir="."):
     def convert_lists(match):
         list_str = match.group(0).strip()
         items = re.findall(r'^\s*[\-\*]\s+(.*)$', list_str, flags=re.MULTILINE)
-        items_html = "".join([f'<li>{parse_inline_markdown(i)}</li>' for i in items])
+        items_html = "".join([f'<li>{parse_inline_markdown(i, current_rel_dir)}</li>' for i in items])
         return f'<ul class="styled-list">{items_html}</ul>'
 
     md_text = re.sub(r'(?:^\s*[\-\*]\s+.*$\n?)+', convert_lists, md_text, flags=re.MULTILINE)
@@ -183,17 +183,17 @@ def parse_markdown_to_html(md_text, current_rel_dir="."):
         elif block == '---':
             paragraphs.append('<hr class="divider">')
         else:
-            paragraphs.append(f'<p>{parse_inline_markdown(block)}</p>')
+            paragraphs.append(f'<p>{parse_inline_markdown(block, current_rel_dir)}</p>')
 
     return "\n\n".join(paragraphs)
 
-def parse_inline_markdown(text):
+def parse_inline_markdown(text, current_rel_dir="."):
     """Converts inline markdown like bold, italics, code, and links."""
     # Convert links FIRST so backticks inside link labels don't interfere with link regex
     def link_repl(m):
         label = m.group(1)
         url = m.group(2)
-        new_url = convert_link_path(url)
+        new_url = convert_link_path(url, current_rel_dir)
         # Parse inline code/bold/italic inside the label
         label_html = re.sub(r'`([^`]+)`', r'<code class="inline-code">\1</code>', label)
         label_html = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', label_html)
@@ -208,38 +208,50 @@ def parse_inline_markdown(text):
     text = re.sub(r'\*([^*]+)\*', r'<em>\1</em>', text)
     return text
 
-def convert_link_path(url):
+def convert_link_path(url, current_rel_dir="."):
     """Converts local markdown relative paths to html relative paths."""
     if url.startswith(('http://', 'https://', '#', 'mailto:')):
         return url
     
-    # Map references to root README.md -> index.html
-    if url in ('README.md', './README.md'):
-        return 'index.html'
-    if url == '../README.md':
-        return '../index.html'
-    if url == '../../README.md':
-        return '../../index.html'
-    if url == '../../../README.md':
-        return '../../../index.html'
+    anchor = ""
+    if '#' in url:
+        url_part, anchor_part = url.split('#', 1)
+        url = url_part
+        anchor = '#' + anchor_part
 
     # Map references starting with docs/ (written relative to root README.md)
     if url.startswith('docs/'):
         rel_docs = url[5:]  # Strip 'docs/'
         if rel_docs in ('index.html', 'README.md', 'index.md', ''):
-            return 'index.html'
+            return 'index.html' + anchor
         if rel_docs.endswith('.md'):
-            return rel_docs[:-3] + '.html'
-        return rel_docs
+            return rel_docs[:-3] + '.html' + anchor
+        return rel_docs + anchor
+
+    # Resolve target path relative to REPO_ROOT to check if it points to root README.md
+    clean_url = url.split('?')[0]
+    if clean_url:
+        try:
+            target_path = (REPO_ROOT / current_rel_dir / clean_url).resolve()
+            try:
+                rel_to_repo = target_path.relative_to(REPO_ROOT.resolve())
+                if rel_to_repo == Path("README.md"):
+                    dir_part = os.path.dirname(clean_url)
+                    new_clean = os.path.join(dir_part, 'index.html') if dir_part else 'index.html'
+                    return new_clean + anchor
+            except ValueError:
+                pass
+        except Exception:
+            pass
 
     if url.endswith('.md'):
-        return url[:-3] + '.html'
+        return url[:-3] + '.html' + anchor
     if url.endswith('/'):
-        return url + 'README.html'
+        return url + 'README.html' + anchor
     # Handle folder path without trailing slash
     if not url.endswith(('.html', '.md', '.sql', '.py', '.db', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.txt', '.csv')):
-        return url + '/README.html'
-    return url
+        return url + '/README.html' + anchor
+    return url + anchor
 
 def process_file(file_path):
     """Reads a markdown file and writes the rendered HTML file to docs/."""
