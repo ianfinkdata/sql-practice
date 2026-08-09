@@ -22,7 +22,10 @@ Created a dedicated directory structure for testing Power BI `.pbip` models, TMD
 - **[`pbip_poc/sql_queries/02_star_schema_model.sql`](file:///C:/Github/sql-practice/pbip_poc/sql_queries/02_star_schema_model.sql)**: Single SQL file containing 1 Fact table (`fact_sales`) + 4 Dimension tables (`dim_customer`, `dim_product`, `dim_employee`, `dim_date`).
 - **[`pbip_poc/projects/`](file:///C:/Github/sql-practice/pbip_poc/projects/)**: Destination directory for Power BI Desktop `.pbip` project folders.
 
-### 2. Core Conventions Established
+### 2. GitHub Pages Site Generator (`build_pages.py`)
+- **Dynamic Link Resolution Fix**: Updated `convert_link_path` to dynamically resolve markdown relative targets against the repository root (`REPO_ROOT`). Only references pointing to root `README.md` map to `index.html`, fixing 404 errors on subfolder README navigation links (e.g. `curriculum/00-orientation/README.html` -> `curriculum/README.html`).
+
+### 3. Core Conventions Established
 - **Single SQL File Per Model**: Keep model SQL consolidated in 1 `.sql` file with commented headers (`-- TABLE: table_name`) to prevent token bloat from parsing raw TMDL/PBIP metadata.
 - **Capped Row Counts**: Capped PoC query datasets to 100 rows for fast testing and small payloads.
 - **Git Strategy**: Committing directly to `main` for simple, streamlined progress without extra branch noise.
@@ -37,4 +40,4 @@ Created a dedicated directory structure for testing Power BI `.pbip` models, TMD
 
 ---
 
-*Last Updated: 2026-08-04 | Branch: `main`*
+*Last Updated: 2026-08-09 | Branch: `main`*
