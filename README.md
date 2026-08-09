@@ -1,6 +1,6 @@
 # SQL Practice
 
-> **BLUF (Bottom Line Up Front):** SQL Practice is a zero-dependency, self-paced curriculum (Beginner → Master) built around **Oakhaven**, a real 3-tier medallion SQLite pipeline (`bronze → silver → gold`) you can query directly or build deterministically with one command.
+> **BLUF (Bottom Line Up Front):** SQL Practice is a zero-dependency, self-paced curriculum (Beginner → Master) built around **Oakhaven**, a real 3-tier medallion SQLite pipeline (`bronze → silver → gold`) pre-built and committed as `project/oakhaven.db`. Clone and query directly in any SQLite GUI with zero setup.
 
 <!-- nav -->
 [📖 Table of Contents](README.md) | [⏭️ Next: Tier 0 Orientation](curriculum/00-orientation/README.md)
@@ -8,8 +8,7 @@
 
 > A complete, self-paced path from your very first `SELECT` to designing
 > warehouse-scale dimensional models — paired with a small, real
-> **bronze → silver → gold** SQLite project you generate yourself with
-> one command.
+> **bronze → silver → gold** SQLite database ready to query immediately.
 
 SQL Practice is built around one idea: **learning SQL should feel like a
 patient mentor sitting next to you**, not a reference manual dropped on
@@ -22,8 +21,7 @@ write. Everything here is either Markdown or SQLite — the kind of thing
 that runs the same on a laptop, in a CI runner, or handed to an AI
 assistant. The practice database, `project/oakhaven.db`, is committed
 to the repo — clone it and open the file directly in any SQLite GUI, no
-build step required. Prefer to generate it yourself? One command
-reproduces it byte-for-byte.
+build step required. (Want to generate it from scratch anyway? See the optional [Python Generation Guide](curriculum/00-orientation/03-tools-and-setup.md#building-the-database-yourself-optional).)
 
 ---
 
@@ -33,7 +31,7 @@ reproduces it byte-for-byte.
 |---|---|---|
 | **Curriculum** | Beginner → master, six tiers | `curriculum/` |
 | **Exercises** | Hands-on practice, tier-paired with the curriculum | `exercises/` |
-| **Applied project** | Oakhaven: a fictional retailer, modeled bronze → silver → gold, as one SQLite file you generate | `project/` |
+| **Applied project** | Oakhaven: a fictional retailer, modeled bronze → silver → gold as a ready-to-query SQLite database | `project/` |
 | **Portfolio** | A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact | `portfolio/` |
 | **AI assistant guide** | Tool-agnostic instructions for any AI helping in this repo | `AGENTS.md` |
 | **Web version** | Browsable GitHub Pages site | `docs/` (enable Pages on your fork, or browse the source directly) |
@@ -46,7 +44,7 @@ Six tiers, each building on the last:
 
 | Tier | Name | Focus |
 |---|---|---|
-| 0 | Orientation | What a database is, no code required; generating the practice database |
+| 0 | Orientation | What a database is, no code required; opening the practice database |
 | 1 | Beginner | Asking a database simple questions |
 | 2 | Intermediate | Combining tables, summarizing, cleaning messy real-world data |
 | 3 | Advanced | Window functions, CTEs, recursive CTEs, time intelligence — the medallion thread begins |
@@ -65,17 +63,9 @@ verified; nothing is invented.
 
 ## The applied project
 
-`project/` is **Oakhaven** — a small, fictional outdoor-gear
-retailer. You generate its database yourself, deterministically, with:
+`project/` is **Oakhaven** — a small, fictional outdoor-gear retailer modeled as a real 3-tier medallion SQLite database committed directly at `project/oakhaven.db`. You can open and query it immediately using any SQLite GUI or CLI without running any setup or build commands.
 
-```bash
-python3 -m venv .venv && source .venv/bin/activate   # see note below
-pip install -r project/requirements.txt
-python project/build.py
-```
-
-This produces `project/oakhaven.db` — a real medallion pipeline at a
-scale you can actually hold in your head:
+`project/oakhaven.db` contains a real medallion architecture at a scale you can hold in your head:
 
 - **Bronze** — five raw tables (`bronze_customers`, `bronze_products`,
   `bronze_employees`, `bronze_sales`, `bronze_calendar`), generated with
@@ -92,19 +82,12 @@ scale you can actually hold in your head:
   `agg_daily_sales`, including zero-order days via a date-spine join).
 
 Generation is fully deterministic (a fixed random seed and a pinned
-Faker version), so every learner's `oakhaven.db` is byte-identical —
-exercise answer keys stay valid no matter who runs the build, or
-whether they run it at all. The `.db` file itself **is committed** to
-the repo at `project/oakhaven.db`: clone and open it directly in a
-SQLite GUI, no setup needed. If you'd rather watch the pipeline run
-(or you're on Tier 0 and want the exercise), the command above
-reproduces it byte-for-byte.
+Faker version), so every learner's `oakhaven.db` is byte-identical. Because `project/oakhaven.db` is already committed to the repo, you don't need Python or any build step to get started.
 
-**Note on `pip install`:** modern Debian/Ubuntu systems refuse
-`pip install` outside a virtual environment with an
-`externally-managed-environment` error. Creating a venv first (as shown
-above) avoids this — see `curriculum/00-orientation/03-tools-and-setup.md`
-for the full walkthrough.
+> **Footnote: Regenerating the Database (Optional)**
+> If you want to watch the deterministic pipeline run from scratch or rebuild the dataset:
+> * **Python Instructions**: Follow the step-by-step [Python Database Generation Guide](curriculum/00-orientation/03-tools-and-setup.md#building-the-database-yourself-optional).
+> * **AI Assistant Skill (`setup-database`)**: If working with an AI coding assistant (like Claude Code or Antigravity), use the built-in [`setup-database` skill](https://github.com/ianfinkdata/sql-practice/tree/main/.claude/skills/setup-database) to automatically handle virtual environments, dependencies, and build verification.
 
 See `project/docs/data_dictionary.md` for the full schema and `project/docs/erd.md` for
 an entity-relationship diagram.
@@ -128,15 +111,14 @@ for building most medallion lakehouses."
 
 ### If you're learning on your own
 1. Read Orientation (`curriculum/00-orientation/`).
-   `oakhaven.db` is already sitting in `project/`, or
-   generate your own copy as the Tier 0 exercise.
+   `oakhaven.db` is already sitting in `project/` — open it in your SQL tool of choice.
 2. Work tier by tier. Each module ends with matching exercises.
-3. From Tier 3 on, query `project/` alongside the lesson.
+3. From Tier 3 on, query `project/oakhaven.db` alongside the lesson.
 4. Once you've finished Tier 5, browse `portfolio/` as a
    reference you can keep using long after this repo.
 
 ### If you just want the database, no setup at all
-No Python, no Claude Code, no CLI. Download or clone the repo, then
+No Python, no CLI. Download or clone the repo, then
 open `project/oakhaven.db` directly in DB Browser for SQLite or Beekeeper Studio and start
 querying against `exercises/` and `project/docs/data_dictionary.md`.
 
@@ -160,14 +142,14 @@ sql-practice/
 │   ├── 04-expert/
 │   └── 05-master/
 ├── exercises/                 ← practice prompts, tier-paired with the curriculum
-├── project/                   ← Oakhaven: generate a real bronze/silver/gold SQLite database
-│   ├── build.py                    ← the one command: python project/build.py
+├── project/                   ← Oakhaven: pre-built bronze/silver/gold SQLite database (project/oakhaven.db)
+│   ├── build.py               ← deterministic generator script (optional; see setup guide)
 │   ├── requirements.txt
-│   ├── build_lib/                  ← precooked Faker-based generators (no Python authorship needed)
-│   ├── bronze/  silver/  gold/     ← schema + view SQL, the actual "recipe" files
-│   └── docs/                       ← data dictionary, ERD, facts sheet, sqlite3 CLI guide
-├── portfolio/                  ← standalone, engine-agnostic medallion/star-schema pattern library
-└── docs/                       ← GitHub Pages site
+│   ├── build_lib/             ← precooked Faker-based generators
+│   ├── bronze/  silver/  gold/← schema + view SQL, the actual "recipe" files
+│   └── docs/                  ← data dictionary, ERD, facts sheet, sqlite3 CLI guide
+├── portfolio/                 ← standalone, engine-agnostic medallion/star-schema pattern library
+└── docs/                      ← GitHub Pages site
     ├── index.html
     ├── styles.css
     └── INSTRUCTIONS.md
