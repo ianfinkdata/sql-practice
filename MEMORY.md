@@ -25,7 +25,10 @@ Created a dedicated directory structure for testing Power BI `.pbip` models, TMD
 ### 2. GitHub Pages Site Generator (`build_pages.py`)
 - **Dynamic Link Resolution Fix**: Updated `convert_link_path` to dynamically resolve markdown relative targets against the repository root (`REPO_ROOT`). Only references pointing to root `README.md` map to `index.html`, fixing 404 errors on subfolder README navigation links (e.g. `curriculum/00-orientation/README.html` -> `curriculum/README.html`).
 
-### 3. Core Conventions Established
+### 3. Home Page & Documentation Adjustments
+- **Deprioritized Python Database Generation**: Rewrote [`README.md`](file:///home/ian/github/sql-practice/README.md) / [`docs/index.html`](file:///home/ian/github/sql-practice/docs/index.html) to emphasize that `project/oakhaven.db` is pre-built and ready to open with zero setup. Replaced inline bash generation blocks with a closing footnote linking to the [Python Database Generation Guide](curriculum/00-orientation/03-tools-and-setup.md#building-the-database-yourself-optional) and referencing the built-in [`setup-database`](.claude/skills/setup-database/SKILL.md) skill.
+
+### 4. Core Conventions Established
 - **Single SQL File Per Model**: Keep model SQL consolidated in 1 `.sql` file with commented headers (`-- TABLE: table_name`) to prevent token bloat from parsing raw TMDL/PBIP metadata.
 - **Capped Row Counts**: Capped PoC query datasets to 100 rows for fast testing and small payloads.
 - **Git Strategy**: Committing directly to `main` for simple, streamlined progress without extra branch noise.
