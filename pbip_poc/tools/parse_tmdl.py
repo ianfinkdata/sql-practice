@@ -117,39 +117,40 @@ def parse_m_data_source(partition_source):
         
     src_str = partition_source.replace("#(cr)#(lf)", "\n").replace("#(lf)", "\n")
     
+    raw_clean = src_str.strip('`').strip()
     # SQLite via Python Execute
     if "Python.Execute" in src_str and "sqlite3" in src_str:
         db_match = re.search(r'sqlite3\.connect\("(.*?)"\)', src_str)
         target = db_match.group(1) if db_match else "project/oakhaven.db"
-        return {"connector": "SQLite (Python Connector)", "target": target, "query_type": "Native SQL Pushdown"}
+        return {"connector": "SQLite (Python Connector)", "target": target, "query_type": "Native SQL Pushdown", "raw_m_code": raw_clean}
         
     # SQL Server
     if "Sql.Database" in src_str:
         srv_match = re.search(r'Sql\.Database\(\s*"([^"]+)"\s*,\s*"([^"]+)"', src_str)
         target = f"{srv_match.group(1)}.{srv_match.group(2)}" if srv_match else "SQL Server"
-        return {"connector": "Microsoft SQL Server", "target": target, "query_type": "Native SQL Query" if "Query=" in src_str else "Table Direct"}
+        return {"connector": "Microsoft SQL Server", "target": target, "query_type": "Native SQL Query" if "Query=" in src_str else "Table Direct", "raw_m_code": raw_clean}
 
     # Snowflake
     if "Snowflake.Databases" in src_str:
-        return {"connector": "Snowflake Data Warehouse", "target": "Snowflake Account", "query_type": "DirectQuery / Import"}
+        return {"connector": "Snowflake Data Warehouse", "target": "Snowflake Account", "query_type": "DirectQuery / Import", "raw_m_code": raw_clean}
 
     # OData / Web API
     if "OData.Feed" in src_str or "Web.Contents" in src_str:
         url_match = re.search(r'https?://[^\s"]+', src_str)
         target = url_match.group(0) if url_match else "Web REST API"
-        return {"connector": "Web REST API / OData", "target": target, "query_type": "JSON Feed"}
+        return {"connector": "Web REST API / OData", "target": target, "query_type": "JSON Feed", "raw_m_code": raw_clean}
 
     # Excel / CSV File
     if "Csv.Document" in src_str or "Excel.Workbook" in src_str:
         file_match = re.search(r'File\.Contents\(\s*"([^"]+)"', src_str)
         target = file_match.group(1) if file_match else "Flat File"
-        return {"connector": "File (CSV / Excel)", "target": target, "query_type": "File Import"}
+        return {"connector": "File (CSV / Excel)", "target": target, "query_type": "File Import", "raw_m_code": raw_clean}
 
     # Generic M string
     if "SELECT " in src_str.upper():
-        return {"connector": "Relational SQL Source", "target": "project/oakhaven.db", "query_type": "Native SQL Pushdown"}
+        return {"connector": "Relational SQL Source", "target": "project/oakhaven.db", "query_type": "Native SQL Pushdown", "raw_m_code": raw_clean}
 
-    return {"connector": "Power Query M Transformation", "target": "In-Memory", "query_type": "M Expression"}
+    return {"connector": "Power Query M Transformation", "target": "In-Memory", "query_type": "M Expression", "raw_m_code": raw_clean}
 
 
 def parse_m_transformation_steps(partition_source):
@@ -418,12 +419,14 @@ def generate_sql_ddl_and_catalogs(projects):
         "DROP TABLE IF EXISTS _tmdl_data_sources;",
         "DROP TABLE IF EXISTS _tmdl_m_steps;",
         "DROP TABLE IF EXISTS _tmdl_parameters;",
+        "DROP TABLE IF EXISTS _tmdl_advanced_editor;",
         "CREATE TABLE IF NOT EXISTS _tmdl_projects (project_name TEXT PRIMARY KEY, table_count INT, relationship_count INT, parameter_count INT);",
         "CREATE TABLE IF NOT EXISTS _tmdl_tables (project_name TEXT, table_name TEXT, lineage_tag TEXT, PRIMARY KEY (project_name, table_name));",
         "CREATE TABLE IF NOT EXISTS _tmdl_columns (project_name TEXT, table_name TEXT, column_name TEXT, data_type TEXT, summarize_by TEXT, source_column TEXT, description TEXT);",
         "CREATE TABLE IF NOT EXISTS _tmdl_measures (project_name TEXT, table_name TEXT, measure_name TEXT, expression TEXT, format_string TEXT, description TEXT);",
         "CREATE TABLE IF NOT EXISTS _tmdl_relationships (project_name TEXT, rel_name TEXT, from_table TEXT, from_column TEXT, to_table TEXT, to_column TEXT, cardinality TEXT);",
-        "CREATE TABLE IF NOT EXISTS _tmdl_data_sources (project_name TEXT, table_name TEXT, connector TEXT, connection_target TEXT, query_type TEXT);",
+        "CREATE TABLE IF NOT EXISTS _tmdl_data_sources (project_name TEXT, table_name TEXT, connector TEXT, connection_target TEXT, query_type TEXT, advanced_editor_script TEXT);",
+        "CREATE TABLE IF NOT EXISTS _tmdl_advanced_editor (project_name TEXT, table_name TEXT, advanced_editor_script TEXT, PRIMARY KEY (project_name, table_name));",
         "CREATE TABLE IF NOT EXISTS _tmdl_m_steps (project_name TEXT, table_name TEXT, step_index INT, step_name TEXT, step_type TEXT, code_snippet TEXT);",
         "CREATE TABLE IF NOT EXISTS _tmdl_parameters (project_name TEXT, param_name TEXT, data_type TEXT, default_value TEXT);\n"
     ]
@@ -447,9 +450,11 @@ def generate_sql_ddl_and_catalogs(projects):
             table_sql_name = f"tmdl_{clean_p_name}_{t_name}".replace(" ", "_").replace(".", "_").lower()
             sql_statements.append(f"INSERT OR REPLACE INTO _tmdl_tables VALUES ('{p_name}', '{t_name}', '{t['lineageTag']}');")
 
-            # Data Source Catalog Insert
+            # Data Source & Advanced Editor Catalog Inserts
             ds = t["dataSource"]
-            sql_statements.append(f"INSERT INTO _tmdl_data_sources VALUES ('{p_name}', '{t_name}', '{ds['connector']}', '{ds['target']}', '{ds['query_type']}');")
+            clean_raw_m = ds.get('raw_m_code', '').replace("'", "''")
+            sql_statements.append(f"INSERT INTO _tmdl_data_sources VALUES ('{p_name}', '{t_name}', '{ds['connector']}', '{ds['target']}', '{ds['query_type']}', '{clean_raw_m}');")
+            sql_statements.append(f"INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('{p_name}', '{t_name}', '{clean_raw_m}');")
 
             # M Steps Catalog Inserts
             for step in t["mSteps"]:

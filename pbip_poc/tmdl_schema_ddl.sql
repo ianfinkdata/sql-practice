@@ -11,12 +11,14 @@ DROP TABLE IF EXISTS _tmdl_relationships;
 DROP TABLE IF EXISTS _tmdl_data_sources;
 DROP TABLE IF EXISTS _tmdl_m_steps;
 DROP TABLE IF EXISTS _tmdl_parameters;
+DROP TABLE IF EXISTS _tmdl_advanced_editor;
 CREATE TABLE IF NOT EXISTS _tmdl_projects (project_name TEXT PRIMARY KEY, table_count INT, relationship_count INT, parameter_count INT);
 CREATE TABLE IF NOT EXISTS _tmdl_tables (project_name TEXT, table_name TEXT, lineage_tag TEXT, PRIMARY KEY (project_name, table_name));
 CREATE TABLE IF NOT EXISTS _tmdl_columns (project_name TEXT, table_name TEXT, column_name TEXT, data_type TEXT, summarize_by TEXT, source_column TEXT, description TEXT);
 CREATE TABLE IF NOT EXISTS _tmdl_measures (project_name TEXT, table_name TEXT, measure_name TEXT, expression TEXT, format_string TEXT, description TEXT);
 CREATE TABLE IF NOT EXISTS _tmdl_relationships (project_name TEXT, rel_name TEXT, from_table TEXT, from_column TEXT, to_table TEXT, to_column TEXT, cardinality TEXT);
-CREATE TABLE IF NOT EXISTS _tmdl_data_sources (project_name TEXT, table_name TEXT, connector TEXT, connection_target TEXT, query_type TEXT);
+CREATE TABLE IF NOT EXISTS _tmdl_data_sources (project_name TEXT, table_name TEXT, connector TEXT, connection_target TEXT, query_type TEXT, advanced_editor_script TEXT);
+CREATE TABLE IF NOT EXISTS _tmdl_advanced_editor (project_name TEXT, table_name TEXT, advanced_editor_script TEXT, PRIMARY KEY (project_name, table_name));
 CREATE TABLE IF NOT EXISTS _tmdl_m_steps (project_name TEXT, table_name TEXT, step_index INT, step_name TEXT, step_type TEXT, code_snippet TEXT);
 CREATE TABLE IF NOT EXISTS _tmdl_parameters (project_name TEXT, param_name TEXT, data_type TEXT, default_value TEXT);
 
@@ -29,7 +31,66 @@ INSERT INTO _tmdl_relationships VALUES ('duplicated oakhaven template', 'cdcabb5
 INSERT INTO _tmdl_relationships VALUES ('duplicated oakhaven template', 'dab805ef-d296-87a4-acb2-347f07dc4199', 'flat_sales_all', 'order_date', 'dim_calendar', 'date', 'one');
 INSERT INTO _tmdl_relationships VALUES ('duplicated oakhaven template', 'defc8ca4-33ee-19ab-d42b-240fcd45be3e', 'flat_sales_completed', 'order_date', 'dim_calendar', 'date', 'one');
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'dim_calendar', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'dim_calendar', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'dim_calendar', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -55,7 +116,60 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_dim_calendar (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'dim_customer', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_customer', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_customer', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    c.customer_id,
+    c.full_name,
+    c.email,
+    c.state,
+    c.customer_segment
+FROM dim_customer c
+WHERE c.customer_id IN (
+    SELECT customer_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'dim_customer', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    c.customer_id,
+    c.full_name,
+    c.email,
+    c.state,
+    c.customer_segment
+FROM dim_customer c
+WHERE c.customer_id IN (
+    SELECT customer_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'dim_customer', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -75,7 +189,58 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_dim_customer (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'dim_employee', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_employee', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_employee', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    e.employee_id,
+    e.full_name,
+    e.department,
+    e.region
+FROM dim_employee e
+WHERE e.employee_id IN (
+    SELECT employee_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'dim_employee', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    e.employee_id,
+    e.full_name,
+    e.department,
+    e.region
+FROM dim_employee e
+WHERE e.employee_id IN (
+    SELECT employee_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'dim_employee', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -93,7 +258,68 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_dim_employee (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'fact_sales', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'fact_sales', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'fact_sales', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.customer_id,
+    f.product_id,
+    f.employee_id,
+    f.datekey,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    f.net_amount,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'fact_sales', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.customer_id,
+    f.product_id,
+    f.employee_id,
+    f.datekey,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    f.net_amount,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'fact_sales', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -133,7 +359,32 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_fact_sales (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'flat_sales_all', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'flat_sales_all', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'flat_sales_all', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'flat_sales_all', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_all', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -163,7 +414,66 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_flat_sales_all (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(
+""""""SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = ''Completed''
+ORDER BY f.order_date DESC
+LIMIT 100;
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(
+""""""SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = ''Completed''
+ORDER BY f.order_date DESC
+LIMIT 100;
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_completed', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -196,7 +506,46 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_flat_sales_complete
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'sql_dim_customer', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_dim_customer', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_dim_customer', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    c.customer_id,
+    c.full_name,
+    c.email,
+    c.state,
+    c.customer_segment
+FROM dim_customer c
+WHERE c.customer_id IN (
+    SELECT customer_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'sql_dim_customer', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    c.customer_id,
+    c.full_name,
+    c.email,
+    c.state,
+    c.customer_segment
+FROM dim_customer c
+WHERE c.customer_id IN (
+    SELECT customer_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'sql_dim_customer', 1, 'Source', 'Source Ingestion', '"SELECT DISTINCT 
     c.customer_id');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'sql_dim_customer', 'sql_dim_customer', 'string', 'none', 'sql_dim_customer', 'Attribute column representing sql_dim_customer.');
@@ -205,7 +554,52 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_sql_dim_customer (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'sql_dim_date', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_dim_date', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_dim_date', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'sql_dim_date', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'sql_dim_date', 1, 'Source', 'Source Ingestion', '"SELECT DISTINCT 
     d.datekey');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'sql_dim_date', 'sql_dim_date', 'string', 'none', 'sql_dim_date', 'Attribute column representing sql_dim_date.');
@@ -214,7 +608,44 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_sql_dim_date (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'sql_dim_employee', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_dim_employee', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_dim_employee', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    e.employee_id,
+    e.full_name,
+    e.department,
+    e.region
+FROM dim_employee e
+WHERE e.employee_id IN (
+    SELECT employee_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'sql_dim_employee', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    e.employee_id,
+    e.full_name,
+    e.department,
+    e.region
+FROM dim_employee e
+WHERE e.employee_id IN (
+    SELECT employee_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'sql_dim_employee', 1, 'Source', 'Source Ingestion', '"SELECT DISTINCT 
     e.employee_id');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'sql_dim_employee', 'sql_dim_employee', 'string', 'none', 'sql_dim_employee', 'Attribute column representing sql_dim_employee.');
@@ -223,7 +654,50 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_sql_dim_employee (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'sql_dim_product', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_dim_product', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_dim_product', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    p.product_id,
+    p.product_name,
+    p.category,
+    p.subcategory,
+    p.brand,
+    p.unit_cost,
+    p.unit_price
+FROM dim_product p
+WHERE p.product_id IN (
+    SELECT product_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'sql_dim_product', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    p.product_id,
+    p.product_name,
+    p.category,
+    p.subcategory,
+    p.brand,
+    p.unit_cost,
+    p.unit_price
+FROM dim_product p
+WHERE p.product_id IN (
+    SELECT product_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'sql_dim_product', 1, 'Source', 'Source Ingestion', '"SELECT DISTINCT 
     p.product_id');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'sql_dim_product', 'sql_dim_product', 'string', 'none', 'sql_dim_product', 'Attribute column representing sql_dim_product.');
@@ -232,7 +706,54 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_sql_dim_product (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'sql_fact_sales', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_fact_sales', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_fact_sales', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.customer_id,
+    f.product_id,
+    f.employee_id,
+    f.datekey,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    f.net_amount,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'sql_fact_sales', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.customer_id,
+    f.product_id,
+    f.employee_id,
+    f.datekey,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    f.net_amount,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'sql_fact_sales', 1, 'Source', 'Source Ingestion', '"SELECT 
     f.order_id');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'sql_fact_sales', 'sql_fact_sales', 'string', 'none', 'sql_fact_sales', 'Attribute column representing sql_fact_sales.');
@@ -241,7 +762,88 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_sql_fact_sales (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'sql_flat_sales_all', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_flat_sales_all', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_flat_sales_all', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    c.customer_segment,
+    c.state AS customer_state,
+    p.product_name,
+    p.category AS product_category,
+    p.brand AS product_brand,
+    e.full_name AS sales_rep_name,
+    e.region AS sales_region,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    -- Embedded Business Logic #1: Gross Revenue
+    ROUND(f.quantity * f.unit_price, 2) AS gross_amount,
+    -- Embedded Business Logic #2: Net Revenue
+    f.net_amount,
+    -- Embedded Business Logic #3: Categorical Bucketing
+    CASE 
+        WHEN f.discount_pct >= 0.20 THEN ''High Discount (20%+)''
+        WHEN f.discount_pct > 0 THEN ''Standard Discount''
+        ELSE ''Full Price''
+    END AS discount_tier,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+LEFT JOIN dim_employee e ON f.employee_id = e.employee_id
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'sql_flat_sales_all', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    c.customer_segment,
+    c.state AS customer_state,
+    p.product_name,
+    p.category AS product_category,
+    p.brand AS product_brand,
+    e.full_name AS sales_rep_name,
+    e.region AS sales_region,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    -- Embedded Business Logic #1: Gross Revenue
+    ROUND(f.quantity * f.unit_price, 2) AS gross_amount,
+    -- Embedded Business Logic #2: Net Revenue
+    f.net_amount,
+    -- Embedded Business Logic #3: Categorical Bucketing
+    CASE 
+        WHEN f.discount_pct >= 0.20 THEN ''High Discount (20%+)''
+        WHEN f.discount_pct > 0 THEN ''Standard Discount''
+        ELSE ''Full Price''
+    END AS discount_tier,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+LEFT JOIN dim_employee e ON f.employee_id = e.employee_id
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'sql_flat_sales_all', 1, 'Source', 'Source Ingestion', '"SELECT 
     f.order_id');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'sql_flat_sales_all', 2, 'customer_id', 'Source Ingestion', 'c.customer_id
@@ -253,7 +855,52 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_sql_flat_sales_all 
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'sql_flat_sales_completed', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_flat_sales_completed', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'sql_flat_sales_completed', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = ''Completed''
+ORDER BY f.order_date DESC
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'sql_flat_sales_completed', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = ''Completed''
+ORDER BY f.order_date DESC
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'sql_flat_sales_completed', 1, 'Source', 'Source Ingestion', '"SELECT 
     f.order_id');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'sql_flat_sales_completed', 2, 'customer_id', 'Filter Transformation', 'c.customer_id
@@ -272,7 +919,66 @@ INSERT INTO _tmdl_relationships VALUES ('flat_sales_all', 'cdcabb57-8502-4d1c-1c
 INSERT INTO _tmdl_relationships VALUES ('flat_sales_all', 'dab805ef-d296-87a4-acb2-347f07dc4199', 'flat_sales_all', 'order_date', 'dim_calendar', 'date', 'one');
 INSERT INTO _tmdl_relationships VALUES ('flat_sales_all', '8defae2f-1aaf-a630-18a1-4f48a16e650a', 'fact_sales', 'order_id', 'flat_sales_all', 'order_id', 'one');
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_all', 'dim_calendar', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_all', 'dim_calendar', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'dim_calendar', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -298,7 +1004,58 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_all_dim_calendar (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_all', 'dim_employee', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'dim_employee', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'dim_employee', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    e.employee_id,
+    e.full_name,
+    e.department,
+    e.region
+FROM dim_employee e
+WHERE e.employee_id IN (
+    SELECT employee_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_all', 'dim_employee', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    e.employee_id,
+    e.full_name,
+    e.department,
+    e.region
+FROM dim_employee e
+WHERE e.employee_id IN (
+    SELECT employee_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'dim_employee', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -316,7 +1073,68 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_all_dim_employee (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_all', 'fact_sales', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'fact_sales', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'fact_sales', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.customer_id,
+    f.product_id,
+    f.employee_id,
+    f.datekey,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    f.net_amount,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_all', 'fact_sales', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.customer_id,
+    f.product_id,
+    f.employee_id,
+    f.datekey,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    f.net_amount,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'fact_sales', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -356,7 +1174,32 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_all_fact_sales (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_all', 'flat_sales_all', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'flat_sales_all', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'flat_sales_all', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_all', 'flat_sales_all', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'flat_sales_all', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -390,7 +1233,66 @@ INSERT OR REPLACE INTO _tmdl_projects VALUES ('flat_sales_completed', 7, 1, 1);
 INSERT INTO _tmdl_parameters VALUES ('flat_sales_completed', 'oakhavendatabasepath', 'Text', 'project/oakhaven.db');
 INSERT INTO _tmdl_relationships VALUES ('flat_sales_completed', 'defc8ca4-33ee-19ab-d42b-240fcd45be3e', 'flat_sales_completed', 'order_date', 'dim_calendar', 'date', 'one');
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'dim_calendar', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_completed', 'dim_calendar', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'dim_calendar', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -416,7 +1318,60 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_dim_calendar (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'dim_customer', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'dim_customer', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'dim_customer', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    c.customer_id,
+    c.full_name,
+    c.email,
+    c.state,
+    c.customer_segment
+FROM dim_customer c
+WHERE c.customer_id IN (
+    SELECT customer_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_completed', 'dim_customer', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    c.customer_id,
+    c.full_name,
+    c.email,
+    c.state,
+    c.customer_segment
+FROM dim_customer c
+WHERE c.customer_id IN (
+    SELECT customer_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'dim_customer', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -436,7 +1391,66 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_dim_customer (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'flat_sales_completed', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'flat_sales_completed', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'flat_sales_completed', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(
+""""""SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = ''Completed''
+ORDER BY f.order_date DESC
+LIMIT 100;
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_completed', 'flat_sales_completed', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(
+""""""SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = ''Completed''
+ORDER BY f.order_date DESC
+LIMIT 100;
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'flat_sales_completed', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -469,7 +1483,52 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_flat_sales_completed (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'sql_dim_date', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'sql_dim_date', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'sql_dim_date', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_completed', 'sql_dim_date', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'sql_dim_date', 1, 'Source', 'Source Ingestion', '"SELECT DISTINCT 
     d.datekey');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'sql_dim_date', 'sql_dim_date', 'string', 'none', 'sql_dim_date', 'Attribute column representing sql_dim_date.');
@@ -478,7 +1537,50 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_sql_dim_date (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'sql_dim_product', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'sql_dim_product', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'sql_dim_product', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    p.product_id,
+    p.product_name,
+    p.category,
+    p.subcategory,
+    p.brand,
+    p.unit_cost,
+    p.unit_price
+FROM dim_product p
+WHERE p.product_id IN (
+    SELECT product_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_completed', 'sql_dim_product', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    p.product_id,
+    p.product_name,
+    p.category,
+    p.subcategory,
+    p.brand,
+    p.unit_cost,
+    p.unit_price
+FROM dim_product p
+WHERE p.product_id IN (
+    SELECT product_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'sql_dim_product', 1, 'Source', 'Source Ingestion', '"SELECT DISTINCT 
     p.product_id');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'sql_dim_product', 'sql_dim_product', 'string', 'none', 'sql_dim_product', 'Attribute column representing sql_dim_product.');
@@ -487,7 +1589,88 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_sql_dim_product (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'sql_flat_sales_all', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'sql_flat_sales_all', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'sql_flat_sales_all', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    c.customer_segment,
+    c.state AS customer_state,
+    p.product_name,
+    p.category AS product_category,
+    p.brand AS product_brand,
+    e.full_name AS sales_rep_name,
+    e.region AS sales_region,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    -- Embedded Business Logic #1: Gross Revenue
+    ROUND(f.quantity * f.unit_price, 2) AS gross_amount,
+    -- Embedded Business Logic #2: Net Revenue
+    f.net_amount,
+    -- Embedded Business Logic #3: Categorical Bucketing
+    CASE 
+        WHEN f.discount_pct >= 0.20 THEN ''High Discount (20%+)''
+        WHEN f.discount_pct > 0 THEN ''Standard Discount''
+        ELSE ''Full Price''
+    END AS discount_tier,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+LEFT JOIN dim_employee e ON f.employee_id = e.employee_id
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_completed', 'sql_flat_sales_all', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    c.customer_segment,
+    c.state AS customer_state,
+    p.product_name,
+    p.category AS product_category,
+    p.brand AS product_brand,
+    e.full_name AS sales_rep_name,
+    e.region AS sales_region,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    -- Embedded Business Logic #1: Gross Revenue
+    ROUND(f.quantity * f.unit_price, 2) AS gross_amount,
+    -- Embedded Business Logic #2: Net Revenue
+    f.net_amount,
+    -- Embedded Business Logic #3: Categorical Bucketing
+    CASE 
+        WHEN f.discount_pct >= 0.20 THEN ''High Discount (20%+)''
+        WHEN f.discount_pct > 0 THEN ''Standard Discount''
+        ELSE ''Full Price''
+    END AS discount_tier,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+LEFT JOIN dim_employee e ON f.employee_id = e.employee_id
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'sql_flat_sales_all', 1, 'Source', 'Source Ingestion', '"SELECT 
     f.order_id');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'sql_flat_sales_all', 2, 'customer_id', 'Source Ingestion', 'c.customer_id
@@ -499,7 +1682,52 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_sql_flat_sales_all (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'sql_flat_sales_completed', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'sql_flat_sales_completed', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'sql_flat_sales_completed', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = ''Completed''
+ORDER BY f.order_date DESC
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_completed', 'sql_flat_sales_completed', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = ''Completed''
+ORDER BY f.order_date DESC
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'sql_flat_sales_completed', 1, 'Source', 'Source Ingestion', '"SELECT 
     f.order_id');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'sql_flat_sales_completed', 2, 'customer_id', 'Filter Transformation', 'c.customer_id
@@ -519,7 +1747,66 @@ INSERT INTO _tmdl_relationships VALUES ('oakhaven template', 'cdcabb57-8502-4d1c
 INSERT INTO _tmdl_relationships VALUES ('oakhaven template', 'dab805ef-d296-87a4-acb2-347f07dc4199', 'flat_sales_all', 'order_date', 'dim_calendar', 'date', 'one');
 INSERT INTO _tmdl_relationships VALUES ('oakhaven template', 'defc8ca4-33ee-19ab-d42b-240fcd45be3e', 'flat_sales_completed', 'order_date', 'dim_calendar', 'date', 'one');
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'dim_calendar', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'dim_calendar', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'dim_calendar', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -545,7 +1832,60 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_dim_calendar (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'dim_customer', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_customer', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_customer', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    c.customer_id,
+    c.full_name,
+    c.email,
+    c.state,
+    c.customer_segment
+FROM dim_customer c
+WHERE c.customer_id IN (
+    SELECT customer_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'dim_customer', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    c.customer_id,
+    c.full_name,
+    c.email,
+    c.state,
+    c.customer_segment
+FROM dim_customer c
+WHERE c.customer_id IN (
+    SELECT customer_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'dim_customer', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -565,7 +1905,58 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_dim_customer (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'dim_employee', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_employee', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_employee', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    e.employee_id,
+    e.full_name,
+    e.department,
+    e.region
+FROM dim_employee e
+WHERE e.employee_id IN (
+    SELECT employee_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'dim_employee', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT DISTINCT 
+    e.employee_id,
+    e.full_name,
+    e.department,
+    e.region
+FROM dim_employee e
+WHERE e.employee_id IN (
+    SELECT employee_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'dim_employee', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -583,7 +1974,68 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_dim_employee (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'fact_sales', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'fact_sales', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'fact_sales', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.customer_id,
+    f.product_id,
+    f.employee_id,
+    f.datekey,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    f.net_amount,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'fact_sales', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""""""
+SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.customer_id,
+    f.product_id,
+    f.employee_id,
+    f.datekey,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    f.net_amount,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'fact_sales', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -623,7 +2075,32 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_fact_sales (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'flat_sales_all', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'flat_sales_all', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'flat_sales_all', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'flat_sales_all', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_all', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -653,7 +2130,66 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_flat_sales_all (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'flat_sales_completed', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'flat_sales_completed', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'flat_sales_completed', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(
+""""""SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = ''Completed''
+ORDER BY f.order_date DESC
+LIMIT 100;
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'flat_sales_completed', 'mode: import
+source = ```
+let
+Source = Python.Execute("import sqlite3
+import pandas as pd
+import matplotlib as mpl
+
+conn = sqlite3.connect(""project/oakhaven.db"")
+df = pd.read_sql_query(
+""""""SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = ''Completed''
+ORDER BY f.order_date DESC
+LIMIT 100;
+"""""", conn)
+conn.close()"),
+DataTable = Source{[Name="df"]}[Value]
+in
+DataTable');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_completed', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -686,7 +2222,46 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_flat_sales_completed (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'sql_dim_customer', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_dim_customer', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_dim_customer', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    c.customer_id,
+    c.full_name,
+    c.email,
+    c.state,
+    c.customer_segment
+FROM dim_customer c
+WHERE c.customer_id IN (
+    SELECT customer_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'sql_dim_customer', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    c.customer_id,
+    c.full_name,
+    c.email,
+    c.state,
+    c.customer_segment
+FROM dim_customer c
+WHERE c.customer_id IN (
+    SELECT customer_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'sql_dim_customer', 1, 'Source', 'Source Ingestion', '"SELECT DISTINCT 
     c.customer_id');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'sql_dim_customer', 'sql_dim_customer', 'string', 'none', 'sql_dim_customer', 'Attribute column representing sql_dim_customer.');
@@ -695,7 +2270,52 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_sql_dim_customer (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'sql_dim_date', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_dim_date', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_dim_date', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'sql_dim_date', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    d.datekey,
+    d.date,
+    d.year,
+    d.month,
+    d.month_name,
+    d.quarter,
+    d.day_name,
+    d.is_weekend
+FROM dim_date d
+WHERE d.datekey IN (
+    SELECT datekey 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'sql_dim_date', 1, 'Source', 'Source Ingestion', '"SELECT DISTINCT 
     d.datekey');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'sql_dim_date', 'sql_dim_date', 'string', 'none', 'sql_dim_date', 'Attribute column representing sql_dim_date.');
@@ -704,7 +2324,44 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_sql_dim_date (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'sql_dim_employee', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_dim_employee', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_dim_employee', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    e.employee_id,
+    e.full_name,
+    e.department,
+    e.region
+FROM dim_employee e
+WHERE e.employee_id IN (
+    SELECT employee_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'sql_dim_employee', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    e.employee_id,
+    e.full_name,
+    e.department,
+    e.region
+FROM dim_employee e
+WHERE e.employee_id IN (
+    SELECT employee_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'sql_dim_employee', 1, 'Source', 'Source Ingestion', '"SELECT DISTINCT 
     e.employee_id');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'sql_dim_employee', 'sql_dim_employee', 'string', 'none', 'sql_dim_employee', 'Attribute column representing sql_dim_employee.');
@@ -713,7 +2370,50 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_sql_dim_employee (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'sql_dim_product', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_dim_product', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_dim_product', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    p.product_id,
+    p.product_name,
+    p.category,
+    p.subcategory,
+    p.brand,
+    p.unit_cost,
+    p.unit_price
+FROM dim_product p
+WHERE p.product_id IN (
+    SELECT product_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'sql_dim_product', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT DISTINCT 
+    p.product_id,
+    p.product_name,
+    p.category,
+    p.subcategory,
+    p.brand,
+    p.unit_cost,
+    p.unit_price
+FROM dim_product p
+WHERE p.product_id IN (
+    SELECT product_id 
+    FROM fact_sales 
+    ORDER BY order_date DESC, order_id, order_line_id 
+    LIMIT 100
+);"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'sql_dim_product', 1, 'Source', 'Source Ingestion', '"SELECT DISTINCT 
     p.product_id');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'sql_dim_product', 'sql_dim_product', 'string', 'none', 'sql_dim_product', 'Attribute column representing sql_dim_product.');
@@ -722,7 +2422,54 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_sql_dim_product (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'sql_fact_sales', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_fact_sales', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_fact_sales', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.customer_id,
+    f.product_id,
+    f.employee_id,
+    f.datekey,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    f.net_amount,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'sql_fact_sales', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.customer_id,
+    f.product_id,
+    f.employee_id,
+    f.datekey,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    f.net_amount,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'sql_fact_sales', 1, 'Source', 'Source Ingestion', '"SELECT 
     f.order_id');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'sql_fact_sales', 'sql_fact_sales', 'string', 'none', 'sql_fact_sales', 'Attribute column representing sql_fact_sales.');
@@ -731,7 +2478,88 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_sql_fact_sales (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'sql_flat_sales_all', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_flat_sales_all', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_flat_sales_all', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    c.customer_segment,
+    c.state AS customer_state,
+    p.product_name,
+    p.category AS product_category,
+    p.brand AS product_brand,
+    e.full_name AS sales_rep_name,
+    e.region AS sales_region,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    -- Embedded Business Logic #1: Gross Revenue
+    ROUND(f.quantity * f.unit_price, 2) AS gross_amount,
+    -- Embedded Business Logic #2: Net Revenue
+    f.net_amount,
+    -- Embedded Business Logic #3: Categorical Bucketing
+    CASE 
+        WHEN f.discount_pct >= 0.20 THEN ''High Discount (20%+)''
+        WHEN f.discount_pct > 0 THEN ''Standard Discount''
+        ELSE ''Full Price''
+    END AS discount_tier,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+LEFT JOIN dim_employee e ON f.employee_id = e.employee_id
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'sql_flat_sales_all', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    c.customer_segment,
+    c.state AS customer_state,
+    p.product_name,
+    p.category AS product_category,
+    p.brand AS product_brand,
+    e.full_name AS sales_rep_name,
+    e.region AS sales_region,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    -- Embedded Business Logic #1: Gross Revenue
+    ROUND(f.quantity * f.unit_price, 2) AS gross_amount,
+    -- Embedded Business Logic #2: Net Revenue
+    f.net_amount,
+    -- Embedded Business Logic #3: Categorical Bucketing
+    CASE 
+        WHEN f.discount_pct >= 0.20 THEN ''High Discount (20%+)''
+        WHEN f.discount_pct > 0 THEN ''Standard Discount''
+        ELSE ''Full Price''
+    END AS discount_tier,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+LEFT JOIN dim_employee e ON f.employee_id = e.employee_id
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'sql_flat_sales_all', 1, 'Source', 'Source Ingestion', '"SELECT 
     f.order_id');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'sql_flat_sales_all', 2, 'customer_id', 'Source Ingestion', 'c.customer_id
@@ -743,7 +2571,52 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_sql_flat_sales_all (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'sql_flat_sales_completed', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_flat_sales_completed', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'sql_flat_sales_completed', 'Relational SQL Source', 'project/oakhaven.db', 'Native SQL Pushdown', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = ''Completed''
+ORDER BY f.order_date DESC
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'sql_flat_sales_completed', 'mode: import
+queryGroup: ''sql queries''
+source =
+let
+Source = "SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = ''Completed''
+ORDER BY f.order_date DESC
+LIMIT 100;"
+in
+Source
+changedProperty = IsHidden');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'sql_flat_sales_completed', 1, 'Source', 'Source Ingestion', '"SELECT 
     f.order_id');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'sql_flat_sales_completed', 2, 'customer_id', 'Filter Transformation', 'c.customer_id

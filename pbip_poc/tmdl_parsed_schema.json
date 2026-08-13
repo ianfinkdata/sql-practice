@@ -88,7 +88,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -155,7 +156,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    c.customer_id,\n    c.full_name,\n    c.email,\n    c.state,\n    c.customer_segment\nFROM dim_customer c\nWHERE c.customer_id IN (\n    SELECT customer_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -213,7 +215,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -352,7 +355,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -461,7 +465,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -570,7 +575,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\n\"\"\"\"\"\"SELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    p.product_name,\n    p.category AS product_category,\n    f.quantity,\n    f.net_amount,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Completed'\nORDER BY f.order_date DESC\nLIMIT 100;\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -613,7 +619,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT DISTINCT \n    c.customer_id,\n    c.full_name,\n    c.email,\n    c.state,\n    c.customer_segment\nFROM dim_customer c\nWHERE c.customer_id IN (\n    SELECT customer_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -644,7 +651,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -675,7 +683,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -706,7 +715,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT DISTINCT \n    p.product_id,\n    p.product_name,\n    p.category,\n    p.subcategory,\n    p.brand,\n    p.unit_cost,\n    p.unit_price\nFROM dim_product p\nWHERE p.product_id IN (\n    SELECT product_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -737,7 +747,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -768,7 +779,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    c.customer_segment,\n    c.state AS customer_state,\n    p.product_name,\n    p.category AS product_category,\n    p.brand AS product_brand,\n    e.full_name AS sales_rep_name,\n    e.region AS sales_region,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    -- Embedded Business Logic #1: Gross Revenue\n    ROUND(f.quantity * f.unit_price, 2) AS gross_amount,\n    -- Embedded Business Logic #2: Net Revenue\n    f.net_amount,\n    -- Embedded Business Logic #3: Categorical Bucketing\n    CASE \n        WHEN f.discount_pct >= 0.20 THEN 'High Discount (20%+)'\n        WHEN f.discount_pct > 0 THEN 'Standard Discount'\n        ELSE 'Full Price'\n    END AS discount_tier,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nLEFT JOIN dim_employee e ON f.employee_id = e.employee_id\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -805,7 +817,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    p.product_name,\n    p.category AS product_category,\n    f.quantity,\n    f.net_amount,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Completed'\nORDER BY f.order_date DESC\nLIMIT 100;\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -968,7 +981,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -1026,7 +1040,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -1165,7 +1180,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -1274,7 +1290,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -1428,7 +1445,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -1495,7 +1513,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    c.customer_id,\n    c.full_name,\n    c.email,\n    c.state,\n    c.customer_segment\nFROM dim_customer c\nWHERE c.customer_id IN (\n    SELECT customer_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -1598,7 +1617,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\n\"\"\"\"\"\"SELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    p.product_name,\n    p.category AS product_category,\n    f.quantity,\n    f.net_amount,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Completed'\nORDER BY f.order_date DESC\nLIMIT 100;\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -1641,7 +1661,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -1672,7 +1693,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT DISTINCT \n    p.product_id,\n    p.product_name,\n    p.category,\n    p.subcategory,\n    p.brand,\n    p.unit_cost,\n    p.unit_price\nFROM dim_product p\nWHERE p.product_id IN (\n    SELECT product_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -1703,7 +1725,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    c.customer_segment,\n    c.state AS customer_state,\n    p.product_name,\n    p.category AS product_category,\n    p.brand AS product_brand,\n    e.full_name AS sales_rep_name,\n    e.region AS sales_region,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    -- Embedded Business Logic #1: Gross Revenue\n    ROUND(f.quantity * f.unit_price, 2) AS gross_amount,\n    -- Embedded Business Logic #2: Net Revenue\n    f.net_amount,\n    -- Embedded Business Logic #3: Categorical Bucketing\n    CASE \n        WHEN f.discount_pct >= 0.20 THEN 'High Discount (20%+)'\n        WHEN f.discount_pct > 0 THEN 'Standard Discount'\n        ELSE 'Full Price'\n    END AS discount_tier,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nLEFT JOIN dim_employee e ON f.employee_id = e.employee_id\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -1740,7 +1763,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    p.product_name,\n    p.category AS product_category,\n    f.quantity,\n    f.net_amount,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Completed'\nORDER BY f.order_date DESC\nLIMIT 100;\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -1867,7 +1891,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -1934,7 +1959,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    c.customer_id,\n    c.full_name,\n    c.email,\n    c.state,\n    c.customer_segment\nFROM dim_customer c\nWHERE c.customer_id IN (\n    SELECT customer_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -1992,7 +2018,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -2131,7 +2158,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -2240,7 +2268,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -2349,7 +2378,8 @@
         "dataSource": {
           "connector": "SQLite (Python Connector)",
           "target": "\"project/oakhaven.db\"",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\n\"\"\"\"\"\"SELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    p.product_name,\n    p.category AS product_category,\n    f.quantity,\n    f.net_amount,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Completed'\nORDER BY f.order_date DESC\nLIMIT 100;\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
         },
         "mSteps": [
           {
@@ -2392,7 +2422,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT DISTINCT \n    c.customer_id,\n    c.full_name,\n    c.email,\n    c.state,\n    c.customer_segment\nFROM dim_customer c\nWHERE c.customer_id IN (\n    SELECT customer_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -2423,7 +2454,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -2454,7 +2486,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -2485,7 +2518,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT DISTINCT \n    p.product_id,\n    p.product_name,\n    p.category,\n    p.subcategory,\n    p.brand,\n    p.unit_cost,\n    p.unit_price\nFROM dim_product p\nWHERE p.product_id IN (\n    SELECT product_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -2516,7 +2550,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -2547,7 +2582,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    c.customer_segment,\n    c.state AS customer_state,\n    p.product_name,\n    p.category AS product_category,\n    p.brand AS product_brand,\n    e.full_name AS sales_rep_name,\n    e.region AS sales_region,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    -- Embedded Business Logic #1: Gross Revenue\n    ROUND(f.quantity * f.unit_price, 2) AS gross_amount,\n    -- Embedded Business Logic #2: Net Revenue\n    f.net_amount,\n    -- Embedded Business Logic #3: Categorical Bucketing\n    CASE \n        WHEN f.discount_pct >= 0.20 THEN 'High Discount (20%+)'\n        WHEN f.discount_pct > 0 THEN 'Standard Discount'\n        ELSE 'Full Price'\n    END AS discount_tier,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nLEFT JOIN dim_employee e ON f.employee_id = e.employee_id\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
@@ -2584,7 +2620,8 @@
         "dataSource": {
           "connector": "Relational SQL Source",
           "target": "project/oakhaven.db",
-          "query_type": "Native SQL Pushdown"
+          "query_type": "Native SQL Pushdown",
+          "raw_m_code": "mode: import\nqueryGroup: 'sql queries'\nsource =\nlet\nSource = \"SELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    p.product_name,\n    p.category AS product_category,\n    f.quantity,\n    f.net_amount,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Completed'\nORDER BY f.order_date DESC\nLIMIT 100;\"\nin\nSource\nchangedProperty = IsHidden"
         },
         "mSteps": [
           {
