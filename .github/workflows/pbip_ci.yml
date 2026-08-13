@@ -24,18 +24,22 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f project/requirements.txt ]; then pip install -r project/requirements.txt; fi
 
-      - name: Build / Verify Medallion Database
+      - name: Build & Verify Medallion Database
         run: |
           python project/build.py
 
-      - name: Run PBIP TMDL Linter & Path Sanitizer
+      - name: Run PBIP TMDL Linter (Path Dependencies & Syntax Check)
         run: |
-          python pbip_poc/tools/pbip_linter.py --fix
+          python pbip_poc/tools/pbip_linter.py
 
       - name: Verify End-to-End Pipeline Lineage
         run: |
           python pbip_poc/tools/pipeline_lineage.py
 
-      - name: Check for Uncommitted Path Sanitization Changes
+      - name: Test TMDL AST Parser & Schema DDL Compiler
         run: |
-          git diff --exit-code || (echo "⚠️ TMDL files contain un-sanitized paths! Run pbip_linter.py --fix locally." && exit 1)
+          python pbip_poc/tools/parse_tmdl.py --test-db
+
+      - name: Test TMDL to SQL View Pushdown Compiler
+        run: |
+          python pbip_poc/tools/pbip_to_db.py --test-db

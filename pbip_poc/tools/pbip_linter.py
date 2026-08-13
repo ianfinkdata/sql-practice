@@ -75,6 +75,10 @@ def run_linter(fix_paths=False):
         print(f"  • Paths Auto-Sanitized    : {fixed_count}")
     print("------------------------------------------------------------------")
 
+    if issues_count > 0 and not fix_paths:
+        print(f"❌ [LINT FAILED] Found {issues_count} un-sanitized Windows paths! Run 'python pbip_poc/tools/pbip_linter.py --fix' locally.")
+        sys.exit(1)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="TMDL Linter & Path Sanitizer for Linux")
     parser.add_argument("--fix", action="store_true", help="Automatically fix hardcoded Windows paths in TMDL files")
