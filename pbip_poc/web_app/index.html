@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +9,33 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
+      /* Light Mode Default */
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-card: #ffffff;
+      --bg-header: rgba(255, 255, 255, 0.85);
+      --bg-node: #f1f5f9;
+      --border-color: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --accent-blue: #0284c7;
+      --accent-green: #059669;
+      --accent-purple: #7c3aed;
+      --accent-amber: #d97706;
+      --accent-rose: #e11d48;
+      --code-bg: #0f172a;
+      --code-text: #f8fafc;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    :root[data-theme="dark"] {
+      /* Dark Mode Override */
       --bg-primary: #0f172a;
       --bg-secondary: #1e293b;
       --bg-card: #182234;
+      --bg-header: rgba(30, 41, 59, 0.85);
+      --bg-node: rgba(15, 23, 42, 0.7);
       --border-color: #334155;
       --text-primary: #f8fafc;
       --text-secondary: #94a3b8;
@@ -20,8 +44,8 @@
       --accent-purple: #c084fc;
       --accent-amber: #fbbf24;
       --accent-rose: #fb7185;
-      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      --code-bg: #090d16;
+      --code-text: #e2e8f0;
     }
 
     * {
@@ -40,7 +64,7 @@
 
     /* Top Navigation Header */
     .app-header {
-      background: rgba(30, 41, 59, 0.8);
+      background: var(--bg-header);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-color);
       position: sticky;
@@ -50,6 +74,24 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    .theme-toggle-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 0.45rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle-btn:hover {
+      background: var(--border-color);
     }
 
     .brand {
@@ -249,7 +291,7 @@
     }
 
     .node-item {
-      background: rgba(15, 23, 42, 0.7);
+      background: var(--bg-node);
       border: 1px solid var(--border-color);
       border-radius: 6px;
       padding: 0.75rem;
@@ -298,13 +340,13 @@
 
     /* SQL Code Viewer */
     .code-box {
-      background: #090d16;
+      background: var(--code-bg);
       border: 1px solid var(--border-color);
       border-radius: 8px;
       padding: 1.25rem;
       font-family: var(--font-mono);
       font-size: 0.875rem;
-      color: #e2e8f0;
+      color: var(--code-text);
       overflow-x: auto;
       white-space: pre;
     }
@@ -330,13 +372,16 @@
       <span class="brand-icon">⚡</span>
       <span class="brand-title">Oakhaven Pipeline & PBIP Explorer</span>
     </div>
-    <nav class="nav-tabs">
-      <button class="tab-btn active" onclick="switchTab('dag')">🔄 Medallion DAG</button>
-      <button class="tab-btn" onclick="switchTab('tmdl')">📐 TMDL Models</button>
-      <button class="tab-btn" onclick="switchTab('pushdown')">🗄️ Database Pushdown</button>
-      <button class="tab-btn" onclick="switchTab('comparator')">⚖️ Paradigm Comparator</button>
-      <button class="tab-btn" onclick="switchTab('sandbox')">💻 SQL Sandbox</button>
-    </nav>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('dag')">🔄 Medallion DAG</button>
+        <button class="tab-btn" onclick="switchTab('tmdl')">📐 TMDL Models</button>
+        <button class="tab-btn" onclick="switchTab('pushdown')">🗄️ Database Pushdown</button>
+        <button class="tab-btn" onclick="switchTab('comparator')">⚖️ Paradigm Comparator</button>
+        <button class="tab-btn" onclick="switchTab('sandbox')">💻 SQL Sandbox</button>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+    </div>
   </header>
 
   <!-- Main Content -->
@@ -605,6 +650,20 @@ LIMIT 100;
       
       event.target.classList.add('active');
       document.getElementById('tab-' + tabId).classList.add('active');
+    }
+
+    // Theme Switcher Script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    if (toggleBtn) {
+      toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+      toggleBtn.addEventListener('click', () => {
+        const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+      });
     }
   </script>
 </body>
