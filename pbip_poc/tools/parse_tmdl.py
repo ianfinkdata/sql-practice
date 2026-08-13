@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """
-parse_tmdl.py - TMDL Metadata AST Parser, Schema Compiler & Description Enricher
+parse_tmdl.py - TMDL Metadata AST Parser, M Code Data Source & Lineage Compiler
 
-Parses Power BI TMDL (.tmdl) language syntax (tables, columns, data types, 
-measures, relationships, partitions) and enriches all columns and measures with
-verified, business-ready descriptions from the Oakhaven Data Dictionary.
+Parses Power BI TMDL (.tmdl) syntax, extracts deep Data Source Connectors,
+M Code transformation steps (let...in), parameters, and populates database catalogs.
 """
 
 import os
@@ -24,7 +23,6 @@ PROJECT_DDL_FILE = REPO_ROOT / "project" / "tmdl_schema.sql"
 
 # Official Oakhaven Business Descriptions for Columns & Measures
 COLUMN_DESCRIPTIONS = {
-    # Customer Dimension
     "customer_id": "Unique sequential identifier (1..600) for each customer.",
     "first_name": "Customer given name.",
     "last_name": "Customer family surname.",
@@ -38,7 +36,6 @@ COLUMN_DESCRIPTIONS = {
     "is_active": "Boolean status indicator (1 = Active account, 0 = Inactive/Closed).",
     "customer_segment": "Market segment classification (Retail, Wholesale, VIP).",
 
-    # Product Dimension
     "product_id": "Unique surrogate key (1..150) identifying each merchandise item.",
     "product_name": "Catalog description and product title.",
     "category": "High-level merchandise category (e.g. Footwear, Apparel, Climbing).",
@@ -54,7 +51,6 @@ COLUMN_DESCRIPTIONS = {
     "weight_kg": "Product package shipping weight in kilograms.",
     "created_at": "Timestamp when product was added to catalog.",
 
-    # Employee Dimension
     "employee_id": "Unique employee identification number (1..35).",
     "sales_rep_name": "Full name of the assigned sales representative.",
     "department": "Company department (Sales, Support, Warehouse, Management).",
@@ -64,7 +60,6 @@ COLUMN_DESCRIPTIONS = {
     "termination_date": "Date of departure (NULL for currently active staff).",
     "is_manager": "Flag indicating supervisory or management status.",
 
-    # Date / Calendar Dimension
     "datekey": "Integer surrogate key in YYYYMMDD format for date joins.",
     "date": "Standard ISO 8601 calendar date (YYYY-MM-DD).",
     "order_date": "Transaction date on which order was placed.",
@@ -78,7 +73,6 @@ COLUMN_DESCRIPTIONS = {
     "day_name": "Full English day name (e.g. Monday, Tuesday).",
     "is_weekend": "Boolean flag indicating Saturday or Sunday (1 = Weekend, 0 = Weekday).",
 
-    # Sales Fact Table
     "order_id": "Unique sales order transaction header identifier.",
     "order_line_id": "Line item sequence number (1..N) within an order.",
     "quantity": "Number of units purchased in order line.",
@@ -103,7 +97,6 @@ MEASURE_DESCRIPTIONS = {
     "Overall Discount Rate": "Weighted average discount percentage across all order lines."
 }
 
-# Map Power BI TMDL Data Types ➔ SQL Column Data Types
 TMDL_TO_SQL_TYPES = {
     "string": "TEXT",
     "int64": "INTEGER",
@@ -117,8 +110,91 @@ TMDL_TO_SQL_TYPES = {
 }
 
 
+def parse_m_data_source(partition_source):
+    """Parses a Power Query M partition expression to classify the Data Source & Connector."""
+    if not partition_source:
+        return {"connector": "Unknown", "target": "N/A", "query_type": "None"}
+        
+    src_str = partition_source.replace("#(cr)#(lf)", "\n").replace("#(lf)", "\n")
+    
+    # SQLite via Python Execute
+    if "Python.Execute" in src_str and "sqlite3" in src_str:
+        db_match = re.search(r'sqlite3\.connect\("(.*?)"\)', src_str)
+        target = db_match.group(1) if db_match else "project/oakhaven.db"
+        return {"connector": "SQLite (Python Connector)", "target": target, "query_type": "Native SQL Pushdown"}
+        
+    # SQL Server
+    if "Sql.Database" in src_str:
+        srv_match = re.search(r'Sql\.Database\(\s*"([^"]+)"\s*,\s*"([^"]+)"', src_str)
+        target = f"{srv_match.group(1)}.{srv_match.group(2)}" if srv_match else "SQL Server"
+        return {"connector": "Microsoft SQL Server", "target": target, "query_type": "Native SQL Query" if "Query=" in src_str else "Table Direct"}
+
+    # Snowflake
+    if "Snowflake.Databases" in src_str:
+        return {"connector": "Snowflake Data Warehouse", "target": "Snowflake Account", "query_type": "DirectQuery / Import"}
+
+    # OData / Web API
+    if "OData.Feed" in src_str or "Web.Contents" in src_str:
+        url_match = re.search(r'https?://[^\s"]+', src_str)
+        target = url_match.group(0) if url_match else "Web REST API"
+        return {"connector": "Web REST API / OData", "target": target, "query_type": "JSON Feed"}
+
+    # Excel / CSV File
+    if "Csv.Document" in src_str or "Excel.Workbook" in src_str:
+        file_match = re.search(r'File\.Contents\(\s*"([^"]+)"', src_str)
+        target = file_match.group(1) if file_match else "Flat File"
+        return {"connector": "File (CSV / Excel)", "target": target, "query_type": "File Import"}
+
+    # Generic M string
+    if "SELECT " in src_str.upper():
+        return {"connector": "Relational SQL Source", "target": "project/oakhaven.db", "query_type": "Native SQL Pushdown"}
+
+    return {"connector": "Power Query M Transformation", "target": "In-Memory", "query_type": "M Expression"}
+
+
+def parse_m_transformation_steps(partition_source):
+    """Parses let...in blocks in Power Query M to extract individual transformation steps."""
+    if not partition_source:
+        return []
+        
+    src_str = partition_source.replace("#(cr)#(lf)", "\n").replace("#(lf)", "\n")
+    
+    # Extract lines between let and in
+    steps = []
+    let_match = re.search(r'let\s+(.*?)\s+in\s+', src_str, re.DOTALL | re.IGNORECASE)
+    if let_match:
+        body = let_match.group(1)
+        # Split on step assignments (e.g. StepName = Expression)
+        raw_steps = re.findall(r'(#"[^"]+"|[a-zA-Z0-9_]+)\s*=\s*(.*?)(?=,\s*\n|,\s*#|,\s*[a-zA-Z0-9_]+\s*=|,\s*//|\s*$)', body, re.DOTALL)
+        
+        for idx, (s_name, s_code) in enumerate(raw_steps, 1):
+            clean_name = s_name.strip('#"').strip()
+            clean_code = s_code.strip()[:100] + "..." if len(s_code.strip()) > 100 else s_code.strip()
+            
+            step_type = "Source Ingestion"
+            if "Filter" in clean_code or "SelectRows" in clean_code or "WHERE" in clean_code.upper():
+                step_type = "Filter Transformation"
+            elif "Join" in clean_code or "Merge" in clean_code:
+                step_type = "Table Join / Merge"
+            elif "Rename" in clean_code:
+                step_type = "Column Rename"
+            elif "Group" in clean_code:
+                step_type = "Aggregation / Group By"
+            elif "AddColumn" in clean_code:
+                step_type = "Add Calculated Column"
+
+            steps.append({
+                "step_index": idx,
+                "step_name": clean_name,
+                "step_type": step_type,
+                "code_snippet": clean_code
+            })
+            
+    return steps
+
+
 def parse_tmdl_table_file(tmdl_path):
-    """Parses a table .tmdl file into a structured dictionary with enriched descriptions."""
+    """Parses a table .tmdl file into a structured dictionary with enriched metadata & M lineage."""
     lines = tmdl_path.read_text(encoding="utf-8", errors="replace").splitlines()
     
     table_data = {
@@ -127,12 +203,16 @@ def parse_tmdl_table_file(tmdl_path):
         "lineageTag": None,
         "columns": [],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": None,
+        "mSteps": []
     }
     
     current_object = None
     current_col = None
     current_measure = None
+    raw_partition_code = []
+    in_partition = False
     
     for line in lines:
         stripped = line.strip()
@@ -144,9 +224,22 @@ def parse_tmdl_table_file(tmdl_path):
             table_data["name"] = t_match.group(1)
             current_object = "table"
             continue
+
+        p_match = re.match(r"^partition\s+(.+?)\s*=\s*(.+)$", stripped)
+        if p_match:
+            in_partition = True
+            current_object = "partition"
+            continue
             
+        if in_partition:
+            if stripped.startswith("annotation") or stripped.startswith("table ") or stripped.startswith("column "):
+                in_partition = False
+            else:
+                raw_partition_code.append(stripped)
+
         c_match = re.match(r"^column\s+(.+)$", stripped)
         if c_match:
+            in_partition = False
             col_name = c_match.group(1).strip()
             desc = COLUMN_DESCRIPTIONS.get(col_name.lower(), f"Attribute column representing {col_name}.")
             current_col = {
@@ -164,6 +257,7 @@ def parse_tmdl_table_file(tmdl_path):
             
         m_match = re.match(r"^measure\s+(.+?)\s*=\s*(.+)$", stripped)
         if m_match:
+            in_partition = False
             m_name = m_match.group(1).strip()
             m_expr = m_match.group(2).strip()
             m_desc = MEASURE_DESCRIPTIONS.get(m_name, f"Calculated metric for {m_name}.")
@@ -187,21 +281,38 @@ def parse_tmdl_table_file(tmdl_path):
                 current_col["summarizeBy"] = stripped.split(":", 1)[1].strip()
             elif stripped.startswith("lineageTag:"):
                 current_col["lineageTag"] = stripped.split(":", 1)[1].strip()
-            elif stripped.startswith("description:"):
-                current_col["description"] = stripped.split(":", 1)[1].strip().strip('"')
 
         if current_object == "measure" and current_measure:
             if stripped.startswith("formatString:"):
                 current_measure["formatString"] = stripped.split(":", 1)[1].strip()
             elif stripped.startswith("lineageTag:"):
                 current_measure["lineageTag"] = stripped.split(":", 1)[1].strip()
-            elif stripped.startswith("description:"):
-                current_measure["description"] = stripped.split(":", 1)[1].strip().strip('"')
-                
-        if current_object == "table" and stripped.startswith("lineageTag:"):
-            table_data["lineageTag"] = stripped.split(":", 1)[1].strip()
+
+    # Parse partition source & lineage
+    partition_text = "\n".join(raw_partition_code)
+    table_data["dataSource"] = parse_m_data_source(partition_text)
+    table_data["mSteps"] = parse_m_transformation_steps(partition_text)
 
     return table_data
+
+
+def parse_tmdl_expressions_file(expr_path):
+    """Parses definition/expressions.tmdl to extract parameters and data source connections."""
+    lines = expr_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    parameters = []
+    
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("expression "):
+            p_match = re.match(r"^expression\s+([^\s=]+)\s*=\s*\"([^\"]+)\"", stripped)
+            if p_match:
+                parameters.append({
+                    "name": p_match.group(1),
+                    "type": "Text",
+                    "defaultValue": p_match.group(2),
+                    "isParameter": True
+                })
+    return parameters
 
 
 def parse_tmdl_relationships_file(rel_path):
@@ -240,22 +351,15 @@ def parse_tmdl_relationships_file(rel_path):
                 parts = val.split(".", 1)
                 current_rel["toTable"] = parts[0]
                 current_rel["toColumn"] = parts[1] if len(parts) > 1 else parts[0]
-            elif stripped.startswith("crossFilteringBehavior:"):
-                current_rel["crossFilteringBehavior"] = stripped.split(":", 1)[1].strip()
-            elif stripped.startswith("toCardinality:"):
-                current_rel["toCardinality"] = stripped.split(":", 1)[1].strip()
                 
     return relationships
 
 
 def parse_all_projects():
-    """Recursively scans pbip_poc/projects/ and builds an enriched TMDL AST."""
+    """Recursively scans pbip_poc/projects/ and builds a complete TMDL AST with M Data Source Lineage."""
     print("==================================================================")
-    print("  PBIP TMDL METADATA PARSER & DESCRIPTION ENRICHER ENGINE")
+    print("  PBIP TMDL AST PARSER & M CODE DATA SOURCE LINEAGE ENGINE")
     print("==================================================================")
-    print(f"Projects Folder : {PROJECTS_DIR}")
-    print(f"Target JSON     : {OUTPUT_JSON_FILE}")
-    print(f"Target DDL SQL  : {OUTPUT_DDL_FILE}\n")
 
     projects = {}
 
@@ -266,6 +370,7 @@ def parse_all_projects():
         project_name = project_dir.name
         tables = []
         relationships = []
+        parameters = []
         
         table_files = list(project_dir.rglob("definition/tables/*.tmdl"))
         for t_file in sorted(table_files):
@@ -276,77 +381,92 @@ def parse_all_projects():
         for r_file in rel_files:
             r_data = parse_tmdl_relationships_file(r_file)
             relationships.extend(r_data)
+
+        expr_files = list(project_dir.rglob("definition/expressions.tmdl"))
+        for e_file in expr_files:
+            p_data = parse_tmdl_expressions_file(e_file)
+            parameters.extend(p_data)
             
         projects[project_name] = {
             "name": project_name,
             "tableCount": len(tables),
             "relationshipCount": len(relationships),
+            "parameterCount": len(parameters),
             "tables": tables,
-            "relationships": relationships
+            "relationships": relationships,
+            "parameters": parameters
         }
 
     OUTPUT_JSON_FILE.write_text(json.dumps(projects, indent=2), encoding="utf-8")
-    print(f"✅ Exported enriched TMDL AST to JSON: {OUTPUT_JSON_FILE}")
+    print(f"✅ Exported enriched TMDL AST with M Data Sources to JSON: {OUTPUT_JSON_FILE}")
 
     return projects
 
 
 def generate_sql_ddl_and_catalogs(projects):
-    """Generates SQL CREATE TABLE statements + metadata catalog tables with descriptions."""
+    """Generates SQL CREATE TABLE statements + Data Source & M Step metadata catalog tables."""
     sql_statements = [
         "-- =============================================================================",
-        "-- AUTOMATICALLY GENERATED DDL & ENRICHED CATALOG FROM POWER BI TMDL METADATA",
+        "-- AUTOMATICALLY GENERATED DDL & METADATA CATALOG FROM POWER BI TMDL & M METADATA",
         "-- Generated by: pbip_poc/tools/parse_tmdl.py",
         "-- =============================================================================\n",
-        "-- -----------------------------------------------------------------------------",
-        "-- 1. ENRICHED DATABASE METADATA CATALOG TABLES WITH DESCRIPTIONS",
-        "-- -----------------------------------------------------------------------------",
-        "CREATE TABLE IF NOT EXISTS _tmdl_projects (project_name TEXT PRIMARY KEY, table_count INT, relationship_count INT);",
+        "DROP TABLE IF EXISTS _tmdl_projects;",
+        "DROP TABLE IF EXISTS _tmdl_tables;",
+        "DROP TABLE IF EXISTS _tmdl_columns;",
+        "DROP TABLE IF EXISTS _tmdl_measures;",
+        "DROP TABLE IF EXISTS _tmdl_relationships;",
+        "DROP TABLE IF EXISTS _tmdl_data_sources;",
+        "DROP TABLE IF EXISTS _tmdl_m_steps;",
+        "DROP TABLE IF EXISTS _tmdl_parameters;",
+        "CREATE TABLE IF NOT EXISTS _tmdl_projects (project_name TEXT PRIMARY KEY, table_count INT, relationship_count INT, parameter_count INT);",
         "CREATE TABLE IF NOT EXISTS _tmdl_tables (project_name TEXT, table_name TEXT, lineage_tag TEXT, PRIMARY KEY (project_name, table_name));",
         "CREATE TABLE IF NOT EXISTS _tmdl_columns (project_name TEXT, table_name TEXT, column_name TEXT, data_type TEXT, summarize_by TEXT, source_column TEXT, description TEXT);",
         "CREATE TABLE IF NOT EXISTS _tmdl_measures (project_name TEXT, table_name TEXT, measure_name TEXT, expression TEXT, format_string TEXT, description TEXT);",
-        "CREATE TABLE IF NOT EXISTS _tmdl_relationships (project_name TEXT, rel_name TEXT, from_table TEXT, from_column TEXT, to_table TEXT, to_column TEXT, cardinality TEXT);\n"
+        "CREATE TABLE IF NOT EXISTS _tmdl_relationships (project_name TEXT, rel_name TEXT, from_table TEXT, from_column TEXT, to_table TEXT, to_column TEXT, cardinality TEXT);",
+        "CREATE TABLE IF NOT EXISTS _tmdl_data_sources (project_name TEXT, table_name TEXT, connector TEXT, connection_target TEXT, query_type TEXT);",
+        "CREATE TABLE IF NOT EXISTS _tmdl_m_steps (project_name TEXT, table_name TEXT, step_index INT, step_name TEXT, step_type TEXT, code_snippet TEXT);",
+        "CREATE TABLE IF NOT EXISTS _tmdl_parameters (project_name TEXT, param_name TEXT, data_type TEXT, default_value TEXT);\n"
     ]
 
     for p_name, p_data in projects.items():
         clean_p_name = p_name.replace(" ", "_").replace(".", "_").lower()
-        sql_statements.append(f"-- -----------------------------------------------------------------------------")
         sql_statements.append(f"-- PROJECT: {p_name}")
-        sql_statements.append(f"-- -----------------------------------------------------------------------------")
-        
-        sql_statements.append(f"INSERT OR REPLACE INTO _tmdl_projects VALUES ('{p_name}', {p_data['tableCount']}, {p_data['relationshipCount']});")
+        sql_statements.append(f"INSERT OR REPLACE INTO _tmdl_projects VALUES ('{p_name}', {p_data['tableCount']}, {p_data['relationshipCount']}, {p_data['parameterCount']});")
+
+        for param in p_data["parameters"]:
+            sql_statements.append(f"INSERT INTO _tmdl_parameters VALUES ('{p_name}', '{param['name']}', '{param['type']}', '{param['defaultValue']}');")
 
         rel_fk_map = {}
         for r in p_data["relationships"]:
             if r["fromTable"] and r["toTable"]:
                 rel_fk_map.setdefault(r["fromTable"], []).append(r)
-                
-            sql_statements.append(
-                f"INSERT INTO _tmdl_relationships VALUES ('{p_name}', '{r['name']}', '{r['fromTable']}', '{r['fromColumn']}', '{r['toTable']}', '{r['toColumn']}', '{r['toCardinality']}');"
-            )
+            sql_statements.append(f"INSERT INTO _tmdl_relationships VALUES ('{p_name}', '{r['name']}', '{r['fromTable']}', '{r['fromColumn']}', '{r['toTable']}', '{r['toColumn']}', '{r['toCardinality']}');")
 
         for t in p_data["tables"]:
             t_name = t["name"]
             table_sql_name = f"tmdl_{clean_p_name}_{t_name}".replace(" ", "_").replace(".", "_").lower()
-            
             sql_statements.append(f"INSERT OR REPLACE INTO _tmdl_tables VALUES ('{p_name}', '{t_name}', '{t['lineageTag']}');")
-            
+
+            # Data Source Catalog Insert
+            ds = t["dataSource"]
+            sql_statements.append(f"INSERT INTO _tmdl_data_sources VALUES ('{p_name}', '{t_name}', '{ds['connector']}', '{ds['target']}', '{ds['query_type']}');")
+
+            # M Steps Catalog Inserts
+            for step in t["mSteps"]:
+                clean_code = step["code_snippet"].replace("'", "''")
+                sql_statements.append(f"INSERT INTO _tmdl_m_steps VALUES ('{p_name}', '{t_name}', {step['step_index']}, '{step['step_name']}', '{step['step_type']}', '{clean_code}');")
+
             col_definitions = []
             for c in t["columns"]:
                 sql_type = TMDL_TO_SQL_TYPES.get(c["dataType"].lower(), "TEXT")
                 col_definitions.append(f"    {c['name']} {sql_type}")
-                
                 clean_desc = c['description'].replace("'", "''")
-                sql_statements.append(
-                    f"INSERT INTO _tmdl_columns VALUES ('{p_name}', '{t_name}', '{c['name']}', '{c['dataType']}', '{c['summarizeBy']}', '{c['sourceColumn']}', '{clean_desc}');"
-                )
+                sql_statements.append(f"INSERT INTO _tmdl_columns VALUES ('{p_name}', '{t_name}', '{c['name']}', '{c['dataType']}', '{c['summarizeBy']}', '{c['sourceColumn']}', '{clean_desc}');")
 
             for m in t["measures"]:
                 clean_expr = m["expression"].replace("'", "''")
                 clean_m_desc = m["description"].replace("'", "''")
-                sql_statements.append(
-                    f"INSERT INTO _tmdl_measures VALUES ('{p_name}', '{t_name}', '{m['name']}', '{clean_expr}', '{m['formatString']}', '{clean_m_desc}');"
-                )
+                sql_statements.append(f"INSERT INTO _tmdl_measures VALUES ('{p_name}', '{t_name}', '{m['name']}', '{clean_expr}', '{m['formatString']}', '{clean_m_desc}');")
 
             if t_name in rel_fk_map:
                 for r in rel_fk_map[t_name]:
@@ -359,7 +479,7 @@ def generate_sql_ddl_and_catalogs(projects):
     full_sql = "\n".join(sql_statements)
     OUTPUT_DDL_FILE.write_text(full_sql, encoding="utf-8")
     PROJECT_DDL_FILE.write_text(full_sql, encoding="utf-8")
-    print(f"✅ Exported TMDL DDL & Enriched Catalog SQL to: {PROJECT_DDL_FILE}")
+    print(f"✅ Exported DDL & Data Source Catalogs to: {PROJECT_DDL_FILE}")
 
     return full_sql
 
@@ -374,31 +494,26 @@ def test_push_to_db(full_sql, target_db_path):
     cursor = conn.cursor()
     
     print("\n------------------------------------------------------------------")
-    print(f"Executing Enriched TMDL DDL & Catalog Creation against ({target_db}):")
+    print(f"Executing TMDL DDL & M Data Source Catalog Creation against ({target_db}):")
     print("------------------------------------------------------------------")
 
     try:
         cursor.executescript(full_sql)
         conn.commit()
         
-        cursor.execute("SELECT count(*) FROM _tmdl_projects;")
-        proj_cnt = cursor.fetchone()[0]
+        cursor.execute("SELECT count(*) FROM _tmdl_data_sources;")
+        ds_cnt = cursor.fetchone()[0]
         
-        cursor.execute("SELECT count(*) FROM _tmdl_tables;")
-        tbl_cnt = cursor.fetchone()[0]
-        
-        cursor.execute("SELECT count(*) FROM _tmdl_columns WHERE description IS NOT NULL;")
-        col_cnt = cursor.fetchone()[0]
+        cursor.execute("SELECT count(*) FROM _tmdl_m_steps;")
+        step_cnt = cursor.fetchone()[0]
 
-        cursor.execute("SELECT count(*) FROM _tmdl_relationships;")
-        rel_cnt = cursor.fetchone()[0]
+        cursor.execute("SELECT count(*) FROM _tmdl_parameters;")
+        param_cnt = cursor.fetchone()[0]
 
-        print(f"  ✅ [SUCCESS] Enriched TMDL Schema Pushed to Database!")
-        print(f"     • Database Target           : {target_db.resolve()}")
-        print(f"     • Projects Registered       : {proj_cnt}")
-        print(f"     • Tables Created            : {tbl_cnt}")
-        print(f"     • Columns Described         : {col_cnt}")
-        print(f"     • Relationships Mapped      : {rel_cnt}")
+        print(f"  ✅ [SUCCESS] TMDL & M Lineage Catalogs Pushed to Database!")
+        print(f"     • Data Sources Cataloged    : {ds_cnt}")
+        print(f"     • M Code Steps Tracked      : {step_cnt}")
+        print(f"     • Parameters Registered     : {param_cnt}")
     except Exception as e:
         print(f"  ❌ [DDL ERROR]: {e}")
         
@@ -407,9 +522,9 @@ def test_push_to_db(full_sql, target_db_path):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Parse TMDL schema and generate enriched SQL DDL & Catalog tables")
-    parser.add_argument("--test-db", action="store_true", help="Execute DDL & Catalog inserts against scratch DB (/tmp/scratch_tmdl_schema.db)")
-    parser.add_argument("--db-path", type=str, help="Specify custom target SQLite database file to write tables and metadata catalog into")
+    parser = argparse.ArgumentParser(description="Parse TMDL & M Data Sources into Database Catalogs")
+    parser.add_argument("--test-db", action="store_true", help="Execute DDL & Catalog inserts against scratch DB")
+    parser.add_argument("--db-path", type=str, help="Specify custom target SQLite database file")
     args = parser.parse_args()
 
     projects = parse_all_projects()
@@ -419,4 +534,3 @@ if __name__ == "__main__":
         test_push_to_db(full_sql, args.db_path)
     elif args.test_db:
         test_push_to_db(full_sql, "/tmp/scratch_tmdl_schema.db")
-

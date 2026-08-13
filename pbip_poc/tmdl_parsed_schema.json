@@ -3,11 +3,12 @@
     "name": "duplicated oakhaven template",
     "tableCount": 13,
     "relationshipCount": 5,
+    "parameterCount": 1,
     "tables": [
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_calendar.tmdl",
         "name": "dim_calendar",
-        "lineageTag": "79ef8b5a-6d15-45c7-b623-d5bc95056c91",
+        "lineageTag": null,
         "columns": [
           {
             "name": "datekey",
@@ -83,12 +84,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_customer.tmdl",
         "name": "dim_customer",
-        "lineageTag": "1ace2605-f91c-4dba-a17c-16b7d1afa4b1",
+        "lineageTag": null,
         "columns": [
           {
             "name": "customer_id",
@@ -137,12 +151,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_employee.tmdl",
         "name": "dim_employee",
-        "lineageTag": "43d7354d-c14a-4ab6-ac47-3e5506aec046",
+        "lineageTag": null,
         "columns": [
           {
             "name": "employee_id",
@@ -182,12 +209,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/fact_sales.tmdl",
         "name": "fact_sales",
-        "lineageTag": "a1840420-f3ab-469d-9219-ef364479ba4c",
+        "lineageTag": null,
         "columns": [
           {
             "name": "order_id",
@@ -308,12 +348,31 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          },
+          {
+            "step_index": 2,
+            "step_name": "DataTable",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Source{[Name=\"df\"]}[Value]"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/flat_sales_all.tmdl",
         "name": "flat_sales_all",
-        "lineageTag": "3ead40b5-967c-42a6-8b3a-70b6eed40bea",
+        "lineageTag": null,
         "columns": [
           {
             "name": "order_id",
@@ -398,12 +457,31 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          },
+          {
+            "step_index": 2,
+            "step_name": "DataTable",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Source{[Name=\"df\"]}[Value]"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/flat_sales_completed.tmdl",
         "name": "flat_sales_completed",
-        "lineageTag": "b6be6beb-29f1-48a5-81c0-625157189e89",
+        "lineageTag": null,
         "columns": [
           {
             "name": "order_id",
@@ -488,12 +566,37 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          },
+          {
+            "step_index": 2,
+            "step_name": "customer_id",
+            "step_type": "Filter Transformation",
+            "code_snippet": "c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Complet..."
+          },
+          {
+            "step_index": 3,
+            "step_name": "DataTable",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Source{[Name=\"df\"]}[Value]"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_customer.tmdl",
         "name": "sql_dim_customer",
-        "lineageTag": "60157a56-9e5c-44e3-afe2-a1d8596c4810",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_dim_customer",
@@ -506,12 +609,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT DISTINCT \n    c.customer_id"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_date.tmdl",
         "name": "sql_dim_date",
-        "lineageTag": "e90299e8-e196-4d64-af85-6922f6c9c57b",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_dim_date",
@@ -524,12 +640,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT DISTINCT \n    d.datekey"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_employee.tmdl",
         "name": "sql_dim_employee",
-        "lineageTag": "40290057-dafc-4a1a-b105-70828199df3c",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_dim_employee",
@@ -542,12 +671,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT DISTINCT \n    e.employee_id"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_product.tmdl",
         "name": "sql_dim_product",
-        "lineageTag": "5beec82b-4127-4513-be49-058477e6370a",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_dim_product",
@@ -560,12 +702,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT DISTINCT \n    p.product_id"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_fact_sales.tmdl",
         "name": "sql_fact_sales",
-        "lineageTag": "3aaa36e0-22c9-499d-8643-e01165b98cf4",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_fact_sales",
@@ -578,12 +733,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT \n    f.order_id"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_flat_sales_all.tmdl",
         "name": "sql_flat_sales_all",
-        "lineageTag": "efd15e42-7d83-4bca-b6a3-646d48ab884b",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_flat_sales_all",
@@ -596,12 +764,31 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT \n    f.order_id"
+          },
+          {
+            "step_index": 2,
+            "step_name": "customer_id",
+            "step_type": "Source Ingestion",
+            "code_snippet": "c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nLEFT JOIN dim_employee e ON f.e..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl",
         "name": "sql_flat_sales_completed",
-        "lineageTag": "7751f11b-efde-485d-9bdc-b92557dcf54d",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_flat_sales_completed",
@@ -614,7 +801,26 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT \n    f.order_id"
+          },
+          {
+            "step_index": 2,
+            "step_name": "customer_id",
+            "step_type": "Filter Transformation",
+            "code_snippet": "c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Complet..."
+          }
+        ]
       }
     ],
     "relationships": [
@@ -663,17 +869,26 @@
         "crossFilteringBehavior": "single",
         "toCardinality": "one"
       }
+    ],
+    "parameters": [
+      {
+        "name": "oakhavendatabasepath",
+        "type": "Text",
+        "defaultValue": "project/oakhaven.db",
+        "isParameter": true
+      }
     ]
   },
   "flat_sales_all": {
     "name": "flat_sales_all",
     "tableCount": 4,
     "relationshipCount": 4,
+    "parameterCount": 1,
     "tables": [
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/dim_calendar.tmdl",
         "name": "dim_calendar",
-        "lineageTag": "79ef8b5a-6d15-45c7-b623-d5bc95056c91",
+        "lineageTag": null,
         "columns": [
           {
             "name": "datekey",
@@ -749,12 +964,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/dim_employee.tmdl",
         "name": "dim_employee",
-        "lineageTag": "43d7354d-c14a-4ab6-ac47-3e5506aec046",
+        "lineageTag": null,
         "columns": [
           {
             "name": "employee_id",
@@ -794,12 +1022,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/fact_sales.tmdl",
         "name": "fact_sales",
-        "lineageTag": "a1840420-f3ab-469d-9219-ef364479ba4c",
+        "lineageTag": null,
         "columns": [
           {
             "name": "order_id",
@@ -920,12 +1161,31 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          },
+          {
+            "step_index": 2,
+            "step_name": "DataTable",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Source{[Name=\"df\"]}[Value]"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/flat_sales_all.tmdl",
         "name": "flat_sales_all",
-        "lineageTag": "3ead40b5-967c-42a6-8b3a-70b6eed40bea",
+        "lineageTag": null,
         "columns": [
           {
             "name": "order_id",
@@ -1010,7 +1270,26 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          },
+          {
+            "step_index": 2,
+            "step_name": "DataTable",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Source{[Name=\"df\"]}[Value]"
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1047,8 +1326,16 @@
         "fromColumn": "order_id",
         "toTable": "flat_sales_all",
         "toColumn": "order_id",
-        "crossFilteringBehavior": "bothDirections",
-        "toCardinality": "many"
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      }
+    ],
+    "parameters": [
+      {
+        "name": "oakhavendatabasepath",
+        "type": "Text",
+        "defaultValue": "project/oakhaven.db",
+        "isParameter": true
       }
     ]
   },
@@ -1056,11 +1343,12 @@
     "name": "flat_sales_completed",
     "tableCount": 7,
     "relationshipCount": 1,
+    "parameterCount": 1,
     "tables": [
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/dim_calendar.tmdl",
         "name": "dim_calendar",
-        "lineageTag": "79ef8b5a-6d15-45c7-b623-d5bc95056c91",
+        "lineageTag": null,
         "columns": [
           {
             "name": "datekey",
@@ -1136,12 +1424,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/dim_customer.tmdl",
         "name": "dim_customer",
-        "lineageTag": "1ace2605-f91c-4dba-a17c-16b7d1afa4b1",
+        "lineageTag": null,
         "columns": [
           {
             "name": "customer_id",
@@ -1190,12 +1491,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/flat_sales_completed.tmdl",
         "name": "flat_sales_completed",
-        "lineageTag": "b6be6beb-29f1-48a5-81c0-625157189e89",
+        "lineageTag": null,
         "columns": [
           {
             "name": "order_id",
@@ -1280,12 +1594,37 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          },
+          {
+            "step_index": 2,
+            "step_name": "customer_id",
+            "step_type": "Filter Transformation",
+            "code_snippet": "c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Complet..."
+          },
+          {
+            "step_index": 3,
+            "step_name": "DataTable",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Source{[Name=\"df\"]}[Value]"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_dim_date.tmdl",
         "name": "sql_dim_date",
-        "lineageTag": "e90299e8-e196-4d64-af85-6922f6c9c57b",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_dim_date",
@@ -1298,12 +1637,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT DISTINCT \n    d.datekey"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_dim_product.tmdl",
         "name": "sql_dim_product",
-        "lineageTag": "5beec82b-4127-4513-be49-058477e6370a",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_dim_product",
@@ -1316,12 +1668,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT DISTINCT \n    p.product_id"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_flat_sales_all.tmdl",
         "name": "sql_flat_sales_all",
-        "lineageTag": "efd15e42-7d83-4bca-b6a3-646d48ab884b",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_flat_sales_all",
@@ -1334,12 +1699,31 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT \n    f.order_id"
+          },
+          {
+            "step_index": 2,
+            "step_name": "customer_id",
+            "step_type": "Source Ingestion",
+            "code_snippet": "c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nLEFT JOIN dim_employee e ON f.e..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl",
         "name": "sql_flat_sales_completed",
-        "lineageTag": "7751f11b-efde-485d-9bdc-b92557dcf54d",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_flat_sales_completed",
@@ -1352,7 +1736,26 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT \n    f.order_id"
+          },
+          {
+            "step_index": 2,
+            "step_name": "customer_id",
+            "step_type": "Filter Transformation",
+            "code_snippet": "c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Complet..."
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1365,17 +1768,26 @@
         "crossFilteringBehavior": "single",
         "toCardinality": "one"
       }
+    ],
+    "parameters": [
+      {
+        "name": "oakhavendatabasepath",
+        "type": "Text",
+        "defaultValue": "project/oakhaven.db",
+        "isParameter": true
+      }
     ]
   },
   "oakhaven template": {
     "name": "oakhaven template",
     "tableCount": 13,
     "relationshipCount": 5,
+    "parameterCount": 1,
     "tables": [
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_calendar.tmdl",
         "name": "dim_calendar",
-        "lineageTag": "79ef8b5a-6d15-45c7-b623-d5bc95056c91",
+        "lineageTag": null,
         "columns": [
           {
             "name": "datekey",
@@ -1451,12 +1863,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_customer.tmdl",
         "name": "dim_customer",
-        "lineageTag": "1ace2605-f91c-4dba-a17c-16b7d1afa4b1",
+        "lineageTag": null,
         "columns": [
           {
             "name": "customer_id",
@@ -1505,12 +1930,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_employee.tmdl",
         "name": "dim_employee",
-        "lineageTag": "43d7354d-c14a-4ab6-ac47-3e5506aec046",
+        "lineageTag": null,
         "columns": [
           {
             "name": "employee_id",
@@ -1550,12 +1988,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/fact_sales.tmdl",
         "name": "fact_sales",
-        "lineageTag": "a1840420-f3ab-469d-9219-ef364479ba4c",
+        "lineageTag": null,
         "columns": [
           {
             "name": "order_id",
@@ -1676,12 +2127,31 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          },
+          {
+            "step_index": 2,
+            "step_name": "DataTable",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Source{[Name=\"df\"]}[Value]"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/flat_sales_all.tmdl",
         "name": "flat_sales_all",
-        "lineageTag": "3ead40b5-967c-42a6-8b3a-70b6eed40bea",
+        "lineageTag": null,
         "columns": [
           {
             "name": "order_id",
@@ -1766,12 +2236,31 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          },
+          {
+            "step_index": 2,
+            "step_name": "DataTable",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Source{[Name=\"df\"]}[Value]"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/flat_sales_completed.tmdl",
         "name": "flat_sales_completed",
-        "lineageTag": "b6be6beb-29f1-48a5-81c0-625157189e89",
+        "lineageTag": null,
         "columns": [
           {
             "name": "order_id",
@@ -1856,12 +2345,37 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "SQLite (Python Connector)",
+          "target": "\"project/oakhaven.db\"",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(..."
+          },
+          {
+            "step_index": 2,
+            "step_name": "customer_id",
+            "step_type": "Filter Transformation",
+            "code_snippet": "c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Complet..."
+          },
+          {
+            "step_index": 3,
+            "step_name": "DataTable",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Source{[Name=\"df\"]}[Value]"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_customer.tmdl",
         "name": "sql_dim_customer",
-        "lineageTag": "60157a56-9e5c-44e3-afe2-a1d8596c4810",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_dim_customer",
@@ -1874,12 +2388,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT DISTINCT \n    c.customer_id"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_date.tmdl",
         "name": "sql_dim_date",
-        "lineageTag": "e90299e8-e196-4d64-af85-6922f6c9c57b",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_dim_date",
@@ -1892,12 +2419,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT DISTINCT \n    d.datekey"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_employee.tmdl",
         "name": "sql_dim_employee",
-        "lineageTag": "40290057-dafc-4a1a-b105-70828199df3c",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_dim_employee",
@@ -1910,12 +2450,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT DISTINCT \n    e.employee_id"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_product.tmdl",
         "name": "sql_dim_product",
-        "lineageTag": "5beec82b-4127-4513-be49-058477e6370a",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_dim_product",
@@ -1928,12 +2481,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT DISTINCT \n    p.product_id"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_fact_sales.tmdl",
         "name": "sql_fact_sales",
-        "lineageTag": "3aaa36e0-22c9-499d-8643-e01165b98cf4",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_fact_sales",
@@ -1946,12 +2512,25 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT \n    f.order_id"
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_flat_sales_all.tmdl",
         "name": "sql_flat_sales_all",
-        "lineageTag": "efd15e42-7d83-4bca-b6a3-646d48ab884b",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_flat_sales_all",
@@ -1964,12 +2543,31 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT \n    f.order_id"
+          },
+          {
+            "step_index": 2,
+            "step_name": "customer_id",
+            "step_type": "Source Ingestion",
+            "code_snippet": "c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nLEFT JOIN dim_employee e ON f.e..."
+          }
+        ]
       },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl",
         "name": "sql_flat_sales_completed",
-        "lineageTag": "7751f11b-efde-485d-9bdc-b92557dcf54d",
+        "lineageTag": null,
         "columns": [
           {
             "name": "sql_flat_sales_completed",
@@ -1982,7 +2580,26 @@
           }
         ],
         "measures": [],
-        "partitions": []
+        "partitions": [],
+        "dataSource": {
+          "connector": "Relational SQL Source",
+          "target": "project/oakhaven.db",
+          "query_type": "Native SQL Pushdown"
+        },
+        "mSteps": [
+          {
+            "step_index": 1,
+            "step_name": "Source",
+            "step_type": "Source Ingestion",
+            "code_snippet": "\"SELECT \n    f.order_id"
+          },
+          {
+            "step_index": 2,
+            "step_name": "customer_id",
+            "step_type": "Filter Transformation",
+            "code_snippet": "c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Complet..."
+          }
+        ]
       }
     ],
     "relationships": [
@@ -2030,6 +2647,14 @@
         "toColumn": "date",
         "crossFilteringBehavior": "single",
         "toCardinality": "one"
+      }
+    ],
+    "parameters": [
+      {
+        "name": "oakhavendatabasepath",
+        "type": "Text",
+        "defaultValue": "project/oakhaven.db",
+        "isParameter": true
       }
     ]
   }
