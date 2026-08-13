@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>12: Semantic Models, Power BI PBIP, &amp; Logic Sprawl Prevention | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="12-semantic-models-power-bi-pbip--logic-sprawl-prevention">12: Semantic Models, Power BI PBIP, & Logic Sprawl Prevention</h1>
+
+<h2 id="concept-explainer">Concept Explainer</h2>
+
+<p>When building an enterprise data architecture, transformations can be executed at two distinct layers:
+1. <strong>The Database Engine (SQL Pushdown)</strong>: Computations, joins, aggregations, and business logic are executed directly in SQL views within the data warehouse or database (e.g. <code class="inline-code">project/oakhaven.db</code>).
+2. <strong>The Presentation/Semantic Layer (Power BI DAX / TMDL)</strong>: Raw relational tables are loaded into BI engines, where relationships, calculated columns, and measures are declared in semantic model definitions like <strong>TMDL (Tabular Model Definition Language)</strong> or <strong>DAX</strong>.</p>
+
+<p>Understanding where business logic should reside—and preventing <strong>logic sprawl</strong> (where different BI tools invent divergent definitions for the same metric)—is a core discipline for senior data engineers and analytics engineers.</p>
+
+<hr class="divider">
+
+<h2 id="why-it-matters">Why It Matters</h2>
+
+<p>In many organizations, business logic accidentally splits across multiple systems:
+<ul class="styled-list"><li>A SQL view computes <code class="inline-code">net_amount = quantity <em> unit_price </em> (1 - discount_pct)</code>.</li><li>A Power BI model re-implements <code class="inline-code">Net Revenue = SUMX(Sales, Sales[Quantity] * Sales[UnitPrice])</code> in DAX.</li><li>A secondary dashboard filters <code class="inline-code">order_status = 'Completed'</code> directly in Power Query M.</li></ul>
+When definitions diverge, stakeholders see conflicting numbers for the same KPI. <strong>Centralizing business logic in verified SQL Gold views</strong> ensures consistent metrics across Power BI, Python notebooks, web dashboards, and SQL clients.</p>
+
+<hr class="divider">
+
+<h2 id="power-bi-project-pbip--tmdl-architecture">Power BI Project (<code class="inline-code">.pbip</code>) & TMDL Architecture</h2>
+
+<p>Modern BI tools store semantic models as text files under version control. In Power BI Projects (<code class="inline-code">.pbip</code>), model metadata is defined in <code class="inline-code">.tmdl</code> files:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">pbip_poc/projects/
+└── flat_sales_all/
+    └── flat_sales_all.SemanticModel/
+        └── definition/
+            ├── model.tmdl              ← Model settings &amp; table references
+            ├── relationships.tmdl      ← 1:N relationship keys
+            └── tables/
+                ├── fact_sales.tmdl     ← Table schema &amp; M partition script
+                └── dim_customer.tmdl   ← Dimension schema</code></pre></div>
+
+<p>By inspecting TMDL definitions directly in text editors or via CLI tools on Linux (such as <code class="inline-code">pbip_linter.py</code>), engineers can audit and lint semantic models without running Power BI Desktop.</p>
+
+<hr class="divider">
+
+<h2 id="verified-examples-on-oakhaven-data">Verified Examples on Oakhaven Data</h2>
+
+<h3 id="example-1-sql-pushdown-model-one-flat-table">Example 1: SQL Pushdown Model (One Flat Table)</h3>
+
+<p>Executing calculations directly in SQL before feeding BI presentation layers:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">SQL</span></div><pre><code class="language-sql">SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    f.quantity,
+    f.net_amount,
+    CASE 
+        WHEN f.discount_pct &gt;= 0.20 THEN &#x27;High Discount (20%+)&#x27;
+        WHEN f.discount_pct &gt; 0 THEN &#x27;Standard Discount&#x27;
+        ELSE &#x27;Full Price&#x27;
+    END AS discount_tier
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 5;</code></pre></div>
+
+<p><strong>Verified Live Query Output:</strong></p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">order_id  order_line_id  order_date  customer_name  product_name         quantity  net_amount  discount_tier       
+--------  -------------  ----------  -------------  -------------------  --------  ----------  --------------------
+89        1              2026-06-30  Michele Perez  Meridian Chalk Bags  3         1689.04     Standard Discount   
+89        2              2026-06-30  Michele Perez                       3         548.75      High Discount (20%+)
+89        3              2026-06-30  Michele Perez  Highline Paddle      2         1471.08     Full Price          
+342       1              2026-06-30  Jimmy Mullins  Glacier Snowshoe     2         164.37      High Discount (20%+)
+2342      1              2026-06-30  Tyler Rush     Switchback Sandals   1         130.47      Standard Discount</code></pre></div>
+
+<hr class="divider">
+
+<h2 id="common-mistakes">Common Mistakes</h2>
+
+<p>1. <strong>Duplicate Business Logic</strong>: Calculating metrics twice (once in SQL, once in DAX) with subtle variations (e.g. handling of NULL discounts or canceled orders).
+2. <strong>Hardcoded Machine Dependencies</strong>: Embedding hardcoded local file paths (e.g. <code class="inline-code">C:\Users\...</code>) inside M partition queries instead of dynamic environment parameters.
+3. <strong>Bypassing the Medallion Pipeline</strong>: Querying messy Bronze tables directly in BI reports rather than clean Gold star-schema views.</p>
+
+<hr class="divider">
+
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ul class="styled-list"><li><strong>Push Down Heavy Transformations</strong>: Perform joins, data cleaning, and core business metrics in SQL views (<code class="inline-code">project/gold/</code>).</li><li><strong>Use TMDL for Semantic Metadata</strong>: Leverage Power BI Project (<code class="inline-code">.pbip</code>) text files to version-control 1:N relationships and DAX measures.</li><li><strong>Audit Semantic Models with Linters</strong>: Run automated TMDL linters in CI/CD pipelines to ensure cross-platform compatibility and logic consistency.</li></ul>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>

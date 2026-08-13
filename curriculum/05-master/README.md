@@ -21,6 +21,7 @@ The capstone: dimensional modeling and star schema design. This is the tier mean
 | [09](09-medallion-pipeline-recap.md) | Medallion thread: the full pipeline, recapped end to end |
 | [10](10-capstone-build-a-novel-gold-view.md) | Capstone: build a novel gold view from scratch |
 | [11](11-beyond-sqlite-portability-notes.md) | Beyond SQLite: a syntax-translation reference |
+| [12](12-semantic-models-and-pbip.md) | Semantic Models, Power BI PBIP, & Logic Sprawl Prevention |
 
 Matching exercises: `exercises/05-master/`. See also the standalone `portfolio/` pattern library this tier feeds into.
 

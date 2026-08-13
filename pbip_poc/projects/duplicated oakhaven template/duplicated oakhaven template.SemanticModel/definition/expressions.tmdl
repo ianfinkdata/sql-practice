@@ -1,5 +1,5 @@
 /// the path of any sqlite.db file
-expression oakhavendatabasepath = "C:\Github\sql-practice\project\oakhaven.db" meta [IsParameterQuery=true, List={"C:\Github\sql-practice\project\oakhaven.db"}, DefaultValue="C:\Github\sql-practice\project\oakhaven.db", Type="Text", IsParameterQueryRequired=true]
+expression oakhavendatabasepath = "project/oakhaven.db" meta [IsParameterQuery=true, List={"project/oakhaven.db"}, DefaultValue="project/oakhaven.db", Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 7e6d5862-1308-436e-b862-de1ddbd02f5d
 	queryGroup: 'sql queries'
 

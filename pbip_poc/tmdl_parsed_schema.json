@@ -1,0 +1,2036 @@
+{
+  "duplicated oakhaven template": {
+    "name": "duplicated oakhaven template",
+    "tableCount": 13,
+    "relationshipCount": 5,
+    "tables": [
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_calendar.tmdl",
+        "name": "dim_calendar",
+        "lineageTag": "79ef8b5a-6d15-45c7-b623-d5bc95056c91",
+        "columns": [
+          {
+            "name": "datekey",
+            "dataType": "string",
+            "sourceColumn": "datekey",
+            "summarizeBy": "none",
+            "description": "Integer surrogate key in YYYYMMDD format for date joins.",
+            "lineageTag": "9f795fc7-1acf-453e-a848-ee627b26583a",
+            "expression": null
+          },
+          {
+            "name": "date",
+            "dataType": "string",
+            "sourceColumn": "date",
+            "summarizeBy": "none",
+            "description": "Standard ISO 8601 calendar date (YYYY-MM-DD).",
+            "lineageTag": "e6673c74-1291-494f-a5fa-855f8aa4b37a",
+            "expression": null
+          },
+          {
+            "name": "year",
+            "dataType": "string",
+            "sourceColumn": "year",
+            "summarizeBy": "none",
+            "description": "Four-digit calendar year (e.g. 2026).",
+            "lineageTag": "c4f8230d-cf10-4767-8424-bb094285970b",
+            "expression": null
+          },
+          {
+            "name": "month",
+            "dataType": "string",
+            "sourceColumn": "month",
+            "summarizeBy": "none",
+            "description": "Numeric calendar month (1..12).",
+            "lineageTag": "d068670e-361f-4493-bf51-a6bfe6feaba5",
+            "expression": null
+          },
+          {
+            "name": "month_name",
+            "dataType": "string",
+            "sourceColumn": "month_name",
+            "summarizeBy": "none",
+            "description": "Full English month name (e.g. January, February).",
+            "lineageTag": "0b8519f2-f604-425c-85c6-d39a8906129d",
+            "expression": null
+          },
+          {
+            "name": "quarter",
+            "dataType": "string",
+            "sourceColumn": "quarter",
+            "summarizeBy": "none",
+            "description": "Calendar quarter identifier (Q1, Q2, Q3, Q4).",
+            "lineageTag": "bd07c297-97cd-4e70-978a-30781795221e",
+            "expression": null
+          },
+          {
+            "name": "day_name",
+            "dataType": "string",
+            "sourceColumn": "day_name",
+            "summarizeBy": "none",
+            "description": "Full English day name (e.g. Monday, Tuesday).",
+            "lineageTag": "0fa83cdc-2174-4673-8074-2c1e862f49db",
+            "expression": null
+          },
+          {
+            "name": "is_weekend",
+            "dataType": "string",
+            "sourceColumn": "is_weekend",
+            "summarizeBy": "none",
+            "description": "Boolean flag indicating Saturday or Sunday (1 = Weekend, 0 = Weekday).",
+            "lineageTag": "a5fe93e3-f859-4ecf-8b67-77e450eab306",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_customer.tmdl",
+        "name": "dim_customer",
+        "lineageTag": "1ace2605-f91c-4dba-a17c-16b7d1afa4b1",
+        "columns": [
+          {
+            "name": "customer_id",
+            "dataType": "string",
+            "sourceColumn": "customer_id",
+            "summarizeBy": "none",
+            "description": "Unique sequential identifier (1..600) for each customer.",
+            "lineageTag": "2f58fa72-11f2-402b-89ee-aa2a92957236",
+            "expression": null
+          },
+          {
+            "name": "full_name",
+            "dataType": "string",
+            "sourceColumn": "full_name",
+            "summarizeBy": "none",
+            "description": "Concatenated customer full name (first + last).",
+            "lineageTag": "a95ea06f-ed8e-4a55-ae23-0021146de55e",
+            "expression": null
+          },
+          {
+            "name": "email",
+            "dataType": "string",
+            "sourceColumn": "email",
+            "summarizeBy": "none",
+            "description": "Primary email address associated with customer account.",
+            "lineageTag": "3c667951-5567-4e51-abae-ac844a92749e",
+            "expression": null
+          },
+          {
+            "name": "state",
+            "dataType": "string",
+            "sourceColumn": "state",
+            "summarizeBy": "none",
+            "description": "Customer geographic state or province code.",
+            "lineageTag": "244b90ff-6173-450c-9de3-cf88d93ccc9d",
+            "expression": null
+          },
+          {
+            "name": "customer_segment",
+            "dataType": "string",
+            "sourceColumn": "customer_segment",
+            "summarizeBy": "none",
+            "description": "Market segment classification (Retail, Wholesale, VIP).",
+            "lineageTag": "a11d813e-71b9-4a91-9f2a-202e09a41609",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_employee.tmdl",
+        "name": "dim_employee",
+        "lineageTag": "43d7354d-c14a-4ab6-ac47-3e5506aec046",
+        "columns": [
+          {
+            "name": "employee_id",
+            "dataType": "string",
+            "sourceColumn": "employee_id",
+            "summarizeBy": "none",
+            "description": "Unique employee identification number (1..35).",
+            "lineageTag": "ae9c803e-b41e-47f0-bfe5-53dc70556787",
+            "expression": null
+          },
+          {
+            "name": "full_name",
+            "dataType": "string",
+            "sourceColumn": "full_name",
+            "summarizeBy": "none",
+            "description": "Concatenated customer full name (first + last).",
+            "lineageTag": "5537ce32-b016-44fc-b0a7-2d262f14b77a",
+            "expression": null
+          },
+          {
+            "name": "department",
+            "dataType": "string",
+            "sourceColumn": "department",
+            "summarizeBy": "none",
+            "description": "Company department (Sales, Support, Warehouse, Management).",
+            "lineageTag": "00fa833f-3d0f-4760-bf3a-ce4b255e9c85",
+            "expression": null
+          },
+          {
+            "name": "region",
+            "dataType": "string",
+            "sourceColumn": "region",
+            "summarizeBy": "none",
+            "description": "Assigned geographical sales territory (West, East, Central, South).",
+            "lineageTag": "34575c7c-a358-4f56-8c6c-32ee08e3f032",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/fact_sales.tmdl",
+        "name": "fact_sales",
+        "lineageTag": "a1840420-f3ab-469d-9219-ef364479ba4c",
+        "columns": [
+          {
+            "name": "order_id",
+            "dataType": "string",
+            "sourceColumn": "order_id",
+            "summarizeBy": "none",
+            "description": "Unique sales order transaction header identifier.",
+            "lineageTag": "e585b315-7ba8-425a-9f80-cc643e7bd532",
+            "expression": null
+          },
+          {
+            "name": "order_line_id",
+            "dataType": "string",
+            "sourceColumn": "order_line_id",
+            "summarizeBy": "none",
+            "description": "Line item sequence number (1..N) within an order.",
+            "lineageTag": "e8432609-9629-4009-8023-6f7b2dc6fa52",
+            "expression": null
+          },
+          {
+            "name": "customer_id",
+            "dataType": "string",
+            "sourceColumn": "customer_id",
+            "summarizeBy": "none",
+            "description": "Unique sequential identifier (1..600) for each customer.",
+            "lineageTag": "3da835b0-23ea-4ca9-8545-f8123f311563",
+            "expression": null
+          },
+          {
+            "name": "product_id",
+            "dataType": "string",
+            "sourceColumn": "product_id",
+            "summarizeBy": "none",
+            "description": "Unique surrogate key (1..150) identifying each merchandise item.",
+            "lineageTag": "f35baa47-9b8d-476d-856a-c30ba0ecc190",
+            "expression": null
+          },
+          {
+            "name": "employee_id",
+            "dataType": "string",
+            "sourceColumn": "employee_id",
+            "summarizeBy": "none",
+            "description": "Unique employee identification number (1..35).",
+            "lineageTag": "1b3a527d-2eac-4bb1-9b7e-048e1b900203",
+            "expression": null
+          },
+          {
+            "name": "datekey",
+            "dataType": "string",
+            "sourceColumn": "datekey",
+            "summarizeBy": "none",
+            "description": "Integer surrogate key in YYYYMMDD format for date joins.",
+            "lineageTag": "e493d4f4-1711-4de4-beb9-ab8fe0b55f0d",
+            "expression": null
+          },
+          {
+            "name": "quantity",
+            "dataType": "string",
+            "sourceColumn": "quantity",
+            "summarizeBy": "none",
+            "description": "Number of units purchased in order line.",
+            "lineageTag": "feed673e-bf49-4bf0-a5e9-d21bd93e509a",
+            "expression": null
+          },
+          {
+            "name": "unit_price",
+            "dataType": "string",
+            "sourceColumn": "unit_price",
+            "summarizeBy": "none",
+            "description": "Retail selling price per unit ($) at time of order.",
+            "lineageTag": "cdd0e504-2ce6-4df6-811c-11bcf01820e5",
+            "expression": null
+          },
+          {
+            "name": "discount_pct",
+            "dataType": "string",
+            "sourceColumn": "discount_pct",
+            "summarizeBy": "none",
+            "description": "Percentage discount applied (0.00 to 0.30).",
+            "lineageTag": "bbdd2011-c753-4721-9ae4-89e008f134a8",
+            "expression": null
+          },
+          {
+            "name": "net_amount",
+            "dataType": "string",
+            "sourceColumn": "net_amount",
+            "summarizeBy": "none",
+            "description": "Actual net revenue earned after applying discounts.",
+            "lineageTag": "beec1224-b2f8-4dc0-ac6b-0819d90cafba",
+            "expression": null
+          },
+          {
+            "name": "payment_method",
+            "dataType": "string",
+            "sourceColumn": "payment_method",
+            "summarizeBy": "none",
+            "description": "Payment tender channel (Credit Card, PayPal, Cash, Debit Card).",
+            "lineageTag": "08c0bb93-c91f-4427-bf21-49aac67daf0f",
+            "expression": null
+          },
+          {
+            "name": "order_status",
+            "dataType": "string",
+            "sourceColumn": "order_status",
+            "summarizeBy": "none",
+            "description": "Current status of transaction (Completed, Processing, Canceled, Returned).",
+            "lineageTag": "195a7349-df3a-4f28-8dac-9440c7e391dc",
+            "expression": null
+          },
+          {
+            "name": "channel",
+            "dataType": "string",
+            "sourceColumn": "channel",
+            "summarizeBy": "none",
+            "description": "Sales channel origination (Web, Mobile App, In-Store Retail).",
+            "lineageTag": "87847b9e-9070-4235-84b8-33a9f4c0517a",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/flat_sales_all.tmdl",
+        "name": "flat_sales_all",
+        "lineageTag": "3ead40b5-967c-42a6-8b3a-70b6eed40bea",
+        "columns": [
+          {
+            "name": "order_id",
+            "dataType": "string",
+            "sourceColumn": "order_id",
+            "summarizeBy": "none",
+            "description": "Unique sales order transaction header identifier.",
+            "lineageTag": "be470296-6f71-4f7b-bb5d-0189a854d716",
+            "expression": null
+          },
+          {
+            "name": "order_line_id",
+            "dataType": "string",
+            "sourceColumn": "order_line_id",
+            "summarizeBy": "none",
+            "description": "Line item sequence number (1..N) within an order.",
+            "lineageTag": "028bda80-3cbe-42f4-88c7-916728962954",
+            "expression": null
+          },
+          {
+            "name": "order_date",
+            "dataType": "string",
+            "sourceColumn": "order_date",
+            "summarizeBy": "none",
+            "description": "Transaction date on which order was placed.",
+            "lineageTag": "aa75dbc8-5c52-4994-bf4b-18a7964e0f0e",
+            "expression": null
+          },
+          {
+            "name": "customer_name",
+            "dataType": "string",
+            "sourceColumn": "customer_name",
+            "summarizeBy": "none",
+            "description": "Full name of the purchasing customer.",
+            "lineageTag": "0919db62-8e7d-45e6-9a71-f8e1c08650c8",
+            "expression": null
+          },
+          {
+            "name": "product_name",
+            "dataType": "string",
+            "sourceColumn": "product_name",
+            "summarizeBy": "none",
+            "description": "Catalog description and product title.",
+            "lineageTag": "ea723a57-3bb6-43e1-9fdb-c01f94237584",
+            "expression": null
+          },
+          {
+            "name": "product_category",
+            "dataType": "string",
+            "sourceColumn": "product_category",
+            "summarizeBy": "none",
+            "description": "Merchandise category of the ordered item.",
+            "lineageTag": "718281e7-2887-4f38-82cc-5b7764ecf206",
+            "expression": null
+          },
+          {
+            "name": "quantity",
+            "dataType": "string",
+            "sourceColumn": "quantity",
+            "summarizeBy": "none",
+            "description": "Number of units purchased in order line.",
+            "lineageTag": "8d6d44d3-dcbf-4226-a5c8-bce5b6863dae",
+            "expression": null
+          },
+          {
+            "name": "net_amount",
+            "dataType": "string",
+            "sourceColumn": "net_amount",
+            "summarizeBy": "none",
+            "description": "Actual net revenue earned after applying discounts.",
+            "lineageTag": "2493ed31-0ec4-4a3f-bd81-54fb31f1a99b",
+            "expression": null
+          },
+          {
+            "name": "channel",
+            "dataType": "string",
+            "sourceColumn": "channel",
+            "summarizeBy": "none",
+            "description": "Sales channel origination (Web, Mobile App, In-Store Retail).",
+            "lineageTag": "18965dea-86e8-45fb-b1ca-32e18c10f998",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/flat_sales_completed.tmdl",
+        "name": "flat_sales_completed",
+        "lineageTag": "b6be6beb-29f1-48a5-81c0-625157189e89",
+        "columns": [
+          {
+            "name": "order_id",
+            "dataType": "string",
+            "sourceColumn": "order_id",
+            "summarizeBy": "none",
+            "description": "Unique sales order transaction header identifier.",
+            "lineageTag": "c7d0eb31-325d-4c7a-83de-99b17198f141",
+            "expression": null
+          },
+          {
+            "name": "order_line_id",
+            "dataType": "string",
+            "sourceColumn": "order_line_id",
+            "summarizeBy": "none",
+            "description": "Line item sequence number (1..N) within an order.",
+            "lineageTag": "93dcebd5-75c5-4398-bc5f-3f1ecf321cef",
+            "expression": null
+          },
+          {
+            "name": "order_date",
+            "dataType": "string",
+            "sourceColumn": "order_date",
+            "summarizeBy": "none",
+            "description": "Transaction date on which order was placed.",
+            "lineageTag": "7ba34804-995f-49d6-aa47-0712b4d6f8c5",
+            "expression": null
+          },
+          {
+            "name": "customer_name",
+            "dataType": "string",
+            "sourceColumn": "customer_name",
+            "summarizeBy": "none",
+            "description": "Full name of the purchasing customer.",
+            "lineageTag": "222d09aa-1ec4-467b-86af-43b85b4a45fb",
+            "expression": null
+          },
+          {
+            "name": "product_name",
+            "dataType": "string",
+            "sourceColumn": "product_name",
+            "summarizeBy": "none",
+            "description": "Catalog description and product title.",
+            "lineageTag": "458b28bd-b679-4b59-928a-10dd0a037964",
+            "expression": null
+          },
+          {
+            "name": "product_category",
+            "dataType": "string",
+            "sourceColumn": "product_category",
+            "summarizeBy": "none",
+            "description": "Merchandise category of the ordered item.",
+            "lineageTag": "ed2232e5-1575-49ba-84f0-2a77870d1762",
+            "expression": null
+          },
+          {
+            "name": "quantity",
+            "dataType": "string",
+            "sourceColumn": "quantity",
+            "summarizeBy": "none",
+            "description": "Number of units purchased in order line.",
+            "lineageTag": "301c7b2f-7495-445b-adfb-46924ee0423a",
+            "expression": null
+          },
+          {
+            "name": "net_amount",
+            "dataType": "string",
+            "sourceColumn": "net_amount",
+            "summarizeBy": "none",
+            "description": "Actual net revenue earned after applying discounts.",
+            "lineageTag": "809d7d2f-3ead-40d2-a2ea-4d9a2ac5285c",
+            "expression": null
+          },
+          {
+            "name": "channel",
+            "dataType": "string",
+            "sourceColumn": "channel",
+            "summarizeBy": "none",
+            "description": "Sales channel origination (Web, Mobile App, In-Store Retail).",
+            "lineageTag": "96ca9327-8144-4005-97c2-77115ff78ad0",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_customer.tmdl",
+        "name": "sql_dim_customer",
+        "lineageTag": "60157a56-9e5c-44e3-afe2-a1d8596c4810",
+        "columns": [
+          {
+            "name": "sql_dim_customer",
+            "dataType": "string",
+            "sourceColumn": "sql_dim_customer",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_dim_customer.",
+            "lineageTag": "4ceefc78-122a-4729-9da4-ff81d61dc8c3",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_date.tmdl",
+        "name": "sql_dim_date",
+        "lineageTag": "e90299e8-e196-4d64-af85-6922f6c9c57b",
+        "columns": [
+          {
+            "name": "sql_dim_date",
+            "dataType": "string",
+            "sourceColumn": "sql_dim_date",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_dim_date.",
+            "lineageTag": "5fada11d-4899-4291-abda-f4b4e14abc4d",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_employee.tmdl",
+        "name": "sql_dim_employee",
+        "lineageTag": "40290057-dafc-4a1a-b105-70828199df3c",
+        "columns": [
+          {
+            "name": "sql_dim_employee",
+            "dataType": "string",
+            "sourceColumn": "sql_dim_employee",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_dim_employee.",
+            "lineageTag": "7b629e6f-4ccd-448a-b5f8-06d47d6dcf00",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_product.tmdl",
+        "name": "sql_dim_product",
+        "lineageTag": "5beec82b-4127-4513-be49-058477e6370a",
+        "columns": [
+          {
+            "name": "sql_dim_product",
+            "dataType": "string",
+            "sourceColumn": "sql_dim_product",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_dim_product.",
+            "lineageTag": "46bf498c-94ec-4ee5-bae9-4600e18c6ef6",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_fact_sales.tmdl",
+        "name": "sql_fact_sales",
+        "lineageTag": "3aaa36e0-22c9-499d-8643-e01165b98cf4",
+        "columns": [
+          {
+            "name": "sql_fact_sales",
+            "dataType": "string",
+            "sourceColumn": "sql_fact_sales",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_fact_sales.",
+            "lineageTag": "f81f494f-b6bc-4739-96ef-88192b7f835d",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_flat_sales_all.tmdl",
+        "name": "sql_flat_sales_all",
+        "lineageTag": "efd15e42-7d83-4bca-b6a3-646d48ab884b",
+        "columns": [
+          {
+            "name": "sql_flat_sales_all",
+            "dataType": "string",
+            "sourceColumn": "sql_flat_sales_all",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_flat_sales_all.",
+            "lineageTag": "5012f4a0-c0d2-42cb-aefd-2da4dda8bc4e",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl",
+        "name": "sql_flat_sales_completed",
+        "lineageTag": "7751f11b-efde-485d-9bdc-b92557dcf54d",
+        "columns": [
+          {
+            "name": "sql_flat_sales_completed",
+            "dataType": "string",
+            "sourceColumn": "sql_flat_sales_completed",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_flat_sales_completed.",
+            "lineageTag": "5e987501-9ea4-48a1-9333-016b53137268",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      }
+    ],
+    "relationships": [
+      {
+        "name": "AutoDetected_1d28b393-7c5a-472e-8bdf-bbaefdfadc47",
+        "fromTable": "fact_sales",
+        "fromColumn": "customer_id",
+        "toTable": "dim_customer",
+        "toColumn": "customer_id",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      },
+      {
+        "name": "AutoDetected_de8de45f-ebb1-4d1d-a6b4-e19e17d854ac",
+        "fromTable": "fact_sales",
+        "fromColumn": "datekey",
+        "toTable": "dim_calendar",
+        "toColumn": "datekey",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      },
+      {
+        "name": "cdcabb57-8502-4d1c-1ca6-c29df34d8d3e",
+        "fromTable": "fact_sales",
+        "fromColumn": "employee_id",
+        "toTable": "dim_employee",
+        "toColumn": "employee_id",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      },
+      {
+        "name": "dab805ef-d296-87a4-acb2-347f07dc4199",
+        "fromTable": "flat_sales_all",
+        "fromColumn": "order_date",
+        "toTable": "dim_calendar",
+        "toColumn": "date",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      },
+      {
+        "name": "defc8ca4-33ee-19ab-d42b-240fcd45be3e",
+        "fromTable": "flat_sales_completed",
+        "fromColumn": "order_date",
+        "toTable": "dim_calendar",
+        "toColumn": "date",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      }
+    ]
+  },
+  "flat_sales_all": {
+    "name": "flat_sales_all",
+    "tableCount": 4,
+    "relationshipCount": 4,
+    "tables": [
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/dim_calendar.tmdl",
+        "name": "dim_calendar",
+        "lineageTag": "79ef8b5a-6d15-45c7-b623-d5bc95056c91",
+        "columns": [
+          {
+            "name": "datekey",
+            "dataType": "string",
+            "sourceColumn": "datekey",
+            "summarizeBy": "none",
+            "description": "Integer surrogate key in YYYYMMDD format for date joins.",
+            "lineageTag": "9f795fc7-1acf-453e-a848-ee627b26583a",
+            "expression": null
+          },
+          {
+            "name": "date",
+            "dataType": "string",
+            "sourceColumn": "date",
+            "summarizeBy": "none",
+            "description": "Standard ISO 8601 calendar date (YYYY-MM-DD).",
+            "lineageTag": "e6673c74-1291-494f-a5fa-855f8aa4b37a",
+            "expression": null
+          },
+          {
+            "name": "year",
+            "dataType": "string",
+            "sourceColumn": "year",
+            "summarizeBy": "none",
+            "description": "Four-digit calendar year (e.g. 2026).",
+            "lineageTag": "c4f8230d-cf10-4767-8424-bb094285970b",
+            "expression": null
+          },
+          {
+            "name": "month",
+            "dataType": "string",
+            "sourceColumn": "month",
+            "summarizeBy": "none",
+            "description": "Numeric calendar month (1..12).",
+            "lineageTag": "d068670e-361f-4493-bf51-a6bfe6feaba5",
+            "expression": null
+          },
+          {
+            "name": "month_name",
+            "dataType": "string",
+            "sourceColumn": "month_name",
+            "summarizeBy": "none",
+            "description": "Full English month name (e.g. January, February).",
+            "lineageTag": "0b8519f2-f604-425c-85c6-d39a8906129d",
+            "expression": null
+          },
+          {
+            "name": "quarter",
+            "dataType": "string",
+            "sourceColumn": "quarter",
+            "summarizeBy": "none",
+            "description": "Calendar quarter identifier (Q1, Q2, Q3, Q4).",
+            "lineageTag": "bd07c297-97cd-4e70-978a-30781795221e",
+            "expression": null
+          },
+          {
+            "name": "day_name",
+            "dataType": "string",
+            "sourceColumn": "day_name",
+            "summarizeBy": "none",
+            "description": "Full English day name (e.g. Monday, Tuesday).",
+            "lineageTag": "0fa83cdc-2174-4673-8074-2c1e862f49db",
+            "expression": null
+          },
+          {
+            "name": "is_weekend",
+            "dataType": "string",
+            "sourceColumn": "is_weekend",
+            "summarizeBy": "none",
+            "description": "Boolean flag indicating Saturday or Sunday (1 = Weekend, 0 = Weekday).",
+            "lineageTag": "a5fe93e3-f859-4ecf-8b67-77e450eab306",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/dim_employee.tmdl",
+        "name": "dim_employee",
+        "lineageTag": "43d7354d-c14a-4ab6-ac47-3e5506aec046",
+        "columns": [
+          {
+            "name": "employee_id",
+            "dataType": "string",
+            "sourceColumn": "employee_id",
+            "summarizeBy": "none",
+            "description": "Unique employee identification number (1..35).",
+            "lineageTag": "ae9c803e-b41e-47f0-bfe5-53dc70556787",
+            "expression": null
+          },
+          {
+            "name": "full_name",
+            "dataType": "string",
+            "sourceColumn": "full_name",
+            "summarizeBy": "none",
+            "description": "Concatenated customer full name (first + last).",
+            "lineageTag": "5537ce32-b016-44fc-b0a7-2d262f14b77a",
+            "expression": null
+          },
+          {
+            "name": "department",
+            "dataType": "string",
+            "sourceColumn": "department",
+            "summarizeBy": "none",
+            "description": "Company department (Sales, Support, Warehouse, Management).",
+            "lineageTag": "00fa833f-3d0f-4760-bf3a-ce4b255e9c85",
+            "expression": null
+          },
+          {
+            "name": "region",
+            "dataType": "string",
+            "sourceColumn": "region",
+            "summarizeBy": "none",
+            "description": "Assigned geographical sales territory (West, East, Central, South).",
+            "lineageTag": "34575c7c-a358-4f56-8c6c-32ee08e3f032",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/fact_sales.tmdl",
+        "name": "fact_sales",
+        "lineageTag": "a1840420-f3ab-469d-9219-ef364479ba4c",
+        "columns": [
+          {
+            "name": "order_id",
+            "dataType": "string",
+            "sourceColumn": "order_id",
+            "summarizeBy": "none",
+            "description": "Unique sales order transaction header identifier.",
+            "lineageTag": "e585b315-7ba8-425a-9f80-cc643e7bd532",
+            "expression": null
+          },
+          {
+            "name": "order_line_id",
+            "dataType": "string",
+            "sourceColumn": "order_line_id",
+            "summarizeBy": "none",
+            "description": "Line item sequence number (1..N) within an order.",
+            "lineageTag": "e8432609-9629-4009-8023-6f7b2dc6fa52",
+            "expression": null
+          },
+          {
+            "name": "customer_id",
+            "dataType": "string",
+            "sourceColumn": "customer_id",
+            "summarizeBy": "none",
+            "description": "Unique sequential identifier (1..600) for each customer.",
+            "lineageTag": "3da835b0-23ea-4ca9-8545-f8123f311563",
+            "expression": null
+          },
+          {
+            "name": "product_id",
+            "dataType": "string",
+            "sourceColumn": "product_id",
+            "summarizeBy": "none",
+            "description": "Unique surrogate key (1..150) identifying each merchandise item.",
+            "lineageTag": "f35baa47-9b8d-476d-856a-c30ba0ecc190",
+            "expression": null
+          },
+          {
+            "name": "employee_id",
+            "dataType": "string",
+            "sourceColumn": "employee_id",
+            "summarizeBy": "none",
+            "description": "Unique employee identification number (1..35).",
+            "lineageTag": "1b3a527d-2eac-4bb1-9b7e-048e1b900203",
+            "expression": null
+          },
+          {
+            "name": "datekey",
+            "dataType": "string",
+            "sourceColumn": "datekey",
+            "summarizeBy": "none",
+            "description": "Integer surrogate key in YYYYMMDD format for date joins.",
+            "lineageTag": "e493d4f4-1711-4de4-beb9-ab8fe0b55f0d",
+            "expression": null
+          },
+          {
+            "name": "quantity",
+            "dataType": "string",
+            "sourceColumn": "quantity",
+            "summarizeBy": "none",
+            "description": "Number of units purchased in order line.",
+            "lineageTag": "feed673e-bf49-4bf0-a5e9-d21bd93e509a",
+            "expression": null
+          },
+          {
+            "name": "unit_price",
+            "dataType": "string",
+            "sourceColumn": "unit_price",
+            "summarizeBy": "none",
+            "description": "Retail selling price per unit ($) at time of order.",
+            "lineageTag": "cdd0e504-2ce6-4df6-811c-11bcf01820e5",
+            "expression": null
+          },
+          {
+            "name": "discount_pct",
+            "dataType": "string",
+            "sourceColumn": "discount_pct",
+            "summarizeBy": "none",
+            "description": "Percentage discount applied (0.00 to 0.30).",
+            "lineageTag": "bbdd2011-c753-4721-9ae4-89e008f134a8",
+            "expression": null
+          },
+          {
+            "name": "net_amount",
+            "dataType": "string",
+            "sourceColumn": "net_amount",
+            "summarizeBy": "none",
+            "description": "Actual net revenue earned after applying discounts.",
+            "lineageTag": "beec1224-b2f8-4dc0-ac6b-0819d90cafba",
+            "expression": null
+          },
+          {
+            "name": "payment_method",
+            "dataType": "string",
+            "sourceColumn": "payment_method",
+            "summarizeBy": "none",
+            "description": "Payment tender channel (Credit Card, PayPal, Cash, Debit Card).",
+            "lineageTag": "08c0bb93-c91f-4427-bf21-49aac67daf0f",
+            "expression": null
+          },
+          {
+            "name": "order_status",
+            "dataType": "string",
+            "sourceColumn": "order_status",
+            "summarizeBy": "none",
+            "description": "Current status of transaction (Completed, Processing, Canceled, Returned).",
+            "lineageTag": "195a7349-df3a-4f28-8dac-9440c7e391dc",
+            "expression": null
+          },
+          {
+            "name": "channel",
+            "dataType": "string",
+            "sourceColumn": "channel",
+            "summarizeBy": "none",
+            "description": "Sales channel origination (Web, Mobile App, In-Store Retail).",
+            "lineageTag": "87847b9e-9070-4235-84b8-33a9f4c0517a",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/flat_sales_all.tmdl",
+        "name": "flat_sales_all",
+        "lineageTag": "3ead40b5-967c-42a6-8b3a-70b6eed40bea",
+        "columns": [
+          {
+            "name": "order_id",
+            "dataType": "string",
+            "sourceColumn": "order_id",
+            "summarizeBy": "none",
+            "description": "Unique sales order transaction header identifier.",
+            "lineageTag": "be470296-6f71-4f7b-bb5d-0189a854d716",
+            "expression": null
+          },
+          {
+            "name": "order_line_id",
+            "dataType": "string",
+            "sourceColumn": "order_line_id",
+            "summarizeBy": "none",
+            "description": "Line item sequence number (1..N) within an order.",
+            "lineageTag": "028bda80-3cbe-42f4-88c7-916728962954",
+            "expression": null
+          },
+          {
+            "name": "order_date",
+            "dataType": "string",
+            "sourceColumn": "order_date",
+            "summarizeBy": "none",
+            "description": "Transaction date on which order was placed.",
+            "lineageTag": "aa75dbc8-5c52-4994-bf4b-18a7964e0f0e",
+            "expression": null
+          },
+          {
+            "name": "customer_name",
+            "dataType": "string",
+            "sourceColumn": "customer_name",
+            "summarizeBy": "none",
+            "description": "Full name of the purchasing customer.",
+            "lineageTag": "0919db62-8e7d-45e6-9a71-f8e1c08650c8",
+            "expression": null
+          },
+          {
+            "name": "product_name",
+            "dataType": "string",
+            "sourceColumn": "product_name",
+            "summarizeBy": "none",
+            "description": "Catalog description and product title.",
+            "lineageTag": "ea723a57-3bb6-43e1-9fdb-c01f94237584",
+            "expression": null
+          },
+          {
+            "name": "product_category",
+            "dataType": "string",
+            "sourceColumn": "product_category",
+            "summarizeBy": "none",
+            "description": "Merchandise category of the ordered item.",
+            "lineageTag": "718281e7-2887-4f38-82cc-5b7764ecf206",
+            "expression": null
+          },
+          {
+            "name": "quantity",
+            "dataType": "string",
+            "sourceColumn": "quantity",
+            "summarizeBy": "none",
+            "description": "Number of units purchased in order line.",
+            "lineageTag": "8d6d44d3-dcbf-4226-a5c8-bce5b6863dae",
+            "expression": null
+          },
+          {
+            "name": "net_amount",
+            "dataType": "string",
+            "sourceColumn": "net_amount",
+            "summarizeBy": "none",
+            "description": "Actual net revenue earned after applying discounts.",
+            "lineageTag": "2493ed31-0ec4-4a3f-bd81-54fb31f1a99b",
+            "expression": null
+          },
+          {
+            "name": "channel",
+            "dataType": "string",
+            "sourceColumn": "channel",
+            "summarizeBy": "none",
+            "description": "Sales channel origination (Web, Mobile App, In-Store Retail).",
+            "lineageTag": "18965dea-86e8-45fb-b1ca-32e18c10f998",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      }
+    ],
+    "relationships": [
+      {
+        "name": "AutoDetected_de8de45f-ebb1-4d1d-a6b4-e19e17d854ac",
+        "fromTable": "fact_sales",
+        "fromColumn": "datekey",
+        "toTable": "dim_calendar",
+        "toColumn": "datekey",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      },
+      {
+        "name": "cdcabb57-8502-4d1c-1ca6-c29df34d8d3e",
+        "fromTable": "fact_sales",
+        "fromColumn": "employee_id",
+        "toTable": "dim_employee",
+        "toColumn": "employee_id",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      },
+      {
+        "name": "dab805ef-d296-87a4-acb2-347f07dc4199",
+        "fromTable": "flat_sales_all",
+        "fromColumn": "order_date",
+        "toTable": "dim_calendar",
+        "toColumn": "date",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      },
+      {
+        "name": "8defae2f-1aaf-a630-18a1-4f48a16e650a",
+        "fromTable": "fact_sales",
+        "fromColumn": "order_id",
+        "toTable": "flat_sales_all",
+        "toColumn": "order_id",
+        "crossFilteringBehavior": "bothDirections",
+        "toCardinality": "many"
+      }
+    ]
+  },
+  "flat_sales_completed": {
+    "name": "flat_sales_completed",
+    "tableCount": 7,
+    "relationshipCount": 1,
+    "tables": [
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/dim_calendar.tmdl",
+        "name": "dim_calendar",
+        "lineageTag": "79ef8b5a-6d15-45c7-b623-d5bc95056c91",
+        "columns": [
+          {
+            "name": "datekey",
+            "dataType": "string",
+            "sourceColumn": "datekey",
+            "summarizeBy": "none",
+            "description": "Integer surrogate key in YYYYMMDD format for date joins.",
+            "lineageTag": "9f795fc7-1acf-453e-a848-ee627b26583a",
+            "expression": null
+          },
+          {
+            "name": "date",
+            "dataType": "string",
+            "sourceColumn": "date",
+            "summarizeBy": "none",
+            "description": "Standard ISO 8601 calendar date (YYYY-MM-DD).",
+            "lineageTag": "e6673c74-1291-494f-a5fa-855f8aa4b37a",
+            "expression": null
+          },
+          {
+            "name": "year",
+            "dataType": "string",
+            "sourceColumn": "year",
+            "summarizeBy": "none",
+            "description": "Four-digit calendar year (e.g. 2026).",
+            "lineageTag": "c4f8230d-cf10-4767-8424-bb094285970b",
+            "expression": null
+          },
+          {
+            "name": "month",
+            "dataType": "string",
+            "sourceColumn": "month",
+            "summarizeBy": "none",
+            "description": "Numeric calendar month (1..12).",
+            "lineageTag": "d068670e-361f-4493-bf51-a6bfe6feaba5",
+            "expression": null
+          },
+          {
+            "name": "month_name",
+            "dataType": "string",
+            "sourceColumn": "month_name",
+            "summarizeBy": "none",
+            "description": "Full English month name (e.g. January, February).",
+            "lineageTag": "0b8519f2-f604-425c-85c6-d39a8906129d",
+            "expression": null
+          },
+          {
+            "name": "quarter",
+            "dataType": "string",
+            "sourceColumn": "quarter",
+            "summarizeBy": "none",
+            "description": "Calendar quarter identifier (Q1, Q2, Q3, Q4).",
+            "lineageTag": "bd07c297-97cd-4e70-978a-30781795221e",
+            "expression": null
+          },
+          {
+            "name": "day_name",
+            "dataType": "string",
+            "sourceColumn": "day_name",
+            "summarizeBy": "none",
+            "description": "Full English day name (e.g. Monday, Tuesday).",
+            "lineageTag": "0fa83cdc-2174-4673-8074-2c1e862f49db",
+            "expression": null
+          },
+          {
+            "name": "is_weekend",
+            "dataType": "string",
+            "sourceColumn": "is_weekend",
+            "summarizeBy": "none",
+            "description": "Boolean flag indicating Saturday or Sunday (1 = Weekend, 0 = Weekday).",
+            "lineageTag": "a5fe93e3-f859-4ecf-8b67-77e450eab306",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/dim_customer.tmdl",
+        "name": "dim_customer",
+        "lineageTag": "1ace2605-f91c-4dba-a17c-16b7d1afa4b1",
+        "columns": [
+          {
+            "name": "customer_id",
+            "dataType": "string",
+            "sourceColumn": "customer_id",
+            "summarizeBy": "none",
+            "description": "Unique sequential identifier (1..600) for each customer.",
+            "lineageTag": "2f58fa72-11f2-402b-89ee-aa2a92957236",
+            "expression": null
+          },
+          {
+            "name": "full_name",
+            "dataType": "string",
+            "sourceColumn": "full_name",
+            "summarizeBy": "none",
+            "description": "Concatenated customer full name (first + last).",
+            "lineageTag": "a95ea06f-ed8e-4a55-ae23-0021146de55e",
+            "expression": null
+          },
+          {
+            "name": "email",
+            "dataType": "string",
+            "sourceColumn": "email",
+            "summarizeBy": "none",
+            "description": "Primary email address associated with customer account.",
+            "lineageTag": "3c667951-5567-4e51-abae-ac844a92749e",
+            "expression": null
+          },
+          {
+            "name": "state",
+            "dataType": "string",
+            "sourceColumn": "state",
+            "summarizeBy": "none",
+            "description": "Customer geographic state or province code.",
+            "lineageTag": "244b90ff-6173-450c-9de3-cf88d93ccc9d",
+            "expression": null
+          },
+          {
+            "name": "customer_segment",
+            "dataType": "string",
+            "sourceColumn": "customer_segment",
+            "summarizeBy": "none",
+            "description": "Market segment classification (Retail, Wholesale, VIP).",
+            "lineageTag": "a11d813e-71b9-4a91-9f2a-202e09a41609",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/flat_sales_completed.tmdl",
+        "name": "flat_sales_completed",
+        "lineageTag": "b6be6beb-29f1-48a5-81c0-625157189e89",
+        "columns": [
+          {
+            "name": "order_id",
+            "dataType": "string",
+            "sourceColumn": "order_id",
+            "summarizeBy": "none",
+            "description": "Unique sales order transaction header identifier.",
+            "lineageTag": "c7d0eb31-325d-4c7a-83de-99b17198f141",
+            "expression": null
+          },
+          {
+            "name": "order_line_id",
+            "dataType": "string",
+            "sourceColumn": "order_line_id",
+            "summarizeBy": "none",
+            "description": "Line item sequence number (1..N) within an order.",
+            "lineageTag": "93dcebd5-75c5-4398-bc5f-3f1ecf321cef",
+            "expression": null
+          },
+          {
+            "name": "order_date",
+            "dataType": "string",
+            "sourceColumn": "order_date",
+            "summarizeBy": "none",
+            "description": "Transaction date on which order was placed.",
+            "lineageTag": "7ba34804-995f-49d6-aa47-0712b4d6f8c5",
+            "expression": null
+          },
+          {
+            "name": "customer_name",
+            "dataType": "string",
+            "sourceColumn": "customer_name",
+            "summarizeBy": "none",
+            "description": "Full name of the purchasing customer.",
+            "lineageTag": "222d09aa-1ec4-467b-86af-43b85b4a45fb",
+            "expression": null
+          },
+          {
+            "name": "product_name",
+            "dataType": "string",
+            "sourceColumn": "product_name",
+            "summarizeBy": "none",
+            "description": "Catalog description and product title.",
+            "lineageTag": "458b28bd-b679-4b59-928a-10dd0a037964",
+            "expression": null
+          },
+          {
+            "name": "product_category",
+            "dataType": "string",
+            "sourceColumn": "product_category",
+            "summarizeBy": "none",
+            "description": "Merchandise category of the ordered item.",
+            "lineageTag": "ed2232e5-1575-49ba-84f0-2a77870d1762",
+            "expression": null
+          },
+          {
+            "name": "quantity",
+            "dataType": "string",
+            "sourceColumn": "quantity",
+            "summarizeBy": "none",
+            "description": "Number of units purchased in order line.",
+            "lineageTag": "301c7b2f-7495-445b-adfb-46924ee0423a",
+            "expression": null
+          },
+          {
+            "name": "net_amount",
+            "dataType": "string",
+            "sourceColumn": "net_amount",
+            "summarizeBy": "none",
+            "description": "Actual net revenue earned after applying discounts.",
+            "lineageTag": "809d7d2f-3ead-40d2-a2ea-4d9a2ac5285c",
+            "expression": null
+          },
+          {
+            "name": "channel",
+            "dataType": "string",
+            "sourceColumn": "channel",
+            "summarizeBy": "none",
+            "description": "Sales channel origination (Web, Mobile App, In-Store Retail).",
+            "lineageTag": "96ca9327-8144-4005-97c2-77115ff78ad0",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_dim_date.tmdl",
+        "name": "sql_dim_date",
+        "lineageTag": "e90299e8-e196-4d64-af85-6922f6c9c57b",
+        "columns": [
+          {
+            "name": "sql_dim_date",
+            "dataType": "string",
+            "sourceColumn": "sql_dim_date",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_dim_date.",
+            "lineageTag": "5fada11d-4899-4291-abda-f4b4e14abc4d",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_dim_product.tmdl",
+        "name": "sql_dim_product",
+        "lineageTag": "5beec82b-4127-4513-be49-058477e6370a",
+        "columns": [
+          {
+            "name": "sql_dim_product",
+            "dataType": "string",
+            "sourceColumn": "sql_dim_product",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_dim_product.",
+            "lineageTag": "46bf498c-94ec-4ee5-bae9-4600e18c6ef6",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_flat_sales_all.tmdl",
+        "name": "sql_flat_sales_all",
+        "lineageTag": "efd15e42-7d83-4bca-b6a3-646d48ab884b",
+        "columns": [
+          {
+            "name": "sql_flat_sales_all",
+            "dataType": "string",
+            "sourceColumn": "sql_flat_sales_all",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_flat_sales_all.",
+            "lineageTag": "5012f4a0-c0d2-42cb-aefd-2da4dda8bc4e",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl",
+        "name": "sql_flat_sales_completed",
+        "lineageTag": "7751f11b-efde-485d-9bdc-b92557dcf54d",
+        "columns": [
+          {
+            "name": "sql_flat_sales_completed",
+            "dataType": "string",
+            "sourceColumn": "sql_flat_sales_completed",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_flat_sales_completed.",
+            "lineageTag": "5e987501-9ea4-48a1-9333-016b53137268",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      }
+    ],
+    "relationships": [
+      {
+        "name": "defc8ca4-33ee-19ab-d42b-240fcd45be3e",
+        "fromTable": "flat_sales_completed",
+        "fromColumn": "order_date",
+        "toTable": "dim_calendar",
+        "toColumn": "date",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      }
+    ]
+  },
+  "oakhaven template": {
+    "name": "oakhaven template",
+    "tableCount": 13,
+    "relationshipCount": 5,
+    "tables": [
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_calendar.tmdl",
+        "name": "dim_calendar",
+        "lineageTag": "79ef8b5a-6d15-45c7-b623-d5bc95056c91",
+        "columns": [
+          {
+            "name": "datekey",
+            "dataType": "string",
+            "sourceColumn": "datekey",
+            "summarizeBy": "none",
+            "description": "Integer surrogate key in YYYYMMDD format for date joins.",
+            "lineageTag": "9f795fc7-1acf-453e-a848-ee627b26583a",
+            "expression": null
+          },
+          {
+            "name": "date",
+            "dataType": "string",
+            "sourceColumn": "date",
+            "summarizeBy": "none",
+            "description": "Standard ISO 8601 calendar date (YYYY-MM-DD).",
+            "lineageTag": "e6673c74-1291-494f-a5fa-855f8aa4b37a",
+            "expression": null
+          },
+          {
+            "name": "year",
+            "dataType": "string",
+            "sourceColumn": "year",
+            "summarizeBy": "none",
+            "description": "Four-digit calendar year (e.g. 2026).",
+            "lineageTag": "c4f8230d-cf10-4767-8424-bb094285970b",
+            "expression": null
+          },
+          {
+            "name": "month",
+            "dataType": "string",
+            "sourceColumn": "month",
+            "summarizeBy": "none",
+            "description": "Numeric calendar month (1..12).",
+            "lineageTag": "d068670e-361f-4493-bf51-a6bfe6feaba5",
+            "expression": null
+          },
+          {
+            "name": "month_name",
+            "dataType": "string",
+            "sourceColumn": "month_name",
+            "summarizeBy": "none",
+            "description": "Full English month name (e.g. January, February).",
+            "lineageTag": "0b8519f2-f604-425c-85c6-d39a8906129d",
+            "expression": null
+          },
+          {
+            "name": "quarter",
+            "dataType": "string",
+            "sourceColumn": "quarter",
+            "summarizeBy": "none",
+            "description": "Calendar quarter identifier (Q1, Q2, Q3, Q4).",
+            "lineageTag": "bd07c297-97cd-4e70-978a-30781795221e",
+            "expression": null
+          },
+          {
+            "name": "day_name",
+            "dataType": "string",
+            "sourceColumn": "day_name",
+            "summarizeBy": "none",
+            "description": "Full English day name (e.g. Monday, Tuesday).",
+            "lineageTag": "0fa83cdc-2174-4673-8074-2c1e862f49db",
+            "expression": null
+          },
+          {
+            "name": "is_weekend",
+            "dataType": "string",
+            "sourceColumn": "is_weekend",
+            "summarizeBy": "none",
+            "description": "Boolean flag indicating Saturday or Sunday (1 = Weekend, 0 = Weekday).",
+            "lineageTag": "a5fe93e3-f859-4ecf-8b67-77e450eab306",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_customer.tmdl",
+        "name": "dim_customer",
+        "lineageTag": "1ace2605-f91c-4dba-a17c-16b7d1afa4b1",
+        "columns": [
+          {
+            "name": "customer_id",
+            "dataType": "string",
+            "sourceColumn": "customer_id",
+            "summarizeBy": "none",
+            "description": "Unique sequential identifier (1..600) for each customer.",
+            "lineageTag": "2f58fa72-11f2-402b-89ee-aa2a92957236",
+            "expression": null
+          },
+          {
+            "name": "full_name",
+            "dataType": "string",
+            "sourceColumn": "full_name",
+            "summarizeBy": "none",
+            "description": "Concatenated customer full name (first + last).",
+            "lineageTag": "a95ea06f-ed8e-4a55-ae23-0021146de55e",
+            "expression": null
+          },
+          {
+            "name": "email",
+            "dataType": "string",
+            "sourceColumn": "email",
+            "summarizeBy": "none",
+            "description": "Primary email address associated with customer account.",
+            "lineageTag": "3c667951-5567-4e51-abae-ac844a92749e",
+            "expression": null
+          },
+          {
+            "name": "state",
+            "dataType": "string",
+            "sourceColumn": "state",
+            "summarizeBy": "none",
+            "description": "Customer geographic state or province code.",
+            "lineageTag": "244b90ff-6173-450c-9de3-cf88d93ccc9d",
+            "expression": null
+          },
+          {
+            "name": "customer_segment",
+            "dataType": "string",
+            "sourceColumn": "customer_segment",
+            "summarizeBy": "none",
+            "description": "Market segment classification (Retail, Wholesale, VIP).",
+            "lineageTag": "a11d813e-71b9-4a91-9f2a-202e09a41609",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_employee.tmdl",
+        "name": "dim_employee",
+        "lineageTag": "43d7354d-c14a-4ab6-ac47-3e5506aec046",
+        "columns": [
+          {
+            "name": "employee_id",
+            "dataType": "string",
+            "sourceColumn": "employee_id",
+            "summarizeBy": "none",
+            "description": "Unique employee identification number (1..35).",
+            "lineageTag": "ae9c803e-b41e-47f0-bfe5-53dc70556787",
+            "expression": null
+          },
+          {
+            "name": "full_name",
+            "dataType": "string",
+            "sourceColumn": "full_name",
+            "summarizeBy": "none",
+            "description": "Concatenated customer full name (first + last).",
+            "lineageTag": "5537ce32-b016-44fc-b0a7-2d262f14b77a",
+            "expression": null
+          },
+          {
+            "name": "department",
+            "dataType": "string",
+            "sourceColumn": "department",
+            "summarizeBy": "none",
+            "description": "Company department (Sales, Support, Warehouse, Management).",
+            "lineageTag": "00fa833f-3d0f-4760-bf3a-ce4b255e9c85",
+            "expression": null
+          },
+          {
+            "name": "region",
+            "dataType": "string",
+            "sourceColumn": "region",
+            "summarizeBy": "none",
+            "description": "Assigned geographical sales territory (West, East, Central, South).",
+            "lineageTag": "34575c7c-a358-4f56-8c6c-32ee08e3f032",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/fact_sales.tmdl",
+        "name": "fact_sales",
+        "lineageTag": "a1840420-f3ab-469d-9219-ef364479ba4c",
+        "columns": [
+          {
+            "name": "order_id",
+            "dataType": "string",
+            "sourceColumn": "order_id",
+            "summarizeBy": "none",
+            "description": "Unique sales order transaction header identifier.",
+            "lineageTag": "e585b315-7ba8-425a-9f80-cc643e7bd532",
+            "expression": null
+          },
+          {
+            "name": "order_line_id",
+            "dataType": "string",
+            "sourceColumn": "order_line_id",
+            "summarizeBy": "none",
+            "description": "Line item sequence number (1..N) within an order.",
+            "lineageTag": "e8432609-9629-4009-8023-6f7b2dc6fa52",
+            "expression": null
+          },
+          {
+            "name": "customer_id",
+            "dataType": "string",
+            "sourceColumn": "customer_id",
+            "summarizeBy": "none",
+            "description": "Unique sequential identifier (1..600) for each customer.",
+            "lineageTag": "3da835b0-23ea-4ca9-8545-f8123f311563",
+            "expression": null
+          },
+          {
+            "name": "product_id",
+            "dataType": "string",
+            "sourceColumn": "product_id",
+            "summarizeBy": "none",
+            "description": "Unique surrogate key (1..150) identifying each merchandise item.",
+            "lineageTag": "f35baa47-9b8d-476d-856a-c30ba0ecc190",
+            "expression": null
+          },
+          {
+            "name": "employee_id",
+            "dataType": "string",
+            "sourceColumn": "employee_id",
+            "summarizeBy": "none",
+            "description": "Unique employee identification number (1..35).",
+            "lineageTag": "1b3a527d-2eac-4bb1-9b7e-048e1b900203",
+            "expression": null
+          },
+          {
+            "name": "datekey",
+            "dataType": "string",
+            "sourceColumn": "datekey",
+            "summarizeBy": "none",
+            "description": "Integer surrogate key in YYYYMMDD format for date joins.",
+            "lineageTag": "e493d4f4-1711-4de4-beb9-ab8fe0b55f0d",
+            "expression": null
+          },
+          {
+            "name": "quantity",
+            "dataType": "string",
+            "sourceColumn": "quantity",
+            "summarizeBy": "none",
+            "description": "Number of units purchased in order line.",
+            "lineageTag": "feed673e-bf49-4bf0-a5e9-d21bd93e509a",
+            "expression": null
+          },
+          {
+            "name": "unit_price",
+            "dataType": "string",
+            "sourceColumn": "unit_price",
+            "summarizeBy": "none",
+            "description": "Retail selling price per unit ($) at time of order.",
+            "lineageTag": "cdd0e504-2ce6-4df6-811c-11bcf01820e5",
+            "expression": null
+          },
+          {
+            "name": "discount_pct",
+            "dataType": "string",
+            "sourceColumn": "discount_pct",
+            "summarizeBy": "none",
+            "description": "Percentage discount applied (0.00 to 0.30).",
+            "lineageTag": "bbdd2011-c753-4721-9ae4-89e008f134a8",
+            "expression": null
+          },
+          {
+            "name": "net_amount",
+            "dataType": "string",
+            "sourceColumn": "net_amount",
+            "summarizeBy": "none",
+            "description": "Actual net revenue earned after applying discounts.",
+            "lineageTag": "beec1224-b2f8-4dc0-ac6b-0819d90cafba",
+            "expression": null
+          },
+          {
+            "name": "payment_method",
+            "dataType": "string",
+            "sourceColumn": "payment_method",
+            "summarizeBy": "none",
+            "description": "Payment tender channel (Credit Card, PayPal, Cash, Debit Card).",
+            "lineageTag": "08c0bb93-c91f-4427-bf21-49aac67daf0f",
+            "expression": null
+          },
+          {
+            "name": "order_status",
+            "dataType": "string",
+            "sourceColumn": "order_status",
+            "summarizeBy": "none",
+            "description": "Current status of transaction (Completed, Processing, Canceled, Returned).",
+            "lineageTag": "195a7349-df3a-4f28-8dac-9440c7e391dc",
+            "expression": null
+          },
+          {
+            "name": "channel",
+            "dataType": "string",
+            "sourceColumn": "channel",
+            "summarizeBy": "none",
+            "description": "Sales channel origination (Web, Mobile App, In-Store Retail).",
+            "lineageTag": "87847b9e-9070-4235-84b8-33a9f4c0517a",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/flat_sales_all.tmdl",
+        "name": "flat_sales_all",
+        "lineageTag": "3ead40b5-967c-42a6-8b3a-70b6eed40bea",
+        "columns": [
+          {
+            "name": "order_id",
+            "dataType": "string",
+            "sourceColumn": "order_id",
+            "summarizeBy": "none",
+            "description": "Unique sales order transaction header identifier.",
+            "lineageTag": "be470296-6f71-4f7b-bb5d-0189a854d716",
+            "expression": null
+          },
+          {
+            "name": "order_line_id",
+            "dataType": "string",
+            "sourceColumn": "order_line_id",
+            "summarizeBy": "none",
+            "description": "Line item sequence number (1..N) within an order.",
+            "lineageTag": "028bda80-3cbe-42f4-88c7-916728962954",
+            "expression": null
+          },
+          {
+            "name": "order_date",
+            "dataType": "string",
+            "sourceColumn": "order_date",
+            "summarizeBy": "none",
+            "description": "Transaction date on which order was placed.",
+            "lineageTag": "aa75dbc8-5c52-4994-bf4b-18a7964e0f0e",
+            "expression": null
+          },
+          {
+            "name": "customer_name",
+            "dataType": "string",
+            "sourceColumn": "customer_name",
+            "summarizeBy": "none",
+            "description": "Full name of the purchasing customer.",
+            "lineageTag": "0919db62-8e7d-45e6-9a71-f8e1c08650c8",
+            "expression": null
+          },
+          {
+            "name": "product_name",
+            "dataType": "string",
+            "sourceColumn": "product_name",
+            "summarizeBy": "none",
+            "description": "Catalog description and product title.",
+            "lineageTag": "ea723a57-3bb6-43e1-9fdb-c01f94237584",
+            "expression": null
+          },
+          {
+            "name": "product_category",
+            "dataType": "string",
+            "sourceColumn": "product_category",
+            "summarizeBy": "none",
+            "description": "Merchandise category of the ordered item.",
+            "lineageTag": "718281e7-2887-4f38-82cc-5b7764ecf206",
+            "expression": null
+          },
+          {
+            "name": "quantity",
+            "dataType": "string",
+            "sourceColumn": "quantity",
+            "summarizeBy": "none",
+            "description": "Number of units purchased in order line.",
+            "lineageTag": "8d6d44d3-dcbf-4226-a5c8-bce5b6863dae",
+            "expression": null
+          },
+          {
+            "name": "net_amount",
+            "dataType": "string",
+            "sourceColumn": "net_amount",
+            "summarizeBy": "none",
+            "description": "Actual net revenue earned after applying discounts.",
+            "lineageTag": "2493ed31-0ec4-4a3f-bd81-54fb31f1a99b",
+            "expression": null
+          },
+          {
+            "name": "channel",
+            "dataType": "string",
+            "sourceColumn": "channel",
+            "summarizeBy": "none",
+            "description": "Sales channel origination (Web, Mobile App, In-Store Retail).",
+            "lineageTag": "18965dea-86e8-45fb-b1ca-32e18c10f998",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/flat_sales_completed.tmdl",
+        "name": "flat_sales_completed",
+        "lineageTag": "b6be6beb-29f1-48a5-81c0-625157189e89",
+        "columns": [
+          {
+            "name": "order_id",
+            "dataType": "string",
+            "sourceColumn": "order_id",
+            "summarizeBy": "none",
+            "description": "Unique sales order transaction header identifier.",
+            "lineageTag": "c7d0eb31-325d-4c7a-83de-99b17198f141",
+            "expression": null
+          },
+          {
+            "name": "order_line_id",
+            "dataType": "string",
+            "sourceColumn": "order_line_id",
+            "summarizeBy": "none",
+            "description": "Line item sequence number (1..N) within an order.",
+            "lineageTag": "93dcebd5-75c5-4398-bc5f-3f1ecf321cef",
+            "expression": null
+          },
+          {
+            "name": "order_date",
+            "dataType": "string",
+            "sourceColumn": "order_date",
+            "summarizeBy": "none",
+            "description": "Transaction date on which order was placed.",
+            "lineageTag": "7ba34804-995f-49d6-aa47-0712b4d6f8c5",
+            "expression": null
+          },
+          {
+            "name": "customer_name",
+            "dataType": "string",
+            "sourceColumn": "customer_name",
+            "summarizeBy": "none",
+            "description": "Full name of the purchasing customer.",
+            "lineageTag": "222d09aa-1ec4-467b-86af-43b85b4a45fb",
+            "expression": null
+          },
+          {
+            "name": "product_name",
+            "dataType": "string",
+            "sourceColumn": "product_name",
+            "summarizeBy": "none",
+            "description": "Catalog description and product title.",
+            "lineageTag": "458b28bd-b679-4b59-928a-10dd0a037964",
+            "expression": null
+          },
+          {
+            "name": "product_category",
+            "dataType": "string",
+            "sourceColumn": "product_category",
+            "summarizeBy": "none",
+            "description": "Merchandise category of the ordered item.",
+            "lineageTag": "ed2232e5-1575-49ba-84f0-2a77870d1762",
+            "expression": null
+          },
+          {
+            "name": "quantity",
+            "dataType": "string",
+            "sourceColumn": "quantity",
+            "summarizeBy": "none",
+            "description": "Number of units purchased in order line.",
+            "lineageTag": "301c7b2f-7495-445b-adfb-46924ee0423a",
+            "expression": null
+          },
+          {
+            "name": "net_amount",
+            "dataType": "string",
+            "sourceColumn": "net_amount",
+            "summarizeBy": "none",
+            "description": "Actual net revenue earned after applying discounts.",
+            "lineageTag": "809d7d2f-3ead-40d2-a2ea-4d9a2ac5285c",
+            "expression": null
+          },
+          {
+            "name": "channel",
+            "dataType": "string",
+            "sourceColumn": "channel",
+            "summarizeBy": "none",
+            "description": "Sales channel origination (Web, Mobile App, In-Store Retail).",
+            "lineageTag": "96ca9327-8144-4005-97c2-77115ff78ad0",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_customer.tmdl",
+        "name": "sql_dim_customer",
+        "lineageTag": "60157a56-9e5c-44e3-afe2-a1d8596c4810",
+        "columns": [
+          {
+            "name": "sql_dim_customer",
+            "dataType": "string",
+            "sourceColumn": "sql_dim_customer",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_dim_customer.",
+            "lineageTag": "4ceefc78-122a-4729-9da4-ff81d61dc8c3",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_date.tmdl",
+        "name": "sql_dim_date",
+        "lineageTag": "e90299e8-e196-4d64-af85-6922f6c9c57b",
+        "columns": [
+          {
+            "name": "sql_dim_date",
+            "dataType": "string",
+            "sourceColumn": "sql_dim_date",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_dim_date.",
+            "lineageTag": "5fada11d-4899-4291-abda-f4b4e14abc4d",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_employee.tmdl",
+        "name": "sql_dim_employee",
+        "lineageTag": "40290057-dafc-4a1a-b105-70828199df3c",
+        "columns": [
+          {
+            "name": "sql_dim_employee",
+            "dataType": "string",
+            "sourceColumn": "sql_dim_employee",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_dim_employee.",
+            "lineageTag": "7b629e6f-4ccd-448a-b5f8-06d47d6dcf00",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_product.tmdl",
+        "name": "sql_dim_product",
+        "lineageTag": "5beec82b-4127-4513-be49-058477e6370a",
+        "columns": [
+          {
+            "name": "sql_dim_product",
+            "dataType": "string",
+            "sourceColumn": "sql_dim_product",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_dim_product.",
+            "lineageTag": "46bf498c-94ec-4ee5-bae9-4600e18c6ef6",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_fact_sales.tmdl",
+        "name": "sql_fact_sales",
+        "lineageTag": "3aaa36e0-22c9-499d-8643-e01165b98cf4",
+        "columns": [
+          {
+            "name": "sql_fact_sales",
+            "dataType": "string",
+            "sourceColumn": "sql_fact_sales",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_fact_sales.",
+            "lineageTag": "f81f494f-b6bc-4739-96ef-88192b7f835d",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_flat_sales_all.tmdl",
+        "name": "sql_flat_sales_all",
+        "lineageTag": "efd15e42-7d83-4bca-b6a3-646d48ab884b",
+        "columns": [
+          {
+            "name": "sql_flat_sales_all",
+            "dataType": "string",
+            "sourceColumn": "sql_flat_sales_all",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_flat_sales_all.",
+            "lineageTag": "5012f4a0-c0d2-42cb-aefd-2da4dda8bc4e",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      },
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl",
+        "name": "sql_flat_sales_completed",
+        "lineageTag": "7751f11b-efde-485d-9bdc-b92557dcf54d",
+        "columns": [
+          {
+            "name": "sql_flat_sales_completed",
+            "dataType": "string",
+            "sourceColumn": "sql_flat_sales_completed",
+            "summarizeBy": "none",
+            "description": "Attribute column representing sql_flat_sales_completed.",
+            "lineageTag": "5e987501-9ea4-48a1-9333-016b53137268",
+            "expression": null
+          }
+        ],
+        "measures": [],
+        "partitions": []
+      }
+    ],
+    "relationships": [
+      {
+        "name": "AutoDetected_1d28b393-7c5a-472e-8bdf-bbaefdfadc47",
+        "fromTable": "fact_sales",
+        "fromColumn": "customer_id",
+        "toTable": "dim_customer",
+        "toColumn": "customer_id",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      },
+      {
+        "name": "AutoDetected_de8de45f-ebb1-4d1d-a6b4-e19e17d854ac",
+        "fromTable": "fact_sales",
+        "fromColumn": "datekey",
+        "toTable": "dim_calendar",
+        "toColumn": "datekey",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      },
+      {
+        "name": "cdcabb57-8502-4d1c-1ca6-c29df34d8d3e",
+        "fromTable": "fact_sales",
+        "fromColumn": "employee_id",
+        "toTable": "dim_employee",
+        "toColumn": "employee_id",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      },
+      {
+        "name": "dab805ef-d296-87a4-acb2-347f07dc4199",
+        "fromTable": "flat_sales_all",
+        "fromColumn": "order_date",
+        "toTable": "dim_calendar",
+        "toColumn": "date",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      },
+      {
+        "name": "defc8ca4-33ee-19ab-d42b-240fcd45be3e",
+        "fromTable": "flat_sales_completed",
+        "fromColumn": "order_date",
+        "toTable": "dim_calendar",
+        "toColumn": "date",
+        "crossFilteringBehavior": "single",
+        "toCardinality": "one"
+      }
+    ]
+  }
+}

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oakhaven Data Pipeline & PBIP Semantic Model Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: #182234;
+      --border-color: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #34d399;
+      --accent-purple: #c084fc;
+      --accent-amber: #fbbf24;
+      --accent-rose: #fb7185;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Top Navigation Header */
+    .app-header {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0.75rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.25rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      background: var(--accent-blue);
+      color: #0f172a;
+    }
+
+    /* Main Container */
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Metric Cards Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .metric-title {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .metric-value {
+      font-size: 1.875rem;
+      font-weight: 800;
+      color: var(--accent-blue);
+      font-family: var(--font-mono);
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    /* DAG Pipeline Visualizer */
+    .dag-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .dag-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .dag-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .dag-sub {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .dag-stages {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      position: relative;
+    }
+
+    .dag-stage {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .stage-badge {
+      align-self: start;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .badge-bronze { background: rgba(251, 191, 36, 0.15); color: var(--accent-amber); border: 1px solid var(--accent-amber); }
+    .badge-silver { background: rgba(148, 163, 184, 0.15); color: var(--text-secondary); border: 1px solid var(--text-secondary); }
+    .badge-gold { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
+    .badge-pbip { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
+
+    .stage-node-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .node-item {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-size: 0.85rem;
+    }
+
+    .node-name {
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+      margin-bottom: 0.2rem;
+    }
+
+    .node-meta {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* Comparison Table */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-card);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .comparison-table th, .comparison-table td {
+      padding: 1rem 1.25rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .comparison-table th {
+      background: var(--bg-secondary);
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* SQL Code Viewer */
+    .code-box {
+      background: #090d16;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: #e2e8f0;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    /* Footer */
+    .app-footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-color);
+      margin-top: 4rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-title">Oakhaven Pipeline & PBIP Explorer</span>
+    </div>
+    <nav class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('dag')">🔄 Medallion DAG</button>
+      <button class="tab-btn" onclick="switchTab('tmdl')">📐 TMDL Models</button>
+      <button class="tab-btn" onclick="switchTab('pushdown')">🗄️ Database Pushdown</button>
+      <button class="tab-btn" onclick="switchTab('comparator')">⚖️ Paradigm Comparator</button>
+      <button class="tab-btn" onclick="switchTab('sandbox')">💻 SQL Sandbox</button>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-container">
+
+    <!-- Metrics Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <span class="metric-title">Fact Sales Rows</span>
+        <span class="metric-value">12,000</span>
+        <span class="metric-sub">Verified in project/oakhaven.db</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-title">Dimension Tables</span>
+        <span class="metric-value">4 Dims</span>
+        <span class="metric-sub">Customer (600), Product (150), Employee (35), Date (7.6k)</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-title">PBIP TMDL Models</span>
+        <span class="metric-value">4 Projects</span>
+        <span class="metric-sub">pbip_poc/projects/ (Flat & Star paradigms)</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-title">Platform OS</span>
+        <span class="metric-value">Ubuntu 26.04</span>
+        <span class="metric-sub">Native TMDL Code Intelligence (No PBI Desktop)</span>
+      </div>
+    </div>
+
+    <!-- TAB 1: DAG Pipeline Lineage -->
+    <section id="tab-dag" class="tab-content active">
+      <div class="dag-container">
+        <div class="dag-header">
+          <h2 class="dag-title">End-to-End Medallion Pipeline Lineage</h2>
+          <p class="dag-sub">Trace raw ingestion from Bronze ➔ Silver cleaning ➔ Gold Star Schema ➔ Power BI TMDL presentation layer.</p>
+        </div>
+        <div class="dag-stages">
+          <!-- Bronze Stage -->
+          <div class="dag-stage">
+            <span class="stage-badge badge-bronze">Bronze Layer</span>
+            <div class="stage-node-list">
+              <div class="node-item">
+                <div class="node-name">bronze_sales</div>
+                <div class="node-meta">Raw sales JSON/CSV (12,000 rows)</div>
+              </div>
+              <div class="node-item">
+                <div class="node-name">bronze_customers</div>
+                <div class="node-meta">Raw customer records (600 rows)</div>
+              </div>
+              <div class="node-item">
+                <div class="node-name">bronze_products</div>
+                <div class="node-meta">Raw catalog items (150 rows)</div>
+              </div>
+              <div class="node-item">
+                <div class="node-name">bronze_employees</div>
+                <div class="node-meta">Raw sales reps (35 rows)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Silver Stage -->
+          <div class="dag-stage">
+            <span class="stage-badge badge-silver">Silver Layer</span>
+            <div class="stage-node-list">
+              <div class="node-item">
+                <div class="node-name">silver_sales</div>
+                <div class="node-meta">Cleaned sales & calculated net_amount</div>
+              </div>
+              <div class="node-item">
+                <div class="node-name">silver_customers</div>
+                <div class="node-meta">Standardized emails & states</div>
+              </div>
+              <div class="node-item">
+                <div class="node-name">silver_products</div>
+                <div class="node-meta">Brand & category normalization</div>
+              </div>
+              <div class="node-item">
+                <div class="node-name">silver_employees</div>
+                <div class="node-meta">Region & department mapping</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gold Stage -->
+          <div class="dag-stage">
+            <span class="stage-badge badge-gold">Gold Star Schema</span>
+            <div class="stage-node-list">
+              <div class="node-item">
+                <div class="node-name">fact_sales</div>
+                <div class="node-meta">Central fact view (12,000 rows)</div>
+              </div>
+              <div class="node-item">
+                <div class="node-name">dim_customer</div>
+                <div class="node-meta">Customer dimension (600 rows)</div>
+              </div>
+              <div class="node-item">
+                <div class="node-name">dim_product</div>
+                <div class="node-meta">Product dimension (150 rows)</div>
+              </div>
+              <div class="node-item">
+                <div class="node-name">dim_employee</div>
+                <div class="node-meta">Employee dimension (35 rows)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Semantic Stage -->
+          <div class="dag-stage">
+            <span class="stage-badge badge-pbip">PBIP Semantic Models</span>
+            <div class="stage-node-list">
+              <div class="node-item">
+                <div class="node-name">01_flat_model.sql</div>
+                <div class="node-meta">Flat_Sales_All.pbip (Denormalized)</div>
+              </div>
+              <div class="node-item">
+                <div class="node-name">02_star_schema_model.sql</div>
+                <div class="node-meta">Star_Schema_Enterprise.pbip</div>
+              </div>
+              <div class="node-item">
+                <div class="node-name">pbip_linter.py</div>
+                <div class="node-meta">Linux TMDL & Path Sanitizer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: TMDL Models -->
+    <section id="tab-tmdl" class="tab-content">
+      <div class="dag-container">
+        <h2 class="dag-title">TMDL Metadata & Relationship Architecture</h2>
+        <p class="dag-sub" style="margin-bottom: 1.5rem;">Power BI Project (.pbip) TMDL definitions extracted directly from <code>pbip_poc/projects/</code>.</p>
+
+        <div class="code-box">
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+
+ref table fact_sales
+ref table dim_customer
+ref table dim_product
+ref table dim_employee
+ref table dim_date
+
+relationship AutoDetected_1
+	fromColumn: fact_sales.customer_id
+	toColumn: dim_customer.customer_id
+
+relationship AutoDetected_2
+	fromColumn: fact_sales.product_id
+	toColumn: dim_product.product_id
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: Database Pushdown -->
+    <section id="tab-pushdown" class="tab-content">
+      <div class="dag-container">
+        <h2 class="dag-title">TMDL ➔ Database View Pushdown Compiler</h2>
+        <p class="dag-sub" style="margin-bottom: 1.5rem;">Extracted <strong>41 clean SQL views</strong> from Power BI TMDL metadata definitions and compiled them into standalone DDL view statements (saved in <code>pbip_poc/extracted_views.sql</code>).</p>
+
+        <div class="code-box">
+-- Source: pbip_poc/projects/flat_sales_all/.../flat_sales_all.tmdl
+-- Extracted & Unescaped from Power Query M Partition
+
+CREATE VIEW IF NOT EXISTS flat_sales_all_view AS
+SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    f.channel
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+WHERE f.order_status = 'Completed'
+ORDER BY f.order_date DESC;
+        </div>
+      </div>
+    </section>
+    <section id="tab-comparator" class="tab-content">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Architecture Dimension</th>
+            <th>One Flat Table Model (01_flat_model.sql)</th>
+            <th>Star Schema Model (02_star_schema_model.sql)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Query Complexity</strong></td>
+            <td>High (Multi-join SQL pushdown embedded in database)</td>
+            <td>Low (Simple SELECTs per table; relationships handled in DAX)</td>
+          </tr>
+          <tr>
+            <td><strong>DAX Expression Effort</strong></td>
+            <td>Very Low (Pre-calculated columns available in SQL)</td>
+            <td>Moderate (Requires standard SUM / CALCULATE DAX measures)</td>
+          </tr>
+          <tr>
+            <td><strong>Engine Memory Footprint</strong></td>
+            <td>Higher (Duplicated string attributes across 12,000 rows)</td>
+            <td>Optimal (High VertiPaq dictionary compression via 1:N keys)</td>
+          </tr>
+          <tr>
+            <td><strong>Self-Service Flexibility</strong></td>
+            <td>Limited (Fixed schema; rigid reporting structure)</td>
+            <td>High (Drill-down across Customer, Product, Employee, Date)</td>
+          </tr>
+          <tr>
+            <td><strong>Linux Governance</strong></td>
+            <td>Easy SQL pushdown verification via <code>pbip_linter.py</code></td>
+            <td>TMDL relationship linting via <code>pbip_linter.py</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- TAB 4: SQL Sandbox -->
+    <section id="tab-sandbox" class="tab-content">
+      <div class="dag-container">
+        <h2 class="dag-title">Runnable SQL Query Sandbox</h2>
+        <p class="dag-sub" style="margin-bottom: 1rem;">Verified model queries executed directly against <code>project/oakhaven.db</code>.</p>
+        <div class="code-box">
+SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.order_date,
+    c.full_name AS customer_name,
+    p.product_name,
+    p.category AS product_category,
+    f.quantity,
+    f.net_amount,
+    CASE 
+        WHEN f.discount_pct >= 0.20 THEN 'High Discount (20%+)'
+        WHEN f.discount_pct > 0 THEN 'Standard Discount'
+        ELSE 'Full Price'
+    END AS discount_tier
+FROM fact_sales f
+LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
+LEFT JOIN dim_product p ON f.product_id = p.product_id
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
+LIMIT 100;
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    Oakhaven Data Pipeline & PBIP Semantic Model Explorer | Linux Native Workflow (Ubuntu 26.04)
+  </footer>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
+  </script>
+</body>
+</html>
