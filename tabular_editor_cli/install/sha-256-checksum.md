@@ -1,0 +1,6 @@
+#SHA-256 checksum
+ 
+CC263E6322CB946D6343D5E07C24D1B127E5CE6C9AA40FD0743B6679773A2F57
+
+
+## https://tabulareditor.com/ signup for free.
