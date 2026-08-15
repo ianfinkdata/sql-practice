@@ -14,7 +14,9 @@
 
 ---
 
-## P2 — Plan: Visual-Specific Settings Script
-**Status:** Backlog  
+## P2 — Plan: Visual-Specific Settings Script & Report Template Engine
+**Status:** Completed (Implemented)  
 **Created:** 2025-08-14  
-**Description:** Plan out a script (C# via `te script`, or Python if TE CLI doesn't cover Report-layer JSON) to programmatically configure Power BI visual settings across `.Report/definition/` JSON files. Candidate operations: theme enforcement, default interactions, slicer sync groups, visual formatting consistency, page layout standardization. Note: the TE CLI operates on the SemanticModel layer — Report-layer visuals live in separate JSON files and may require a Python script instead.
+**Completed:** 2026-08-15  
+**Description:** Implemented `pbip_poc/tools/pbip_report.py` and modular PBIR template library in `pbip_poc/templates/reports/` (Time Series, Comparative, % Change KPI, and Demographic Analysis with North America footprint USA/CAN/MEX & Azure Maps placeholder). The TE CLI manages the SemanticModel layer, while `pbip_report.py` provides AST report inspection, downstream breaking change impact analysis, and template page injection for the `.Report/` layer.
+
