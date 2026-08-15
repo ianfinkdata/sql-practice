@@ -20,3 +20,11 @@
 **Completed:** 2026-08-15  
 **Description:** Implemented `pbip_poc/tools/pbip_report.py` and modular PBIR template library in `pbip_poc/templates/reports/` (Time Series, Comparative, % Change KPI, and Demographic Analysis with North America footprint USA/CAN/MEX & Azure Maps placeholder). The TE CLI manages the SemanticModel layer, while `pbip_report.py` provides AST report inspection, downstream breaking change impact analysis, and template page injection for the `.Report/` layer.
 
+---
+
+## P2 — Plan: Windows 11 Local PBIP Developer Workflow Guide
+**Status:** Backlog (Tracked in GitHub Issue #2)  
+**Created:** 2026-08-15  
+**GitHub Issue:** https://github.com/ianfinkdata/sql-practice/issues/2  
+**Description:** Document the complete Windows 11 local developer loop combining terminal CLI tooling (`pbip_report.py` & Tabular Editor CLI in PowerShell or WSL 2) with native Power BI Desktop rendering in a single local loop.
+
