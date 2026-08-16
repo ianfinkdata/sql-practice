@@ -955,9 +955,6 @@ INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Total Orders
 INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Average Order Value'', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', 'Calculated metric for ''Average Order Value''.');
 INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Active Customer Count'', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', 'Calculated metric for ''Active Customer Count''.');
 INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Overall Discount Rate'', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', 'Calculated metric for ''Overall Discount Rate''.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Total Cost of Goods Sold'', 'SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))', '\$#,##0.00', 'Calculated metric for ''Total Cost of Goods Sold''.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Gross Margin'', '[Total Net Revenue] - [Total Cost of Goods Sold]', '\$#,##0.00', 'Calculated metric for ''Gross Margin''.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Gross Margin %'', 'DIVIDE([Gross Margin], [Total Net Revenue], 0)', '0.0%', 'Calculated metric for ''Gross Margin %''.');
 INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Net Revenue PY'', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', 'Calculated metric for ''Net Revenue PY''.');
 INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Net Revenue YoY %'', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', 'Calculated metric for ''Net Revenue YoY %''.');
 CREATE TABLE IF NOT EXISTS tmdl_flat_sales_all__measures (

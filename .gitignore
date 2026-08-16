@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 .DS_Store
 legacy README.md
+
+# Power BI local user cache & settings
+**/.pbi/cache.abf
+**/.pbi/localSettings.json
+**/.pbi/editorSettings.json

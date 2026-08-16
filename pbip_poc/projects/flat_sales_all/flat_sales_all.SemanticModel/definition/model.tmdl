@@ -21,6 +21,6 @@ ref table flat_sales_all
 ref table fact_sales
 ref table dim_employee
 ref table dim_calendar
+ref table _measures
 
 ref cultureInfo en-US
-

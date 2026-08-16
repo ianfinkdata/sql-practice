@@ -43,23 +43,23 @@ table _measures
 		displayFolder: 01 - Revenue & Volume
 		lineageTag: m0000007-0000-4000-8000-000000000007
 
-	/// Total wholesale acquisition cost of all merchandise units sold.
-	measure 'Total Cost of Goods Sold' = SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))
-		formatString: \$#,##0.00
-		displayFolder: 02 - Margins & Profitability
-		lineageTag: m0000008-0000-4000-8000-000000000008
-
-	/// Total gross profit (Net Revenue minus Cost of Goods Sold).
-	measure 'Gross Margin' = [Total Net Revenue] - [Total Cost of Goods Sold]
-		formatString: \$#,##0.00
-		displayFolder: 02 - Margins & Profitability
-		lineageTag: m0000009-0000-4000-8000-000000000009
-
-	/// Gross profit percentage of total net revenue.
-	measure 'Gross Margin %' = DIVIDE([Gross Margin], [Total Net Revenue], 0)
-		formatString: 0.0%
-		displayFolder: 02 - Margins & Profitability
-		lineageTag: m0000010-0000-4000-8000-000000000010
+	// Note: The following measures require 'dim_product' [unit_cost] which is not in this model.
+	// Uncomment when dim_product is included in the semantic model.
+	//
+	// measure 'Total Cost of Goods Sold' = SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))
+	// 	formatString: \$#,##0.00
+	// 	displayFolder: 02 - Margins & Profitability
+	// 	lineageTag: m0000008-0000-4000-8000-000000000008
+	//
+	// measure 'Gross Margin' = [Total Net Revenue] - [Total Cost of Goods Sold]
+	// 	formatString: \$#,##0.00
+	// 	displayFolder: 02 - Margins & Profitability
+	// 	lineageTag: m0000009-0000-4000-8000-000000000009
+	//
+	// measure 'Gross Margin %' = DIVIDE([Gross Margin], [Total Net Revenue], 0)
+	// 	formatString: 0.0%
+	// 	displayFolder: 02 - Margins & Profitability
+	// 	lineageTag: m0000010-0000-4000-8000-000000000010
 
 	/// Total net revenue for the prior year comparable calendar period.
 	measure 'Net Revenue PY' = CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))

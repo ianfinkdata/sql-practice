@@ -1083,27 +1083,6 @@
             "lineageTag": "m0000007-0000-4000-8000-000000000007"
           },
           {
-            "name": "'Total Cost of Goods Sold'",
-            "expression": "SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))",
-            "description": "Calculated metric for 'Total Cost of Goods Sold'.",
-            "formatString": "\\$#,##0.00",
-            "lineageTag": "m0000008-0000-4000-8000-000000000008"
-          },
-          {
-            "name": "'Gross Margin'",
-            "expression": "[Total Net Revenue] - [Total Cost of Goods Sold]",
-            "description": "Calculated metric for 'Gross Margin'.",
-            "formatString": "\\$#,##0.00",
-            "lineageTag": "m0000009-0000-4000-8000-000000000009"
-          },
-          {
-            "name": "'Gross Margin %'",
-            "expression": "DIVIDE([Gross Margin], [Total Net Revenue], 0)",
-            "description": "Calculated metric for 'Gross Margin %'.",
-            "formatString": "0.0%",
-            "lineageTag": "m0000010-0000-4000-8000-000000000010"
-          },
-          {
             "name": "'Net Revenue PY'",
             "expression": "CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))",
             "description": "Calculated metric for 'Net Revenue PY'.",
