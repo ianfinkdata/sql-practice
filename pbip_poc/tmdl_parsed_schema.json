@@ -1,10 +1,120 @@
 {
   "duplicated oakhaven template": {
     "name": "duplicated oakhaven template",
-    "tableCount": 13,
+    "tableCount": 14,
     "relationshipCount": 5,
     "parameterCount": 1,
     "tables": [
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/_measures.tmdl",
+        "name": "_measures",
+        "lineageTag": null,
+        "columns": [
+          {
+            "name": "_Dummy",
+            "dataType": "int64",
+            "sourceColumn": "[Value]",
+            "summarizeBy": "none",
+            "description": "Attribute column representing _Dummy.",
+            "lineageTag": "c0000001-0000-4000-8000-000000000001",
+            "expression": null
+          }
+        ],
+        "measures": [
+          {
+            "name": "'Total Gross Revenue'",
+            "expression": "SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])",
+            "description": "Calculated metric for 'Total Gross Revenue'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000001-0000-4000-8000-000000000001"
+          },
+          {
+            "name": "'Total Net Revenue'",
+            "expression": "SUM(fact_sales[net_amount])",
+            "description": "Calculated metric for 'Total Net Revenue'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000002-0000-4000-8000-000000000002"
+          },
+          {
+            "name": "'Total Units Sold'",
+            "expression": "SUM(fact_sales[quantity])",
+            "description": "Calculated metric for 'Total Units Sold'.",
+            "formatString": "#,##0",
+            "lineageTag": "m0000003-0000-4000-8000-000000000003"
+          },
+          {
+            "name": "'Total Orders'",
+            "expression": "DISTINCTCOUNT(fact_sales[order_id])",
+            "description": "Calculated metric for 'Total Orders'.",
+            "formatString": "#,##0",
+            "lineageTag": "m0000004-0000-4000-8000-000000000004"
+          },
+          {
+            "name": "'Average Order Value'",
+            "expression": "DIVIDE([Total Net Revenue], [Total Orders], 0)",
+            "description": "Calculated metric for 'Average Order Value'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000005-0000-4000-8000-000000000005"
+          },
+          {
+            "name": "'Active Customer Count'",
+            "expression": "DISTINCTCOUNT(fact_sales[customer_id])",
+            "description": "Calculated metric for 'Active Customer Count'.",
+            "formatString": "#,##0",
+            "lineageTag": "m0000006-0000-4000-8000-000000000006"
+          },
+          {
+            "name": "'Overall Discount Rate'",
+            "expression": "DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)",
+            "description": "Calculated metric for 'Overall Discount Rate'.",
+            "formatString": "0.0%",
+            "lineageTag": "m0000007-0000-4000-8000-000000000007"
+          },
+          {
+            "name": "'Total Cost of Goods Sold'",
+            "expression": "SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))",
+            "description": "Calculated metric for 'Total Cost of Goods Sold'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000008-0000-4000-8000-000000000008"
+          },
+          {
+            "name": "'Gross Margin'",
+            "expression": "[Total Net Revenue] - [Total Cost of Goods Sold]",
+            "description": "Calculated metric for 'Gross Margin'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000009-0000-4000-8000-000000000009"
+          },
+          {
+            "name": "'Gross Margin %'",
+            "expression": "DIVIDE([Gross Margin], [Total Net Revenue], 0)",
+            "description": "Calculated metric for 'Gross Margin %'.",
+            "formatString": "0.0%",
+            "lineageTag": "m0000010-0000-4000-8000-000000000010"
+          },
+          {
+            "name": "'Net Revenue PY'",
+            "expression": "CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))",
+            "description": "Calculated metric for 'Net Revenue PY'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000011-0000-4000-8000-000000000011"
+          },
+          {
+            "name": "'Net Revenue YoY %'",
+            "expression": "DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)",
+            "description": "Calculated metric for 'Net Revenue YoY %'.",
+            "formatString": "0.0%",
+            "lineageTag": "m0000012-0000-4000-8000-000000000012"
+          }
+        ],
+        "partitions": [],
+        "dataSource": {
+          "connector": "Power Query M Transformation",
+          "target": "In-Memory",
+          "query_type": "M Expression",
+          "raw_m_code": "mode: import\nsource = Row(\"Value\", 1)"
+        },
+        "mSteps": []
+      },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_calendar.tmdl",
         "name": "dim_calendar",
@@ -894,10 +1004,120 @@
   },
   "flat_sales_all": {
     "name": "flat_sales_all",
-    "tableCount": 4,
+    "tableCount": 5,
     "relationshipCount": 4,
     "parameterCount": 1,
     "tables": [
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/_measures.tmdl",
+        "name": "_measures",
+        "lineageTag": null,
+        "columns": [
+          {
+            "name": "_Dummy",
+            "dataType": "int64",
+            "sourceColumn": "[Value]",
+            "summarizeBy": "none",
+            "description": "Attribute column representing _Dummy.",
+            "lineageTag": "c0000001-0000-4000-8000-000000000001",
+            "expression": null
+          }
+        ],
+        "measures": [
+          {
+            "name": "'Total Gross Revenue'",
+            "expression": "SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])",
+            "description": "Calculated metric for 'Total Gross Revenue'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000001-0000-4000-8000-000000000001"
+          },
+          {
+            "name": "'Total Net Revenue'",
+            "expression": "SUM(fact_sales[net_amount])",
+            "description": "Calculated metric for 'Total Net Revenue'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000002-0000-4000-8000-000000000002"
+          },
+          {
+            "name": "'Total Units Sold'",
+            "expression": "SUM(fact_sales[quantity])",
+            "description": "Calculated metric for 'Total Units Sold'.",
+            "formatString": "#,##0",
+            "lineageTag": "m0000003-0000-4000-8000-000000000003"
+          },
+          {
+            "name": "'Total Orders'",
+            "expression": "DISTINCTCOUNT(fact_sales[order_id])",
+            "description": "Calculated metric for 'Total Orders'.",
+            "formatString": "#,##0",
+            "lineageTag": "m0000004-0000-4000-8000-000000000004"
+          },
+          {
+            "name": "'Average Order Value'",
+            "expression": "DIVIDE([Total Net Revenue], [Total Orders], 0)",
+            "description": "Calculated metric for 'Average Order Value'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000005-0000-4000-8000-000000000005"
+          },
+          {
+            "name": "'Active Customer Count'",
+            "expression": "DISTINCTCOUNT(fact_sales[customer_id])",
+            "description": "Calculated metric for 'Active Customer Count'.",
+            "formatString": "#,##0",
+            "lineageTag": "m0000006-0000-4000-8000-000000000006"
+          },
+          {
+            "name": "'Overall Discount Rate'",
+            "expression": "DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)",
+            "description": "Calculated metric for 'Overall Discount Rate'.",
+            "formatString": "0.0%",
+            "lineageTag": "m0000007-0000-4000-8000-000000000007"
+          },
+          {
+            "name": "'Total Cost of Goods Sold'",
+            "expression": "SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))",
+            "description": "Calculated metric for 'Total Cost of Goods Sold'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000008-0000-4000-8000-000000000008"
+          },
+          {
+            "name": "'Gross Margin'",
+            "expression": "[Total Net Revenue] - [Total Cost of Goods Sold]",
+            "description": "Calculated metric for 'Gross Margin'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000009-0000-4000-8000-000000000009"
+          },
+          {
+            "name": "'Gross Margin %'",
+            "expression": "DIVIDE([Gross Margin], [Total Net Revenue], 0)",
+            "description": "Calculated metric for 'Gross Margin %'.",
+            "formatString": "0.0%",
+            "lineageTag": "m0000010-0000-4000-8000-000000000010"
+          },
+          {
+            "name": "'Net Revenue PY'",
+            "expression": "CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))",
+            "description": "Calculated metric for 'Net Revenue PY'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000011-0000-4000-8000-000000000011"
+          },
+          {
+            "name": "'Net Revenue YoY %'",
+            "expression": "DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)",
+            "description": "Calculated metric for 'Net Revenue YoY %'.",
+            "formatString": "0.0%",
+            "lineageTag": "m0000012-0000-4000-8000-000000000012"
+          }
+        ],
+        "partitions": [],
+        "dataSource": {
+          "connector": "Power Query M Transformation",
+          "target": "In-Memory",
+          "query_type": "M Expression",
+          "raw_m_code": "mode: import\nsource = Row(\"Value\", 1)"
+        },
+        "mSteps": []
+      },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/dim_calendar.tmdl",
         "name": "dim_calendar",
@@ -1358,10 +1578,120 @@
   },
   "flat_sales_completed": {
     "name": "flat_sales_completed",
-    "tableCount": 7,
+    "tableCount": 8,
     "relationshipCount": 1,
     "parameterCount": 1,
     "tables": [
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/_measures.tmdl",
+        "name": "_measures",
+        "lineageTag": null,
+        "columns": [
+          {
+            "name": "_Dummy",
+            "dataType": "int64",
+            "sourceColumn": "[Value]",
+            "summarizeBy": "none",
+            "description": "Attribute column representing _Dummy.",
+            "lineageTag": "c0000001-0000-4000-8000-000000000001",
+            "expression": null
+          }
+        ],
+        "measures": [
+          {
+            "name": "'Total Gross Revenue'",
+            "expression": "SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])",
+            "description": "Calculated metric for 'Total Gross Revenue'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000001-0000-4000-8000-000000000001"
+          },
+          {
+            "name": "'Total Net Revenue'",
+            "expression": "SUM(fact_sales[net_amount])",
+            "description": "Calculated metric for 'Total Net Revenue'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000002-0000-4000-8000-000000000002"
+          },
+          {
+            "name": "'Total Units Sold'",
+            "expression": "SUM(fact_sales[quantity])",
+            "description": "Calculated metric for 'Total Units Sold'.",
+            "formatString": "#,##0",
+            "lineageTag": "m0000003-0000-4000-8000-000000000003"
+          },
+          {
+            "name": "'Total Orders'",
+            "expression": "DISTINCTCOUNT(fact_sales[order_id])",
+            "description": "Calculated metric for 'Total Orders'.",
+            "formatString": "#,##0",
+            "lineageTag": "m0000004-0000-4000-8000-000000000004"
+          },
+          {
+            "name": "'Average Order Value'",
+            "expression": "DIVIDE([Total Net Revenue], [Total Orders], 0)",
+            "description": "Calculated metric for 'Average Order Value'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000005-0000-4000-8000-000000000005"
+          },
+          {
+            "name": "'Active Customer Count'",
+            "expression": "DISTINCTCOUNT(fact_sales[customer_id])",
+            "description": "Calculated metric for 'Active Customer Count'.",
+            "formatString": "#,##0",
+            "lineageTag": "m0000006-0000-4000-8000-000000000006"
+          },
+          {
+            "name": "'Overall Discount Rate'",
+            "expression": "DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)",
+            "description": "Calculated metric for 'Overall Discount Rate'.",
+            "formatString": "0.0%",
+            "lineageTag": "m0000007-0000-4000-8000-000000000007"
+          },
+          {
+            "name": "'Total Cost of Goods Sold'",
+            "expression": "SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))",
+            "description": "Calculated metric for 'Total Cost of Goods Sold'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000008-0000-4000-8000-000000000008"
+          },
+          {
+            "name": "'Gross Margin'",
+            "expression": "[Total Net Revenue] - [Total Cost of Goods Sold]",
+            "description": "Calculated metric for 'Gross Margin'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000009-0000-4000-8000-000000000009"
+          },
+          {
+            "name": "'Gross Margin %'",
+            "expression": "DIVIDE([Gross Margin], [Total Net Revenue], 0)",
+            "description": "Calculated metric for 'Gross Margin %'.",
+            "formatString": "0.0%",
+            "lineageTag": "m0000010-0000-4000-8000-000000000010"
+          },
+          {
+            "name": "'Net Revenue PY'",
+            "expression": "CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))",
+            "description": "Calculated metric for 'Net Revenue PY'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000011-0000-4000-8000-000000000011"
+          },
+          {
+            "name": "'Net Revenue YoY %'",
+            "expression": "DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)",
+            "description": "Calculated metric for 'Net Revenue YoY %'.",
+            "formatString": "0.0%",
+            "lineageTag": "m0000012-0000-4000-8000-000000000012"
+          }
+        ],
+        "partitions": [],
+        "dataSource": {
+          "connector": "Power Query M Transformation",
+          "target": "In-Memory",
+          "query_type": "M Expression",
+          "raw_m_code": "mode: import\nsource = Row(\"Value\", 1)"
+        },
+        "mSteps": []
+      },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/dim_calendar.tmdl",
         "name": "dim_calendar",
@@ -1804,10 +2134,120 @@
   },
   "oakhaven template": {
     "name": "oakhaven template",
-    "tableCount": 13,
+    "tableCount": 14,
     "relationshipCount": 5,
     "parameterCount": 1,
     "tables": [
+      {
+        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/_measures.tmdl",
+        "name": "_measures",
+        "lineageTag": null,
+        "columns": [
+          {
+            "name": "_Dummy",
+            "dataType": "int64",
+            "sourceColumn": "[Value]",
+            "summarizeBy": "none",
+            "description": "Attribute column representing _Dummy.",
+            "lineageTag": "c0000001-0000-4000-8000-000000000001",
+            "expression": null
+          }
+        ],
+        "measures": [
+          {
+            "name": "'Total Gross Revenue'",
+            "expression": "SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])",
+            "description": "Calculated metric for 'Total Gross Revenue'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000001-0000-4000-8000-000000000001"
+          },
+          {
+            "name": "'Total Net Revenue'",
+            "expression": "SUM(fact_sales[net_amount])",
+            "description": "Calculated metric for 'Total Net Revenue'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000002-0000-4000-8000-000000000002"
+          },
+          {
+            "name": "'Total Units Sold'",
+            "expression": "SUM(fact_sales[quantity])",
+            "description": "Calculated metric for 'Total Units Sold'.",
+            "formatString": "#,##0",
+            "lineageTag": "m0000003-0000-4000-8000-000000000003"
+          },
+          {
+            "name": "'Total Orders'",
+            "expression": "DISTINCTCOUNT(fact_sales[order_id])",
+            "description": "Calculated metric for 'Total Orders'.",
+            "formatString": "#,##0",
+            "lineageTag": "m0000004-0000-4000-8000-000000000004"
+          },
+          {
+            "name": "'Average Order Value'",
+            "expression": "DIVIDE([Total Net Revenue], [Total Orders], 0)",
+            "description": "Calculated metric for 'Average Order Value'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000005-0000-4000-8000-000000000005"
+          },
+          {
+            "name": "'Active Customer Count'",
+            "expression": "DISTINCTCOUNT(fact_sales[customer_id])",
+            "description": "Calculated metric for 'Active Customer Count'.",
+            "formatString": "#,##0",
+            "lineageTag": "m0000006-0000-4000-8000-000000000006"
+          },
+          {
+            "name": "'Overall Discount Rate'",
+            "expression": "DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)",
+            "description": "Calculated metric for 'Overall Discount Rate'.",
+            "formatString": "0.0%",
+            "lineageTag": "m0000007-0000-4000-8000-000000000007"
+          },
+          {
+            "name": "'Total Cost of Goods Sold'",
+            "expression": "SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))",
+            "description": "Calculated metric for 'Total Cost of Goods Sold'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000008-0000-4000-8000-000000000008"
+          },
+          {
+            "name": "'Gross Margin'",
+            "expression": "[Total Net Revenue] - [Total Cost of Goods Sold]",
+            "description": "Calculated metric for 'Gross Margin'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000009-0000-4000-8000-000000000009"
+          },
+          {
+            "name": "'Gross Margin %'",
+            "expression": "DIVIDE([Gross Margin], [Total Net Revenue], 0)",
+            "description": "Calculated metric for 'Gross Margin %'.",
+            "formatString": "0.0%",
+            "lineageTag": "m0000010-0000-4000-8000-000000000010"
+          },
+          {
+            "name": "'Net Revenue PY'",
+            "expression": "CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))",
+            "description": "Calculated metric for 'Net Revenue PY'.",
+            "formatString": "\\$#,##0.00",
+            "lineageTag": "m0000011-0000-4000-8000-000000000011"
+          },
+          {
+            "name": "'Net Revenue YoY %'",
+            "expression": "DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)",
+            "description": "Calculated metric for 'Net Revenue YoY %'.",
+            "formatString": "0.0%",
+            "lineageTag": "m0000012-0000-4000-8000-000000000012"
+          }
+        ],
+        "partitions": [],
+        "dataSource": {
+          "connector": "Power Query M Transformation",
+          "target": "In-Memory",
+          "query_type": "M Expression",
+          "raw_m_code": "mode: import\nsource = Row(\"Value\", 1)"
+        },
+        "mSteps": []
+      },
       {
         "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_calendar.tmdl",
         "name": "dim_calendar",

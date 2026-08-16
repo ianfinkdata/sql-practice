@@ -23,13 +23,35 @@ CREATE TABLE IF NOT EXISTS _tmdl_m_steps (project_name TEXT, table_name TEXT, st
 CREATE TABLE IF NOT EXISTS _tmdl_parameters (project_name TEXT, param_name TEXT, data_type TEXT, default_value TEXT);
 
 -- PROJECT: duplicated oakhaven template
-INSERT OR REPLACE INTO _tmdl_projects VALUES ('duplicated oakhaven template', 13, 5, 1);
+INSERT OR REPLACE INTO _tmdl_projects VALUES ('duplicated oakhaven template', 14, 5, 1);
 INSERT INTO _tmdl_parameters VALUES ('duplicated oakhaven template', 'oakhavendatabasepath', 'Text', 'project/oakhaven.db');
 INSERT INTO _tmdl_relationships VALUES ('duplicated oakhaven template', 'AutoDetected_1d28b393-7c5a-472e-8bdf-bbaefdfadc47', 'fact_sales', 'customer_id', 'dim_customer', 'customer_id', 'one');
 INSERT INTO _tmdl_relationships VALUES ('duplicated oakhaven template', 'AutoDetected_de8de45f-ebb1-4d1d-a6b4-e19e17d854ac', 'fact_sales', 'datekey', 'dim_calendar', 'datekey', 'one');
 INSERT INTO _tmdl_relationships VALUES ('duplicated oakhaven template', 'cdcabb57-8502-4d1c-1ca6-c29df34d8d3e', 'fact_sales', 'employee_id', 'dim_employee', 'employee_id', 'one');
 INSERT INTO _tmdl_relationships VALUES ('duplicated oakhaven template', 'dab805ef-d296-87a4-acb2-347f07dc4199', 'flat_sales_all', 'order_date', 'dim_calendar', 'date', 'one');
 INSERT INTO _tmdl_relationships VALUES ('duplicated oakhaven template', 'defc8ca4-33ee-19ab-d42b-240fcd45be3e', 'flat_sales_completed', 'order_date', 'dim_calendar', 'date', 'one');
+INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', '_measures', 'None');
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', '_measures', 'Power Query M Transformation', 'In-Memory', 'M Expression', 'mode: import
+source = Row("Value", 1)');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', '_measures', 'mode: import
+source = Row("Value", 1)');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', '_measures', '_Dummy', 'int64', 'none', '[Value]', 'Attribute column representing _Dummy.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', ''Total Gross Revenue'', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', 'Calculated metric for ''Total Gross Revenue''.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', ''Total Net Revenue'', 'SUM(fact_sales[net_amount])', '\$#,##0.00', 'Calculated metric for ''Total Net Revenue''.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', ''Total Units Sold'', 'SUM(fact_sales[quantity])', '#,##0', 'Calculated metric for ''Total Units Sold''.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', ''Total Orders'', 'DISTINCTCOUNT(fact_sales[order_id])', '#,##0', 'Calculated metric for ''Total Orders''.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', ''Average Order Value'', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', 'Calculated metric for ''Average Order Value''.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', ''Active Customer Count'', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', 'Calculated metric for ''Active Customer Count''.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', ''Overall Discount Rate'', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', 'Calculated metric for ''Overall Discount Rate''.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', ''Total Cost of Goods Sold'', 'SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))', '\$#,##0.00', 'Calculated metric for ''Total Cost of Goods Sold''.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', ''Gross Margin'', '[Total Net Revenue] - [Total Cost of Goods Sold]', '\$#,##0.00', 'Calculated metric for ''Gross Margin''.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', ''Gross Margin %'', 'DIVIDE([Gross Margin], [Total Net Revenue], 0)', '0.0%', 'Calculated metric for ''Gross Margin %''.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', ''Net Revenue PY'', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', 'Calculated metric for ''Net Revenue PY''.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', ''Net Revenue YoY %'', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', 'Calculated metric for ''Net Revenue YoY %''.');
+CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template__measures (
+    _Dummy INTEGER
+);
+
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'dim_calendar', 'None');
 INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
@@ -912,12 +934,34 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_sql_flat_sales_comp
 );
 
 -- PROJECT: flat_sales_all
-INSERT OR REPLACE INTO _tmdl_projects VALUES ('flat_sales_all', 4, 4, 1);
+INSERT OR REPLACE INTO _tmdl_projects VALUES ('flat_sales_all', 5, 4, 1);
 INSERT INTO _tmdl_parameters VALUES ('flat_sales_all', 'oakhavendatabasepath', 'Text', 'project/oakhaven.db');
 INSERT INTO _tmdl_relationships VALUES ('flat_sales_all', 'AutoDetected_de8de45f-ebb1-4d1d-a6b4-e19e17d854ac', 'fact_sales', 'datekey', 'dim_calendar', 'datekey', 'one');
 INSERT INTO _tmdl_relationships VALUES ('flat_sales_all', 'cdcabb57-8502-4d1c-1ca6-c29df34d8d3e', 'fact_sales', 'employee_id', 'dim_employee', 'employee_id', 'one');
 INSERT INTO _tmdl_relationships VALUES ('flat_sales_all', 'dab805ef-d296-87a4-acb2-347f07dc4199', 'flat_sales_all', 'order_date', 'dim_calendar', 'date', 'one');
 INSERT INTO _tmdl_relationships VALUES ('flat_sales_all', '8defae2f-1aaf-a630-18a1-4f48a16e650a', 'fact_sales', 'order_id', 'flat_sales_all', 'order_id', 'one');
+INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_all', '_measures', 'None');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', '_measures', 'Power Query M Transformation', 'In-Memory', 'M Expression', 'mode: import
+source = Row("Value", 1)');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_all', '_measures', 'mode: import
+source = Row("Value", 1)');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_all', '_measures', '_Dummy', 'int64', 'none', '[Value]', 'Attribute column representing _Dummy.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Total Gross Revenue'', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', 'Calculated metric for ''Total Gross Revenue''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Total Net Revenue'', 'SUM(fact_sales[net_amount])', '\$#,##0.00', 'Calculated metric for ''Total Net Revenue''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Total Units Sold'', 'SUM(fact_sales[quantity])', '#,##0', 'Calculated metric for ''Total Units Sold''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Total Orders'', 'DISTINCTCOUNT(fact_sales[order_id])', '#,##0', 'Calculated metric for ''Total Orders''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Average Order Value'', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', 'Calculated metric for ''Average Order Value''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Active Customer Count'', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', 'Calculated metric for ''Active Customer Count''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Overall Discount Rate'', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', 'Calculated metric for ''Overall Discount Rate''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Total Cost of Goods Sold'', 'SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))', '\$#,##0.00', 'Calculated metric for ''Total Cost of Goods Sold''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Gross Margin'', '[Total Net Revenue] - [Total Cost of Goods Sold]', '\$#,##0.00', 'Calculated metric for ''Gross Margin''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Gross Margin %'', 'DIVIDE([Gross Margin], [Total Net Revenue], 0)', '0.0%', 'Calculated metric for ''Gross Margin %''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Net Revenue PY'', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', 'Calculated metric for ''Net Revenue PY''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', ''Net Revenue YoY %'', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', 'Calculated metric for ''Net Revenue YoY %''.');
+CREATE TABLE IF NOT EXISTS tmdl_flat_sales_all__measures (
+    _Dummy INTEGER
+);
+
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_all', 'dim_calendar', 'None');
 INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
@@ -1229,9 +1273,31 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_all_flat_sales_all (
 );
 
 -- PROJECT: flat_sales_completed
-INSERT OR REPLACE INTO _tmdl_projects VALUES ('flat_sales_completed', 7, 1, 1);
+INSERT OR REPLACE INTO _tmdl_projects VALUES ('flat_sales_completed', 8, 1, 1);
 INSERT INTO _tmdl_parameters VALUES ('flat_sales_completed', 'oakhavendatabasepath', 'Text', 'project/oakhaven.db');
 INSERT INTO _tmdl_relationships VALUES ('flat_sales_completed', 'defc8ca4-33ee-19ab-d42b-240fcd45be3e', 'flat_sales_completed', 'order_date', 'dim_calendar', 'date', 'one');
+INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', '_measures', 'None');
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', '_measures', 'Power Query M Transformation', 'In-Memory', 'M Expression', 'mode: import
+source = Row("Value", 1)');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_completed', '_measures', 'mode: import
+source = Row("Value", 1)');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', '_measures', '_Dummy', 'int64', 'none', '[Value]', 'Attribute column representing _Dummy.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', ''Total Gross Revenue'', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', 'Calculated metric for ''Total Gross Revenue''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', ''Total Net Revenue'', 'SUM(fact_sales[net_amount])', '\$#,##0.00', 'Calculated metric for ''Total Net Revenue''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', ''Total Units Sold'', 'SUM(fact_sales[quantity])', '#,##0', 'Calculated metric for ''Total Units Sold''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', ''Total Orders'', 'DISTINCTCOUNT(fact_sales[order_id])', '#,##0', 'Calculated metric for ''Total Orders''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', ''Average Order Value'', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', 'Calculated metric for ''Average Order Value''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', ''Active Customer Count'', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', 'Calculated metric for ''Active Customer Count''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', ''Overall Discount Rate'', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', 'Calculated metric for ''Overall Discount Rate''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', ''Total Cost of Goods Sold'', 'SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))', '\$#,##0.00', 'Calculated metric for ''Total Cost of Goods Sold''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', ''Gross Margin'', '[Total Net Revenue] - [Total Cost of Goods Sold]', '\$#,##0.00', 'Calculated metric for ''Gross Margin''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', ''Gross Margin %'', 'DIVIDE([Gross Margin], [Total Net Revenue], 0)', '0.0%', 'Calculated metric for ''Gross Margin %''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', ''Net Revenue PY'', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', 'Calculated metric for ''Net Revenue PY''.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', ''Net Revenue YoY %'', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', 'Calculated metric for ''Net Revenue YoY %''.');
+CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed__measures (
+    _Dummy INTEGER
+);
+
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'dim_calendar', 'None');
 INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
@@ -1739,13 +1805,35 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_sql_flat_sales_completed (
 );
 
 -- PROJECT: oakhaven template
-INSERT OR REPLACE INTO _tmdl_projects VALUES ('oakhaven template', 13, 5, 1);
+INSERT OR REPLACE INTO _tmdl_projects VALUES ('oakhaven template', 14, 5, 1);
 INSERT INTO _tmdl_parameters VALUES ('oakhaven template', 'oakhavendatabasepath', 'Text', 'project/oakhaven.db');
 INSERT INTO _tmdl_relationships VALUES ('oakhaven template', 'AutoDetected_1d28b393-7c5a-472e-8bdf-bbaefdfadc47', 'fact_sales', 'customer_id', 'dim_customer', 'customer_id', 'one');
 INSERT INTO _tmdl_relationships VALUES ('oakhaven template', 'AutoDetected_de8de45f-ebb1-4d1d-a6b4-e19e17d854ac', 'fact_sales', 'datekey', 'dim_calendar', 'datekey', 'one');
 INSERT INTO _tmdl_relationships VALUES ('oakhaven template', 'cdcabb57-8502-4d1c-1ca6-c29df34d8d3e', 'fact_sales', 'employee_id', 'dim_employee', 'employee_id', 'one');
 INSERT INTO _tmdl_relationships VALUES ('oakhaven template', 'dab805ef-d296-87a4-acb2-347f07dc4199', 'flat_sales_all', 'order_date', 'dim_calendar', 'date', 'one');
 INSERT INTO _tmdl_relationships VALUES ('oakhaven template', 'defc8ca4-33ee-19ab-d42b-240fcd45be3e', 'flat_sales_completed', 'order_date', 'dim_calendar', 'date', 'one');
+INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', '_measures', 'None');
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', '_measures', 'Power Query M Transformation', 'In-Memory', 'M Expression', 'mode: import
+source = Row("Value", 1)');
+INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', '_measures', 'mode: import
+source = Row("Value", 1)');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', '_measures', '_Dummy', 'int64', 'none', '[Value]', 'Attribute column representing _Dummy.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', ''Total Gross Revenue'', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', 'Calculated metric for ''Total Gross Revenue''.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', ''Total Net Revenue'', 'SUM(fact_sales[net_amount])', '\$#,##0.00', 'Calculated metric for ''Total Net Revenue''.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', ''Total Units Sold'', 'SUM(fact_sales[quantity])', '#,##0', 'Calculated metric for ''Total Units Sold''.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', ''Total Orders'', 'DISTINCTCOUNT(fact_sales[order_id])', '#,##0', 'Calculated metric for ''Total Orders''.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', ''Average Order Value'', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', 'Calculated metric for ''Average Order Value''.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', ''Active Customer Count'', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', 'Calculated metric for ''Active Customer Count''.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', ''Overall Discount Rate'', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', 'Calculated metric for ''Overall Discount Rate''.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', ''Total Cost of Goods Sold'', 'SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))', '\$#,##0.00', 'Calculated metric for ''Total Cost of Goods Sold''.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', ''Gross Margin'', '[Total Net Revenue] - [Total Cost of Goods Sold]', '\$#,##0.00', 'Calculated metric for ''Gross Margin''.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', ''Gross Margin %'', 'DIVIDE([Gross Margin], [Total Net Revenue], 0)', '0.0%', 'Calculated metric for ''Gross Margin %''.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', ''Net Revenue PY'', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', 'Calculated metric for ''Net Revenue PY''.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', ''Net Revenue YoY %'', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', 'Calculated metric for ''Net Revenue YoY %''.');
+CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template__measures (
+    _Dummy INTEGER
+);
+
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'dim_calendar', 'None');
 INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```

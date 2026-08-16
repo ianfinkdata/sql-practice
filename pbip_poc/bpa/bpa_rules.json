@@ -1,0 +1,82 @@
+[
+  {
+    "ID": "BPA_MEASURE_PROVIDE_DESCRIPTION",
+    "Name": "Provide description for all visible measures",
+    "Category": "Documentation",
+    "Description": "All visible DAX measures should have a meaningful description explaining their business logic and computation to end users and report builders.",
+    "Severity": 2,
+    "Scope": "Measure",
+    "Expression": "Visible and string.IsNullOrWhiteSpace(Description)",
+    "FixExpression": "Description = \"TODO: Provide business description for \" + Name"
+  },
+  {
+    "ID": "BPA_MEASURE_SET_FORMAT_STRING",
+    "Name": "Set format string on numeric measures",
+    "Category": "Formatting",
+    "Description": "All visible measures must have an explicit format string defined (e.g. currency, integer, percentage) to prevent raw unformatted numbers in visuals.",
+    "Severity": 2,
+    "Scope": "Measure",
+    "Expression": "Visible and string.IsNullOrWhiteSpace(FormatString)",
+    "FixExpression": "FormatString = Name.Contains(\"%\") or Name.Contains(\"Rate\") ? \"0.0%\" : Name.Contains(\"$\") or Name.Contains(\"Revenue\") or Name.Contains(\"Amount\") or Name.Contains(\"Price\") or Name.Contains(\"Cost\") ? \"$#,##0.00\" : \"#,##0\""
+  },
+  {
+    "ID": "BPA_MEASURE_ORGANIZE_DISPLAY_FOLDERS",
+    "Name": "Organize measures into display folders",
+    "Category": "Organization",
+    "Description": "Measures should be categorized into logical display folders (e.g., '01 - Revenue & Volume', '02 - Margins', '03 - Time Intelligence') for seamless report authoring.",
+    "Severity": 3,
+    "Scope": "Measure",
+    "Expression": "Visible and string.IsNullOrWhiteSpace(DisplayFolder)",
+    "FixExpression": "DisplayFolder = Name.Contains(\"YoY\") or Name.Contains(\"MoM\") or Name.Contains(\"PY\") ? \"05 - Time Intelligence\" : Name.Contains(\"Margin\") or Name.Contains(\"Profit\") ? \"02 - Margins & Profitability\" : Name.Contains(\"Order\") or Name.Contains(\"AOV\") ? \"03 - Order Metrics\" : Name.Contains(\"Customer\") ? \"04 - Customer Metrics\" : \"01 - Revenue & Volume\""
+  },
+  {
+    "ID": "BPA_MEASURE_CENTRALIZE_IN_MEASURES_TABLE",
+    "Name": "Centralize measures in dedicated measure table",
+    "Category": "Architecture",
+    "Description": "Measures should not be scattered across Fact or Dimension tables; they should reside in a dedicated '_Measures' table.",
+    "Severity": 2,
+    "Scope": "Measure",
+    "Expression": "Table.Name != \"_Measures\" and Table.Name != \"Key Measures\" and Table.Name != \"_measures\"",
+    "FixExpression": "Table = Model.Tables[\"_Measures\"]"
+  },
+  {
+    "ID": "BPA_DAX_USE_DIVIDE_FUNCTION",
+    "Name": "Use DIVIDE function instead of division operator (/)",
+    "Category": "Performance & DAX",
+    "Description": "Use DIVIDE(numerator, denominator, alternateResult) instead of the '/' operator to safely handle divide-by-zero errors without expensive IF(ISBLANK()) checks.",
+    "Severity": 2,
+    "Scope": "Measure",
+    "Expression": "Expression.Contains(\"/\") and not Expression.Contains(\"DIVIDE(\") and not Expression.Contains(\"//\")",
+    "FixExpression": ""
+  },
+  {
+    "ID": "BPA_MODEL_HIDE_FOREIGN_KEYS",
+    "Name": "Hide relationship foreign keys in Fact tables",
+    "Category": "Modeling",
+    "Description": "Foreign keys used in 1:N relationships (e.g., customer_id, product_id in Fact tables) should be hidden from end-users to force slicing via Dimension tables.",
+    "Severity": 1,
+    "Scope": "Column",
+    "Expression": "IsHidden = false and Table.Model.Relationships.Any(r => r.FromColumn == this)",
+    "FixExpression": "IsHidden = true"
+  },
+  {
+    "ID": "BPA_MODEL_HIDE_SURROGATE_KEYS",
+    "Name": "Hide surrogate date/dimension keys",
+    "Category": "Modeling",
+    "Description": "Surrogate integer keys (e.g. datekey) used for internal joins should be hidden from report builders.",
+    "Severity": 2,
+    "Scope": "Column",
+    "Expression": "IsHidden = false and (Name.EndsWith(\"key\", StringComparison.OrdinalIgnoreCase) or Name.EndsWith(\"_id\", StringComparison.OrdinalIgnoreCase)) and not Table.Name.StartsWith(\"dim_\", StringComparison.OrdinalIgnoreCase)",
+    "FixExpression": "IsHidden = true"
+  },
+  {
+    "ID": "BPA_PARTITION_NO_HARDCODED_WINDOWS_PATHS",
+    "Name": "Do not hardcode Windows local drive paths in M partitions",
+    "Category": "Portability & CI/CD",
+    "Description": "M partition expressions should not contain hardcoded 'C:\\Users\\...' paths. Use environment parameters or relative repository paths.",
+    "Severity": 1,
+    "Scope": "Partition",
+    "Expression": "Expression.Contains(\"C:\\\\\") or Expression.Contains(\"C:/\") or Expression.Contains(\"Users\\\\\")",
+    "FixExpression": ""
+  }
+]
