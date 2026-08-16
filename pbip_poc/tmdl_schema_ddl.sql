@@ -987,7 +987,7 @@ WHERE d.datekey IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''datekey'': ''Int64'', ''year'': ''Int64'', ''month'': ''Int64'', ''is_weekend'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
 #"Changed Type" = Table.TransformColumnTypes(DataTable,{
@@ -1027,7 +1027,7 @@ WHERE d.datekey IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''datekey'': ''Int64'', ''year'': ''Int64'', ''month'': ''Int64'', ''is_weekend'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
 #"Changed Type" = Table.TransformColumnTypes(DataTable,{
@@ -1088,7 +1088,7 @@ WHERE e.employee_id IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''employee_id'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
 #"Changed Type" = Table.TransformColumnTypes(DataTable,{
@@ -1120,7 +1120,7 @@ WHERE e.employee_id IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''employee_id'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
 #"Changed Type" = Table.TransformColumnTypes(DataTable,{
@@ -1174,7 +1174,7 @@ SELECT
 FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
-"""""", conn)
+"""""", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''customer_id'': ''Int64'', ''product_id'': ''Int64'', ''employee_id'': ''Int64'', ''datekey'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
 #"Changed Type" = Table.TransformColumnTypes(DataTable,{
@@ -1220,7 +1220,7 @@ SELECT
 FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
-"""""", conn)
+"""""", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''customer_id'': ''Int64'', ''product_id'': ''Int64'', ''employee_id'': ''Int64'', ''datekey'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
 #"Changed Type" = Table.TransformColumnTypes(DataTable,{
@@ -1245,8 +1245,9 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'fact_sales', 2, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
-INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'fact_sales', 3, 'Changed Type', 'Source Ingestion', 'Table.TransformColumnTypes(DataTable,{
+INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'fact_sales', 2, 'dtype', 'Source Ingestion', '{''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''customer_id'': ''Int64'', ''product_id'': ''Int64'', ''empl...');
+INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'fact_sales', 3, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
+INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'fact_sales', 4, 'Changed Type', 'Source Ingestion', 'Table.TransformColumnTypes(DataTable,{
 {"order_id", Int64.Type}');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_all', 'fact_sales', 'order_id', 'int64', 'none', 'order_id', 'Unique sales order transaction header identifier.');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_all', 'fact_sales', 'order_line_id', 'int64', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
@@ -1289,7 +1290,7 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
-df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn)
+df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
 #"Changed Type" = Table.TransformColumnTypes(DataTable,{
@@ -1313,7 +1314,7 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
-df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn)
+df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
 #"Changed Type" = Table.TransformColumnTypes(DataTable,{
@@ -1334,8 +1335,10 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'flat_sales_all', 2, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
-INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'flat_sales_all', 3, 'Changed Type', 'Source Ingestion', 'Table.TransformColumnTypes(DataTable,{
+INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'flat_sales_all', 2, 'dtype', 'Source Ingestion', '{''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
+conn.close()")');
+INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'flat_sales_all', 3, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
+INSERT INTO _tmdl_m_steps VALUES ('flat_sales_all', 'flat_sales_all', 4, 'Changed Type', 'Source Ingestion', 'Table.TransformColumnTypes(DataTable,{
 {"order_id", Int64.Type}');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_all', 'flat_sales_all', 'order_id', 'int64', 'none', 'order_id', 'Unique sales order transaction header identifier.');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_all', 'flat_sales_all', 'order_line_id', 'int64', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
