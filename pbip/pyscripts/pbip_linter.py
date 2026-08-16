@@ -2,9 +2,9 @@
 """
 pbip_linter.py - Linux-Native TMDL Linter, Path Sanitizer & Logic Sprawl Engine
 
-Parses Power BI Project (.pbip) TMDL definitions inside pbip_poc/projects/,
+Parses Power BI Project (.pbip) TMDL definitions inside pbip/projects/,
 sanitizes Windows path dependencies, extracts embedded M/SQL queries, and
-compares business logic against master queries in pbip_poc/sql_queries/.
+compares business logic against master queries in pbip/sql_queries/.
 """
 
 import os
@@ -14,13 +14,13 @@ import argparse
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
-PROJECTS_DIR = REPO_ROOT / "pbip_poc" / "projects"
-SQL_QUERIES_DIR = REPO_ROOT / "pbip_poc" / "sql_queries"
+PROJECTS_DIR = REPO_ROOT / "pbip" / "projects"
+SQL_QUERIES_DIR = REPO_ROOT / "pbip" / "sql_queries"
 DB_PATH = REPO_ROOT / "project" / "oakhaven.db"
 
 
 def run_linter(fix_paths=False):
-    """Scans all TMDL files inside pbip_poc/projects/ for path issues and logic drift."""
+    """Scans all TMDL files inside pbip/projects/ for path issues and logic drift."""
     print("==================================================================")
     print("  PBIP TMDL LINTER & LOGIC SPRAWL ENGINE (Ubuntu 26.04 Native)")
     print("==================================================================")
@@ -76,7 +76,7 @@ def run_linter(fix_paths=False):
     print("------------------------------------------------------------------")
 
     if issues_count > 0 and not fix_paths:
-        print(f"❌ [LINT FAILED] Found {issues_count} un-sanitized Windows paths! Run 'python pbip_poc/tools/pbip_linter.py --fix' locally.")
+        print(f"❌ [LINT FAILED] Found {issues_count} un-sanitized Windows paths! Run 'python pbip/pyscripts/pbip_linter.py --fix' locally.")
         sys.exit(1)
 
 if __name__ == "__main__":

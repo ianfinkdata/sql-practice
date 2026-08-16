@@ -18,7 +18,7 @@
 **Status:** Completed (Implemented)  
 **Created:** 2025-08-14  
 **Completed:** 2026-08-15  
-**Description:** Implemented `pbip_poc/tools/pbip_report.py` and modular PBIR template library in `pbip_poc/templates/reports/` (Time Series, Comparative, % Change KPI, and Demographic Analysis with North America footprint USA/CAN/MEX & Azure Maps placeholder). The TE CLI manages the SemanticModel layer, while `pbip_report.py` provides AST report inspection, downstream breaking change impact analysis, and template page injection for the `.Report/` layer.
+**Description:** Implemented `pbip/pyscripts/pbip_report.py` and modular PBIR template library in `pbip/templates/reports/` (Time Series, Comparative, % Change KPI, and Demographic Analysis with North America footprint USA/CAN/MEX & Azure Maps placeholder). The TE CLI manages the SemanticModel layer, while `pbip_report.py` provides AST report inspection, downstream breaking change impact analysis, and template page injection for the `.Report/` layer.
 
 ---
 

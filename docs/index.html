@@ -22,7 +22,7 @@
         <a href="./exercises/README.html">💪 Exercises</a>
         <a href="./portfolio/README.html">💼 Portfolio</a>
         <a href="./project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
-        <a href="./pbip_poc/web_app/index.html">⚡ Pipeline Web App</a>
+        <a href="./pbip/web_app/index.html">⚡ Pipeline Web App</a>
         <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
       </nav>
     </div>
@@ -55,7 +55,7 @@ build step required. (Want to generate it from scratch anyway? See the optional 
 
 <h2 id="whats-inside">What's inside</h2>
 
-<div class="table-container"><table class="styled-table"><thead><tr><th>Part</th><th>What it is</th><th>Where</th></tr></thead><tbody><tr><td><strong>Curriculum</strong></td><td>Beginner → master, six tiers</td><td><code class="inline-code">curriculum/</code></td></tr><tr><td><strong>Exercises</strong></td><td>Hands-on practice, tier-paired with the curriculum</td><td><code class="inline-code">exercises/</code></td></tr><tr><td><strong>Applied project</strong></td><td>Oakhaven: a fictional retailer, modeled bronze → silver → gold as a ready-to-query SQLite database</td><td><code class="inline-code">project/</code></td></tr><tr><td><strong>Portfolio</strong></td><td>A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact</td><td><code class="inline-code">portfolio/</code></td></tr><tr><td><strong>AI assistant guide</strong></td><td>Tool-agnostic instructions for any AI helping in this repo</td><td><code class="inline-code">AGENTS.md</code></td></tr><tr><td><strong>Web version</strong></td><td>Browsable GitHub Pages site</td><td><code class="inline-code">docs/</code> (enable Pages on your fork, or browse the source directly)</td></tr></tbody></table></div>
+<div class="table-container"><table class="styled-table"><thead><tr><th>Part</th><th>What it is</th><th>Where</th></tr></thead><tbody><tr><td><strong>Curriculum</strong></td><td>Beginner → master, six tiers</td><td><code class="inline-code">curriculum/</code></td></tr><tr><td><strong>Exercises</strong></td><td>Hands-on practice, tier-paired with the curriculum</td><td><code class="inline-code">exercises/</code></td></tr><tr><td><strong>Applied project</strong></td><td>Oakhaven: a fictional retailer, modeled bronze → silver → gold as a ready-to-query SQLite database</td><td><code class="inline-code">project/</code></td></tr><tr><td><strong>Portfolio</strong></td><td>A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact</td><td><code class="inline-code">portfolio/</code></td></tr><tr><td><strong>Power BI (PBIP)</strong></td><td><code class="inline-code">.pbip</code> semantic models, TMDL tooling, Python scripts, and a pipeline lineage engine</td><td><code class="inline-code">pbip/</code></td></tr><tr><td><strong>AI assistant guide</strong></td><td>Tool-agnostic instructions for any AI helping in this repo</td><td><code class="inline-code">AGENTS.md</code></td></tr><tr><td><strong>Web version</strong></td><td>Browsable GitHub Pages site</td><td><code class="inline-code">docs/</code> (enable Pages on your fork, or browse the source directly)</td></tr></tbody></table></div>
 ---
 
 <h2 id="curriculum">Curriculum</h2>
@@ -153,6 +153,13 @@ Enable GitHub Pages on your fork pointing at `docs/` — see
 │   ├── bronze/  silver/  gold/← schema + view SQL, the actual &quot;recipe&quot; files
 │   └── docs/                  ← data dictionary, ERD, facts sheet, sqlite3 CLI guide
 ├── portfolio/                 ← standalone, engine-agnostic medallion/star-schema pattern library
+├── pbip/                      ← Power BI Projects: .pbip models, TMDL tooling, semantic layer
+│   ├── pyscripts/             ← Python tooling (TMDL parser, linter, report manager, lineage)
+│   ├── csharp/                ← Tabular Editor C# scripts
+│   ├── projects/              ← .pbip project folders
+│   ├── sql_queries/           ← master SQL source files (1 per model)
+│   └── tabular_editor/        ← TE CLI installation
+├── build_pages.py             ← generates the GitHub Pages site into docs/
 └── docs/                      ← GitHub Pages site
     ├── index.html
     ├── styles.css
@@ -168,6 +175,8 @@ Enable GitHub Pages on your fork pointing at `docs/` — see
 <ul class="styled-list"><li><a href="https://youtu.be/vlltZIgn284">7 Window Functions MASTERED in 17 Minutes</a></li><li><a href="https://www.youtube.com/watch?v=XUxBKO25ZyA">What are CTEs in SQL, in 13 Minutes</a></li><li><a href="https://www.youtube.com/watch?v=m1KcNV-Zhmc">Advanced SQL Tutorial: Subqueries</a></li></ul>
 <strong>Web-based SQL practice exercises</strong>
 <ul class="styled-list"><li><a href="https://www.sqlzoo.net/wiki/SQL_Tutorial">SQL Zoo</a></li><li><a href="https://www.w3schools.com/sql/">w3schools</a></li></ul>
+<strong>Interactive</strong>
+<ul class="styled-list"><li><a href="https://notebook.google.com/notebook/12d25d44-60f8-4e45-b0e0-d2ab86099874/artifact/00a8857a-ed6d-47ca-b539-ffef63fb9757">Gemini Notebook — Repository Mind Map</a> — interactive visual overview of the repository structure and curriculum.</li></ul>
 Have a resource that belongs here? Add it — this list is meant to grow.</p>
 
 <hr class="divider">
@@ -196,7 +205,7 @@ a real database, not made up for the sake of a tidy example.</p>
       <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
       <p class="footer-links">
         <a href="./index.html">Home</a> • 
-        <a href="./pbip_poc/web_app/index.html">⚡ Data Pipeline Web App</a> • 
+        <a href="./pbip/web_app/index.html">⚡ Data Pipeline Web App</a> • 
         <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
         <a href="./project/docs/data_dictionary.html">Data Dictionary</a>
       </p>

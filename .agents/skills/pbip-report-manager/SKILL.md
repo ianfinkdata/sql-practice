@@ -9,7 +9,7 @@ description: >-
 
 # PBIP Report Manager & Template Engine
 
-This skill guides the agent and user through inspecting, auditing, and scaffolding Power BI Project (`.pbip`) report definitions and visual containers using [`pbip_poc/tools/pbip_report.py`](../../pbip_poc/tools/pbip_report.py).
+This skill guides the agent and user through inspecting, auditing, and scaffolding Power BI Project (`.pbip`) report definitions and visual containers using [`pbip/pyscripts/pbip_report.py`](../../pbip/pyscripts/pbip_report.py).
 
 ---
 
@@ -30,9 +30,9 @@ Always run commands from the repository root:
 
 ### 1. List Available Templates
 ```bash
-python3 pbip_poc/tools/pbip_report.py list-templates
+python3 pbip/pyscripts/pbip_report.py list-templates
 ```
-Available templates in `pbip_poc/templates/reports/`:
+Available templates in `pbip/templates/reports/`:
 - **`time_series`**: Slicer, Sales Trend line chart, Monthly Net Revenue column bars.
 - **`comparative_analysis`**: Category Variance bar chart, Region × Category matrix, Product ranking table.
 - **`kpi_percentage_change`**: Net Revenue KPI card, MoM Growth % card, Volume vs Target gauge.
@@ -45,10 +45,10 @@ Before altering or dropping a column/measure in a semantic model (or deploying v
 
 ```bash
 # Check impact for a specific column
-python3 pbip_poc/tools/pbip_report.py impact dim_customer.state
+python3 pbip/pyscripts/pbip_report.py impact dim_customer.state
 
 # Check impact for a table or measure
-python3 pbip_poc/tools/pbip_report.py impact fact_sales.net_amount
+python3 pbip/pyscripts/pbip_report.py impact fact_sales.net_amount
 ```
 
 ---
@@ -57,7 +57,7 @@ python3 pbip_poc/tools/pbip_report.py impact fact_sales.net_amount
 Inspect themes, registered pages, visual types, canvas dimensions, and active query bindings:
 
 ```bash
-python3 pbip_poc/tools/pbip_report.py inspect pbip_poc/projects/flat_sales_all/flat_sales_all.Report
+python3 pbip/pyscripts/pbip_report.py inspect pbip/projects/flat_sales_all/flat_sales_all.Report
 ```
 
 ---
@@ -67,14 +67,14 @@ To inject a template page into a target report:
 
 ```bash
 # Dry run to preview generated GUIDs and visual containers
-python3 pbip_poc/tools/pbip_report.py add-page \
-  --report pbip_poc/projects/flat_sales_all/flat_sales_all.Report \
+python3 pbip/pyscripts/pbip_report.py add-page \
+  --report pbip/projects/flat_sales_all/flat_sales_all.Report \
   --template demographic_analysis \
   --dry-run
 
 # Live injection
-python3 pbip_poc/tools/pbip_report.py add-page \
-  --report pbip_poc/projects/flat_sales_all/flat_sales_all.Report \
+python3 pbip/pyscripts/pbip_report.py add-page \
+  --report pbip/projects/flat_sales_all/flat_sales_all.Report \
   --template demographic_analysis \
   --name "North America Executive Demographics"
 ```

@@ -8,3 +8,9 @@ legacy README.md
 **/.pbi/cache.abf
 **/.pbi/localSettings.json
 **/.pbi/editorSettings.json
+
+# Tabular Editor CLI binary (57 MB) — download manually, see pbip/tabular_editor/install/
+pbip/tabular_editor/install/te-linux-x64.tar.gz
+
+# Claude Code local settings
+.claude/

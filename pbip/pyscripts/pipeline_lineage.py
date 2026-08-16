@@ -2,7 +2,7 @@
 """
 pipeline_lineage.py - End-to-End Medallion & Semantic Pipeline Lineage Engine
 
-Queries project/oakhaven.db and parses pbip_poc/projects/ to extract complete data lineage:
+Queries project/oakhaven.db and parses pbip/projects/ to extract complete data lineage:
 Bronze (Raw Tables) ➔ Silver (Clean Views) ➔ Gold (Star Schema Views) ➔ PBIP Presentation Models.
 """
 
@@ -13,8 +13,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 DB_PATH = REPO_ROOT / "project" / "oakhaven.db"
-PROJECTS_DIR = REPO_ROOT / "pbip_poc" / "projects"
-OUTPUT_MARKDOWN = REPO_ROOT / "pbip_poc" / "PIPELINE_LINEAGE.md"
+PROJECTS_DIR = REPO_ROOT / "pbip" / "projects"
+OUTPUT_MARKDOWN = REPO_ROOT / "pbip" / "PIPELINE_LINEAGE.md"
 
 
 def get_db_metadata(conn):
@@ -70,7 +70,7 @@ def generate_lineage_report():
     md_lines = [
         "# End-to-End Data Pipeline Lineage & Architecture Report",
         "",
-        "This document provides full visibility into the **Oakhaven Medallion Data Architecture** and its mapping to **Power BI Semantic Models (`pbip_poc/projects/`)**.",
+        "This document provides full visibility into the **Oakhaven Medallion Data Architecture** and its mapping to **Power BI Semantic Models (`pbip/projects/`)**.",
         "",
         "---",
         "",

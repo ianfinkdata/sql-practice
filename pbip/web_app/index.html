@@ -403,7 +403,7 @@
       <div class="metric-card">
         <span class="metric-title">PBIP TMDL Models</span>
         <span class="metric-value">4 Projects</span>
-        <span class="metric-sub">pbip_poc/projects/ (Flat & Star paradigms)</span>
+        <span class="metric-sub">pbip/projects/ (Flat & Star paradigms)</span>
       </div>
       <div class="metric-card">
         <span class="metric-title">Platform OS</span>
@@ -515,7 +515,7 @@
     <section id="tab-tmdl" class="tab-content">
       <div class="dag-container">
         <h2 class="dag-title">TMDL Metadata & Relationship Architecture</h2>
-        <p class="dag-sub" style="margin-bottom: 1.5rem;">Power BI Project (.pbip) TMDL definitions extracted directly from <code>pbip_poc/projects/</code>.</p>
+        <p class="dag-sub" style="margin-bottom: 1.5rem;">Power BI Project (.pbip) TMDL definitions extracted directly from <code>pbip/projects/</code>.</p>
 
         <div class="code-box">
 model Model
@@ -544,10 +544,10 @@ relationship AutoDetected_2
     <section id="tab-pushdown" class="tab-content">
       <div class="dag-container">
         <h2 class="dag-title">TMDL ➔ Database View Pushdown Compiler</h2>
-        <p class="dag-sub" style="margin-bottom: 1.5rem;">Extracted <strong>41 clean SQL views</strong> from Power BI TMDL metadata definitions and compiled them into standalone DDL view statements (saved in <code>pbip_poc/extracted_views.sql</code>).</p>
+        <p class="dag-sub" style="margin-bottom: 1.5rem;">Extracted <strong>41 clean SQL views</strong> from Power BI TMDL metadata definitions and compiled them into standalone DDL view statements (saved in <code>pbip/extracted_views.sql</code>).</p>
 
         <div class="code-box">
--- Source: pbip_poc/projects/flat_sales_all/.../flat_sales_all.tmdl
+-- Source: pbip/projects/flat_sales_all/.../flat_sales_all.tmdl
 -- Extracted & Unescaped from Power Query M Partition
 
 CREATE VIEW IF NOT EXISTS flat_sales_all_view AS

@@ -33,6 +33,7 @@ build step required. (Want to generate it from scratch anyway? See the optional 
 | **Exercises** | Hands-on practice, tier-paired with the curriculum | `exercises/` |
 | **Applied project** | Oakhaven: a fictional retailer, modeled bronze → silver → gold as a ready-to-query SQLite database | `project/` |
 | **Portfolio** | A standalone, engine-agnostic library of medallion/star-schema query patterns — the takeaway artifact | `portfolio/` |
+| **Power BI (PBIP)** | `.pbip` semantic models, TMDL tooling, Python scripts, and a pipeline lineage engine | `pbip/` |
 | **AI assistant guide** | Tool-agnostic instructions for any AI helping in this repo | `AGENTS.md` |
 | **Web version** | Browsable GitHub Pages site | `docs/` (enable Pages on your fork, or browse the source directly) |
 
@@ -149,6 +150,13 @@ sql-practice/
 │   ├── bronze/  silver/  gold/← schema + view SQL, the actual "recipe" files
 │   └── docs/                  ← data dictionary, ERD, facts sheet, sqlite3 CLI guide
 ├── portfolio/                 ← standalone, engine-agnostic medallion/star-schema pattern library
+├── pbip/                      ← Power BI Projects: .pbip models, TMDL tooling, semantic layer
+│   ├── pyscripts/             ← Python tooling (TMDL parser, linter, report manager, lineage)
+│   ├── csharp/                ← Tabular Editor C# scripts
+│   ├── projects/              ← .pbip project folders
+│   ├── sql_queries/           ← master SQL source files (1 per model)
+│   └── tabular_editor/        ← TE CLI installation
+├── build_pages.py             ← generates the GitHub Pages site into docs/
 └── docs/                      ← GitHub Pages site
     ├── index.html
     ├── styles.css
@@ -173,6 +181,9 @@ sql-practice/
 **Web-based SQL practice exercises**
 - [SQL Zoo](https://www.sqlzoo.net/wiki/SQL_Tutorial)
 - [w3schools](https://www.w3schools.com/sql/)
+
+**Interactive**
+- [Gemini Notebook — Repository Mind Map](https://notebook.google.com/notebook/12d25d44-60f8-4e45-b0e0-d2ab86099874/artifact/00a8857a-ed6d-47ca-b539-ffef63fb9757) — interactive visual overview of the repository structure and curriculum.
 
 Have a resource that belongs here? Add it — this list is meant to grow.
 

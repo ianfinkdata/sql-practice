@@ -26,7 +26,7 @@ When definitions diverge, stakeholders see conflicting numbers for the same KPI.
 Modern BI tools store semantic models as text files under version control. In Power BI Projects (`.pbip`), model metadata is defined in `.tmdl` files:
 
 ```
-pbip_poc/projects/
+pbip/projects/
 └── flat_sales_all/
     └── flat_sales_all.SemanticModel/
         └── definition/

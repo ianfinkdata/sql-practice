@@ -1,6 +1,6 @@
 # End-to-End Data Pipeline Lineage & Architecture Report
 
-This document provides full visibility into the **Oakhaven Medallion Data Architecture** and its mapping to **Power BI Semantic Models (`pbip_poc/projects/`)**.
+This document provides full visibility into the **Oakhaven Medallion Data Architecture** and its mapping to **Power BI Semantic Models (`pbip/projects/`)**.
 
 ---
 

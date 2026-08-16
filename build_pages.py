@@ -41,7 +41,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <a href="{root_path}exercises/README.html">💪 Exercises</a>
         <a href="{root_path}portfolio/README.html">💼 Portfolio</a>
         <a href="{root_path}project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
-        <a href="{root_path}pbip_poc/web_app/index.html">⚡ Pipeline Web App</a>
+        <a href="{root_path}pbip/web_app/index.html">⚡ Pipeline Web App</a>
         <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
       </nav>
     </div>
@@ -58,7 +58,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
       <p class="footer-links">
         <a href="{root_path}index.html">Home</a> • 
-        <a href="{root_path}pbip_poc/web_app/index.html">⚡ Data Pipeline Web App</a> • 
+        <a href="{root_path}pbip/web_app/index.html">⚡ Data Pipeline Web App</a> • 
         <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
         <a href="{root_path}project/docs/data_dictionary.html">Data Dictionary</a>
       </p>
@@ -314,11 +314,11 @@ def main():
         process_file(file_path)
 
     # Copy Web App static files to docs/
-    web_app_src = REPO_ROOT / "pbip_poc" / "web_app"
-    web_app_dst = DOCS_DIR / "pbip_poc" / "web_app"
+    web_app_src = REPO_ROOT / "pbip" / "web_app"
+    web_app_dst = DOCS_DIR / "pbip" / "web_app"
     if web_app_src.exists():
         shutil.copytree(web_app_src, web_app_dst, dirs_exist_ok=True)
-        print("Copied: web_app static files to docs/pbip_poc/web_app/")
+        print("Copied: web_app static files to docs/pbip/web_app/")
 
     print("✨ Build completed successfully!")
 

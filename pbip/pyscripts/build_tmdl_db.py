@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-build_tmdl_db.py - Stands up project/tmdl_catalog.db & Populates TMDL Tables
+build_tmdl_db.py - Stands up pbip/tmdl_catalog.db & Populates TMDL Tables
 
 1. Compiles TMDL definitions and creates TMDL table schemas + metadata catalogs.
 2. Attaches project/oakhaven.db and populates data rows directly into the TMDL tables.
@@ -10,16 +10,15 @@ import sys
 import sqlite3
 from pathlib import Path
 
-PROJECT_DIR = Path(__file__).parent.resolve()
-REPO_ROOT = PROJECT_DIR.parent
-TOOLS_DIR = REPO_ROOT / "pbip_poc" / "tools"
+PYSCRIPTS_DIR = Path(__file__).parent.resolve()
+PBIP_DIR = PYSCRIPTS_DIR.parent
+REPO_ROOT = PBIP_DIR.parent
 
-# Add tools folder to path
-sys.path.insert(0, str(TOOLS_DIR))
+# parse_tmdl is co-located in pbip/pyscripts/
 import parse_tmdl
 
-TARGET_DB = PROJECT_DIR / "tmdl_catalog.db"
-OAKHAVEN_DB = PROJECT_DIR / "oakhaven.db"
+TARGET_DB = PBIP_DIR / "tmdl_catalog.db"
+OAKHAVEN_DB = REPO_ROOT / "project" / "oakhaven.db"
 
 
 def populate_tmdl_tables(conn):
@@ -61,7 +60,7 @@ def populate_tmdl_tables(conn):
 
 def main():
     print("==================================================================")
-    print("  STANDING UP & POPULATING TMDL CATALOG DATABASE (project/tmdl_catalog.db)")
+    print("  STANDING UP & POPULATING TMDL CATALOG DATABASE (pbip/tmdl_catalog.db)")
     print("==================================================================")
     
     projects = parse_tmdl.parse_all_projects()

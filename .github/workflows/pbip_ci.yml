@@ -30,16 +30,16 @@ jobs:
 
       - name: Run PBIP TMDL Linter (Path Dependencies & Syntax Check)
         run: |
-          python pbip_poc/tools/pbip_linter.py
+          python pbip/pyscripts/pbip_linter.py
 
       - name: Verify End-to-End Pipeline Lineage
         run: |
-          python pbip_poc/tools/pipeline_lineage.py
+          python pbip/pyscripts/pipeline_lineage.py
 
       - name: Test TMDL AST Parser & Schema DDL Compiler
         run: |
-          python pbip_poc/tools/parse_tmdl.py --test-db
+          python pbip/pyscripts/parse_tmdl.py --test-db
 
       - name: Test TMDL to SQL View Pushdown Compiler
         run: |
-          python pbip_poc/tools/pbip_to_db.py --test-db
+          python pbip/pyscripts/pbip_to_db.py --test-db

@@ -14,8 +14,8 @@ import argparse
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
-PROJECTS_DIR = REPO_ROOT / "pbip_poc" / "projects"
-TEMPLATES_DIR = REPO_ROOT / "pbip_poc" / "templates" / "reports"
+PROJECTS_DIR = REPO_ROOT / "pbip" / "projects"
+TEMPLATES_DIR = REPO_ROOT / "pbip" / "templates" / "reports"
 
 
 def find_all_reports(base_dir=PROJECTS_DIR):
@@ -249,7 +249,7 @@ def analyze_impact(target_query):
 
 
 def list_templates():
-    """Lists available modular visual and page templates in pbip_poc/templates/reports/."""
+    """Lists available modular visual and page templates in pbip/templates/reports/."""
     print("==================================================================")
     print("  PBIP MODULAR REPORT TEMPLATE LIBRARY")
     print("==================================================================")
