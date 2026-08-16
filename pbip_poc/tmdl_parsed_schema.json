@@ -1,4 +1,13 @@
 {
+  "centralized": {
+    "name": "centralized",
+    "tableCount": 0,
+    "relationshipCount": 0,
+    "parameterCount": 0,
+    "tables": [],
+    "relationships": [],
+    "parameters": []
+  },
   "duplicated oakhaven template": {
     "name": "duplicated oakhaven template",
     "tableCount": 14,
@@ -6,7 +15,7 @@
     "parameterCount": 1,
     "tables": [
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/_measures.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\_measures.tmdl",
         "name": "_measures",
         "lineageTag": null,
         "columns": [
@@ -116,7 +125,7 @@
         "mSteps": []
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_calendar.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\dim_calendar.tmdl",
         "name": "dim_calendar",
         "lineageTag": null,
         "columns": [
@@ -211,7 +220,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_customer.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\dim_customer.tmdl",
         "name": "dim_customer",
         "lineageTag": null,
         "columns": [
@@ -279,7 +288,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_employee.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\dim_employee.tmdl",
         "name": "dim_employee",
         "lineageTag": null,
         "columns": [
@@ -338,7 +347,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/fact_sales.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\fact_sales.tmdl",
         "name": "fact_sales",
         "lineageTag": null,
         "columns": [
@@ -484,7 +493,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/flat_sales_all.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\flat_sales_all.tmdl",
         "name": "flat_sales_all",
         "lineageTag": null,
         "columns": [
@@ -594,7 +603,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/flat_sales_completed.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\flat_sales_completed.tmdl",
         "name": "flat_sales_completed",
         "lineageTag": null,
         "columns": [
@@ -710,7 +719,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_customer.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_dim_customer.tmdl",
         "name": "sql_dim_customer",
         "lineageTag": null,
         "columns": [
@@ -742,7 +751,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_date.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_dim_date.tmdl",
         "name": "sql_dim_date",
         "lineageTag": null,
         "columns": [
@@ -774,7 +783,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_employee.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_dim_employee.tmdl",
         "name": "sql_dim_employee",
         "lineageTag": null,
         "columns": [
@@ -806,7 +815,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_product.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_dim_product.tmdl",
         "name": "sql_dim_product",
         "lineageTag": null,
         "columns": [
@@ -838,7 +847,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_fact_sales.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_fact_sales.tmdl",
         "name": "sql_fact_sales",
         "lineageTag": null,
         "columns": [
@@ -870,7 +879,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_flat_sales_all.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_flat_sales_all.tmdl",
         "name": "sql_flat_sales_all",
         "lineageTag": null,
         "columns": [
@@ -908,7 +917,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_flat_sales_completed.tmdl",
         "name": "sql_flat_sales_completed",
         "lineageTag": null,
         "columns": [
@@ -1009,7 +1018,7 @@
     "parameterCount": 1,
     "tables": [
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/_measures.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_all\\flat_sales_all.SemanticModel\\definition\\tables\\_measures.tmdl",
         "name": "_measures",
         "lineageTag": null,
         "columns": [
@@ -1119,13 +1128,13 @@
         "mSteps": []
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/dim_calendar.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_all\\flat_sales_all.SemanticModel\\definition\\tables\\dim_calendar.tmdl",
         "name": "dim_calendar",
         "lineageTag": null,
         "columns": [
           {
             "name": "datekey",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "datekey",
             "summarizeBy": "none",
             "description": "Integer surrogate key in YYYYMMDD format for date joins.",
@@ -1134,7 +1143,7 @@
           },
           {
             "name": "date",
-            "dataType": "string",
+            "dataType": "dateTime",
             "sourceColumn": "date",
             "summarizeBy": "none",
             "description": "Standard ISO 8601 calendar date (YYYY-MM-DD).",
@@ -1143,7 +1152,7 @@
           },
           {
             "name": "year",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "year",
             "summarizeBy": "none",
             "description": "Four-digit calendar year (e.g. 2026).",
@@ -1152,7 +1161,7 @@
           },
           {
             "name": "month",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "month",
             "summarizeBy": "none",
             "description": "Numeric calendar month (1..12).",
@@ -1188,7 +1197,7 @@
           },
           {
             "name": "is_weekend",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "is_weekend",
             "summarizeBy": "none",
             "description": "Boolean flag indicating Saturday or Sunday (1 = Weekend, 0 = Weekday).",
@@ -1200,9 +1209,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"datekey\", Int64.Type},\n{\"date\", type date},\n{\"year\", Int64.Type},\n{\"month\", Int64.Type},\n{\"month_name\", type text},\n{\"quarter\", type text},\n{\"day_name\", type text},\n{\"is_weekend\", Int64.Type}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1214,13 +1223,13 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/dim_employee.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_all\\flat_sales_all.SemanticModel\\definition\\tables\\dim_employee.tmdl",
         "name": "dim_employee",
         "lineageTag": null,
         "columns": [
           {
             "name": "employee_id",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "employee_id",
             "summarizeBy": "none",
             "description": "Unique employee identification number (1..35).",
@@ -1259,9 +1268,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"employee_id\", Int64.Type},\n{\"full_name\", type text},\n{\"department\", type text},\n{\"region\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1273,13 +1282,13 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/fact_sales.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_all\\flat_sales_all.SemanticModel\\definition\\tables\\fact_sales.tmdl",
         "name": "fact_sales",
         "lineageTag": null,
         "columns": [
           {
             "name": "order_id",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "order_id",
             "summarizeBy": "none",
             "description": "Unique sales order transaction header identifier.",
@@ -1288,7 +1297,7 @@
           },
           {
             "name": "order_line_id",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "order_line_id",
             "summarizeBy": "none",
             "description": "Line item sequence number (1..N) within an order.",
@@ -1297,7 +1306,7 @@
           },
           {
             "name": "customer_id",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "customer_id",
             "summarizeBy": "none",
             "description": "Unique sequential identifier (1..600) for each customer.",
@@ -1306,7 +1315,7 @@
           },
           {
             "name": "product_id",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "product_id",
             "summarizeBy": "none",
             "description": "Unique surrogate key (1..150) identifying each merchandise item.",
@@ -1315,7 +1324,7 @@
           },
           {
             "name": "employee_id",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "employee_id",
             "summarizeBy": "none",
             "description": "Unique employee identification number (1..35).",
@@ -1324,7 +1333,7 @@
           },
           {
             "name": "datekey",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "datekey",
             "summarizeBy": "none",
             "description": "Integer surrogate key in YYYYMMDD format for date joins.",
@@ -1333,36 +1342,36 @@
           },
           {
             "name": "quantity",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "quantity",
-            "summarizeBy": "none",
+            "summarizeBy": "sum",
             "description": "Number of units purchased in order line.",
             "lineageTag": "feed673e-bf49-4bf0-a5e9-d21bd93e509a",
             "expression": null
           },
           {
             "name": "unit_price",
-            "dataType": "string",
+            "dataType": "double",
             "sourceColumn": "unit_price",
-            "summarizeBy": "none",
+            "summarizeBy": "sum",
             "description": "Retail selling price per unit ($) at time of order.",
             "lineageTag": "cdd0e504-2ce6-4df6-811c-11bcf01820e5",
             "expression": null
           },
           {
             "name": "discount_pct",
-            "dataType": "string",
+            "dataType": "double",
             "sourceColumn": "discount_pct",
-            "summarizeBy": "none",
+            "summarizeBy": "sum",
             "description": "Percentage discount applied (0.00 to 0.30).",
             "lineageTag": "bbdd2011-c753-4721-9ae4-89e008f134a8",
             "expression": null
           },
           {
             "name": "net_amount",
-            "dataType": "string",
+            "dataType": "double",
             "sourceColumn": "net_amount",
-            "summarizeBy": "none",
+            "summarizeBy": "sum",
             "description": "Actual net revenue earned after applying discounts.",
             "lineageTag": "beec1224-b2f8-4dc0-ac6b-0819d90cafba",
             "expression": null
@@ -1399,9 +1408,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"customer_id\", Int64.Type},\n{\"product_id\", Int64.Type},\n{\"employee_id\", Int64.Type},\n{\"datekey\", Int64.Type},\n{\"quantity\", Int64.Type},\n{\"unit_price\", type number},\n{\"discount_pct\", type number},\n{\"net_amount\", type number},\n{\"payment_method\", type text},\n{\"order_status\", type text},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1415,17 +1424,23 @@
             "step_name": "DataTable",
             "step_type": "Source Ingestion",
             "code_snippet": "Source{[Name=\"df\"]}[Value]"
+          },
+          {
+            "step_index": 3,
+            "step_name": "Changed Type",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type}"
           }
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/flat_sales_all.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_all\\flat_sales_all.SemanticModel\\definition\\tables\\flat_sales_all.tmdl",
         "name": "flat_sales_all",
         "lineageTag": null,
         "columns": [
           {
             "name": "order_id",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "order_id",
             "summarizeBy": "none",
             "description": "Unique sales order transaction header identifier.",
@@ -1434,7 +1449,7 @@
           },
           {
             "name": "order_line_id",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "order_line_id",
             "summarizeBy": "none",
             "description": "Line item sequence number (1..N) within an order.",
@@ -1443,7 +1458,7 @@
           },
           {
             "name": "order_date",
-            "dataType": "string",
+            "dataType": "dateTime",
             "sourceColumn": "order_date",
             "summarizeBy": "none",
             "description": "Transaction date on which order was placed.",
@@ -1479,18 +1494,18 @@
           },
           {
             "name": "quantity",
-            "dataType": "string",
+            "dataType": "int64",
             "sourceColumn": "quantity",
-            "summarizeBy": "none",
+            "summarizeBy": "sum",
             "description": "Number of units purchased in order line.",
             "lineageTag": "8d6d44d3-dcbf-4226-a5c8-bce5b6863dae",
             "expression": null
           },
           {
             "name": "net_amount",
-            "dataType": "string",
+            "dataType": "double",
             "sourceColumn": "net_amount",
-            "summarizeBy": "none",
+            "summarizeBy": "sum",
             "description": "Actual net revenue earned after applying discounts.",
             "lineageTag": "2493ed31-0ec4-4a3f-bd81-54fb31f1a99b",
             "expression": null
@@ -1509,9 +1524,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value]\nin\nDataTable"
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn)\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1525,6 +1540,12 @@
             "step_name": "DataTable",
             "step_type": "Source Ingestion",
             "code_snippet": "Source{[Name=\"df\"]}[Value]"
+          },
+          {
+            "step_index": 3,
+            "step_name": "Changed Type",
+            "step_type": "Source Ingestion",
+            "code_snippet": "Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type}"
           }
         ]
       }
@@ -1569,9 +1590,9 @@
     ],
     "parameters": [
       {
-        "name": "oakhavendatabasepath",
+        "name": "sqliteconnect",
         "type": "Text",
-        "defaultValue": "project/oakhaven.db",
+        "defaultValue": "C:\\Github\\sql-practice\\project\\oakhaven.db",
         "isParameter": true
       }
     ]
@@ -1583,7 +1604,7 @@
     "parameterCount": 1,
     "tables": [
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/_measures.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\_measures.tmdl",
         "name": "_measures",
         "lineageTag": null,
         "columns": [
@@ -1693,7 +1714,7 @@
         "mSteps": []
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/dim_calendar.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\dim_calendar.tmdl",
         "name": "dim_calendar",
         "lineageTag": null,
         "columns": [
@@ -1788,7 +1809,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/dim_customer.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\dim_customer.tmdl",
         "name": "dim_customer",
         "lineageTag": null,
         "columns": [
@@ -1856,7 +1877,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/flat_sales_completed.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\flat_sales_completed.tmdl",
         "name": "flat_sales_completed",
         "lineageTag": null,
         "columns": [
@@ -1972,7 +1993,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_dim_date.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\sql_dim_date.tmdl",
         "name": "sql_dim_date",
         "lineageTag": null,
         "columns": [
@@ -2004,7 +2025,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_dim_product.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\sql_dim_product.tmdl",
         "name": "sql_dim_product",
         "lineageTag": null,
         "columns": [
@@ -2036,7 +2057,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_flat_sales_all.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\sql_flat_sales_all.tmdl",
         "name": "sql_flat_sales_all",
         "lineageTag": null,
         "columns": [
@@ -2074,7 +2095,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\sql_flat_sales_completed.tmdl",
         "name": "sql_flat_sales_completed",
         "lineageTag": null,
         "columns": [
@@ -2139,7 +2160,7 @@
     "parameterCount": 1,
     "tables": [
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/_measures.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\_measures.tmdl",
         "name": "_measures",
         "lineageTag": null,
         "columns": [
@@ -2249,7 +2270,7 @@
         "mSteps": []
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_calendar.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\dim_calendar.tmdl",
         "name": "dim_calendar",
         "lineageTag": null,
         "columns": [
@@ -2344,7 +2365,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_customer.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\dim_customer.tmdl",
         "name": "dim_customer",
         "lineageTag": null,
         "columns": [
@@ -2412,7 +2433,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_employee.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\dim_employee.tmdl",
         "name": "dim_employee",
         "lineageTag": null,
         "columns": [
@@ -2471,7 +2492,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/fact_sales.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\fact_sales.tmdl",
         "name": "fact_sales",
         "lineageTag": null,
         "columns": [
@@ -2617,7 +2638,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/flat_sales_all.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\flat_sales_all.tmdl",
         "name": "flat_sales_all",
         "lineageTag": null,
         "columns": [
@@ -2727,7 +2748,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/flat_sales_completed.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\flat_sales_completed.tmdl",
         "name": "flat_sales_completed",
         "lineageTag": null,
         "columns": [
@@ -2843,7 +2864,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_customer.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_dim_customer.tmdl",
         "name": "sql_dim_customer",
         "lineageTag": null,
         "columns": [
@@ -2875,7 +2896,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_date.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_dim_date.tmdl",
         "name": "sql_dim_date",
         "lineageTag": null,
         "columns": [
@@ -2907,7 +2928,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_employee.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_dim_employee.tmdl",
         "name": "sql_dim_employee",
         "lineageTag": null,
         "columns": [
@@ -2939,7 +2960,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_product.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_dim_product.tmdl",
         "name": "sql_dim_product",
         "lineageTag": null,
         "columns": [
@@ -2971,7 +2992,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_fact_sales.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_fact_sales.tmdl",
         "name": "sql_fact_sales",
         "lineageTag": null,
         "columns": [
@@ -3003,7 +3024,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_flat_sales_all.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_flat_sales_all.tmdl",
         "name": "sql_flat_sales_all",
         "lineageTag": null,
         "columns": [
@@ -3041,7 +3062,7 @@
         ]
       },
       {
-        "file": "/home/ian/github/sql-practice/pbip_poc/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl",
+        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_flat_sales_completed.tmdl",
         "name": "sql_flat_sales_completed",
         "lineageTag": null,
         "columns": [

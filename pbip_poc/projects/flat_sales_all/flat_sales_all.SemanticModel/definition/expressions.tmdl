@@ -1,6 +1,5 @@
-/// the path of any sqlite.db file
-expression oakhavendatabasepath = "project/oakhaven.db" meta [IsParameterQuery=true, List={"project/oakhaven.db"}, DefaultValue="project/oakhaven.db", Type="Text", IsParameterQueryRequired=true]
-	lineageTag: 7e6d5862-1308-436e-b862-de1ddbd02f5d
+expression sqliteconnect = "C:\Github\sql-practice\project\oakhaven.db" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 3b66dd96-cedd-4587-9707-8b8a1b630cef
 	queryGroup: 'sql queries'
 
 	annotation PBI_NavigationStepName = Navigation

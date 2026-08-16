@@ -2,7 +2,8 @@ table dim_calendar
 	lineageTag: 79ef8b5a-6d15-45c7-b623-d5bc95056c91
 
 	column datekey
-		dataType: string
+		dataType: int64
+		formatString: 0
 		lineageTag: 9f795fc7-1acf-453e-a848-ee627b26583a
 		summarizeBy: none
 		sourceColumn: datekey
@@ -10,7 +11,8 @@ table dim_calendar
 		annotation SummarizationSetBy = Automatic
 
 	column date
-		dataType: string
+		dataType: dateTime
+		formatString: yyyy-mm-dd
 		lineageTag: e6673c74-1291-494f-a5fa-855f8aa4b37a
 		summarizeBy: none
 		sourceColumn: date
@@ -18,7 +20,8 @@ table dim_calendar
 		annotation SummarizationSetBy = Automatic
 
 	column year
-		dataType: string
+		dataType: int64
+		formatString: 0
 		lineageTag: c4f8230d-cf10-4767-8424-bb094285970b
 		summarizeBy: none
 		sourceColumn: year
@@ -26,7 +29,8 @@ table dim_calendar
 		annotation SummarizationSetBy = Automatic
 
 	column month
-		dataType: string
+		dataType: int64
+		formatString: 0
 		lineageTag: d068670e-361f-4493-bf51-a6bfe6feaba5
 		summarizeBy: none
 		sourceColumn: month
@@ -58,7 +62,8 @@ table dim_calendar
 		annotation SummarizationSetBy = Automatic
 
 	column is_weekend
-		dataType: string
+		dataType: int64
+		formatString: 0
 		lineageTag: a5fe93e3-f859-4ecf-8b67-77e450eab306
 		summarizeBy: none
 		sourceColumn: is_weekend
@@ -70,15 +75,26 @@ table dim_calendar
 		source = ```
 				let
 				    // 1. Execute the Python script and inject your parameters safely
-				    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""project/oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT DISTINCT #(lf)    d.datekey,#(lf)    d.date,#(lf)    d.year,#(lf)    d.month,#(lf)    d.month_name,#(lf)    d.quarter,#(lf)    d.day_name,#(lf)    d.is_weekend#(lf)FROM dim_date d#(lf)WHERE d.datekey IN (#(lf)    SELECT datekey #(lf)    FROM fact_sales #(lf)    ORDER BY order_date DESC, order_id, order_line_id #(lf)    LIMIT 100#(lf));#(lf)"""""", conn)#(lf)conn.close()"),
+				    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT DISTINCT #(lf)    d.datekey,#(lf)    d.date,#(lf)    d.year,#(lf)    d.month,#(lf)    d.month_name,#(lf)    d.quarter,#(lf)    d.day_name,#(lf)    d.is_weekend#(lf)FROM dim_date d#(lf)WHERE d.datekey IN (#(lf)    SELECT datekey #(lf)    FROM fact_sales #(lf)    ORDER BY order_date DESC, order_id, order_line_id #(lf)    LIMIT 100#(lf));#(lf)"""""", conn)#(lf)conn.close()"),
 				    
 				    // 2. Extract the dataframe 'df' that Python generated
-				    DataTable = Source{[Name="df"]}[Value]
+				    DataTable = Source{[Name="df"]}[Value],
+				    
+				    // 3. Transform column data types
+				    #"Changed Type" = Table.TransformColumnTypes(DataTable,{
+				        {"datekey", Int64.Type},
+				        {"date", type date},
+				        {"year", Int64.Type},
+				        {"month", Int64.Type},
+				        {"month_name", type text},
+				        {"quarter", type text},
+				        {"day_name", type text},
+				        {"is_weekend", Int64.Type}
+				    })
 				in
-				    DataTable
+				    #"Changed Type"
 				```
 
 	annotation PBI_NavigationStepName = Navigation
 
 	annotation PBI_ResultType = Table
-

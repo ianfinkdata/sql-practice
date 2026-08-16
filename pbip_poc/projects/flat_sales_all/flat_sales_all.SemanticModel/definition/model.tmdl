@@ -13,7 +13,7 @@ queryGroup 'sql queries'
 
 annotation __PBI_TimeIntelligenceEnabled = 0
 
-annotation PBI_QueryOrder = ["flat_sales_all","oakhavendatabasepath","fact_sales","dim_employee","dim_calendar"]
+annotation PBI_QueryOrder = ["flat_sales_all","sqliteconnect","fact_sales","dim_employee","dim_calendar"]
 
 annotation PBI_ProTooling = ["TMDLView_Desktop","DevMode"]
 
@@ -21,8 +21,6 @@ ref table flat_sales_all
 ref table fact_sales
 ref table dim_employee
 ref table dim_calendar
-
-ref table _measures
 
 ref cultureInfo en-US
 

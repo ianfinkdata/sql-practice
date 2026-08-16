@@ -2,7 +2,7 @@ table flat_sales_all
 	lineageTag: 3ead40b5-967c-42a6-8b3a-70b6eed40bea
 
 	column order_id
-		dataType: string
+		dataType: int64
 		lineageTag: be470296-6f71-4f7b-bb5d-0189a854d716
 		summarizeBy: none
 		sourceColumn: order_id
@@ -10,7 +10,7 @@ table flat_sales_all
 		annotation SummarizationSetBy = Automatic
 
 	column order_line_id
-		dataType: string
+		dataType: int64
 		lineageTag: 028bda80-3cbe-42f4-88c7-916728962954
 		summarizeBy: none
 		sourceColumn: order_line_id
@@ -18,7 +18,8 @@ table flat_sales_all
 		annotation SummarizationSetBy = Automatic
 
 	column order_date
-		dataType: string
+		dataType: dateTime
+		formatString: yyyy-mm-dd
 		lineageTag: aa75dbc8-5c52-4994-bf4b-18a7964e0f0e
 		summarizeBy: none
 		sourceColumn: order_date
@@ -50,17 +51,19 @@ table flat_sales_all
 		annotation SummarizationSetBy = Automatic
 
 	column quantity
-		dataType: string
+		dataType: int64
+		formatString: #,##0
 		lineageTag: 8d6d44d3-dcbf-4226-a5c8-bce5b6863dae
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: quantity
 
 		annotation SummarizationSetBy = Automatic
 
 	column net_amount
-		dataType: string
+		dataType: double
+		formatString: \$#,##0.00
 		lineageTag: 2493ed31-0ec4-4a3f-bd81-54fb31f1a99b
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: net_amount
 
 		annotation SummarizationSetBy = Automatic
@@ -78,15 +81,27 @@ table flat_sales_all
 		source = ```
 				let
 				    // 1. Execute the Python script and inject your parameters safely
-				    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""project/oakhaven.db"")#(lf)df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;"", conn)#(lf)conn.close()"),
+				    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")#(lf)df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;"", conn)#(lf)conn.close()"),
 				    
 				    // 2. Extract the dataframe 'df' that Python generated
-				    DataTable = Source{[Name="df"]}[Value]
+				    DataTable = Source{[Name="df"]}[Value],
+				    
+				    // 3. Transform column data types
+				    #"Changed Type" = Table.TransformColumnTypes(DataTable,{
+				        {"order_id", Int64.Type},
+				        {"order_line_id", Int64.Type},
+				        {"order_date", type date},
+				        {"customer_name", type text},
+				        {"product_name", type text},
+				        {"product_category", type text},
+				        {"quantity", Int64.Type},
+				        {"net_amount", type number},
+				        {"channel", type text}
+				    })
 				in
-				    DataTable
+				    #"Changed Type"
 				```
 
 	annotation PBI_NavigationStepName = Navigation
 
 	annotation PBI_ResultType = Table
-
