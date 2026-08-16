@@ -87,7 +87,7 @@ Faker version), so every learner's `oakhaven.db` is byte-identical. Because `pro
 > **Footnote: Regenerating the Database (Optional)**
 > If you want to watch the deterministic pipeline run from scratch or rebuild the dataset:
 > * **Python Instructions**: Follow the step-by-step [Python Database Generation Guide](curriculum/00-orientation/03-tools-and-setup.md#building-the-database-yourself-optional).
-> * **AI Assistant Skill (`setup-database`)**: If working with an AI coding assistant (like Claude Code or Antigravity), use the built-in [`setup-database` skill](https://github.com/ianfinkdata/sql-practice/tree/main/.claude/skills/setup-database) to automatically handle virtual environments, dependencies, and build verification.
+> * **AI Assistant Skill (`setup-database`)**: If working with an AI coding assistant (like Claude Code or Antigravity), use the built-in [`setup-database` skill](https://github.com/ianfinkdata/sql-practice/tree/main/.agents/skills/setup-database) to automatically handle virtual environments, dependencies, and build verification.
 
 See `project/docs/data_dictionary.md` for the full schema and `project/docs/erd.md` for
 an entity-relationship diagram.

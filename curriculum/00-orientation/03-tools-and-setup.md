@@ -87,7 +87,7 @@ python project/build.py
 ```
 
 > **Using Claude Code or another AI coding assistant?** This repo ships
-> a `setup-database` skill (`.claude/skills/setup-database/`) that runs
+> a `setup-database` skill (`.agents/skills/setup-database/`) that runs
 > all of the steps below for you, handles the virtual-environment
 > pitfall automatically, and verifies the result. Just ask it to set up
 > the database.
