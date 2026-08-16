@@ -26,6 +26,8 @@ table flat_sales_all
 
 		annotation SummarizationSetBy = Automatic
 
+		annotation UnderlyingDateTimeDataType = Date
+
 	column customer_name
 		dataType: string
 		lineageTag: 0919db62-8e7d-45e6-9a71-f8e1c08650c8
@@ -105,3 +107,4 @@ table flat_sales_all
 	annotation PBI_NavigationStepName = Navigation
 
 	annotation PBI_ResultType = Table
+

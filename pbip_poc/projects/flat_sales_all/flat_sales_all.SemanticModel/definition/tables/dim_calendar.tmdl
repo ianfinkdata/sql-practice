@@ -19,6 +19,8 @@ table dim_calendar
 
 		annotation SummarizationSetBy = Automatic
 
+		annotation UnderlyingDateTimeDataType = Date
+
 	column year
 		dataType: int64
 		formatString: 0
@@ -98,3 +100,4 @@ table dim_calendar
 	annotation PBI_NavigationStepName = Navigation
 
 	annotation PBI_ResultType = Table
+

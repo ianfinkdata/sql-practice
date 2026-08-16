@@ -11,7 +11,7 @@
         {
           "location": {
             "x": 1041.666666666667,
-            "y": 256.6666666666668
+            "y": 263.33333333333348
           },
           "nodeIndex": "dim_calendar",
           "nodeLineageTag": "79ef8b5a-6d15-45c7-b623-d5bc95056c91",
@@ -25,7 +25,7 @@
         {
           "location": {
             "x": 0.71638334802699433,
-            "y": 333.33333333333354
+            "y": 340.00000000000023
           },
           "nodeIndex": "dim_employee",
           "nodeLineageTag": "43d7354d-c14a-4ab6-ac47-3e5506aec046",
@@ -38,7 +38,7 @@
         {
           "location": {
             "x": 342.53489452651866,
-            "y": 13.333333333333357
+            "y": 20.000000000000043
           },
           "nodeIndex": "fact_sales",
           "nodeLineageTag": "a1840420-f3ab-469d-9219-ef364479ba4c",
@@ -51,7 +51,7 @@
         {
           "location": {
             "x": 669.71638334802708,
-            "y": 235.00000000000006
+            "y": 241.66666666666674
           },
           "nodeIndex": "flat_sales_all",
           "nodeLineageTag": "3ead40b5-967c-42a6-8b3a-70b6eed40bea",
@@ -60,6 +60,19 @@
             "width": 234
           },
           "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 1324.95028331864,
+            "y": 115.5
+          },
+          "nodeIndex": "_measures",
+          "nodeLineageTag": "a0000000-0000-4000-8000-000000000001",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
         }
       ],
       "name": "All tables",
