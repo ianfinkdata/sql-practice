@@ -20,27 +20,48 @@ Created a dedicated directory structure for testing Power BI `.pbip` models, TMD
 - **[`pbip_poc/ai_usage_guide.md`](file:///C:/Github/sql-practice/pbip_poc/ai_usage_guide.md)**: Token optimization strategies and AI usage guide.
 - **[`pbip_poc/sql_queries/01_flat_model.sql`](file:///C:/Github/sql-practice/pbip_poc/sql_queries/01_flat_model.sql)**: Single SQL file containing One-Flat-Table reporting queries with embedded SQL logic (`gross_amount`, `net_amount`, `discount_tier`) and business logic sprawl variants.
 - **[`pbip_poc/sql_queries/02_star_schema_model.sql`](file:///C:/Github/sql-practice/pbip_poc/sql_queries/02_star_schema_model.sql)**: Single SQL file containing 1 Fact table (`fact_sales`) + 4 Dimension tables (`dim_customer`, `dim_product`, `dim_employee`, `dim_date`).
-- **[`pbip_poc/projects/`](file:///C:/Github/sql-practice/pbip_poc/projects/)**: Destination directory for Power BI Desktop `.pbip` project folders.
+- **[`pbip_poc/projects/`](file:///C:/Github/sql-practice/pbip_poc/projects/)**: Destination directory for Power BI Desktop `.pbip` project folders with native relative `.pbip` root launchers.
 
-### 2. GitHub Pages Site Generator (`build_pages.py`)
-- **Dynamic Link Resolution Fix**: Updated `convert_link_path` to dynamically resolve markdown relative targets against the repository root (`REPO_ROOT`). Only references pointing to root `README.md` map to `index.html`, fixing 404 errors on subfolder README navigation links (e.g. `curriculum/00-orientation/README.html` -> `curriculum/README.html`).
-
-### 3. Home Page & Documentation Adjustments
-- **Deprioritized Python Database Generation**: Rewrote [`README.md`](file:///home/ian/github/sql-practice/README.md) / [`docs/index.html`](file:///home/ian/github/sql-practice/docs/index.html) to emphasize that `project/oakhaven.db` is pre-built and ready to open with zero setup. Replaced inline bash generation blocks with a closing footnote linking to the [Python Database Generation Guide](curriculum/00-orientation/03-tools-and-setup.md#building-the-database-yourself-optional) and referencing the built-in [`setup-database`](.agents/skills/setup-database/SKILL.md) skill.
-
-### 4. Core Conventions Established
-- **Single SQL File Per Model**: Keep model SQL consolidated in 1 `.sql` file with commented headers (`-- TABLE: table_name`) to prevent token bloat from parsing raw TMDL/PBIP metadata.
-- **Capped Row Counts**: Capped PoC query datasets to 100 rows for fast testing and small payloads.
-- **Git Strategy**: Committing directly to `main` for simple, streamlined progress without extra branch noise.
+### 2. Validated PBIP & TMDL Engineering Rules (from `flat_sales_all`)
+1. **TMDL Documentation Syntax**:
+   - Descriptions on measures, columns, and tables **must** use triple-slash doc comments (`/// comment`) immediately preceding the declaration. Property `description: ...` is invalid in TMDL and triggers `UnknownKeyword`.
+   - Never use multi-line indented `//` comment blocks inside table definitions; the TMDL scanner flags them as `Invalid indentation`. If a measure is disabled or not applicable, omit it entirely from the `.tmdl` file.
+2. **Pandas Nullable Integer Casting (`pd.read_sql_query`)**:
+   - SQLite tables contain NULLs for integers (e.g. `employee_id` for unassigned reps, `quantity`). Pandas defaults to `float64` (`3.0`, `NaN`), which causes VertiPaq type mismatch errors on startup.
+   - **Rule**: All Python M partitions must pass explicit `dtype={'<col>': 'Int64', ...}` into `pd.read_sql_query` to return native nullable `Int64` vectors.
+3. **Table Reference Registration**:
+   - Every `.tmdl` table in `definition/tables/` (including `_measures.tmdl`) must have a corresponding `ref table <tableName>` declared in `definition/model.tmdl`.
+4. **Local Cache & Settings Exclusion**:
+   - `.pbi/cache.abf`, `.pbi/localSettings.json`, and `.pbi/editorSettings.json` are excluded via `.gitignore` to prevent stale VertiPaq binary deserialization failures across machines.
+5. **Cross-Platform `.pbip` Launchers**:
+   - Native root JSON `.pbip` files in `pbip_poc/projects/` point relatively to `subfolder/subfolder.Report`.
 
 ---
 
-## 🔮 Next Steps & Ideas Log
+## 🔮 Next Steps & Actionable Backlog
+
+### 🎯 Next Session Priority: Align Remaining PBIP Models
+Apply the validated 4-step fix pattern from `flat_sales_all` to the remaining PBIP projects:
+
+- [ ] **`pbip_poc/projects/flat_sales_completed/`**:
+  - Update M partitions with explicit pandas `Int64` dtypes (`dtype={'...': 'Int64'}`).
+  - Scope `_measures.tmdl` to only tables/columns available in this model.
+  - Verify `definition/model.tmdl` table references.
+  - Delete any local `.pbi/cache.abf` files and test in Power BI Desktop.
+- [ ] **`pbip_poc/projects/oakhaven template/`**:
+  - Apply `Int64` pandas dtypes across all M partitions (`fact_sales`, `dim_customer`, `dim_product`, `dim_employee`, `dim_calendar`).
+  - Align column data types in `.tmdl` files (`int64`, `double`, `dateTime`).
+  - Ensure measure dependencies match exact table names (e.g. `dim_product` vs `sql_dim_product`).
+  - Test opening in Power BI Desktop.
+- [ ] **`pbip_poc/projects/duplicated oakhaven template/`**:
+  - Apply same schema & M dtype alignments.
+  - Clean local `.pbi/cache.abf` and test.
+
+### 📚 General Backlog
 - [ ] Install/configure Beekeeper Studio for interactive SQLite querying against `project/oakhaven.db`.
-- [ ] Create PBIP models in Power BI Desktop and save into `pbip_poc/projects/`.
 - [ ] Compare TMDL & Git diffs across SQL Pushdown vs DAX vs Power Query M implementations.
 - [ ] **Cross-Repo Porting**: Bring over anti-bloat & session memory strategies from external repos.
 
 ---
 
-*Last Updated: 2026-08-09 | Branch: `main`*
+*Last Updated: 2026-08-16 | Branch: `main`*
