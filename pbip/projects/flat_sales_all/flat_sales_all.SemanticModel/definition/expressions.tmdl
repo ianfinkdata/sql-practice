@@ -1,4 +1,4 @@
-expression sqliteconnect = "C:\Github\sql-practice\project\oakhaven.db" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+expression sqliteconnect = "project/oakhaven.db" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 3b66dd96-cedd-4587-9707-8b8a1b630cef
 	queryGroup: 'sql queries'
 

@@ -220,9 +220,9 @@ def parse_tmdl_table_file(tmdl_path):
         if not stripped or stripped.startswith("//"):
             continue
             
-        t_match = re.match(r"^table\s+([^\s]+)", stripped)
+        t_match = re.match(r"^table\s+(.+)$", stripped)
         if t_match:
-            table_data["name"] = t_match.group(1)
+            table_data["name"] = t_match.group(1).strip().strip("'").strip('"')
             current_object = "table"
             continue
 
@@ -233,7 +233,7 @@ def parse_tmdl_table_file(tmdl_path):
             continue
             
         if in_partition:
-            if stripped.startswith("annotation") or stripped.startswith("table ") or stripped.startswith("column "):
+            if stripped.startswith("annotation") or stripped.startswith("table ") or stripped.startswith("column ") or stripped.startswith("measure "):
                 in_partition = False
             else:
                 raw_partition_code.append(stripped)
@@ -241,7 +241,7 @@ def parse_tmdl_table_file(tmdl_path):
         c_match = re.match(r"^column\s+(.+)$", stripped)
         if c_match:
             in_partition = False
-            col_name = c_match.group(1).strip()
+            col_name = c_match.group(1).strip().strip("'").strip('"')
             desc = COLUMN_DESCRIPTIONS.get(col_name.lower(), f"Attribute column representing {col_name}.")
             current_col = {
                 "name": col_name,
@@ -259,7 +259,7 @@ def parse_tmdl_table_file(tmdl_path):
         m_match = re.match(r"^measure\s+(.+?)\s*=\s*(.+)$", stripped)
         if m_match:
             in_partition = False
-            m_name = m_match.group(1).strip()
+            m_name = m_match.group(1).strip().strip("'").strip('"')
             m_expr = m_match.group(2).strip()
             m_desc = MEASURE_DESCRIPTIONS.get(m_name, f"Calculated metric for {m_name}.")
             current_measure = {
@@ -464,22 +464,27 @@ def generate_sql_ddl_and_catalogs(projects):
             col_definitions = []
             for c in t["columns"]:
                 sql_type = TMDL_TO_SQL_TYPES.get(c["dataType"].lower(), "TEXT")
-                col_definitions.append(f"    {c['name']} {sql_type}")
+                col_definitions.append(f"    \"{c['name']}\" {sql_type}")
+                clean_c_name = c['name'].replace("'", "''")
+                clean_c_source = (c['sourceColumn'] or '').replace("'", "''")
                 clean_desc = c['description'].replace("'", "''")
-                sql_statements.append(f"INSERT INTO _tmdl_columns VALUES ('{p_name}', '{t_name}', '{c['name']}', '{c['dataType']}', '{c['summarizeBy']}', '{c['sourceColumn']}', '{clean_desc}');")
+                sql_statements.append(f"INSERT INTO _tmdl_columns VALUES ('{p_name}', '{t_name}', '{clean_c_name}', '{c['dataType']}', '{c['summarizeBy']}', '{clean_c_source}', '{clean_desc}');")
 
             for m in t["measures"]:
+                clean_m_name = m["name"].replace("'", "''")
                 clean_expr = m["expression"].replace("'", "''")
                 clean_m_desc = m["description"].replace("'", "''")
-                sql_statements.append(f"INSERT INTO _tmdl_measures VALUES ('{p_name}', '{t_name}', '{m['name']}', '{clean_expr}', '{m['formatString']}', '{clean_m_desc}');")
+                format_str = (m["formatString"] or '').replace("'", "''")
+                sql_statements.append(f"INSERT INTO _tmdl_measures VALUES ('{p_name}', '{t_name}', '{clean_m_name}', '{clean_expr}', '{format_str}', '{clean_m_desc}');")
 
             if t_name in rel_fk_map:
                 for r in rel_fk_map[t_name]:
                     target_table_sql_name = f"tmdl_{clean_p_name}_{r['toTable']}".replace(" ", "_").replace(".", "_").lower()
-                    col_definitions.append(f"    FOREIGN KEY ({r['fromColumn']}) REFERENCES {target_table_sql_name}({r['toColumn']})")
+                    col_definitions.append(f"    FOREIGN KEY (\"{r['fromColumn']}\") REFERENCES {target_table_sql_name}(\"{r['toColumn']}\")")
 
-            table_ddl = f"CREATE TABLE IF NOT EXISTS {table_sql_name} (\n" + ",\n".join(col_definitions) + "\n);"
-            sql_statements.append(table_ddl + "\n")
+            if col_definitions:
+                table_ddl = f"CREATE TABLE IF NOT EXISTS {table_sql_name} (\n" + ",\n".join(col_definitions) + "\n);"
+                sql_statements.append(table_ddl + "\n")
 
     full_sql = "\n".join(sql_statements)
     OUTPUT_DDL_FILE.write_text(full_sql, encoding="utf-8")

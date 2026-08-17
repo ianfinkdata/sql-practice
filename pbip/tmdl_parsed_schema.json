@@ -15,7 +15,7 @@
     "parameterCount": 1,
     "tables": [
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\_measures.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/_measures.tmdl",
         "name": "_measures",
         "lineageTag": null,
         "columns": [
@@ -31,86 +31,86 @@
         ],
         "measures": [
           {
-            "name": "'Total Gross Revenue'",
+            "name": "Total Gross Revenue",
             "expression": "SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])",
-            "description": "Calculated metric for 'Total Gross Revenue'.",
+            "description": "Sum of pre-discount revenue across all sales lines.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000001-0000-4000-8000-000000000001"
           },
           {
-            "name": "'Total Net Revenue'",
+            "name": "Total Net Revenue",
             "expression": "SUM(fact_sales[net_amount])",
-            "description": "Calculated metric for 'Total Net Revenue'.",
+            "description": "Sum of actual net sales revenue earned after discounts.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000002-0000-4000-8000-000000000002"
           },
           {
-            "name": "'Total Units Sold'",
+            "name": "Total Units Sold",
             "expression": "SUM(fact_sales[quantity])",
-            "description": "Calculated metric for 'Total Units Sold'.",
+            "description": "Total sum of merchandise item quantities sold.",
             "formatString": "#,##0",
             "lineageTag": "m0000003-0000-4000-8000-000000000003"
           },
           {
-            "name": "'Total Orders'",
+            "name": "Total Orders",
             "expression": "DISTINCTCOUNT(fact_sales[order_id])",
-            "description": "Calculated metric for 'Total Orders'.",
+            "description": "Count of distinct sales order transaction IDs.",
             "formatString": "#,##0",
             "lineageTag": "m0000004-0000-4000-8000-000000000004"
           },
           {
-            "name": "'Average Order Value'",
+            "name": "Average Order Value",
             "expression": "DIVIDE([Total Net Revenue], [Total Orders], 0)",
-            "description": "Calculated metric for 'Average Order Value'.",
+            "description": "Mean net revenue earned per distinct sales order.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000005-0000-4000-8000-000000000005"
           },
           {
-            "name": "'Active Customer Count'",
+            "name": "Active Customer Count",
             "expression": "DISTINCTCOUNT(fact_sales[customer_id])",
-            "description": "Calculated metric for 'Active Customer Count'.",
+            "description": "Count of unique customers placing orders in selected period.",
             "formatString": "#,##0",
             "lineageTag": "m0000006-0000-4000-8000-000000000006"
           },
           {
-            "name": "'Overall Discount Rate'",
+            "name": "Overall Discount Rate",
             "expression": "DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)",
-            "description": "Calculated metric for 'Overall Discount Rate'.",
+            "description": "Weighted average discount percentage across all order lines.",
             "formatString": "0.0%",
             "lineageTag": "m0000007-0000-4000-8000-000000000007"
           },
           {
-            "name": "'Total Cost of Goods Sold'",
+            "name": "Total Cost of Goods Sold",
             "expression": "SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))",
-            "description": "Calculated metric for 'Total Cost of Goods Sold'.",
+            "description": "Calculated metric for Total Cost of Goods Sold.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000008-0000-4000-8000-000000000008"
           },
           {
-            "name": "'Gross Margin'",
+            "name": "Gross Margin",
             "expression": "[Total Net Revenue] - [Total Cost of Goods Sold]",
-            "description": "Calculated metric for 'Gross Margin'.",
+            "description": "Calculated metric for Gross Margin.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000009-0000-4000-8000-000000000009"
           },
           {
-            "name": "'Gross Margin %'",
+            "name": "Gross Margin %",
             "expression": "DIVIDE([Gross Margin], [Total Net Revenue], 0)",
-            "description": "Calculated metric for 'Gross Margin %'.",
+            "description": "Calculated metric for Gross Margin %.",
             "formatString": "0.0%",
             "lineageTag": "m0000010-0000-4000-8000-000000000010"
           },
           {
-            "name": "'Net Revenue PY'",
+            "name": "Net Revenue PY",
             "expression": "CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))",
-            "description": "Calculated metric for 'Net Revenue PY'.",
+            "description": "Calculated metric for Net Revenue PY.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000011-0000-4000-8000-000000000011"
           },
           {
-            "name": "'Net Revenue YoY %'",
+            "name": "Net Revenue YoY %",
             "expression": "DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)",
-            "description": "Calculated metric for 'Net Revenue YoY %'.",
+            "description": "Calculated metric for Net Revenue YoY %.",
             "formatString": "0.0%",
             "lineageTag": "m0000012-0000-4000-8000-000000000012"
           }
@@ -125,7 +125,7 @@
         "mSteps": []
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\dim_calendar.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_calendar.tmdl",
         "name": "dim_calendar",
         "lineageTag": null,
         "columns": [
@@ -220,7 +220,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\dim_customer.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_customer.tmdl",
         "name": "dim_customer",
         "lineageTag": null,
         "columns": [
@@ -288,7 +288,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\dim_employee.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_employee.tmdl",
         "name": "dim_employee",
         "lineageTag": null,
         "columns": [
@@ -347,7 +347,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\fact_sales.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/fact_sales.tmdl",
         "name": "fact_sales",
         "lineageTag": null,
         "columns": [
@@ -493,7 +493,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\flat_sales_all.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/flat_sales_all.tmdl",
         "name": "flat_sales_all",
         "lineageTag": null,
         "columns": [
@@ -603,7 +603,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\flat_sales_completed.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/flat_sales_completed.tmdl",
         "name": "flat_sales_completed",
         "lineageTag": null,
         "columns": [
@@ -719,7 +719,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_dim_customer.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_customer.tmdl",
         "name": "sql_dim_customer",
         "lineageTag": null,
         "columns": [
@@ -751,7 +751,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_dim_date.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_date.tmdl",
         "name": "sql_dim_date",
         "lineageTag": null,
         "columns": [
@@ -783,7 +783,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_dim_employee.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_employee.tmdl",
         "name": "sql_dim_employee",
         "lineageTag": null,
         "columns": [
@@ -815,7 +815,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_dim_product.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_product.tmdl",
         "name": "sql_dim_product",
         "lineageTag": null,
         "columns": [
@@ -847,7 +847,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_fact_sales.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_fact_sales.tmdl",
         "name": "sql_fact_sales",
         "lineageTag": null,
         "columns": [
@@ -879,7 +879,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_flat_sales_all.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_flat_sales_all.tmdl",
         "name": "sql_flat_sales_all",
         "lineageTag": null,
         "columns": [
@@ -917,7 +917,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\duplicated oakhaven template\\duplicated oakhaven template.SemanticModel\\definition\\tables\\sql_flat_sales_completed.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl",
         "name": "sql_flat_sales_completed",
         "lineageTag": null,
         "columns": [
@@ -1018,81 +1018,81 @@
     "parameterCount": 1,
     "tables": [
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_all\\flat_sales_all.SemanticModel\\definition\\tables\\_measures.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/_measures.tmdl",
         "name": "_measures",
         "lineageTag": null,
         "columns": [
           {
-            "name": "_Dummy",
+            "name": "Value",
             "dataType": "int64",
             "sourceColumn": "[Value]",
             "summarizeBy": "none",
-            "description": "Attribute column representing _Dummy.",
+            "description": "Attribute column representing Value.",
             "lineageTag": "c0000001-0000-4000-8000-000000000001",
             "expression": null
           }
         ],
         "measures": [
           {
-            "name": "'Total Gross Revenue'",
+            "name": "Total Gross Revenue",
             "expression": "SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])",
-            "description": "Calculated metric for 'Total Gross Revenue'.",
+            "description": "Sum of pre-discount revenue across all sales lines.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000001-0000-4000-8000-000000000001"
           },
           {
-            "name": "'Total Net Revenue'",
+            "name": "Total Net Revenue",
             "expression": "SUM(fact_sales[net_amount])",
-            "description": "Calculated metric for 'Total Net Revenue'.",
+            "description": "Sum of actual net sales revenue earned after discounts.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000002-0000-4000-8000-000000000002"
           },
           {
-            "name": "'Total Units Sold'",
+            "name": "Total Units Sold",
             "expression": "SUM(fact_sales[quantity])",
-            "description": "Calculated metric for 'Total Units Sold'.",
+            "description": "Total sum of merchandise item quantities sold.",
             "formatString": "#,##0",
             "lineageTag": "m0000003-0000-4000-8000-000000000003"
           },
           {
-            "name": "'Total Orders'",
+            "name": "Total Orders",
             "expression": "DISTINCTCOUNT(fact_sales[order_id])",
-            "description": "Calculated metric for 'Total Orders'.",
+            "description": "Count of distinct sales order transaction IDs.",
             "formatString": "#,##0",
             "lineageTag": "m0000004-0000-4000-8000-000000000004"
           },
           {
-            "name": "'Average Order Value'",
+            "name": "Average Order Value",
             "expression": "DIVIDE([Total Net Revenue], [Total Orders], 0)",
-            "description": "Calculated metric for 'Average Order Value'.",
+            "description": "Mean net revenue earned per distinct sales order.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000005-0000-4000-8000-000000000005"
           },
           {
-            "name": "'Active Customer Count'",
+            "name": "Active Customer Count",
             "expression": "DISTINCTCOUNT(fact_sales[customer_id])",
-            "description": "Calculated metric for 'Active Customer Count'.",
+            "description": "Count of unique customers placing orders in selected period.",
             "formatString": "#,##0",
             "lineageTag": "m0000006-0000-4000-8000-000000000006"
           },
           {
-            "name": "'Overall Discount Rate'",
+            "name": "Overall Discount Rate",
             "expression": "DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)",
-            "description": "Calculated metric for 'Overall Discount Rate'.",
+            "description": "Weighted average discount percentage across all order lines.",
             "formatString": "0.0%",
             "lineageTag": "m0000007-0000-4000-8000-000000000007"
           },
           {
-            "name": "'Net Revenue PY'",
+            "name": "Net Revenue PY",
             "expression": "CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))",
-            "description": "Calculated metric for 'Net Revenue PY'.",
+            "description": "Calculated metric for Net Revenue PY.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000011-0000-4000-8000-000000000011"
           },
           {
-            "name": "'Net Revenue YoY %'",
+            "name": "Net Revenue YoY %",
             "expression": "DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)",
-            "description": "Calculated metric for 'Net Revenue YoY %'.",
+            "description": "Calculated metric for Net Revenue YoY %.",
             "formatString": "0.0%",
             "lineageTag": "m0000012-0000-4000-8000-000000000012"
           }
@@ -1107,7 +1107,7 @@
         "mSteps": []
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_all\\flat_sales_all.SemanticModel\\definition\\tables\\dim_calendar.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/dim_calendar.tmdl",
         "name": "dim_calendar",
         "lineageTag": null,
         "columns": [
@@ -1188,9 +1188,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
+          "target": "\"project/oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'datekey': 'Int64', 'year': 'Int64', 'month': 'Int64', 'is_weekend': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"datekey\", Int64.Type},\n{\"date\", type date},\n{\"year\", Int64.Type},\n{\"month\", Int64.Type},\n{\"month_name\", type text},\n{\"quarter\", type text},\n{\"day_name\", type text},\n{\"is_weekend\", Int64.Type}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'datekey': 'Int64', 'year': 'Int64', 'month': 'Int64', 'is_weekend': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"datekey\", Int64.Type},\n{\"date\", type date},\n{\"year\", Int64.Type},\n{\"month\", Int64.Type},\n{\"month_name\", type text},\n{\"quarter\", type text},\n{\"day_name\", type text},\n{\"is_weekend\", Int64.Type}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1202,7 +1202,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_all\\flat_sales_all.SemanticModel\\definition\\tables\\dim_employee.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/dim_employee.tmdl",
         "name": "dim_employee",
         "lineageTag": null,
         "columns": [
@@ -1247,9 +1247,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
+          "target": "\"project/oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'employee_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"employee_id\", Int64.Type},\n{\"full_name\", type text},\n{\"department\", type text},\n{\"region\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'employee_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"employee_id\", Int64.Type},\n{\"full_name\", type text},\n{\"department\", type text},\n{\"region\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1261,7 +1261,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_all\\flat_sales_all.SemanticModel\\definition\\tables\\fact_sales.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/fact_sales.tmdl",
         "name": "fact_sales",
         "lineageTag": null,
         "columns": [
@@ -1387,9 +1387,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
+          "target": "\"project/oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'customer_id': 'Int64', 'product_id': 'Int64', 'employee_id': 'Int64', 'datekey': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"customer_id\", Int64.Type},\n{\"product_id\", Int64.Type},\n{\"employee_id\", Int64.Type},\n{\"datekey\", Int64.Type},\n{\"quantity\", Int64.Type},\n{\"unit_price\", type number},\n{\"discount_pct\", type number},\n{\"net_amount\", type number},\n{\"payment_method\", type text},\n{\"order_status\", type text},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'customer_id': 'Int64', 'product_id': 'Int64', 'employee_id': 'Int64', 'datekey': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"customer_id\", Int64.Type},\n{\"product_id\", Int64.Type},\n{\"employee_id\", Int64.Type},\n{\"datekey\", Int64.Type},\n{\"quantity\", Int64.Type},\n{\"unit_price\", type number},\n{\"discount_pct\", type number},\n{\"net_amount\", type number},\n{\"payment_method\", type text},\n{\"order_status\", type text},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1419,7 +1419,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_all\\flat_sales_all.SemanticModel\\definition\\tables\\flat_sales_all.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_all/flat_sales_all.SemanticModel/definition/tables/flat_sales_all.tmdl",
         "name": "flat_sales_all",
         "lineageTag": null,
         "columns": [
@@ -1509,9 +1509,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
+          "target": "\"project/oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1583,7 +1583,7 @@
       {
         "name": "sqliteconnect",
         "type": "Text",
-        "defaultValue": "C:\\Github\\sql-practice\\project\\oakhaven.db",
+        "defaultValue": "project/oakhaven.db",
         "isParameter": true
       }
     ]
@@ -1595,7 +1595,7 @@
     "parameterCount": 1,
     "tables": [
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\_measures.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/_measures.tmdl",
         "name": "_measures",
         "lineageTag": null,
         "columns": [
@@ -1611,86 +1611,86 @@
         ],
         "measures": [
           {
-            "name": "'Total Gross Revenue'",
+            "name": "Total Gross Revenue",
             "expression": "SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])",
-            "description": "Calculated metric for 'Total Gross Revenue'.",
+            "description": "Sum of pre-discount revenue across all sales lines.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000001-0000-4000-8000-000000000001"
           },
           {
-            "name": "'Total Net Revenue'",
+            "name": "Total Net Revenue",
             "expression": "SUM(fact_sales[net_amount])",
-            "description": "Calculated metric for 'Total Net Revenue'.",
+            "description": "Sum of actual net sales revenue earned after discounts.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000002-0000-4000-8000-000000000002"
           },
           {
-            "name": "'Total Units Sold'",
+            "name": "Total Units Sold",
             "expression": "SUM(fact_sales[quantity])",
-            "description": "Calculated metric for 'Total Units Sold'.",
+            "description": "Total sum of merchandise item quantities sold.",
             "formatString": "#,##0",
             "lineageTag": "m0000003-0000-4000-8000-000000000003"
           },
           {
-            "name": "'Total Orders'",
+            "name": "Total Orders",
             "expression": "DISTINCTCOUNT(fact_sales[order_id])",
-            "description": "Calculated metric for 'Total Orders'.",
+            "description": "Count of distinct sales order transaction IDs.",
             "formatString": "#,##0",
             "lineageTag": "m0000004-0000-4000-8000-000000000004"
           },
           {
-            "name": "'Average Order Value'",
+            "name": "Average Order Value",
             "expression": "DIVIDE([Total Net Revenue], [Total Orders], 0)",
-            "description": "Calculated metric for 'Average Order Value'.",
+            "description": "Mean net revenue earned per distinct sales order.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000005-0000-4000-8000-000000000005"
           },
           {
-            "name": "'Active Customer Count'",
+            "name": "Active Customer Count",
             "expression": "DISTINCTCOUNT(fact_sales[customer_id])",
-            "description": "Calculated metric for 'Active Customer Count'.",
+            "description": "Count of unique customers placing orders in selected period.",
             "formatString": "#,##0",
             "lineageTag": "m0000006-0000-4000-8000-000000000006"
           },
           {
-            "name": "'Overall Discount Rate'",
+            "name": "Overall Discount Rate",
             "expression": "DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)",
-            "description": "Calculated metric for 'Overall Discount Rate'.",
+            "description": "Weighted average discount percentage across all order lines.",
             "formatString": "0.0%",
             "lineageTag": "m0000007-0000-4000-8000-000000000007"
           },
           {
-            "name": "'Total Cost of Goods Sold'",
+            "name": "Total Cost of Goods Sold",
             "expression": "SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))",
-            "description": "Calculated metric for 'Total Cost of Goods Sold'.",
+            "description": "Calculated metric for Total Cost of Goods Sold.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000008-0000-4000-8000-000000000008"
           },
           {
-            "name": "'Gross Margin'",
+            "name": "Gross Margin",
             "expression": "[Total Net Revenue] - [Total Cost of Goods Sold]",
-            "description": "Calculated metric for 'Gross Margin'.",
+            "description": "Calculated metric for Gross Margin.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000009-0000-4000-8000-000000000009"
           },
           {
-            "name": "'Gross Margin %'",
+            "name": "Gross Margin %",
             "expression": "DIVIDE([Gross Margin], [Total Net Revenue], 0)",
-            "description": "Calculated metric for 'Gross Margin %'.",
+            "description": "Calculated metric for Gross Margin %.",
             "formatString": "0.0%",
             "lineageTag": "m0000010-0000-4000-8000-000000000010"
           },
           {
-            "name": "'Net Revenue PY'",
+            "name": "Net Revenue PY",
             "expression": "CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))",
-            "description": "Calculated metric for 'Net Revenue PY'.",
+            "description": "Calculated metric for Net Revenue PY.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000011-0000-4000-8000-000000000011"
           },
           {
-            "name": "'Net Revenue YoY %'",
+            "name": "Net Revenue YoY %",
             "expression": "DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)",
-            "description": "Calculated metric for 'Net Revenue YoY %'.",
+            "description": "Calculated metric for Net Revenue YoY %.",
             "formatString": "0.0%",
             "lineageTag": "m0000012-0000-4000-8000-000000000012"
           }
@@ -1705,7 +1705,7 @@
         "mSteps": []
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\dim_calendar.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/dim_calendar.tmdl",
         "name": "dim_calendar",
         "lineageTag": null,
         "columns": [
@@ -1800,7 +1800,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\dim_customer.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/dim_customer.tmdl",
         "name": "dim_customer",
         "lineageTag": null,
         "columns": [
@@ -1868,7 +1868,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\flat_sales_completed.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/flat_sales_completed.tmdl",
         "name": "flat_sales_completed",
         "lineageTag": null,
         "columns": [
@@ -1984,7 +1984,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\sql_dim_date.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_dim_date.tmdl",
         "name": "sql_dim_date",
         "lineageTag": null,
         "columns": [
@@ -2016,7 +2016,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\sql_dim_product.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_dim_product.tmdl",
         "name": "sql_dim_product",
         "lineageTag": null,
         "columns": [
@@ -2048,7 +2048,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\sql_flat_sales_all.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_flat_sales_all.tmdl",
         "name": "sql_flat_sales_all",
         "lineageTag": null,
         "columns": [
@@ -2086,7 +2086,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\flat_sales_completed\\flat_sales_completed.SemanticModel\\definition\\tables\\sql_flat_sales_completed.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl",
         "name": "sql_flat_sales_completed",
         "lineageTag": null,
         "columns": [
@@ -2151,7 +2151,7 @@
     "parameterCount": 1,
     "tables": [
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\_measures.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/_measures.tmdl",
         "name": "_measures",
         "lineageTag": null,
         "columns": [
@@ -2167,86 +2167,86 @@
         ],
         "measures": [
           {
-            "name": "'Total Gross Revenue'",
+            "name": "Total Gross Revenue",
             "expression": "SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])",
-            "description": "Calculated metric for 'Total Gross Revenue'.",
+            "description": "Sum of pre-discount revenue across all sales lines.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000001-0000-4000-8000-000000000001"
           },
           {
-            "name": "'Total Net Revenue'",
+            "name": "Total Net Revenue",
             "expression": "SUM(fact_sales[net_amount])",
-            "description": "Calculated metric for 'Total Net Revenue'.",
+            "description": "Sum of actual net sales revenue earned after discounts.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000002-0000-4000-8000-000000000002"
           },
           {
-            "name": "'Total Units Sold'",
+            "name": "Total Units Sold",
             "expression": "SUM(fact_sales[quantity])",
-            "description": "Calculated metric for 'Total Units Sold'.",
+            "description": "Total sum of merchandise item quantities sold.",
             "formatString": "#,##0",
             "lineageTag": "m0000003-0000-4000-8000-000000000003"
           },
           {
-            "name": "'Total Orders'",
+            "name": "Total Orders",
             "expression": "DISTINCTCOUNT(fact_sales[order_id])",
-            "description": "Calculated metric for 'Total Orders'.",
+            "description": "Count of distinct sales order transaction IDs.",
             "formatString": "#,##0",
             "lineageTag": "m0000004-0000-4000-8000-000000000004"
           },
           {
-            "name": "'Average Order Value'",
+            "name": "Average Order Value",
             "expression": "DIVIDE([Total Net Revenue], [Total Orders], 0)",
-            "description": "Calculated metric for 'Average Order Value'.",
+            "description": "Mean net revenue earned per distinct sales order.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000005-0000-4000-8000-000000000005"
           },
           {
-            "name": "'Active Customer Count'",
+            "name": "Active Customer Count",
             "expression": "DISTINCTCOUNT(fact_sales[customer_id])",
-            "description": "Calculated metric for 'Active Customer Count'.",
+            "description": "Count of unique customers placing orders in selected period.",
             "formatString": "#,##0",
             "lineageTag": "m0000006-0000-4000-8000-000000000006"
           },
           {
-            "name": "'Overall Discount Rate'",
+            "name": "Overall Discount Rate",
             "expression": "DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)",
-            "description": "Calculated metric for 'Overall Discount Rate'.",
+            "description": "Weighted average discount percentage across all order lines.",
             "formatString": "0.0%",
             "lineageTag": "m0000007-0000-4000-8000-000000000007"
           },
           {
-            "name": "'Total Cost of Goods Sold'",
+            "name": "Total Cost of Goods Sold",
             "expression": "SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))",
-            "description": "Calculated metric for 'Total Cost of Goods Sold'.",
+            "description": "Calculated metric for Total Cost of Goods Sold.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000008-0000-4000-8000-000000000008"
           },
           {
-            "name": "'Gross Margin'",
+            "name": "Gross Margin",
             "expression": "[Total Net Revenue] - [Total Cost of Goods Sold]",
-            "description": "Calculated metric for 'Gross Margin'.",
+            "description": "Calculated metric for Gross Margin.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000009-0000-4000-8000-000000000009"
           },
           {
-            "name": "'Gross Margin %'",
+            "name": "Gross Margin %",
             "expression": "DIVIDE([Gross Margin], [Total Net Revenue], 0)",
-            "description": "Calculated metric for 'Gross Margin %'.",
+            "description": "Calculated metric for Gross Margin %.",
             "formatString": "0.0%",
             "lineageTag": "m0000010-0000-4000-8000-000000000010"
           },
           {
-            "name": "'Net Revenue PY'",
+            "name": "Net Revenue PY",
             "expression": "CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))",
-            "description": "Calculated metric for 'Net Revenue PY'.",
+            "description": "Calculated metric for Net Revenue PY.",
             "formatString": "\\$#,##0.00",
             "lineageTag": "m0000011-0000-4000-8000-000000000011"
           },
           {
-            "name": "'Net Revenue YoY %'",
+            "name": "Net Revenue YoY %",
             "expression": "DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)",
-            "description": "Calculated metric for 'Net Revenue YoY %'.",
+            "description": "Calculated metric for Net Revenue YoY %.",
             "formatString": "0.0%",
             "lineageTag": "m0000012-0000-4000-8000-000000000012"
           }
@@ -2261,7 +2261,7 @@
         "mSteps": []
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\dim_calendar.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_calendar.tmdl",
         "name": "dim_calendar",
         "lineageTag": null,
         "columns": [
@@ -2356,7 +2356,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\dim_customer.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_customer.tmdl",
         "name": "dim_customer",
         "lineageTag": null,
         "columns": [
@@ -2424,7 +2424,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\dim_employee.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_employee.tmdl",
         "name": "dim_employee",
         "lineageTag": null,
         "columns": [
@@ -2483,7 +2483,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\fact_sales.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/fact_sales.tmdl",
         "name": "fact_sales",
         "lineageTag": null,
         "columns": [
@@ -2629,7 +2629,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\flat_sales_all.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/flat_sales_all.tmdl",
         "name": "flat_sales_all",
         "lineageTag": null,
         "columns": [
@@ -2739,7 +2739,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\flat_sales_completed.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/flat_sales_completed.tmdl",
         "name": "flat_sales_completed",
         "lineageTag": null,
         "columns": [
@@ -2855,7 +2855,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_dim_customer.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_customer.tmdl",
         "name": "sql_dim_customer",
         "lineageTag": null,
         "columns": [
@@ -2887,7 +2887,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_dim_date.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_date.tmdl",
         "name": "sql_dim_date",
         "lineageTag": null,
         "columns": [
@@ -2919,7 +2919,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_dim_employee.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_employee.tmdl",
         "name": "sql_dim_employee",
         "lineageTag": null,
         "columns": [
@@ -2951,7 +2951,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_dim_product.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_product.tmdl",
         "name": "sql_dim_product",
         "lineageTag": null,
         "columns": [
@@ -2983,7 +2983,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_fact_sales.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_fact_sales.tmdl",
         "name": "sql_fact_sales",
         "lineageTag": null,
         "columns": [
@@ -3015,7 +3015,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_flat_sales_all.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_flat_sales_all.tmdl",
         "name": "sql_flat_sales_all",
         "lineageTag": null,
         "columns": [
@@ -3053,7 +3053,7 @@
         ]
       },
       {
-        "file": "C:\\Github\\sql-practice\\pbip_poc\\projects\\oakhaven template\\oakhaven template.SemanticModel\\definition\\tables\\sql_flat_sales_completed.tmdl",
+        "file": "/home/ian/github/sql-practice/pbip/projects/oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl",
         "name": "sql_flat_sales_completed",
         "lineageTag": null,
         "columns": [
