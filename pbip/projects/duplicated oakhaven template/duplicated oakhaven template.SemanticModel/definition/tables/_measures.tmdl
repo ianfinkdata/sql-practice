@@ -1,73 +1,73 @@
 table _measures
 	lineageTag: a0000000-0000-4000-8000-000000000001
 
-	/// Sum of pre-discount revenue across all sales lines.
+	/// [Tables: fact_sales] Sum of pre-discount revenue across all sales lines.
 	measure 'Total Gross Revenue' = SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])
 		formatString: \$#,##0.00
 		displayFolder: 01 - Revenue & Volume
 		lineageTag: m0000001-0000-4000-8000-000000000001
 
-	/// Sum of actual net sales revenue earned after discounts.
+	/// [Tables: fact_sales] Sum of actual net sales revenue earned after discounts.
 	measure 'Total Net Revenue' = SUM(fact_sales[net_amount])
 		formatString: \$#,##0.00
 		displayFolder: 01 - Revenue & Volume
 		lineageTag: m0000002-0000-4000-8000-000000000002
 
-	/// Total sum of merchandise item quantities sold.
+	/// [Tables: fact_sales] Total sum of merchandise item quantities sold.
 	measure 'Total Units Sold' = SUM(fact_sales[quantity])
 		formatString: #,##0
 		displayFolder: 01 - Revenue & Volume
 		lineageTag: m0000003-0000-4000-8000-000000000003
 
-	/// Count of distinct sales order transaction IDs.
+	/// [Tables: fact_sales] Count of distinct sales order transaction IDs.
 	measure 'Total Orders' = DISTINCTCOUNT(fact_sales[order_id])
 		formatString: #,##0
 		displayFolder: 03 - Order Metrics
 		lineageTag: m0000004-0000-4000-8000-000000000004
 
-	/// Mean net revenue earned per distinct sales order.
+	/// [Tables: fact_sales] Mean net revenue earned per distinct sales order.
 	measure 'Average Order Value' = DIVIDE([Total Net Revenue], [Total Orders], 0)
 		formatString: \$#,##0.00
 		displayFolder: 03 - Order Metrics
 		lineageTag: m0000005-0000-4000-8000-000000000005
 
-	/// Count of unique customers placing orders in selected period.
+	/// [Tables: fact_sales] Count of unique customers placing orders in selected period.
 	measure 'Active Customer Count' = DISTINCTCOUNT(fact_sales[customer_id])
 		formatString: #,##0
 		displayFolder: 04 - Customer Metrics
 		lineageTag: m0000006-0000-4000-8000-000000000006
 
-	/// Weighted average discount percentage across all order lines.
+	/// [Tables: fact_sales] Weighted average discount percentage across all order lines.
 	measure 'Overall Discount Rate' = DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)
 		formatString: 0.0%
 		displayFolder: 01 - Revenue & Volume
 		lineageTag: m0000007-0000-4000-8000-000000000007
 
-	/// Total wholesale acquisition cost of all merchandise units sold.
+	/// [Tables: dim_product, fact_sales] Total wholesale acquisition cost of all merchandise units sold.
 	measure 'Total Cost of Goods Sold' = SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))
 		formatString: \$#,##0.00
 		displayFolder: 02 - Margins & Profitability
 		lineageTag: m0000008-0000-4000-8000-000000000008
 
-	/// Total gross profit (Net Revenue minus Cost of Goods Sold).
+	/// [Tables: dim_product, fact_sales] Total gross profit (Net Revenue minus Cost of Goods Sold).
 	measure 'Gross Margin' = [Total Net Revenue] - [Total Cost of Goods Sold]
 		formatString: \$#,##0.00
 		displayFolder: 02 - Margins & Profitability
 		lineageTag: m0000009-0000-4000-8000-000000000009
 
-	/// Gross profit percentage of total net revenue.
+	/// [Tables: dim_product, fact_sales] Gross profit percentage of total net revenue.
 	measure 'Gross Margin %' = DIVIDE([Gross Margin], [Total Net Revenue], 0)
 		formatString: 0.0%
 		displayFolder: 02 - Margins & Profitability
 		lineageTag: m0000010-0000-4000-8000-000000000010
 
-	/// Total net revenue for the prior year comparable calendar period.
+	/// [Tables: dim_calendar, fact_sales] Total net revenue for the prior year comparable calendar period.
 	measure 'Net Revenue PY' = CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))
 		formatString: \$#,##0.00
 		displayFolder: 05 - Time Intelligence
 		lineageTag: m0000011-0000-4000-8000-000000000011
 
-	/// Year-over-year percentage growth in total net revenue.
+	/// [Tables: dim_calendar, fact_sales] Year-over-year percentage growth in total net revenue.
 	measure 'Net Revenue YoY %' = DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)
 		formatString: 0.0%
 		displayFolder: 05 - Time Intelligence

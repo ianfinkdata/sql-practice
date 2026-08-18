@@ -15,7 +15,7 @@ DROP TABLE IF EXISTS _tmdl_advanced_editor;
 CREATE TABLE IF NOT EXISTS _tmdl_projects (project_name TEXT PRIMARY KEY, table_count INT, relationship_count INT, parameter_count INT);
 CREATE TABLE IF NOT EXISTS _tmdl_tables (project_name TEXT, table_name TEXT, lineage_tag TEXT, PRIMARY KEY (project_name, table_name));
 CREATE TABLE IF NOT EXISTS _tmdl_columns (project_name TEXT, table_name TEXT, column_name TEXT, data_type TEXT, summarize_by TEXT, source_column TEXT, description TEXT);
-CREATE TABLE IF NOT EXISTS _tmdl_measures (project_name TEXT, table_name TEXT, measure_name TEXT, expression TEXT, format_string TEXT, description TEXT);
+CREATE TABLE IF NOT EXISTS _tmdl_measures (project_name TEXT, table_name TEXT, measure_name TEXT, expression TEXT, format_string TEXT, description TEXT, referenced_tables TEXT);
 CREATE TABLE IF NOT EXISTS _tmdl_relationships (project_name TEXT, rel_name TEXT, from_table TEXT, from_column TEXT, to_table TEXT, to_column TEXT, cardinality TEXT);
 CREATE TABLE IF NOT EXISTS _tmdl_data_sources (project_name TEXT, table_name TEXT, connector TEXT, connection_target TEXT, query_type TEXT, advanced_editor_script TEXT);
 CREATE TABLE IF NOT EXISTS _tmdl_advanced_editor (project_name TEXT, table_name TEXT, advanced_editor_script TEXT, PRIMARY KEY (project_name, table_name));
@@ -38,18 +38,18 @@ source = Row("Value", 1)');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', '_measures', 'mode: import
 source = Row("Value", 1)');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', '_measures', '_Dummy', 'int64', 'none', '[Value]', 'Attribute column representing _Dummy.');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Gross Revenue', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', 'Sum of pre-discount revenue across all sales lines.');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Net Revenue', 'SUM(fact_sales[net_amount])', '\$#,##0.00', 'Sum of actual net sales revenue earned after discounts.');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Units Sold', 'SUM(fact_sales[quantity])', '#,##0', 'Total sum of merchandise item quantities sold.');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Orders', 'DISTINCTCOUNT(fact_sales[order_id])', '#,##0', 'Count of distinct sales order transaction IDs.');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Average Order Value', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', 'Mean net revenue earned per distinct sales order.');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Active Customer Count', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', 'Count of unique customers placing orders in selected period.');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Overall Discount Rate', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', 'Weighted average discount percentage across all order lines.');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Cost of Goods Sold', 'SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))', '\$#,##0.00', 'Calculated metric for Total Cost of Goods Sold.');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Gross Margin', '[Total Net Revenue] - [Total Cost of Goods Sold]', '\$#,##0.00', 'Calculated metric for Gross Margin.');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Gross Margin %', 'DIVIDE([Gross Margin], [Total Net Revenue], 0)', '0.0%', 'Calculated metric for Gross Margin %.');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Net Revenue PY', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', 'Calculated metric for Net Revenue PY.');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Net Revenue YoY %', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', 'Calculated metric for Net Revenue YoY %.');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Gross Revenue', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', '[Tables: fact_sales] Sum of pre-discount revenue across all sales lines.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Net Revenue', 'SUM(fact_sales[net_amount])', '\$#,##0.00', '[Tables: fact_sales] Sum of actual net sales revenue earned after discounts.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Units Sold', 'SUM(fact_sales[quantity])', '#,##0', '[Tables: fact_sales] Total sum of merchandise item quantities sold.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Orders', 'DISTINCTCOUNT(fact_sales[order_id])', '#,##0', '[Tables: fact_sales] Count of distinct sales order transaction IDs.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Average Order Value', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', '[Tables: fact_sales] Mean net revenue earned per distinct sales order.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Active Customer Count', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', '[Tables: fact_sales] Count of unique customers placing orders in selected period.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Overall Discount Rate', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', '[Tables: fact_sales] Weighted average discount percentage across all order lines.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Cost of Goods Sold', 'SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))', '\$#,##0.00', '[Tables: dim_product, fact_sales] Total wholesale acquisition cost of all merchandise units sold.', 'dim_product, fact_sales');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Gross Margin', '[Total Net Revenue] - [Total Cost of Goods Sold]', '\$#,##0.00', '[Tables: dim_product, fact_sales] Total gross profit (Net Revenue minus Cost of Goods Sold).', 'dim_product, fact_sales');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Gross Margin %', 'DIVIDE([Gross Margin], [Total Net Revenue], 0)', '0.0%', '[Tables: dim_product, fact_sales] Gross profit percentage of total net revenue.', 'dim_product, fact_sales');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Net Revenue PY', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', '[Tables: dim_calendar, fact_sales] Total net revenue for the prior year comparable calendar period.', 'dim_calendar, fact_sales');
+INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Net Revenue YoY %', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', '[Tables: dim_calendar, fact_sales] Year-over-year percentage growth in total net revenue.', 'dim_calendar, fact_sales');
 CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template__measures (
     "_Dummy" INTEGER
 );
@@ -948,15 +948,15 @@ source = Row("Value", 1)');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_all', '_measures', 'mode: import
 source = Row("Value", 1)');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_all', '_measures', 'Value', 'int64', 'none', '[Value]', 'Attribute column representing Value.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Total Gross Revenue', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', 'Sum of pre-discount revenue across all sales lines.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Total Net Revenue', 'SUM(fact_sales[net_amount])', '\$#,##0.00', 'Sum of actual net sales revenue earned after discounts.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Total Units Sold', 'SUM(fact_sales[quantity])', '#,##0', 'Total sum of merchandise item quantities sold.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Total Orders', 'DISTINCTCOUNT(fact_sales[order_id])', '#,##0', 'Count of distinct sales order transaction IDs.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Average Order Value', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', 'Mean net revenue earned per distinct sales order.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Active Customer Count', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', 'Count of unique customers placing orders in selected period.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Overall Discount Rate', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', 'Weighted average discount percentage across all order lines.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Net Revenue PY', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', 'Calculated metric for Net Revenue PY.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Net Revenue YoY %', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', 'Calculated metric for Net Revenue YoY %.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Total Gross Revenue', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', '[Tables: fact_sales] Sum of pre-discount revenue across all sales lines.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Total Net Revenue', 'SUM(fact_sales[net_amount])', '\$#,##0.00', '[Tables: fact_sales] Sum of actual net sales revenue earned after discounts.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Total Units Sold', 'SUM(fact_sales[quantity])', '#,##0', '[Tables: fact_sales] Total sum of merchandise item quantities sold.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Total Orders', 'DISTINCTCOUNT(fact_sales[order_id])', '#,##0', '[Tables: fact_sales] Count of distinct sales order transaction IDs.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Average Order Value', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', '[Tables: fact_sales] Mean net revenue earned per distinct sales order.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Active Customer Count', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', '[Tables: fact_sales] Count of unique customers placing orders in selected period.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Overall Discount Rate', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', '[Tables: fact_sales] Weighted average discount percentage across all order lines.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Net Revenue PY', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', '[Tables: dim_calendar, fact_sales] Total net revenue for the prior year comparable calendar period.', 'dim_calendar, fact_sales');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_all', '_measures', 'Net Revenue YoY %', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', '[Tables: dim_calendar, fact_sales] Year-over-year percentage growth in total net revenue.', 'dim_calendar, fact_sales');
 CREATE TABLE IF NOT EXISTS tmdl_flat_sales_all__measures (
     "Value" INTEGER
 );
@@ -1371,21 +1371,16 @@ INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', '_measures', 'Pow
 source = Row("Value", 1)');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_completed', '_measures', 'mode: import
 source = Row("Value", 1)');
-INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', '_measures', '_Dummy', 'int64', 'none', '[Value]', 'Attribute column representing _Dummy.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Total Gross Revenue', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', 'Sum of pre-discount revenue across all sales lines.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Total Net Revenue', 'SUM(fact_sales[net_amount])', '\$#,##0.00', 'Sum of actual net sales revenue earned after discounts.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Total Units Sold', 'SUM(fact_sales[quantity])', '#,##0', 'Total sum of merchandise item quantities sold.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Total Orders', 'DISTINCTCOUNT(fact_sales[order_id])', '#,##0', 'Count of distinct sales order transaction IDs.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Average Order Value', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', 'Mean net revenue earned per distinct sales order.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Active Customer Count', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', 'Count of unique customers placing orders in selected period.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Overall Discount Rate', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', 'Weighted average discount percentage across all order lines.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Total Cost of Goods Sold', 'SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))', '\$#,##0.00', 'Calculated metric for Total Cost of Goods Sold.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Gross Margin', '[Total Net Revenue] - [Total Cost of Goods Sold]', '\$#,##0.00', 'Calculated metric for Gross Margin.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Gross Margin %', 'DIVIDE([Gross Margin], [Total Net Revenue], 0)', '0.0%', 'Calculated metric for Gross Margin %.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Net Revenue PY', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', 'Calculated metric for Net Revenue PY.');
-INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Net Revenue YoY %', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', 'Calculated metric for Net Revenue YoY %.');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', '_measures', 'Value', 'int64', 'none', '[Value]', 'Attribute column representing Value.');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Total Net Revenue', 'SUM(flat_sales_completed[net_amount])', '\$#,##0.00', '[Tables: flat_sales_completed] Sum of actual net sales revenue earned after discounts.', 'flat_sales_completed');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Total Units Sold', 'SUM(flat_sales_completed[quantity])', '#,##0', '[Tables: flat_sales_completed] Total sum of merchandise item quantities sold.', 'flat_sales_completed');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Total Orders', 'DISTINCTCOUNT(flat_sales_completed[order_id])', '#,##0', '[Tables: flat_sales_completed] Count of distinct sales order transaction IDs.', 'flat_sales_completed');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Average Order Value', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', '[Tables: flat_sales_completed] Mean net revenue earned per distinct sales order.', 'flat_sales_completed');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Active Customer Count', 'DISTINCTCOUNT(flat_sales_completed[customer_name])', '#,##0', '[Tables: flat_sales_completed] Count of unique customers placing orders in selected period.', 'flat_sales_completed');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Net Revenue PY', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', '[Tables: dim_calendar, flat_sales_completed] Total net revenue for the prior year comparable calendar period.', 'dim_calendar, flat_sales_completed');
+INSERT INTO _tmdl_measures VALUES ('flat_sales_completed', '_measures', 'Net Revenue YoY %', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', '[Tables: dim_calendar, flat_sales_completed] Year-over-year percentage growth in total net revenue.', 'dim_calendar, flat_sales_completed');
 CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed__measures (
-    "_Dummy" INTEGER
+    "Value" INTEGER
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'dim_calendar', 'None');
@@ -1414,11 +1409,21 @@ WHERE d.datekey IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''datekey'': ''Int64'', ''year'': ''Int64'', ''month'': ''Int64'', ''is_weekend'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"datekey", Int64.Type},
+{"date", type date},
+{"year", Int64.Type},
+{"month", Int64.Type},
+{"month_name", type text},
+{"quarter", type text},
+{"day_name", type text},
+{"is_weekend", Int64.Type}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_completed', 'dim_calendar', 'mode: import
 source = ```
 let
@@ -1444,33 +1449,43 @@ WHERE d.datekey IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''datekey'': ''Int64'', ''year'': ''Int64'', ''month'': ''Int64'', ''is_weekend'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"datekey", Int64.Type},
+{"date", type date},
+{"year", Int64.Type},
+{"month", Int64.Type},
+{"month_name", type text},
+{"quarter", type text},
+{"day_name", type text},
+{"is_weekend", Int64.Type}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'dim_calendar', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'datekey', 'string', 'none', 'datekey', 'Integer surrogate key in YYYYMMDD format for date joins.');
-INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'date', 'string', 'none', 'date', 'Standard ISO 8601 calendar date (YYYY-MM-DD).');
-INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'year', 'string', 'none', 'year', 'Four-digit calendar year (e.g. 2026).');
-INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'month', 'string', 'none', 'month', 'Numeric calendar month (1..12).');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'datekey', 'int64', 'none', 'datekey', 'Integer surrogate key in YYYYMMDD format for date joins.');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'date', 'dateTime', 'none', 'date', 'Standard ISO 8601 calendar date (YYYY-MM-DD).');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'year', 'int64', 'none', 'year', 'Four-digit calendar year (e.g. 2026).');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'month', 'int64', 'none', 'month', 'Numeric calendar month (1..12).');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'month_name', 'string', 'none', 'month_name', 'Full English month name (e.g. January, February).');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'quarter', 'string', 'none', 'quarter', 'Calendar quarter identifier (Q1, Q2, Q3, Q4).');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'day_name', 'string', 'none', 'day_name', 'Full English day name (e.g. Monday, Tuesday).');
-INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'is_weekend', 'string', 'none', 'is_weekend', 'Boolean flag indicating Saturday or Sunday (1 = Weekend, 0 = Weekday).');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_calendar', 'is_weekend', 'int64', 'none', 'is_weekend', 'Boolean flag indicating Saturday or Sunday (1 = Weekend, 0 = Weekday).');
 CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_dim_calendar (
-    "datekey" TEXT,
-    "date" TEXT,
-    "year" TEXT,
-    "month" TEXT,
+    "datekey" INTEGER,
+    "date" TIMESTAMP,
+    "year" INTEGER,
+    "month" INTEGER,
     "month_name" TEXT,
     "quarter" TEXT,
     "day_name" TEXT,
-    "is_weekend" TEXT
+    "is_weekend" INTEGER
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'dim_customer', 'None');
@@ -1496,11 +1511,18 @@ WHERE c.customer_id IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''customer_id'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"customer_id", Int64.Type},
+{"full_name", type text},
+{"email", type text},
+{"state", type text},
+{"customer_segment", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_completed', 'dim_customer', 'mode: import
 source = ```
 let
@@ -1523,23 +1545,30 @@ WHERE c.customer_id IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''customer_id'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"customer_id", Int64.Type},
+{"full_name", type text},
+{"email", type text},
+{"state", type text},
+{"customer_segment", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'dim_customer', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_customer', 'customer_id', 'string', 'none', 'customer_id', 'Unique sequential identifier (1..600) for each customer.');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_customer', 'customer_id', 'int64', 'none', 'customer_id', 'Unique sequential identifier (1..600) for each customer.');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_customer', 'full_name', 'string', 'none', 'full_name', 'Concatenated customer full name (first + last).');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_customer', 'email', 'string', 'none', 'email', 'Primary email address associated with customer account.');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_customer', 'state', 'string', 'none', 'state', 'Customer geographic state or province code.');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'dim_customer', 'customer_segment', 'string', 'none', 'customer_segment', 'Market segment classification (Retail, Wholesale, VIP).');
 CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_dim_customer (
-    "customer_id" TEXT,
+    "customer_id" INTEGER,
     "full_name" TEXT,
     "email" TEXT,
     "state" TEXT,
@@ -1555,8 +1584,8 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(""project/oakhaven.db"")
-df = pd.read_sql_query(
-""""""SELECT 
+df = pd.read_sql_query(""""""
+SELECT 
     f.order_id,
     f.order_line_id,
     f.order_date,
@@ -1572,11 +1601,22 @@ LEFT JOIN dim_product p ON f.product_id = p.product_id
 WHERE f.order_status = ''Completed''
 ORDER BY f.order_date DESC
 LIMIT 100;
-"""""", conn)
+"""""", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"order_date", type date},
+{"customer_name", type text},
+{"product_name", type text},
+{"product_category", type text},
+{"quantity", Int64.Type},
+{"net_amount", type number},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('flat_sales_completed', 'flat_sales_completed', 'mode: import
 source = ```
 let
@@ -1585,8 +1625,8 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(""project/oakhaven.db"")
-df = pd.read_sql_query(
-""""""SELECT 
+df = pd.read_sql_query(""""""
+SELECT 
     f.order_id,
     f.order_line_id,
     f.order_date,
@@ -1602,11 +1642,22 @@ LEFT JOIN dim_product p ON f.product_id = p.product_id
 WHERE f.order_status = ''Completed''
 ORDER BY f.order_date DESC
 LIMIT 100;
-"""""", conn)
+"""""", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"order_date", type date},
+{"customer_name", type text},
+{"product_name", type text},
+{"product_category", type text},
+{"quantity", Int64.Type},
+{"net_amount", type number},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'flat_sales_completed', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -1615,25 +1666,29 @@ conn = sqlite3.connect(...');
 INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'flat_sales_completed', 2, 'customer_id', 'Filter Transformation', 'c.customer_id
 LEFT JOIN dim_product p ON f.product_id = p.product_id
 WHERE f.order_status = ''Complet...');
-INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'flat_sales_completed', 3, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
-INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'order_id', 'string', 'none', 'order_id', 'Unique sales order transaction header identifier.');
-INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'order_line_id', 'string', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
-INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'order_date', 'string', 'none', 'order_date', 'Transaction date on which order was placed.');
+INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'flat_sales_completed', 3, 'dtype', 'Source Ingestion', '{''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
+conn.close()")');
+INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'flat_sales_completed', 4, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
+INSERT INTO _tmdl_m_steps VALUES ('flat_sales_completed', 'flat_sales_completed', 5, 'Changed Type', 'Source Ingestion', 'Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type}');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'order_id', 'int64', 'none', 'order_id', 'Unique sales order transaction header identifier.');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'order_line_id', 'int64', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'order_date', 'dateTime', 'none', 'order_date', 'Transaction date on which order was placed.');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'customer_name', 'string', 'none', 'customer_name', 'Full name of the purchasing customer.');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'product_name', 'string', 'none', 'product_name', 'Catalog description and product title.');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'product_category', 'string', 'none', 'product_category', 'Merchandise category of the ordered item.');
-INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'quantity', 'string', 'none', 'quantity', 'Number of units purchased in order line.');
-INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'net_amount', 'string', 'none', 'net_amount', 'Actual net revenue earned after applying discounts.');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'quantity', 'int64', 'sum', 'quantity', 'Number of units purchased in order line.');
+INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'net_amount', 'double', 'sum', 'net_amount', 'Actual net revenue earned after applying discounts.');
 INSERT INTO _tmdl_columns VALUES ('flat_sales_completed', 'flat_sales_completed', 'channel', 'string', 'none', 'channel', 'Sales channel origination (Web, Mobile App, In-Store Retail).');
 CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_flat_sales_completed (
-    "order_id" TEXT,
-    "order_line_id" TEXT,
-    "order_date" TEXT,
+    "order_id" INTEGER,
+    "order_line_id" INTEGER,
+    "order_date" TIMESTAMP,
     "customer_name" TEXT,
     "product_name" TEXT,
     "product_category" TEXT,
-    "quantity" TEXT,
-    "net_amount" TEXT,
+    "quantity" INTEGER,
+    "net_amount" REAL,
     "channel" TEXT,
     FOREIGN KEY ("order_date") REFERENCES tmdl_flat_sales_completed_dim_calendar("date")
 );
@@ -1908,18 +1963,18 @@ source = Row("Value", 1)');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', '_measures', 'mode: import
 source = Row("Value", 1)');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', '_measures', '_Dummy', 'int64', 'none', '[Value]', 'Attribute column representing _Dummy.');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Gross Revenue', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', 'Sum of pre-discount revenue across all sales lines.');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Net Revenue', 'SUM(fact_sales[net_amount])', '\$#,##0.00', 'Sum of actual net sales revenue earned after discounts.');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Units Sold', 'SUM(fact_sales[quantity])', '#,##0', 'Total sum of merchandise item quantities sold.');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Orders', 'DISTINCTCOUNT(fact_sales[order_id])', '#,##0', 'Count of distinct sales order transaction IDs.');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Average Order Value', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', 'Mean net revenue earned per distinct sales order.');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Active Customer Count', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', 'Count of unique customers placing orders in selected period.');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Overall Discount Rate', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', 'Weighted average discount percentage across all order lines.');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Cost of Goods Sold', 'SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))', '\$#,##0.00', 'Calculated metric for Total Cost of Goods Sold.');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Gross Margin', '[Total Net Revenue] - [Total Cost of Goods Sold]', '\$#,##0.00', 'Calculated metric for Gross Margin.');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Gross Margin %', 'DIVIDE([Gross Margin], [Total Net Revenue], 0)', '0.0%', 'Calculated metric for Gross Margin %.');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Net Revenue PY', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', 'Calculated metric for Net Revenue PY.');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Net Revenue YoY %', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', 'Calculated metric for Net Revenue YoY %.');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Gross Revenue', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', '[Tables: fact_sales] Sum of pre-discount revenue across all sales lines.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Net Revenue', 'SUM(fact_sales[net_amount])', '\$#,##0.00', '[Tables: fact_sales] Sum of actual net sales revenue earned after discounts.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Units Sold', 'SUM(fact_sales[quantity])', '#,##0', '[Tables: fact_sales] Total sum of merchandise item quantities sold.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Orders', 'DISTINCTCOUNT(fact_sales[order_id])', '#,##0', '[Tables: fact_sales] Count of distinct sales order transaction IDs.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Average Order Value', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', '[Tables: fact_sales] Mean net revenue earned per distinct sales order.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Active Customer Count', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', '[Tables: fact_sales] Count of unique customers placing orders in selected period.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Overall Discount Rate', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', '[Tables: fact_sales] Weighted average discount percentage across all order lines.', 'fact_sales');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Cost of Goods Sold', 'SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))', '\$#,##0.00', '[Tables: dim_product, fact_sales] Total wholesale acquisition cost of all merchandise units sold.', 'dim_product, fact_sales');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Gross Margin', '[Total Net Revenue] - [Total Cost of Goods Sold]', '\$#,##0.00', '[Tables: dim_product, fact_sales] Total gross profit (Net Revenue minus Cost of Goods Sold).', 'dim_product, fact_sales');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Gross Margin %', 'DIVIDE([Gross Margin], [Total Net Revenue], 0)', '0.0%', '[Tables: dim_product, fact_sales] Gross profit percentage of total net revenue.', 'dim_product, fact_sales');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Net Revenue PY', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', '[Tables: dim_calendar, fact_sales] Total net revenue for the prior year comparable calendar period.', 'dim_calendar, fact_sales');
+INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Net Revenue YoY %', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', '[Tables: dim_calendar, fact_sales] Year-over-year percentage growth in total net revenue.', 'dim_calendar, fact_sales');
 CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template__measures (
     "_Dummy" INTEGER
 );

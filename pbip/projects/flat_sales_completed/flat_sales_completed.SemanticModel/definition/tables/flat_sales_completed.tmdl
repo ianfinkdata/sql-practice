@@ -2,7 +2,7 @@ table flat_sales_completed
 	lineageTag: b6be6beb-29f1-48a5-81c0-625157189e89
 
 	column order_id
-		dataType: string
+		dataType: int64
 		lineageTag: c7d0eb31-325d-4c7a-83de-99b17198f141
 		summarizeBy: none
 		sourceColumn: order_id
@@ -10,7 +10,7 @@ table flat_sales_completed
 		annotation SummarizationSetBy = Automatic
 
 	column order_line_id
-		dataType: string
+		dataType: int64
 		lineageTag: 93dcebd5-75c5-4398-bc5f-3f1ecf321cef
 		summarizeBy: none
 		sourceColumn: order_line_id
@@ -18,12 +18,15 @@ table flat_sales_completed
 		annotation SummarizationSetBy = Automatic
 
 	column order_date
-		dataType: string
+		dataType: dateTime
+		formatString: yyyy-mm-dd
 		lineageTag: 7ba34804-995f-49d6-aa47-0712b4d6f8c5
 		summarizeBy: none
 		sourceColumn: order_date
 
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column customer_name
 		dataType: string
@@ -50,17 +53,19 @@ table flat_sales_completed
 		annotation SummarizationSetBy = Automatic
 
 	column quantity
-		dataType: string
+		dataType: int64
+		formatString: #,##0
 		lineageTag: 301c7b2f-7495-445b-adfb-46924ee0423a
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: quantity
 
 		annotation SummarizationSetBy = Automatic
 
 	column net_amount
-		dataType: string
+		dataType: double
+		formatString: \$#,##0.00
 		lineageTag: 809d7d2f-3ead-40d2-a2ea-4d9a2ac5285c
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: net_amount
 
 		annotation SummarizationSetBy = Automatic
@@ -77,13 +82,26 @@ table flat_sales_completed
 		mode: import
 		source = ```
 				let
-				    // 1. Execute the Python script and inject your parameters safely
-				    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""project/oakhaven.db"")#(lf)df = pd.read_sql_query(#(lf)""""""SELECT #(lf)    f.order_id,#(lf)    f.order_line_id,#(lf)    f.order_date,#(lf)    c.full_name AS customer_name,#(lf)    p.product_name,#(lf)    p.category AS product_category,#(lf)    f.quantity,#(lf)    f.net_amount,#(lf)    f.channel#(lf)FROM fact_sales f#(lf)LEFT JOIN dim_customer c ON f.customer_id = c.customer_id#(lf)LEFT JOIN dim_product p ON f.product_id = p.product_id#(lf)WHERE f.order_status = 'Completed'#(lf)ORDER BY f.order_date DESC#(lf)LIMIT 100;#(lf)"""""", conn)#(lf)conn.close()"),
+				    // 1. Execute the Python script and inject your parameters safely with explicit Int64 types
+				    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""project/oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT #(lf)    f.order_id,#(lf)    f.order_line_id,#(lf)    f.order_date,#(lf)    c.full_name AS customer_name,#(lf)    p.product_name,#(lf)    p.category AS product_category,#(lf)    f.quantity,#(lf)    f.net_amount,#(lf)    f.channel#(lf)FROM fact_sales f#(lf)LEFT JOIN dim_customer c ON f.customer_id = c.customer_id#(lf)LEFT JOIN dim_product p ON f.product_id = p.product_id#(lf)WHERE f.order_status = 'Completed'#(lf)ORDER BY f.order_date DESC#(lf)LIMIT 100;#(lf)"""""", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})#(lf)conn.close()"),
 				    
 				    // 2. Extract the dataframe 'df' that Python generated
-				    DataTable = Source{[Name="df"]}[Value]
+				    DataTable = Source{[Name="df"]}[Value],
+				    
+				    // 3. Transform column data types
+				    #"Changed Type" = Table.TransformColumnTypes(DataTable,{
+				        {"order_id", Int64.Type},
+				        {"order_line_id", Int64.Type},
+				        {"order_date", type date},
+				        {"customer_name", type text},
+				        {"product_name", type text},
+				        {"product_category", type text},
+				        {"quantity", Int64.Type},
+				        {"net_amount", type number},
+				        {"channel", type text}
+				    })
 				in
-				    DataTable
+				    #"Changed Type"
 				```
 
 	annotation PBI_NavigationStepName = Navigation

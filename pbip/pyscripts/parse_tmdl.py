@@ -91,11 +91,77 @@ MEASURE_DESCRIPTIONS = {
     "Total Gross Revenue": "Sum of pre-discount revenue across all sales lines.",
     "Total Net Revenue": "Sum of actual net sales revenue earned after discounts.",
     "Total Units Sold": "Total sum of merchandise item quantities sold.",
-    "Average Order Value": "Mean net revenue earned per distinct sales order.",
     "Total Orders": "Count of distinct sales order transaction IDs.",
+    "Average Order Value": "Mean net revenue earned per distinct sales order.",
     "Active Customer Count": "Count of unique customers placing orders in selected period.",
-    "Overall Discount Rate": "Weighted average discount percentage across all order lines."
+    "Overall Discount Rate": "Weighted average discount percentage across all order lines.",
+    "Total Cost of Goods Sold": "Total wholesale acquisition cost of all merchandise units sold.",
+    "Gross Margin": "Total gross profit (Net Revenue minus Cost of Goods Sold).",
+    "Gross Margin %": "Gross profit percentage of total net revenue.",
+    "Net Revenue PY": "Total net revenue for the prior year comparable calendar period.",
+    "Net Revenue YoY %": "Year-over-year percentage growth in total net revenue."
 }
+
+
+def extract_measure_referenced_tables(expression, all_measures_exprs=None, doc_desc=None, visited=None):
+    """
+    Extracts a sorted, unique list of all tables referenced in a DAX measure,
+    resolving direct table/column references, DAX table function arguments,
+    explicit [Tables: ...] comment tags, and transitive measure dependencies.
+    """
+    if visited is None:
+        visited = set()
+        
+    tables = set()
+    
+    # 1. Parse explicit [Tables: table1, table2] from doc comments / descriptions
+    if doc_desc:
+        tag_match = re.search(r'\[Tables:\s*([^\]]+)\]', doc_desc, re.IGNORECASE)
+        if not tag_match:
+            tag_match = re.search(r'Tables:\s*([a-zA-Z0-9_, ]+)(?:\||\-|\.|$)', doc_desc, re.IGNORECASE)
+        if tag_match:
+            for t in tag_match.group(1).split(','):
+                clean_t = t.strip().strip("'").strip('"')
+                if clean_t and clean_t.lower() not in ('_measures', 'measures', 'none'):
+                    tables.add(clean_t)
+
+    if not expression:
+        return sorted(list(tables))
+
+    # 2. Direct Table[Column] references (quoted 'Table Name'[Col] or unquoted Table[Col])
+    col_refs = re.findall(r"(?:'([^']+)'|([a-zA-Z0-9_]+))\[([^\]]+)\]", expression)
+    for q_tbl, u_tbl, col in col_refs:
+        tbl = q_tbl or u_tbl
+        if tbl and tbl.lower() not in ('_measures', 'measures'):
+            tables.add(tbl)
+
+    # 3. Direct Table arguments in DAX table functions
+    tbl_funcs = re.findall(
+        r"\b(?:SUMX|AVERAGEX|MINX|MAXX|COUNTX|COUNTA|FILTER|ALL|ALLSELECTED|VALUES|DISTINCT|CALCULATETABLE|RELATEDTABLE)\s*\(\s*(?:'([^']+)'|([a-zA-Z0-9_]+))\b",
+        expression,
+        re.IGNORECASE
+    )
+    for q_tbl, u_tbl in tbl_funcs:
+        tbl = q_tbl or u_tbl
+        if tbl and tbl.lower() not in ('_measures', 'measures'):
+            tables.add(tbl)
+
+    # 4. Transitive measure dependencies [Measure Name]
+    if all_measures_exprs:
+        m_refs = re.findall(r"(?<![a-zA-Z0-9_'])\[([a-zA-Z0-9_ %]+)\]", expression)
+        for m_name in m_refs:
+            if m_name in all_measures_exprs and m_name not in visited:
+                visited.add(m_name)
+                transitive_tables = extract_measure_referenced_tables(
+                    all_measures_exprs[m_name],
+                    all_measures_exprs,
+                    doc_desc=None,
+                    visited=visited
+                )
+                tables.update(transitive_tables)
+
+    return sorted(list(tables))
+
 
 TMDL_TO_SQL_TYPES = {
     "string": "TEXT",
@@ -202,6 +268,7 @@ def parse_tmdl_table_file(tmdl_path):
         "file": str(tmdl_path),
         "name": tmdl_path.stem,
         "lineageTag": None,
+        "description": None,
         "columns": [],
         "measures": [],
         "partitions": [],
@@ -214,15 +281,28 @@ def parse_tmdl_table_file(tmdl_path):
     current_measure = None
     raw_partition_code = []
     in_partition = False
+    pending_doc_comments = []
     
     for line in lines:
         stripped = line.strip()
-        if not stripped or stripped.startswith("//"):
+        if not stripped:
+            continue
+            
+        if stripped.startswith("///"):
+            doc_text = stripped[3:].strip()
+            if doc_text:
+                pending_doc_comments.append(doc_text)
+            continue
+
+        if stripped.startswith("//"):
             continue
             
         t_match = re.match(r"^table\s+(.+)$", stripped)
         if t_match:
             table_data["name"] = t_match.group(1).strip().strip("'").strip('"')
+            if pending_doc_comments:
+                table_data["description"] = " ".join(pending_doc_comments)
+                pending_doc_comments = []
             current_object = "table"
             continue
 
@@ -230,6 +310,7 @@ def parse_tmdl_table_file(tmdl_path):
         if p_match:
             in_partition = True
             current_object = "partition"
+            pending_doc_comments = []
             continue
             
         if in_partition:
@@ -242,7 +323,9 @@ def parse_tmdl_table_file(tmdl_path):
         if c_match:
             in_partition = False
             col_name = c_match.group(1).strip().strip("'").strip('"')
-            desc = COLUMN_DESCRIPTIONS.get(col_name.lower(), f"Attribute column representing {col_name}.")
+            doc_desc = " ".join(pending_doc_comments) if pending_doc_comments else None
+            pending_doc_comments = []
+            desc = doc_desc or COLUMN_DESCRIPTIONS.get(col_name.lower(), f"Attribute column representing {col_name}.")
             current_col = {
                 "name": col_name,
                 "dataType": "string",
@@ -261,12 +344,15 @@ def parse_tmdl_table_file(tmdl_path):
             in_partition = False
             m_name = m_match.group(1).strip().strip("'").strip('"')
             m_expr = m_match.group(2).strip()
-            m_desc = MEASURE_DESCRIPTIONS.get(m_name, f"Calculated metric for {m_name}.")
+            doc_desc = " ".join(pending_doc_comments) if pending_doc_comments else None
+            pending_doc_comments = []
+            m_desc = doc_desc or MEASURE_DESCRIPTIONS.get(m_name, f"Calculated metric for {m_name}.")
             current_measure = {
                 "name": m_name,
                 "expression": m_expr,
                 "description": m_desc,
                 "formatString": None,
+                "displayFolder": None,
                 "lineageTag": None
             }
             table_data["measures"].append(current_measure)
@@ -286,6 +372,8 @@ def parse_tmdl_table_file(tmdl_path):
         if current_object == "measure" and current_measure:
             if stripped.startswith("formatString:"):
                 current_measure["formatString"] = stripped.split(":", 1)[1].strip()
+            elif stripped.startswith("displayFolder:"):
+                current_measure["displayFolder"] = stripped.split(":", 1)[1].strip()
             elif stripped.startswith("lineageTag:"):
                 current_measure["lineageTag"] = stripped.split(":", 1)[1].strip()
 
@@ -357,7 +445,7 @@ def parse_tmdl_relationships_file(rel_path):
 
 
 def parse_all_projects():
-    """Recursively scans pbip/projects/ and builds a complete TMDL AST with M Data Source Lineage."""
+    """Recursively scans pbip/projects/ and builds a complete TMDL AST with M Data Source Lineage & Measure Table Mapping."""
     print("==================================================================")
     print("  PBIP TMDL AST PARSER & M CODE DATA SOURCE LINEAGE ENGINE")
     print("==================================================================")
@@ -387,6 +475,44 @@ def parse_all_projects():
         for e_file in expr_files:
             p_data = parse_tmdl_expressions_file(e_file)
             parameters.extend(p_data)
+
+        # Build project-level measure expressions lookup for transitive lineage resolution
+        all_measures_exprs = {
+            m["name"]: m["expression"]
+            for t in tables
+            for m in t["measures"]
+        }
+        available_tables = {
+            t["name"]
+            for t in tables
+            if t["name"].lower() not in ("_measures", "measures")
+        }
+
+        # Map referenced tables and auto-tag descriptions for all measures
+        for t in tables:
+            for m in t["measures"]:
+                ref_tables = extract_measure_referenced_tables(
+                    m["expression"],
+                    all_measures_exprs,
+                    doc_desc=m.get("description")
+                )
+                m["referencedTables"] = ", ".join(ref_tables)
+                
+                # Ensure description includes [Tables: ...] prefix
+                if ref_tables:
+                    table_tag = f"[Tables: {', '.join(ref_tables)}]"
+                    curr_desc = m.get("description") or MEASURE_DESCRIPTIONS.get(m["name"], f"Calculated metric for {m['name']}.")
+                    if not curr_desc.startswith("[Tables:"):
+                        m["description"] = f"{table_tag} {curr_desc}"
+                    else:
+                        # Normalize tag if already present
+                        clean_desc = re.sub(r"^\[Tables:\s*[^\]]+\]\s*", "", curr_desc).strip()
+                        m["description"] = f"{table_tag} {clean_desc}"
+                
+                # Model validation status
+                missing_tables = [tbl for tbl in ref_tables if tbl not in available_tables]
+                m["isValidInModel"] = len(missing_tables) == 0
+                m["missingTables"] = ", ".join(missing_tables) if missing_tables else ""
             
         projects[project_name] = {
             "name": project_name,
@@ -399,7 +525,7 @@ def parse_all_projects():
         }
 
     OUTPUT_JSON_FILE.write_text(json.dumps(projects, indent=2), encoding="utf-8")
-    print(f"✅ Exported enriched TMDL AST with M Data Sources to JSON: {OUTPUT_JSON_FILE}")
+    print(f"✅ Exported enriched TMDL AST with M Data Sources & Measure Table Mappings to JSON: {OUTPUT_JSON_FILE}")
 
     return projects
 
@@ -423,7 +549,7 @@ def generate_sql_ddl_and_catalogs(projects):
         "CREATE TABLE IF NOT EXISTS _tmdl_projects (project_name TEXT PRIMARY KEY, table_count INT, relationship_count INT, parameter_count INT);",
         "CREATE TABLE IF NOT EXISTS _tmdl_tables (project_name TEXT, table_name TEXT, lineage_tag TEXT, PRIMARY KEY (project_name, table_name));",
         "CREATE TABLE IF NOT EXISTS _tmdl_columns (project_name TEXT, table_name TEXT, column_name TEXT, data_type TEXT, summarize_by TEXT, source_column TEXT, description TEXT);",
-        "CREATE TABLE IF NOT EXISTS _tmdl_measures (project_name TEXT, table_name TEXT, measure_name TEXT, expression TEXT, format_string TEXT, description TEXT);",
+        "CREATE TABLE IF NOT EXISTS _tmdl_measures (project_name TEXT, table_name TEXT, measure_name TEXT, expression TEXT, format_string TEXT, description TEXT, referenced_tables TEXT);",
         "CREATE TABLE IF NOT EXISTS _tmdl_relationships (project_name TEXT, rel_name TEXT, from_table TEXT, from_column TEXT, to_table TEXT, to_column TEXT, cardinality TEXT);",
         "CREATE TABLE IF NOT EXISTS _tmdl_data_sources (project_name TEXT, table_name TEXT, connector TEXT, connection_target TEXT, query_type TEXT, advanced_editor_script TEXT);",
         "CREATE TABLE IF NOT EXISTS _tmdl_advanced_editor (project_name TEXT, table_name TEXT, advanced_editor_script TEXT, PRIMARY KEY (project_name, table_name));",
@@ -474,8 +600,9 @@ def generate_sql_ddl_and_catalogs(projects):
                 clean_m_name = m["name"].replace("'", "''")
                 clean_expr = m["expression"].replace("'", "''")
                 clean_m_desc = m["description"].replace("'", "''")
-                format_str = (m["formatString"] or '').replace("'", "''")
-                sql_statements.append(f"INSERT INTO _tmdl_measures VALUES ('{p_name}', '{t_name}', '{clean_m_name}', '{clean_expr}', '{format_str}', '{clean_m_desc}');")
+                format_str = (m.get("formatString") or '').replace("'", "''")
+                clean_ref_tables = (m.get("referencedTables") or '').replace("'", "''")
+                sql_statements.append(f"INSERT INTO _tmdl_measures VALUES ('{p_name}', '{t_name}', '{clean_m_name}', '{clean_expr}', '{format_str}', '{clean_m_desc}', '{clean_ref_tables}');")
 
             if t_name in rel_fk_map:
                 for r in rel_fk_map[t_name]:

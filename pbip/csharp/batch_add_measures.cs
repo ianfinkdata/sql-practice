@@ -36,84 +36,84 @@ var measureCatalog = new List<(string Name, string DAX, string FormatString, str
         "SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])",
         @"\$#,##0.00",
         "01 - Revenue & Volume",
-        "Sum of pre-discount revenue across all sales lines."
+        "[Tables: fact_sales] Sum of pre-discount revenue across all sales lines."
     ),
     (
         "Total Net Revenue",
         "SUM(fact_sales[net_amount])",
         @"\$#,##0.00",
         "01 - Revenue & Volume",
-        "Sum of actual net sales revenue earned after discounts."
+        "[Tables: fact_sales] Sum of actual net sales revenue earned after discounts."
     ),
     (
         "Total Units Sold",
         "SUM(fact_sales[quantity])",
         "#,##0",
         "01 - Revenue & Volume",
-        "Total sum of merchandise item quantities sold."
+        "[Tables: fact_sales] Total sum of merchandise item quantities sold."
     ),
     (
         "Total Orders",
         "DISTINCTCOUNT(fact_sales[order_id])",
         "#,##0",
         "03 - Order Metrics",
-        "Count of distinct sales order transaction IDs."
+        "[Tables: fact_sales] Count of distinct sales order transaction IDs."
     ),
     (
         "Average Order Value",
         "DIVIDE([Total Net Revenue], [Total Orders], 0)",
         @"\$#,##0.00",
         "03 - Order Metrics",
-        "Mean net revenue earned per distinct sales order."
+        "[Tables: fact_sales] Mean net revenue earned per distinct sales order."
     ),
     (
         "Active Customer Count",
         "DISTINCTCOUNT(fact_sales[customer_id])",
         "#,##0",
         "04 - Customer Metrics",
-        "Count of unique customers placing orders in selected period."
+        "[Tables: fact_sales] Count of unique customers placing orders in selected period."
     ),
     (
         "Overall Discount Rate",
         "DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)",
         "0.0%",
         "01 - Revenue & Volume",
-        "Weighted average discount percentage across all order lines."
+        "[Tables: fact_sales] Weighted average discount percentage across all order lines."
     ),
     (
         "Total Cost of Goods Sold",
         "SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))",
         @"\$#,##0.00",
         "02 - Margins & Profitability",
-        "Total wholesale acquisition cost of all merchandise units sold."
+        "[Tables: dim_product, fact_sales] Total wholesale acquisition cost of all merchandise units sold."
     ),
     (
         "Gross Margin",
         "[Total Net Revenue] - [Total Cost of Goods Sold]",
         @"\$#,##0.00",
         "02 - Margins & Profitability",
-        "Total gross profit (Net Revenue minus Cost of Goods Sold)."
+        "[Tables: dim_product, fact_sales] Total gross profit (Net Revenue minus Cost of Goods Sold)."
     ),
     (
         "Gross Margin %",
         "DIVIDE([Gross Margin], [Total Net Revenue], 0)",
         "0.0%",
         "02 - Margins & Profitability",
-        "Gross profit percentage of total net revenue."
+        "[Tables: dim_product, fact_sales] Gross profit percentage of total net revenue."
     ),
     (
         "Net Revenue PY",
         "CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))",
         @"\$#,##0.00",
         "05 - Time Intelligence",
-        "Total net revenue for the prior year comparable calendar period."
+        "[Tables: dim_calendar, fact_sales] Total net revenue for the prior year comparable calendar period."
     ),
     (
         "Net Revenue YoY %",
         "DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)",
         "0.0%",
         "05 - Time Intelligence",
-        "Year-over-year percentage growth in total net revenue."
+        "[Tables: dim_calendar, fact_sales] Year-over-year percentage growth in total net revenue."
     )
 };
 

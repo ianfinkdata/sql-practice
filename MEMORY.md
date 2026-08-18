@@ -41,13 +41,14 @@ Dedicated directory structure for Power BI `.pbip` models, TMDL metadata, and Gi
 ## 🔮 Next Steps & Actionable Backlog
 
 ### 🎯 Next Session Priority: Align Remaining PBIP Models
-Apply the validated 4-step fix pattern from `flat_sales_all` to the remaining PBIP projects:
+Apply the validated 4-step fix pattern from `flat_sales_all` and `flat_sales_completed` to the remaining PBIP projects:
 
-- [ ] **`pbip/projects/flat_sales_completed/`**:
-  - Update M partitions with explicit pandas `Int64` dtypes (`dtype={'...': 'Int64'}`).
-  - Scope `_measures.tmdl` to only tables/columns available in this model.
-  - Verify `definition/model.tmdl` table references.
-  - Delete any local `.pbi/cache.abf` files and test in Power BI Desktop.
+- [x] **`pbip/projects/flat_sales_completed/`**:
+  - Updated M partitions with explicit pandas `Int64` dtypes (`dtype={'...': 'Int64'}`).
+  - Scoped `_measures.tmdl` to only tables/columns available in this model (`flat_sales_completed`, `dim_calendar`).
+  - Added `/// [Tables: ...]` doc comment tags to all measures.
+  - Verified `definition/model.tmdl` table references.
+  - Rebuilt and verified `pbip/tmdl_parsed_schema.json` and `pbip/tmdl_catalog.db`.
 - [ ] **`pbip/projects/oakhaven template/`**:
   - Apply `Int64` pandas dtypes across all M partitions (`fact_sales`, `dim_customer`, `dim_product`, `dim_employee`, `dim_calendar`).
   - Align column data types in `.tmdl` files (`int64`, `double`, `dateTime`).
@@ -63,4 +64,4 @@ Apply the validated 4-step fix pattern from `flat_sales_all` to the remaining PB
 
 ---
 
-*Last Updated: 2026-08-16 | Branch: `main`*
+*Last Updated: 2026-08-17 | Branch: `main`*
