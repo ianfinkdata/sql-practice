@@ -30,8 +30,6 @@ pbip/
 ├── csharp/                          ← Tabular Editor C# scripts (.csx)
 │   ├── apply_bpa_standards.cs       ← Bulk-apply BPA rules to semantic models
 │   └── batch_add_measures.cs        ← Batch-inject DAX measures into TMDL
-├── tabular_editor/                  ← Tabular Editor CLI installation & backlog
-│   └── install/                     ← te-linux-x64.tar.gz (gitignored, download separately)
 ├── bpa/                             ← Best Practice Analyzer rules (JSON)
 ├── projects/                        ← .pbip project folders (Flat, Star, Template variants)
 ├── sql_queries/                     ← Master SQL source files (1 per model)

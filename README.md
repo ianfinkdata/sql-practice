@@ -154,8 +154,7 @@ sql-practice/
 │   ├── pyscripts/             ← Python tooling (TMDL parser, linter, report manager, lineage)
 │   ├── csharp/                ← Tabular Editor C# scripts
 │   ├── projects/              ← .pbip project folders
-│   ├── sql_queries/           ← master SQL source files (1 per model)
-│   └── tabular_editor/        ← TE CLI installation
+│   └── sql_queries/           ← master SQL source files (1 per model)
 ├── build_pages.py             ← generates the GitHub Pages site into docs/
 └── docs/                      ← GitHub Pages site
     ├── index.html
