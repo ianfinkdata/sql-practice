@@ -107,3 +107,4 @@ table flat_sales_all
 	annotation PBI_NavigationStepName = Navigation
 
 	annotation PBI_ResultType = Table
+

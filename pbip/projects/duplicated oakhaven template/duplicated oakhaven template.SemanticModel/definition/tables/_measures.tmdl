@@ -55,7 +55,7 @@ table _measures
 		displayFolder: 05 - Time Intelligence
 		lineageTag: m0000012-0000-4000-8000-000000000012
 
-	column _Dummy
+	column Value
 		dataType: int64
 		isHidden
 		lineageTag: c0000001-0000-4000-8000-000000000001
@@ -70,3 +70,4 @@ table _measures
 		source = Row("Value", 1)
 
 	annotation PBI_Id = t0000001-0000-4000-8000-000000000001
+

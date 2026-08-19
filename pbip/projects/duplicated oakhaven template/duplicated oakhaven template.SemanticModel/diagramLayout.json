@@ -177,6 +177,19 @@
             "width": 234
           },
           "zIndex": 11
+        },
+        {
+          "location": {
+            "x": 1454.3830500146937,
+            "y": 469.66666666666663
+          },
+          "nodeIndex": "_measures",
+          "nodeLineageTag": "a0000000-0000-4000-8000-000000000001",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
         }
       ],
       "name": "All tables",

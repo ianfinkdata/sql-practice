@@ -24,7 +24,6 @@ ref table sql_dim_product
 ref table sql_dim_date
 ref table dim_customer
 ref table dim_calendar
-
 ref table _measures
 
 ref cultureInfo en-US
