@@ -37,14 +37,18 @@ Dedicated directory structure for Power BI `.pbip` models, TMDL metadata, and Gi
    - Native root JSON `.pbip` files in `pbip/projects/` point relatively to `subfolder/subfolder.Report`.
 
 ### 3. Model Alignment Status
-- [x] **`pbip/projects/flat_sales_all/`**: Explicit `Int64` dtypes, scoped `_measures.tmdl`, verified working in Power BI Desktop.
-- [x] **`pbip/projects/flat_sales_completed/`**: Explicit `Int64` dtypes, scoped `_measures.tmdl`, verified working.
-- [x] **`pbip/projects/oakhaven template/`**: Explicit `Int64` dtypes across all partitions, scoped `_measures.tmdl`, aligned column types (`int64`, `double`, `dateTime`).
-- [x] **`pbip/projects/duplicated oakhaven template/`**: Explicit `Int64` dtypes across all partitions, scoped `_measures.tmdl`, aligned column types (`int64`, `double`, `dateTime`).
+- [x] **`pbip/projects/flat_sales_all/`**: Explicit `Int64` dtypes, scoped `_measures.tmdl`, absolute SQLite path, verified working in Power BI Desktop.
+- [x] **`pbip/projects/flat_sales_completed/`**: Explicit `Int64` dtypes, scoped `_measures.tmdl`, absolute SQLite path, verified working.
+- [x] **`pbip/projects/oakhaven template/`**: Explicit `Int64` dtypes across all partitions, scoped `_measures.tmdl`, aligned column types (`int64`, `double`, `dateTime`), verified working.
+- [x] **`pbip/projects/duplicated oakhaven template/`**: Explicit `Int64` dtypes across all partitions, scoped `_measures.tmdl`, aligned column types (`int64`, `double`, `dateTime`), verified working.
 
 ---
 
 ## 🔮 Next Steps & Actionable Backlog
+
+### 🚀 Enhancements Backlog
+- [ ] **Parameterize SQLite source path in Power Query M**:
+  - Dynamically inject the `oakhavendatabasepath` parameter into `Python.Execute` scripts (using `""" & Text.Replace(oakhavendatabasepath, "\", "\\") & """` or M concatenation) so users can customize the SQLite database path via Power BI Desktop's *Edit Parameters* UI without modifying individual table partition queries.
 
 ### 📚 General Backlog
 - [ ] Install/configure Beekeeper Studio for interactive SQLite querying against `project/oakhaven.db`.
