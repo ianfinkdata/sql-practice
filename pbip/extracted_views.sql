@@ -10,27 +10,7 @@
 
 
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/TMDLScripts/Script 1.tmdl
-CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_script_1 AS
-SELECT 
-    f.order_id,
-    f.order_line_id,
-    f.customer_id,
-    f.product_id,
-    f.employee_id,
-    f.datekey,
-    f.quantity,
-    f.unit_price,
-    f.discount_pct,
-    f.net_amount,
-    f.payment_method,
-    f.order_status,
-    f.channel
-FROM fact_sales f
-ORDER BY f.order_date DESC, f.order_id, f.order_line_id
-LIMIT 100;
-
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_calendar.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\dim_calendar.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_dim_calendar AS
 SELECT DISTINCT 
     d.datekey,
@@ -49,7 +29,7 @@ WHERE d.datekey IN (
     LIMIT 100
 );
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_customer.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\dim_customer.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_dim_customer AS
 SELECT DISTINCT 
     c.customer_id,
@@ -65,7 +45,7 @@ WHERE c.customer_id IN (
     LIMIT 100
 );
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/dim_employee.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\dim_employee.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_dim_employee AS
 SELECT DISTINCT 
     e.employee_id,
@@ -80,7 +60,7 @@ WHERE e.employee_id IN (
     LIMIT 100
 );
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/fact_sales.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\fact_sales.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_fact_sales AS
 SELECT 
     f.order_id,
@@ -100,11 +80,11 @@ FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/flat_sales_all.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\flat_sales_all.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_flat_sales_all AS
 SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/flat_sales_completed.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\flat_sales_completed.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_flat_sales_completed AS
 SELECT 
     f.order_id,
@@ -123,7 +103,7 @@ WHERE f.order_status = 'Completed'
 ORDER BY f.order_date DESC
 LIMIT 100;
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_customer.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\sql_dim_customer.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_sql_dim_customer AS
 SELECT DISTINCT 
     c.customer_id,
@@ -139,7 +119,7 @@ WHERE c.customer_id IN (
     LIMIT 100
 );
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_date.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\sql_dim_date.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_sql_dim_date AS
 SELECT DISTINCT 
     d.datekey,
@@ -158,7 +138,7 @@ WHERE d.datekey IN (
     LIMIT 100
 );
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_employee.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\sql_dim_employee.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_sql_dim_employee AS
 SELECT DISTINCT 
     e.employee_id,
@@ -173,7 +153,7 @@ WHERE e.employee_id IN (
     LIMIT 100
 );
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_dim_product.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\sql_dim_product.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_sql_dim_product AS
 SELECT DISTINCT 
     p.product_id,
@@ -191,7 +171,7 @@ WHERE p.product_id IN (
     LIMIT 100
 );
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_fact_sales.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\sql_fact_sales.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_sql_fact_sales AS
 SELECT 
     f.order_id,
@@ -211,7 +191,7 @@ FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_flat_sales_all.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\sql_flat_sales_all.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_sql_flat_sales_all AS
 SELECT 
     f.order_id,
@@ -248,7 +228,7 @@ LEFT JOIN dim_employee e ON f.employee_id = e.employee_id
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
 
--- Source: duplicated oakhaven template/duplicated oakhaven template.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\definition\tables\sql_flat_sales_completed.tmdl
 CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_sql_flat_sales_completed AS
 SELECT 
     f.order_id,
@@ -267,8 +247,8 @@ WHERE f.order_status = 'Completed'
 ORDER BY f.order_date DESC
 LIMIT 100;
 
--- Source: flat_sales_all/flat_sales_all.SemanticModel/TMDLScripts/Script 1.tmdl
-CREATE VIEW IF NOT EXISTS flat_sales_all_script_1 AS
+-- Source: duplicated oakhaven template\duplicated oakhaven template.SemanticModel\TMDLScripts\Script 1.tmdl
+CREATE VIEW IF NOT EXISTS duplicated_oakhaven_template_script_1 AS
 SELECT 
     f.order_id,
     f.order_line_id,
@@ -287,7 +267,7 @@ FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
 
--- Source: flat_sales_all/flat_sales_all.SemanticModel/definition/tables/dim_calendar.tmdl
+-- Source: flat_sales_all\flat_sales_all.SemanticModel\definition\tables\dim_calendar.tmdl
 CREATE VIEW IF NOT EXISTS flat_sales_all_dim_calendar AS
 SELECT DISTINCT 
     d.datekey,
@@ -306,7 +286,7 @@ WHERE d.datekey IN (
     LIMIT 100
 );
 
--- Source: flat_sales_all/flat_sales_all.SemanticModel/definition/tables/dim_employee.tmdl
+-- Source: flat_sales_all\flat_sales_all.SemanticModel\definition\tables\dim_employee.tmdl
 CREATE VIEW IF NOT EXISTS flat_sales_all_dim_employee AS
 SELECT DISTINCT 
     e.employee_id,
@@ -321,7 +301,7 @@ WHERE e.employee_id IN (
     LIMIT 100
 );
 
--- Source: flat_sales_all/flat_sales_all.SemanticModel/definition/tables/fact_sales.tmdl
+-- Source: flat_sales_all\flat_sales_all.SemanticModel\definition\tables\fact_sales.tmdl
 CREATE VIEW IF NOT EXISTS flat_sales_all_fact_sales AS
 SELECT 
     f.order_id,
@@ -341,12 +321,12 @@ FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
 
--- Source: flat_sales_all/flat_sales_all.SemanticModel/definition/tables/flat_sales_all.tmdl
+-- Source: flat_sales_all\flat_sales_all.SemanticModel\definition\tables\flat_sales_all.tmdl
 CREATE VIEW IF NOT EXISTS flat_sales_all_flat_sales_all AS
 SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;
 
--- Source: flat_sales_completed/flat_sales_completed.SemanticModel/TMDLScripts/Script 1.tmdl
-CREATE VIEW IF NOT EXISTS flat_sales_completed_script_1 AS
+-- Source: flat_sales_all\flat_sales_all.SemanticModel\TMDLScripts\Script 1.tmdl
+CREATE VIEW IF NOT EXISTS flat_sales_all_script_1 AS
 SELECT 
     f.order_id,
     f.order_line_id,
@@ -365,7 +345,7 @@ FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
 
--- Source: flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/dim_calendar.tmdl
+-- Source: flat_sales_completed\flat_sales_completed.SemanticModel\definition\tables\dim_calendar.tmdl
 CREATE VIEW IF NOT EXISTS flat_sales_completed_dim_calendar AS
 SELECT DISTINCT 
     d.datekey,
@@ -384,7 +364,7 @@ WHERE d.datekey IN (
     LIMIT 100
 );
 
--- Source: flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/dim_customer.tmdl
+-- Source: flat_sales_completed\flat_sales_completed.SemanticModel\definition\tables\dim_customer.tmdl
 CREATE VIEW IF NOT EXISTS flat_sales_completed_dim_customer AS
 SELECT DISTINCT 
     c.customer_id,
@@ -400,7 +380,7 @@ WHERE c.customer_id IN (
     LIMIT 100
 );
 
--- Source: flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/flat_sales_completed.tmdl
+-- Source: flat_sales_completed\flat_sales_completed.SemanticModel\definition\tables\flat_sales_completed.tmdl
 CREATE VIEW IF NOT EXISTS flat_sales_completed_flat_sales_completed AS
 SELECT 
     f.order_id,
@@ -419,7 +399,7 @@ WHERE f.order_status = 'Completed'
 ORDER BY f.order_date DESC
 LIMIT 100;
 
--- Source: flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_dim_date.tmdl
+-- Source: flat_sales_completed\flat_sales_completed.SemanticModel\definition\tables\sql_dim_date.tmdl
 CREATE VIEW IF NOT EXISTS flat_sales_completed_sql_dim_date AS
 SELECT DISTINCT 
     d.datekey,
@@ -438,7 +418,7 @@ WHERE d.datekey IN (
     LIMIT 100
 );
 
--- Source: flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_dim_product.tmdl
+-- Source: flat_sales_completed\flat_sales_completed.SemanticModel\definition\tables\sql_dim_product.tmdl
 CREATE VIEW IF NOT EXISTS flat_sales_completed_sql_dim_product AS
 SELECT DISTINCT 
     p.product_id,
@@ -456,7 +436,7 @@ WHERE p.product_id IN (
     LIMIT 100
 );
 
--- Source: flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_flat_sales_all.tmdl
+-- Source: flat_sales_completed\flat_sales_completed.SemanticModel\definition\tables\sql_flat_sales_all.tmdl
 CREATE VIEW IF NOT EXISTS flat_sales_completed_sql_flat_sales_all AS
 SELECT 
     f.order_id,
@@ -493,7 +473,7 @@ LEFT JOIN dim_employee e ON f.employee_id = e.employee_id
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
 
--- Source: flat_sales_completed/flat_sales_completed.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl
+-- Source: flat_sales_completed\flat_sales_completed.SemanticModel\definition\tables\sql_flat_sales_completed.tmdl
 CREATE VIEW IF NOT EXISTS flat_sales_completed_sql_flat_sales_completed AS
 SELECT 
     f.order_id,
@@ -512,8 +492,8 @@ WHERE f.order_status = 'Completed'
 ORDER BY f.order_date DESC
 LIMIT 100;
 
--- Source: oakhaven template/oakhaven template.SemanticModel/TMDLScripts/Script 1.tmdl
-CREATE VIEW IF NOT EXISTS oakhaven_template_script_1 AS
+-- Source: flat_sales_completed\flat_sales_completed.SemanticModel\TMDLScripts\Script 1.tmdl
+CREATE VIEW IF NOT EXISTS flat_sales_completed_script_1 AS
 SELECT 
     f.order_id,
     f.order_line_id,
@@ -532,7 +512,7 @@ FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_calendar.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\dim_calendar.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_dim_calendar AS
 SELECT DISTINCT 
     d.datekey,
@@ -551,7 +531,7 @@ WHERE d.datekey IN (
     LIMIT 100
 );
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_customer.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\dim_customer.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_dim_customer AS
 SELECT DISTINCT 
     c.customer_id,
@@ -567,7 +547,7 @@ WHERE c.customer_id IN (
     LIMIT 100
 );
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/dim_employee.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\dim_employee.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_dim_employee AS
 SELECT DISTINCT 
     e.employee_id,
@@ -582,7 +562,7 @@ WHERE e.employee_id IN (
     LIMIT 100
 );
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/fact_sales.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\fact_sales.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_fact_sales AS
 SELECT 
     f.order_id,
@@ -602,11 +582,11 @@ FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/flat_sales_all.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\flat_sales_all.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_flat_sales_all AS
 SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/flat_sales_completed.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\flat_sales_completed.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_flat_sales_completed AS
 SELECT 
     f.order_id,
@@ -625,7 +605,7 @@ WHERE f.order_status = 'Completed'
 ORDER BY f.order_date DESC
 LIMIT 100;
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_customer.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\sql_dim_customer.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_sql_dim_customer AS
 SELECT DISTINCT 
     c.customer_id,
@@ -641,7 +621,7 @@ WHERE c.customer_id IN (
     LIMIT 100
 );
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_date.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\sql_dim_date.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_sql_dim_date AS
 SELECT DISTINCT 
     d.datekey,
@@ -660,7 +640,7 @@ WHERE d.datekey IN (
     LIMIT 100
 );
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_employee.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\sql_dim_employee.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_sql_dim_employee AS
 SELECT DISTINCT 
     e.employee_id,
@@ -675,7 +655,7 @@ WHERE e.employee_id IN (
     LIMIT 100
 );
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_dim_product.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\sql_dim_product.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_sql_dim_product AS
 SELECT DISTINCT 
     p.product_id,
@@ -693,7 +673,7 @@ WHERE p.product_id IN (
     LIMIT 100
 );
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_fact_sales.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\sql_fact_sales.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_sql_fact_sales AS
 SELECT 
     f.order_id,
@@ -713,7 +693,7 @@ FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_flat_sales_all.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\sql_flat_sales_all.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_sql_flat_sales_all AS
 SELECT 
     f.order_id,
@@ -750,7 +730,7 @@ LEFT JOIN dim_employee e ON f.employee_id = e.employee_id
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
 
--- Source: oakhaven template/oakhaven template.SemanticModel/definition/tables/sql_flat_sales_completed.tmdl
+-- Source: oakhaven template\oakhaven template.SemanticModel\definition\tables\sql_flat_sales_completed.tmdl
 CREATE VIEW IF NOT EXISTS oakhaven_template_sql_flat_sales_completed AS
 SELECT 
     f.order_id,
@@ -767,4 +747,24 @@ LEFT JOIN dim_customer c ON f.customer_id = c.customer_id
 LEFT JOIN dim_product p ON f.product_id = p.product_id
 WHERE f.order_status = 'Completed'
 ORDER BY f.order_date DESC
+LIMIT 100;
+
+-- Source: oakhaven template\oakhaven template.SemanticModel\TMDLScripts\Script 1.tmdl
+CREATE VIEW IF NOT EXISTS oakhaven_template_script_1 AS
+SELECT 
+    f.order_id,
+    f.order_line_id,
+    f.customer_id,
+    f.product_id,
+    f.employee_id,
+    f.datekey,
+    f.quantity,
+    f.unit_price,
+    f.discount_pct,
+    f.net_amount,
+    f.payment_method,
+    f.order_status,
+    f.channel
+FROM fact_sales f
+ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;

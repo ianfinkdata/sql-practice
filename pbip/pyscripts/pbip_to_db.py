@@ -14,6 +14,12 @@ import sqlite3
 import argparse
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 PROJECTS_DIR = REPO_ROOT / "pbip" / "projects"
 OUTPUT_SQL_FILE = REPO_ROOT / "pbip" / "extracted_views.sql"
@@ -106,9 +112,11 @@ def parse_all_tmdl_projects():
 
 def test_push_to_scratch_db(extracted_views):
     """Executes the extracted CREATE VIEW statements against a scratch SQLite database to verify syntax."""
-    scratch_db = Path("/tmp/scratch_pbip_views.db")
+    import tempfile
+    scratch_db = Path(tempfile.gettempdir()) / "scratch_pbip_views.db"
     if scratch_db.exists():
         scratch_db.unlink()
+
 
     # Copy schema from oakhaven.db to scratch database
     source_db = REPO_ROOT / "project" / "oakhaven.db"

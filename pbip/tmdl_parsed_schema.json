@@ -21,11 +21,11 @@
         "description": null,
         "columns": [
           {
-            "name": "_Dummy",
+            "name": "Value",
             "dataType": "int64",
             "sourceColumn": "[Value]",
             "summarizeBy": "none",
-            "description": "Attribute column representing _Dummy.",
+            "description": "Attribute column representing Value.",
             "lineageTag": "c0000001-0000-4000-8000-000000000001",
             "expression": null
           }
@@ -2276,11 +2276,11 @@
         "description": null,
         "columns": [
           {
-            "name": "_Dummy",
+            "name": "Value",
             "dataType": "int64",
             "sourceColumn": "[Value]",
             "summarizeBy": "none",
-            "description": "Attribute column representing _Dummy.",
+            "description": "Attribute column representing Value.",
             "lineageTag": "c0000001-0000-4000-8000-000000000001",
             "expression": null
           }

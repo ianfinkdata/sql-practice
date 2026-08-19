@@ -14,6 +14,12 @@ import sqlite3
 import argparse
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 PROJECTS_DIR = REPO_ROOT / "pbip" / "projects"
 OUTPUT_JSON_FILE = REPO_ROOT / "pbip" / "tmdl_parsed_schema.json"
@@ -658,6 +664,7 @@ def test_push_to_db(full_sql, target_db_path):
 
 
 if __name__ == "__main__":
+    import tempfile
     parser = argparse.ArgumentParser(description="Parse TMDL & M Data Sources into Database Catalogs")
     parser.add_argument("--test-db", action="store_true", help="Execute DDL & Catalog inserts against scratch DB")
     parser.add_argument("--db-path", type=str, help="Specify custom target SQLite database file")
@@ -669,4 +676,6 @@ if __name__ == "__main__":
     if args.db_path:
         test_push_to_db(full_sql, args.db_path)
     elif args.test_db:
-        test_push_to_db(full_sql, "/tmp/scratch_tmdl_schema.db")
+        scratch_path = Path(tempfile.gettempdir()) / "scratch_tmdl_schema.db"
+        test_push_to_db(full_sql, str(scratch_path))
+

@@ -37,7 +37,7 @@ INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', '_measure
 source = Row("Value", 1)');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', '_measures', 'mode: import
 source = Row("Value", 1)');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', '_measures', '_Dummy', 'int64', 'none', '[Value]', 'Attribute column representing _Dummy.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', '_measures', 'Value', 'int64', 'none', '[Value]', 'Attribute column representing Value.');
 INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Gross Revenue', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', '[Tables: fact_sales] Sum of pre-discount revenue across all sales lines.', 'fact_sales');
 INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Net Revenue', 'SUM(fact_sales[net_amount])', '\$#,##0.00', '[Tables: fact_sales] Sum of actual net sales revenue earned after discounts.', 'fact_sales');
 INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Units Sold', 'SUM(fact_sales[quantity])', '#,##0', '[Tables: fact_sales] Total sum of merchandise item quantities sold.', 'fact_sales');
@@ -48,7 +48,7 @@ INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 
 INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Net Revenue PY', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', '[Tables: dim_calendar, fact_sales] Total net revenue for the prior year comparable calendar period.', 'dim_calendar, fact_sales');
 INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Net Revenue YoY %', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', '[Tables: dim_calendar, fact_sales] Year-over-year percentage growth in total net revenue.', 'dim_calendar, fact_sales');
 CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template__measures (
-    "_Dummy" INTEGER
+    "Value" INTEGER
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'dim_calendar', 'None');
@@ -2090,7 +2090,7 @@ INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', '_measures', 'Power 
 source = Row("Value", 1)');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', '_measures', 'mode: import
 source = Row("Value", 1)');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', '_measures', '_Dummy', 'int64', 'none', '[Value]', 'Attribute column representing _Dummy.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', '_measures', 'Value', 'int64', 'none', '[Value]', 'Attribute column representing Value.');
 INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Gross Revenue', 'SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])', '\$#,##0.00', '[Tables: fact_sales] Sum of pre-discount revenue across all sales lines.', 'fact_sales');
 INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Net Revenue', 'SUM(fact_sales[net_amount])', '\$#,##0.00', '[Tables: fact_sales] Sum of actual net sales revenue earned after discounts.', 'fact_sales');
 INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Units Sold', 'SUM(fact_sales[quantity])', '#,##0', '[Tables: fact_sales] Total sum of merchandise item quantities sold.', 'fact_sales');
@@ -2101,7 +2101,7 @@ INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Overall Di
 INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Net Revenue PY', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', '[Tables: dim_calendar, fact_sales] Total net revenue for the prior year comparable calendar period.', 'dim_calendar, fact_sales');
 INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Net Revenue YoY %', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', '[Tables: dim_calendar, fact_sales] Year-over-year percentage growth in total net revenue.', 'dim_calendar, fact_sales');
 CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template__measures (
-    "_Dummy" INTEGER
+    "Value" INTEGER
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'dim_calendar', 'None');

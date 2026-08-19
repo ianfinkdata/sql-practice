@@ -11,6 +11,12 @@ import json
 import sys
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 DB_PATH = REPO_ROOT / "project" / "oakhaven.db"
 PROJECTS_DIR = REPO_ROOT / "pbip" / "projects"
