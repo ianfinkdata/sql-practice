@@ -2,7 +2,8 @@ table dim_customer
 	lineageTag: 1ace2605-f91c-4dba-a17c-16b7d1afa4b1
 
 	column customer_id
-		dataType: string
+		dataType: int64
+		formatString: 0
 		lineageTag: 2f58fa72-11f2-402b-89ee-aa2a92957236
 		summarizeBy: none
 		sourceColumn: customer_id
@@ -11,7 +12,7 @@ table dim_customer
 
 	column full_name
 		dataType: string
-		lineageTag: a95ea06f-ed8e-4a55-ae23-0021146de55e
+		lineageTag: a09e3943-fa6c-48ae-a3d8-e7c65fae3489
 		summarizeBy: none
 		sourceColumn: full_name
 
@@ -19,7 +20,7 @@ table dim_customer
 
 	column email
 		dataType: string
-		lineageTag: 3c667951-5567-4e51-abae-ac844a92749e
+		lineageTag: a277e9fe-4ee8-4ff4-aeb1-b1e962b489be
 		summarizeBy: none
 		sourceColumn: email
 
@@ -27,7 +28,7 @@ table dim_customer
 
 	column state
 		dataType: string
-		lineageTag: 244b90ff-6173-450c-9de3-cf88d93ccc9d
+		lineageTag: 04e38c9c-5e93-41bb-a5a4-94c03b0d2d34
 		summarizeBy: none
 		sourceColumn: state
 
@@ -35,7 +36,7 @@ table dim_customer
 
 	column customer_segment
 		dataType: string
-		lineageTag: a11d813e-71b9-4a91-9f2a-202e09a41609
+		lineageTag: bb0e6212-70b5-4b06-a4c0-99436feeeaa7
 		summarizeBy: none
 		sourceColumn: customer_segment
 
@@ -45,16 +46,24 @@ table dim_customer
 		mode: import
 		source = ```
 				let
-				    // 1. Execute the Python script and inject your parameters safely
-				    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""project/oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT DISTINCT #(lf)    c.customer_id,#(lf)    c.full_name,#(lf)    c.email,#(lf)    c.state,#(lf)    c.customer_segment#(lf)FROM dim_customer c#(lf)WHERE c.customer_id IN (#(lf)    SELECT customer_id #(lf)    FROM fact_sales #(lf)    ORDER BY order_date DESC, order_id, order_line_id #(lf)    LIMIT 100#(lf));#(lf)"""""", conn)#(lf)conn.close()"),
+				    // 1. Execute the Python script and inject your parameters safely with explicit Int64 types
+				    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""project/oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT DISTINCT #(lf)    c.customer_id,#(lf)    c.full_name,#(lf)    c.email,#(lf)    c.state,#(lf)    c.customer_segment#(lf)FROM dim_customer c#(lf)WHERE c.customer_id IN (#(lf)    SELECT customer_id #(lf)    FROM fact_sales #(lf)    ORDER BY order_date DESC, order_id, order_line_id #(lf)    LIMIT 100#(lf));#(lf)"""""", conn, dtype={'customer_id': 'Int64'})#(lf)conn.close()"),
 				    
 				    // 2. Extract the dataframe 'df' that Python generated
-				    DataTable = Source{[Name="df"]}[Value]
+				    DataTable = Source{[Name="df"]}[Value],
+				    
+				    // 3. Transform column data types
+				    #"Changed Type" = Table.TransformColumnTypes(DataTable,{
+				        {"customer_id", Int64.Type},
+				        {"full_name", type text},
+				        {"email", type text},
+				        {"state", type text},
+				        {"customer_segment", type text}
+				    })
 				in
-				    DataTable
+				    #"Changed Type"
 				```
 
 	annotation PBI_NavigationStepName = Navigation
 
 	annotation PBI_ResultType = Table
-

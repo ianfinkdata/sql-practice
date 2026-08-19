@@ -45,9 +45,6 @@ INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 
 INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Average Order Value', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', '[Tables: fact_sales] Mean net revenue earned per distinct sales order.', 'fact_sales');
 INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Active Customer Count', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', '[Tables: fact_sales] Count of unique customers placing orders in selected period.', 'fact_sales');
 INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Overall Discount Rate', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', '[Tables: fact_sales] Weighted average discount percentage across all order lines.', 'fact_sales');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Total Cost of Goods Sold', 'SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))', '\$#,##0.00', '[Tables: dim_product, fact_sales] Total wholesale acquisition cost of all merchandise units sold.', 'dim_product, fact_sales');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Gross Margin', '[Total Net Revenue] - [Total Cost of Goods Sold]', '\$#,##0.00', '[Tables: dim_product, fact_sales] Total gross profit (Net Revenue minus Cost of Goods Sold).', 'dim_product, fact_sales');
-INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Gross Margin %', 'DIVIDE([Gross Margin], [Total Net Revenue], 0)', '0.0%', '[Tables: dim_product, fact_sales] Gross profit percentage of total net revenue.', 'dim_product, fact_sales');
 INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Net Revenue PY', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', '[Tables: dim_calendar, fact_sales] Total net revenue for the prior year comparable calendar period.', 'dim_calendar, fact_sales');
 INSERT INTO _tmdl_measures VALUES ('duplicated oakhaven template', '_measures', 'Net Revenue YoY %', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', '[Tables: dim_calendar, fact_sales] Year-over-year percentage growth in total net revenue.', 'dim_calendar, fact_sales');
 CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template__measures (
@@ -80,11 +77,21 @@ WHERE d.datekey IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''datekey'': ''Int64'', ''year'': ''Int64'', ''month'': ''Int64'', ''is_weekend'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"datekey", Int64.Type},
+{"date", type date},
+{"year", Int64.Type},
+{"month", Int64.Type},
+{"month_name", type text},
+{"quarter", type text},
+{"day_name", type text},
+{"is_weekend", Int64.Type}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'dim_calendar', 'mode: import
 source = ```
 let
@@ -110,33 +117,43 @@ WHERE d.datekey IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''datekey'': ''Int64'', ''year'': ''Int64'', ''month'': ''Int64'', ''is_weekend'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"datekey", Int64.Type},
+{"date", type date},
+{"year", Int64.Type},
+{"month", Int64.Type},
+{"month_name", type text},
+{"quarter", type text},
+{"day_name", type text},
+{"is_weekend", Int64.Type}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'dim_calendar', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'datekey', 'string', 'none', 'datekey', 'Integer surrogate key in YYYYMMDD format for date joins.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'date', 'string', 'none', 'date', 'Standard ISO 8601 calendar date (YYYY-MM-DD).');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'year', 'string', 'none', 'year', 'Four-digit calendar year (e.g. 2026).');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'month', 'string', 'none', 'month', 'Numeric calendar month (1..12).');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'datekey', 'int64', 'none', 'datekey', 'Integer surrogate key in YYYYMMDD format for date joins.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'date', 'dateTime', 'none', 'date', 'Standard ISO 8601 calendar date (YYYY-MM-DD).');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'year', 'int64', 'none', 'year', 'Four-digit calendar year (e.g. 2026).');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'month', 'int64', 'none', 'month', 'Numeric calendar month (1..12).');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'month_name', 'string', 'none', 'month_name', 'Full English month name (e.g. January, February).');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'quarter', 'string', 'none', 'quarter', 'Calendar quarter identifier (Q1, Q2, Q3, Q4).');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'day_name', 'string', 'none', 'day_name', 'Full English day name (e.g. Monday, Tuesday).');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'is_weekend', 'string', 'none', 'is_weekend', 'Boolean flag indicating Saturday or Sunday (1 = Weekend, 0 = Weekday).');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_calendar', 'is_weekend', 'int64', 'none', 'is_weekend', 'Boolean flag indicating Saturday or Sunday (1 = Weekend, 0 = Weekday).');
 CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_dim_calendar (
-    "datekey" TEXT,
-    "date" TEXT,
-    "year" TEXT,
-    "month" TEXT,
+    "datekey" INTEGER,
+    "date" TIMESTAMP,
+    "year" INTEGER,
+    "month" INTEGER,
     "month_name" TEXT,
     "quarter" TEXT,
     "day_name" TEXT,
-    "is_weekend" TEXT
+    "is_weekend" INTEGER
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'dim_customer', 'None');
@@ -162,11 +179,18 @@ WHERE c.customer_id IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''customer_id'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"customer_id", Int64.Type},
+{"full_name", type text},
+{"email", type text},
+{"state", type text},
+{"customer_segment", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'dim_customer', 'mode: import
 source = ```
 let
@@ -189,23 +213,30 @@ WHERE c.customer_id IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''customer_id'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"customer_id", Int64.Type},
+{"full_name", type text},
+{"email", type text},
+{"state", type text},
+{"customer_segment", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'dim_customer', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_customer', 'customer_id', 'string', 'none', 'customer_id', 'Unique sequential identifier (1..600) for each customer.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_customer', 'customer_id', 'int64', 'none', 'customer_id', 'Unique sequential identifier (1..600) for each customer.');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_customer', 'full_name', 'string', 'none', 'full_name', 'Concatenated customer full name (first + last).');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_customer', 'email', 'string', 'none', 'email', 'Primary email address associated with customer account.');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_customer', 'state', 'string', 'none', 'state', 'Customer geographic state or province code.');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_customer', 'customer_segment', 'string', 'none', 'customer_segment', 'Market segment classification (Retail, Wholesale, VIP).');
 CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_dim_customer (
-    "customer_id" TEXT,
+    "customer_id" INTEGER,
     "full_name" TEXT,
     "email" TEXT,
     "state" TEXT,
@@ -234,11 +265,17 @@ WHERE e.employee_id IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''employee_id'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"employee_id", Int64.Type},
+{"full_name", type text},
+{"department", type text},
+{"region", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'dim_employee', 'mode: import
 source = ```
 let
@@ -260,22 +297,28 @@ WHERE e.employee_id IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''employee_id'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"employee_id", Int64.Type},
+{"full_name", type text},
+{"department", type text},
+{"region", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'dim_employee', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_employee', 'employee_id', 'string', 'none', 'employee_id', 'Unique employee identification number (1..35).');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_employee', 'employee_id', 'int64', 'none', 'employee_id', 'Unique employee identification number (1..35).');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_employee', 'full_name', 'string', 'none', 'full_name', 'Concatenated customer full name (first + last).');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_employee', 'department', 'string', 'none', 'department', 'Company department (Sales, Support, Warehouse, Management).');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'dim_employee', 'region', 'string', 'none', 'region', 'Assigned geographical sales territory (West, East, Central, South).');
 CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_dim_employee (
-    "employee_id" TEXT,
+    "employee_id" INTEGER,
     "full_name" TEXT,
     "department" TEXT,
     "region" TEXT
@@ -308,11 +351,26 @@ SELECT
 FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
-"""""", conn)
+"""""", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''customer_id'': ''Int64'', ''product_id'': ''Int64'', ''employee_id'': ''Int64'', ''datekey'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"customer_id", Int64.Type},
+{"product_id", Int64.Type},
+{"employee_id", Int64.Type},
+{"datekey", Int64.Type},
+{"quantity", Int64.Type},
+{"unit_price", type number},
+{"discount_pct", type number},
+{"net_amount", type number},
+{"payment_method", type text},
+{"order_status", type text},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'fact_sales', 'mode: import
 source = ```
 let
@@ -339,41 +397,59 @@ SELECT
 FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
-"""""", conn)
+"""""", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''customer_id'': ''Int64'', ''product_id'': ''Int64'', ''employee_id'': ''Int64'', ''datekey'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"customer_id", Int64.Type},
+{"product_id", Int64.Type},
+{"employee_id", Int64.Type},
+{"datekey", Int64.Type},
+{"quantity", Int64.Type},
+{"unit_price", type number},
+{"discount_pct", type number},
+{"net_amount", type number},
+{"payment_method", type text},
+{"order_status", type text},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'fact_sales', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'fact_sales', 2, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'order_id', 'string', 'none', 'order_id', 'Unique sales order transaction header identifier.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'order_line_id', 'string', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'customer_id', 'string', 'none', 'customer_id', 'Unique sequential identifier (1..600) for each customer.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'product_id', 'string', 'none', 'product_id', 'Unique surrogate key (1..150) identifying each merchandise item.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'employee_id', 'string', 'none', 'employee_id', 'Unique employee identification number (1..35).');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'datekey', 'string', 'none', 'datekey', 'Integer surrogate key in YYYYMMDD format for date joins.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'quantity', 'string', 'none', 'quantity', 'Number of units purchased in order line.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'unit_price', 'string', 'none', 'unit_price', 'Retail selling price per unit ($) at time of order.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'discount_pct', 'string', 'none', 'discount_pct', 'Percentage discount applied (0.00 to 0.30).');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'net_amount', 'string', 'none', 'net_amount', 'Actual net revenue earned after applying discounts.');
+INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'fact_sales', 2, 'dtype', 'Source Ingestion', '{''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''customer_id'': ''Int64'', ''product_id'': ''Int64'', ''empl...');
+INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'fact_sales', 3, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
+INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'fact_sales', 4, 'Changed Type', 'Source Ingestion', 'Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type}');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'order_id', 'int64', 'none', 'order_id', 'Unique sales order transaction header identifier.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'order_line_id', 'int64', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'customer_id', 'int64', 'none', 'customer_id', 'Unique sequential identifier (1..600) for each customer.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'product_id', 'int64', 'none', 'product_id', 'Unique surrogate key (1..150) identifying each merchandise item.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'employee_id', 'int64', 'none', 'employee_id', 'Unique employee identification number (1..35).');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'datekey', 'int64', 'none', 'datekey', 'Integer surrogate key in YYYYMMDD format for date joins.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'quantity', 'int64', 'sum', 'quantity', 'Number of units purchased in order line.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'unit_price', 'double', 'sum', 'unit_price', 'Retail selling price per unit ($) at time of order.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'discount_pct', 'double', 'sum', 'discount_pct', 'Percentage discount applied (0.00 to 0.30).');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'net_amount', 'double', 'sum', 'net_amount', 'Actual net revenue earned after applying discounts.');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'payment_method', 'string', 'none', 'payment_method', 'Payment tender channel (Credit Card, PayPal, Cash, Debit Card).');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'order_status', 'string', 'none', 'order_status', 'Current status of transaction (Completed, Processing, Canceled, Returned).');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'fact_sales', 'channel', 'string', 'none', 'channel', 'Sales channel origination (Web, Mobile App, In-Store Retail).');
 CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_fact_sales (
-    "order_id" TEXT,
-    "order_line_id" TEXT,
-    "customer_id" TEXT,
-    "product_id" TEXT,
-    "employee_id" TEXT,
-    "datekey" TEXT,
-    "quantity" TEXT,
-    "unit_price" TEXT,
-    "discount_pct" TEXT,
-    "net_amount" TEXT,
+    "order_id" INTEGER,
+    "order_line_id" INTEGER,
+    "customer_id" INTEGER,
+    "product_id" INTEGER,
+    "employee_id" INTEGER,
+    "datekey" INTEGER,
+    "quantity" INTEGER,
+    "unit_price" REAL,
+    "discount_pct" REAL,
+    "net_amount" REAL,
     "payment_method" TEXT,
     "order_status" TEXT,
     "channel" TEXT,
@@ -391,11 +467,22 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(""project/oakhaven.db"")
-df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn)
+df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"order_date", type date},
+{"customer_name", type text},
+{"product_name", type text},
+{"product_category", type text},
+{"quantity", Int64.Type},
+{"net_amount", type number},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'flat_sales_all', 'mode: import
 source = ```
 let
@@ -404,35 +491,50 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(""project/oakhaven.db"")
-df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn)
+df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"order_date", type date},
+{"customer_name", type text},
+{"product_name", type text},
+{"product_category", type text},
+{"quantity", Int64.Type},
+{"net_amount", type number},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_all', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_all', 2, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'order_id', 'string', 'none', 'order_id', 'Unique sales order transaction header identifier.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'order_line_id', 'string', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'order_date', 'string', 'none', 'order_date', 'Transaction date on which order was placed.');
+INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_all', 2, 'dtype', 'Source Ingestion', '{''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
+conn.close()")');
+INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_all', 3, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
+INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_all', 4, 'Changed Type', 'Source Ingestion', 'Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type}');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'order_id', 'int64', 'none', 'order_id', 'Unique sales order transaction header identifier.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'order_line_id', 'int64', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'order_date', 'dateTime', 'none', 'order_date', 'Transaction date on which order was placed.');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'customer_name', 'string', 'none', 'customer_name', 'Full name of the purchasing customer.');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'product_name', 'string', 'none', 'product_name', 'Catalog description and product title.');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'product_category', 'string', 'none', 'product_category', 'Merchandise category of the ordered item.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'quantity', 'string', 'none', 'quantity', 'Number of units purchased in order line.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'net_amount', 'string', 'none', 'net_amount', 'Actual net revenue earned after applying discounts.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'quantity', 'int64', 'sum', 'quantity', 'Number of units purchased in order line.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'net_amount', 'double', 'sum', 'net_amount', 'Actual net revenue earned after applying discounts.');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_all', 'channel', 'string', 'none', 'channel', 'Sales channel origination (Web, Mobile App, In-Store Retail).');
 CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_flat_sales_all (
-    "order_id" TEXT,
-    "order_line_id" TEXT,
-    "order_date" TEXT,
+    "order_id" INTEGER,
+    "order_line_id" INTEGER,
+    "order_date" TIMESTAMP,
     "customer_name" TEXT,
     "product_name" TEXT,
     "product_category" TEXT,
-    "quantity" TEXT,
-    "net_amount" TEXT,
+    "quantity" INTEGER,
+    "net_amount" REAL,
     "channel" TEXT,
     FOREIGN KEY ("order_date") REFERENCES tmdl_duplicated_oakhaven_template_dim_calendar("date")
 );
@@ -446,8 +548,8 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(""project/oakhaven.db"")
-df = pd.read_sql_query(
-""""""SELECT 
+df = pd.read_sql_query(""""""
+SELECT 
     f.order_id,
     f.order_line_id,
     f.order_date,
@@ -463,11 +565,22 @@ LEFT JOIN dim_product p ON f.product_id = p.product_id
 WHERE f.order_status = ''Completed''
 ORDER BY f.order_date DESC
 LIMIT 100;
-"""""", conn)
+"""""", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"order_date", type date},
+{"customer_name", type text},
+{"product_name", type text},
+{"product_category", type text},
+{"quantity", Int64.Type},
+{"net_amount", type number},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'mode: import
 source = ```
 let
@@ -476,8 +589,8 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(""project/oakhaven.db"")
-df = pd.read_sql_query(
-""""""SELECT 
+df = pd.read_sql_query(""""""
+SELECT 
     f.order_id,
     f.order_line_id,
     f.order_date,
@@ -493,11 +606,22 @@ LEFT JOIN dim_product p ON f.product_id = p.product_id
 WHERE f.order_status = ''Completed''
 ORDER BY f.order_date DESC
 LIMIT 100;
-"""""", conn)
+"""""", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"order_date", type date},
+{"customer_name", type text},
+{"product_name", type text},
+{"product_category", type text},
+{"quantity", Int64.Type},
+{"net_amount", type number},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_completed', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -506,25 +630,29 @@ conn = sqlite3.connect(...');
 INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_completed', 2, 'customer_id', 'Filter Transformation', 'c.customer_id
 LEFT JOIN dim_product p ON f.product_id = p.product_id
 WHERE f.order_status = ''Complet...');
-INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_completed', 3, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'order_id', 'string', 'none', 'order_id', 'Unique sales order transaction header identifier.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'order_line_id', 'string', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'order_date', 'string', 'none', 'order_date', 'Transaction date on which order was placed.');
+INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_completed', 3, 'dtype', 'Source Ingestion', '{''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
+conn.close()")');
+INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_completed', 4, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
+INSERT INTO _tmdl_m_steps VALUES ('duplicated oakhaven template', 'flat_sales_completed', 5, 'Changed Type', 'Source Ingestion', 'Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type}');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'order_id', 'int64', 'none', 'order_id', 'Unique sales order transaction header identifier.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'order_line_id', 'int64', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'order_date', 'dateTime', 'none', 'order_date', 'Transaction date on which order was placed.');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'customer_name', 'string', 'none', 'customer_name', 'Full name of the purchasing customer.');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'product_name', 'string', 'none', 'product_name', 'Catalog description and product title.');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'product_category', 'string', 'none', 'product_category', 'Merchandise category of the ordered item.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'quantity', 'string', 'none', 'quantity', 'Number of units purchased in order line.');
-INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'net_amount', 'string', 'none', 'net_amount', 'Actual net revenue earned after applying discounts.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'quantity', 'int64', 'sum', 'quantity', 'Number of units purchased in order line.');
+INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'net_amount', 'double', 'sum', 'net_amount', 'Actual net revenue earned after applying discounts.');
 INSERT INTO _tmdl_columns VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'channel', 'string', 'none', 'channel', 'Sales channel origination (Web, Mobile App, In-Store Retail).');
 CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_flat_sales_completed (
-    "order_id" TEXT,
-    "order_line_id" TEXT,
-    "order_date" TEXT,
+    "order_id" INTEGER,
+    "order_line_id" INTEGER,
+    "order_date" TIMESTAMP,
     "customer_name" TEXT,
     "product_name" TEXT,
     "product_category" TEXT,
-    "quantity" TEXT,
-    "net_amount" TEXT,
+    "quantity" INTEGER,
+    "net_amount" REAL,
     "channel" TEXT,
     FOREIGN KEY ("order_date") REFERENCES tmdl_duplicated_oakhaven_template_dim_calendar("date")
 );
@@ -1970,9 +2098,6 @@ INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Orde
 INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Average Order Value', 'DIVIDE([Total Net Revenue], [Total Orders], 0)', '\$#,##0.00', '[Tables: fact_sales] Mean net revenue earned per distinct sales order.', 'fact_sales');
 INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Active Customer Count', 'DISTINCTCOUNT(fact_sales[customer_id])', '#,##0', '[Tables: fact_sales] Count of unique customers placing orders in selected period.', 'fact_sales');
 INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Overall Discount Rate', 'DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)', '0.0%', '[Tables: fact_sales] Weighted average discount percentage across all order lines.', 'fact_sales');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Total Cost of Goods Sold', 'SUMX(fact_sales, fact_sales[quantity] * RELATED(dim_product[unit_cost]))', '\$#,##0.00', '[Tables: dim_product, fact_sales] Total wholesale acquisition cost of all merchandise units sold.', 'dim_product, fact_sales');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Gross Margin', '[Total Net Revenue] - [Total Cost of Goods Sold]', '\$#,##0.00', '[Tables: dim_product, fact_sales] Total gross profit (Net Revenue minus Cost of Goods Sold).', 'dim_product, fact_sales');
-INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Gross Margin %', 'DIVIDE([Gross Margin], [Total Net Revenue], 0)', '0.0%', '[Tables: dim_product, fact_sales] Gross profit percentage of total net revenue.', 'dim_product, fact_sales');
 INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Net Revenue PY', 'CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))', '\$#,##0.00', '[Tables: dim_calendar, fact_sales] Total net revenue for the prior year comparable calendar period.', 'dim_calendar, fact_sales');
 INSERT INTO _tmdl_measures VALUES ('oakhaven template', '_measures', 'Net Revenue YoY %', 'DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)', '0.0%', '[Tables: dim_calendar, fact_sales] Year-over-year percentage growth in total net revenue.', 'dim_calendar, fact_sales');
 CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template__measures (
@@ -2005,11 +2130,21 @@ WHERE d.datekey IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''datekey'': ''Int64'', ''year'': ''Int64'', ''month'': ''Int64'', ''is_weekend'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"datekey", Int64.Type},
+{"date", type date},
+{"year", Int64.Type},
+{"month", Int64.Type},
+{"month_name", type text},
+{"quarter", type text},
+{"day_name", type text},
+{"is_weekend", Int64.Type}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'dim_calendar', 'mode: import
 source = ```
 let
@@ -2035,33 +2170,43 @@ WHERE d.datekey IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''datekey'': ''Int64'', ''year'': ''Int64'', ''month'': ''Int64'', ''is_weekend'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"datekey", Int64.Type},
+{"date", type date},
+{"year", Int64.Type},
+{"month", Int64.Type},
+{"month_name", type text},
+{"quarter", type text},
+{"day_name", type text},
+{"is_weekend", Int64.Type}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'dim_calendar', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'datekey', 'string', 'none', 'datekey', 'Integer surrogate key in YYYYMMDD format for date joins.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'date', 'string', 'none', 'date', 'Standard ISO 8601 calendar date (YYYY-MM-DD).');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'year', 'string', 'none', 'year', 'Four-digit calendar year (e.g. 2026).');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'month', 'string', 'none', 'month', 'Numeric calendar month (1..12).');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'datekey', 'int64', 'none', 'datekey', 'Integer surrogate key in YYYYMMDD format for date joins.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'date', 'dateTime', 'none', 'date', 'Standard ISO 8601 calendar date (YYYY-MM-DD).');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'year', 'int64', 'none', 'year', 'Four-digit calendar year (e.g. 2026).');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'month', 'int64', 'none', 'month', 'Numeric calendar month (1..12).');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'month_name', 'string', 'none', 'month_name', 'Full English month name (e.g. January, February).');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'quarter', 'string', 'none', 'quarter', 'Calendar quarter identifier (Q1, Q2, Q3, Q4).');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'day_name', 'string', 'none', 'day_name', 'Full English day name (e.g. Monday, Tuesday).');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'is_weekend', 'string', 'none', 'is_weekend', 'Boolean flag indicating Saturday or Sunday (1 = Weekend, 0 = Weekday).');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_calendar', 'is_weekend', 'int64', 'none', 'is_weekend', 'Boolean flag indicating Saturday or Sunday (1 = Weekend, 0 = Weekday).');
 CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_dim_calendar (
-    "datekey" TEXT,
-    "date" TEXT,
-    "year" TEXT,
-    "month" TEXT,
+    "datekey" INTEGER,
+    "date" TIMESTAMP,
+    "year" INTEGER,
+    "month" INTEGER,
     "month_name" TEXT,
     "quarter" TEXT,
     "day_name" TEXT,
-    "is_weekend" TEXT
+    "is_weekend" INTEGER
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'dim_customer', 'None');
@@ -2087,11 +2232,18 @@ WHERE c.customer_id IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''customer_id'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"customer_id", Int64.Type},
+{"full_name", type text},
+{"email", type text},
+{"state", type text},
+{"customer_segment", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'dim_customer', 'mode: import
 source = ```
 let
@@ -2114,23 +2266,30 @@ WHERE c.customer_id IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''customer_id'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"customer_id", Int64.Type},
+{"full_name", type text},
+{"email", type text},
+{"state", type text},
+{"customer_segment", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'dim_customer', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_customer', 'customer_id', 'string', 'none', 'customer_id', 'Unique sequential identifier (1..600) for each customer.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_customer', 'customer_id', 'int64', 'none', 'customer_id', 'Unique sequential identifier (1..600) for each customer.');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_customer', 'full_name', 'string', 'none', 'full_name', 'Concatenated customer full name (first + last).');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_customer', 'email', 'string', 'none', 'email', 'Primary email address associated with customer account.');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_customer', 'state', 'string', 'none', 'state', 'Customer geographic state or province code.');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_customer', 'customer_segment', 'string', 'none', 'customer_segment', 'Market segment classification (Retail, Wholesale, VIP).');
 CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_dim_customer (
-    "customer_id" TEXT,
+    "customer_id" INTEGER,
     "full_name" TEXT,
     "email" TEXT,
     "state" TEXT,
@@ -2159,11 +2318,17 @@ WHERE e.employee_id IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''employee_id'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"employee_id", Int64.Type},
+{"full_name", type text},
+{"department", type text},
+{"region", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'dim_employee', 'mode: import
 source = ```
 let
@@ -2185,22 +2350,28 @@ WHERE e.employee_id IN (
     ORDER BY order_date DESC, order_id, order_line_id 
     LIMIT 100
 );
-"""""", conn)
+"""""", conn, dtype={''employee_id'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"employee_id", Int64.Type},
+{"full_name", type text},
+{"department", type text},
+{"region", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'dim_employee', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_employee', 'employee_id', 'string', 'none', 'employee_id', 'Unique employee identification number (1..35).');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_employee', 'employee_id', 'int64', 'none', 'employee_id', 'Unique employee identification number (1..35).');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_employee', 'full_name', 'string', 'none', 'full_name', 'Concatenated customer full name (first + last).');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_employee', 'department', 'string', 'none', 'department', 'Company department (Sales, Support, Warehouse, Management).');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'dim_employee', 'region', 'string', 'none', 'region', 'Assigned geographical sales territory (West, East, Central, South).');
 CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_dim_employee (
-    "employee_id" TEXT,
+    "employee_id" INTEGER,
     "full_name" TEXT,
     "department" TEXT,
     "region" TEXT
@@ -2233,11 +2404,26 @@ SELECT
 FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
-"""""", conn)
+"""""", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''customer_id'': ''Int64'', ''product_id'': ''Int64'', ''employee_id'': ''Int64'', ''datekey'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"customer_id", Int64.Type},
+{"product_id", Int64.Type},
+{"employee_id", Int64.Type},
+{"datekey", Int64.Type},
+{"quantity", Int64.Type},
+{"unit_price", type number},
+{"discount_pct", type number},
+{"net_amount", type number},
+{"payment_method", type text},
+{"order_status", type text},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'fact_sales', 'mode: import
 source = ```
 let
@@ -2264,41 +2450,59 @@ SELECT
 FROM fact_sales f
 ORDER BY f.order_date DESC, f.order_id, f.order_line_id
 LIMIT 100;
-"""""", conn)
+"""""", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''customer_id'': ''Int64'', ''product_id'': ''Int64'', ''employee_id'': ''Int64'', ''datekey'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"customer_id", Int64.Type},
+{"product_id", Int64.Type},
+{"employee_id", Int64.Type},
+{"datekey", Int64.Type},
+{"quantity", Int64.Type},
+{"unit_price", type number},
+{"discount_pct", type number},
+{"net_amount", type number},
+{"payment_method", type text},
+{"order_status", type text},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'fact_sales', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'fact_sales', 2, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'order_id', 'string', 'none', 'order_id', 'Unique sales order transaction header identifier.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'order_line_id', 'string', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'customer_id', 'string', 'none', 'customer_id', 'Unique sequential identifier (1..600) for each customer.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'product_id', 'string', 'none', 'product_id', 'Unique surrogate key (1..150) identifying each merchandise item.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'employee_id', 'string', 'none', 'employee_id', 'Unique employee identification number (1..35).');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'datekey', 'string', 'none', 'datekey', 'Integer surrogate key in YYYYMMDD format for date joins.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'quantity', 'string', 'none', 'quantity', 'Number of units purchased in order line.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'unit_price', 'string', 'none', 'unit_price', 'Retail selling price per unit ($) at time of order.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'discount_pct', 'string', 'none', 'discount_pct', 'Percentage discount applied (0.00 to 0.30).');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'net_amount', 'string', 'none', 'net_amount', 'Actual net revenue earned after applying discounts.');
+INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'fact_sales', 2, 'dtype', 'Source Ingestion', '{''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''customer_id'': ''Int64'', ''product_id'': ''Int64'', ''empl...');
+INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'fact_sales', 3, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
+INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'fact_sales', 4, 'Changed Type', 'Source Ingestion', 'Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type}');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'order_id', 'int64', 'none', 'order_id', 'Unique sales order transaction header identifier.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'order_line_id', 'int64', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'customer_id', 'int64', 'none', 'customer_id', 'Unique sequential identifier (1..600) for each customer.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'product_id', 'int64', 'none', 'product_id', 'Unique surrogate key (1..150) identifying each merchandise item.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'employee_id', 'int64', 'none', 'employee_id', 'Unique employee identification number (1..35).');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'datekey', 'int64', 'none', 'datekey', 'Integer surrogate key in YYYYMMDD format for date joins.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'quantity', 'int64', 'sum', 'quantity', 'Number of units purchased in order line.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'unit_price', 'double', 'sum', 'unit_price', 'Retail selling price per unit ($) at time of order.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'discount_pct', 'double', 'sum', 'discount_pct', 'Percentage discount applied (0.00 to 0.30).');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'net_amount', 'double', 'sum', 'net_amount', 'Actual net revenue earned after applying discounts.');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'payment_method', 'string', 'none', 'payment_method', 'Payment tender channel (Credit Card, PayPal, Cash, Debit Card).');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'order_status', 'string', 'none', 'order_status', 'Current status of transaction (Completed, Processing, Canceled, Returned).');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'fact_sales', 'channel', 'string', 'none', 'channel', 'Sales channel origination (Web, Mobile App, In-Store Retail).');
 CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_fact_sales (
-    "order_id" TEXT,
-    "order_line_id" TEXT,
-    "customer_id" TEXT,
-    "product_id" TEXT,
-    "employee_id" TEXT,
-    "datekey" TEXT,
-    "quantity" TEXT,
-    "unit_price" TEXT,
-    "discount_pct" TEXT,
-    "net_amount" TEXT,
+    "order_id" INTEGER,
+    "order_line_id" INTEGER,
+    "customer_id" INTEGER,
+    "product_id" INTEGER,
+    "employee_id" INTEGER,
+    "datekey" INTEGER,
+    "quantity" INTEGER,
+    "unit_price" REAL,
+    "discount_pct" REAL,
+    "net_amount" REAL,
     "payment_method" TEXT,
     "order_status" TEXT,
     "channel" TEXT,
@@ -2316,11 +2520,22 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(""project/oakhaven.db"")
-df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn)
+df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"order_date", type date},
+{"customer_name", type text},
+{"product_name", type text},
+{"product_category", type text},
+{"quantity", Int64.Type},
+{"net_amount", type number},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'flat_sales_all', 'mode: import
 source = ```
 let
@@ -2329,35 +2544,50 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(""project/oakhaven.db"")
-df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn)
+df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"order_date", type date},
+{"customer_name", type text},
+{"product_name", type text},
+{"product_category", type text},
+{"quantity", Int64.Type},
+{"net_amount", type number},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_all', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(...');
-INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_all', 2, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'order_id', 'string', 'none', 'order_id', 'Unique sales order transaction header identifier.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'order_line_id', 'string', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'order_date', 'string', 'none', 'order_date', 'Transaction date on which order was placed.');
+INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_all', 2, 'dtype', 'Source Ingestion', '{''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
+conn.close()")');
+INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_all', 3, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
+INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_all', 4, 'Changed Type', 'Source Ingestion', 'Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type}');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'order_id', 'int64', 'none', 'order_id', 'Unique sales order transaction header identifier.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'order_line_id', 'int64', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'order_date', 'dateTime', 'none', 'order_date', 'Transaction date on which order was placed.');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'customer_name', 'string', 'none', 'customer_name', 'Full name of the purchasing customer.');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'product_name', 'string', 'none', 'product_name', 'Catalog description and product title.');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'product_category', 'string', 'none', 'product_category', 'Merchandise category of the ordered item.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'quantity', 'string', 'none', 'quantity', 'Number of units purchased in order line.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'net_amount', 'string', 'none', 'net_amount', 'Actual net revenue earned after applying discounts.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'quantity', 'int64', 'sum', 'quantity', 'Number of units purchased in order line.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'net_amount', 'double', 'sum', 'net_amount', 'Actual net revenue earned after applying discounts.');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_all', 'channel', 'string', 'none', 'channel', 'Sales channel origination (Web, Mobile App, In-Store Retail).');
 CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_flat_sales_all (
-    "order_id" TEXT,
-    "order_line_id" TEXT,
-    "order_date" TEXT,
+    "order_id" INTEGER,
+    "order_line_id" INTEGER,
+    "order_date" TIMESTAMP,
     "customer_name" TEXT,
     "product_name" TEXT,
     "product_category" TEXT,
-    "quantity" TEXT,
-    "net_amount" TEXT,
+    "quantity" INTEGER,
+    "net_amount" REAL,
     "channel" TEXT,
     FOREIGN KEY ("order_date") REFERENCES tmdl_oakhaven_template_dim_calendar("date")
 );
@@ -2371,8 +2601,8 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(""project/oakhaven.db"")
-df = pd.read_sql_query(
-""""""SELECT 
+df = pd.read_sql_query(""""""
+SELECT 
     f.order_id,
     f.order_line_id,
     f.order_date,
@@ -2388,11 +2618,22 @@ LEFT JOIN dim_product p ON f.product_id = p.product_id
 WHERE f.order_status = ''Completed''
 ORDER BY f.order_date DESC
 LIMIT 100;
-"""""", conn)
+"""""", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"order_date", type date},
+{"customer_name", type text},
+{"product_name", type text},
+{"product_category", type text},
+{"quantity", Int64.Type},
+{"net_amount", type number},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT OR REPLACE INTO _tmdl_advanced_editor VALUES ('oakhaven template', 'flat_sales_completed', 'mode: import
 source = ```
 let
@@ -2401,8 +2642,8 @@ import pandas as pd
 import matplotlib as mpl
 
 conn = sqlite3.connect(""project/oakhaven.db"")
-df = pd.read_sql_query(
-""""""SELECT 
+df = pd.read_sql_query(""""""
+SELECT 
     f.order_id,
     f.order_line_id,
     f.order_date,
@@ -2418,11 +2659,22 @@ LEFT JOIN dim_product p ON f.product_id = p.product_id
 WHERE f.order_status = ''Completed''
 ORDER BY f.order_date DESC
 LIMIT 100;
-"""""", conn)
+"""""", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
-DataTable = Source{[Name="df"]}[Value]
+DataTable = Source{[Name="df"]}[Value],
+#"Changed Type" = Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type},
+{"order_line_id", Int64.Type},
+{"order_date", type date},
+{"customer_name", type text},
+{"product_name", type text},
+{"product_category", type text},
+{"quantity", Int64.Type},
+{"net_amount", type number},
+{"channel", type text}
+})
 in
-DataTable');
+#"Changed Type"');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_completed', 1, 'Source', 'Source Ingestion', 'Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
@@ -2431,25 +2683,29 @@ conn = sqlite3.connect(...');
 INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_completed', 2, 'customer_id', 'Filter Transformation', 'c.customer_id
 LEFT JOIN dim_product p ON f.product_id = p.product_id
 WHERE f.order_status = ''Complet...');
-INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_completed', 3, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'order_id', 'string', 'none', 'order_id', 'Unique sales order transaction header identifier.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'order_line_id', 'string', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'order_date', 'string', 'none', 'order_date', 'Transaction date on which order was placed.');
+INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_completed', 3, 'dtype', 'Source Ingestion', '{''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
+conn.close()")');
+INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_completed', 4, 'DataTable', 'Source Ingestion', 'Source{[Name="df"]}[Value]');
+INSERT INTO _tmdl_m_steps VALUES ('oakhaven template', 'flat_sales_completed', 5, 'Changed Type', 'Source Ingestion', 'Table.TransformColumnTypes(DataTable,{
+{"order_id", Int64.Type}');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'order_id', 'int64', 'none', 'order_id', 'Unique sales order transaction header identifier.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'order_line_id', 'int64', 'none', 'order_line_id', 'Line item sequence number (1..N) within an order.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'order_date', 'dateTime', 'none', 'order_date', 'Transaction date on which order was placed.');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'customer_name', 'string', 'none', 'customer_name', 'Full name of the purchasing customer.');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'product_name', 'string', 'none', 'product_name', 'Catalog description and product title.');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'product_category', 'string', 'none', 'product_category', 'Merchandise category of the ordered item.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'quantity', 'string', 'none', 'quantity', 'Number of units purchased in order line.');
-INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'net_amount', 'string', 'none', 'net_amount', 'Actual net revenue earned after applying discounts.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'quantity', 'int64', 'sum', 'quantity', 'Number of units purchased in order line.');
+INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'net_amount', 'double', 'sum', 'net_amount', 'Actual net revenue earned after applying discounts.');
 INSERT INTO _tmdl_columns VALUES ('oakhaven template', 'flat_sales_completed', 'channel', 'string', 'none', 'channel', 'Sales channel origination (Web, Mobile App, In-Store Retail).');
 CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_flat_sales_completed (
-    "order_id" TEXT,
-    "order_line_id" TEXT,
-    "order_date" TEXT,
+    "order_id" INTEGER,
+    "order_line_id" INTEGER,
+    "order_date" TIMESTAMP,
     "customer_name" TEXT,
     "product_name" TEXT,
     "product_category" TEXT,
-    "quantity" TEXT,
-    "net_amount" TEXT,
+    "quantity" INTEGER,
+    "net_amount" REAL,
     "channel" TEXT,
     FOREIGN KEY ("order_date") REFERENCES tmdl_oakhaven_template_dim_calendar("date")
 );

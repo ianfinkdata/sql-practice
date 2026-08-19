@@ -22,7 +22,7 @@ Dedicated directory structure for Power BI `.pbip` models, TMDL metadata, and Gi
 - **[`pbip/sql_queries/02_star_schema_model.sql`](pbip/sql_queries/02_star_schema_model.sql)**: 1 Fact table (`fact_sales`) + 4 Dimension tables (`dim_customer`, `dim_product`, `dim_employee`, `dim_date`).
 - **[`pbip/projects/`](pbip/projects/)**: Power BI Desktop `.pbip` project folders with native relative `.pbip` root launchers.
 
-### 2. Validated PBIP & TMDL Engineering Rules (from `flat_sales_all`)
+### 2. Validated PBIP & TMDL Engineering Rules
 1. **TMDL Documentation Syntax**:
    - Descriptions on measures, columns, and tables **must** use triple-slash doc comments (`/// comment`) immediately preceding the declaration. Property `description: ...` is invalid in TMDL and triggers `UnknownKeyword`.
    - Never use multi-line indented `//` comment blocks inside table definitions; the TMDL scanner flags them as `Invalid indentation`. If a measure is disabled or not applicable, omit it entirely from the `.tmdl` file.
@@ -36,32 +36,21 @@ Dedicated directory structure for Power BI `.pbip` models, TMDL metadata, and Gi
 5. **Cross-Platform `.pbip` Launchers**:
    - Native root JSON `.pbip` files in `pbip/projects/` point relatively to `subfolder/subfolder.Report`.
 
+### 3. Model Alignment Status
+- [x] **`pbip/projects/flat_sales_all/`**: Explicit `Int64` dtypes, scoped `_measures.tmdl`, verified working in Power BI Desktop.
+- [x] **`pbip/projects/flat_sales_completed/`**: Explicit `Int64` dtypes, scoped `_measures.tmdl`, verified working.
+- [x] **`pbip/projects/oakhaven template/`**: Explicit `Int64` dtypes across all partitions, scoped `_measures.tmdl`, aligned column types (`int64`, `double`, `dateTime`).
+- [x] **`pbip/projects/duplicated oakhaven template/`**: Explicit `Int64` dtypes across all partitions, scoped `_measures.tmdl`, aligned column types (`int64`, `double`, `dateTime`).
+
 ---
 
 ## 🔮 Next Steps & Actionable Backlog
 
-### 🎯 Next Session Priority: Align Remaining PBIP Models
-Apply the validated 4-step fix pattern from `flat_sales_all` and `flat_sales_completed` to the remaining PBIP projects:
-
-- [x] **`pbip/projects/flat_sales_completed/`**:
-  - Updated M partitions with explicit pandas `Int64` dtypes (`dtype={'...': 'Int64'}`).
-  - Scoped `_measures.tmdl` to only tables/columns available in this model (`flat_sales_completed`, `dim_calendar`).
-  - Added `/// [Tables: ...]` doc comment tags to all measures.
-  - Verified `definition/model.tmdl` table references.
-  - Rebuilt and verified `pbip/tmdl_parsed_schema.json` and `pbip/tmdl_catalog.db`.
-- [ ] **`pbip/projects/oakhaven template/`**:
-  - Apply `Int64` pandas dtypes across all M partitions (`fact_sales`, `dim_customer`, `dim_product`, `dim_employee`, `dim_calendar`).
-  - Align column data types in `.tmdl` files (`int64`, `double`, `dateTime`).
-  - Ensure measure dependencies match exact table names (e.g. `dim_product` vs `sql_dim_product`).
-  - Test opening in Power BI Desktop.
-- [ ] **`pbip/projects/duplicated oakhaven template/`**:
-  - Apply same schema & M dtype alignments.
-  - Clean local `.pbi/cache.abf` and test.
-
 ### 📚 General Backlog
 - [ ] Install/configure Beekeeper Studio for interactive SQLite querying against `project/oakhaven.db`.
 - [ ] Compare TMDL & Git diffs across SQL Pushdown vs DAX vs Power Query M implementations.
+- [ ] Explore automated CI validation of TMDL schemas and AST parser checks on PR.
 
 ---
 
-*Last Updated: 2026-08-17 | Branch: `main`*
+*Last Updated: 2026-08-18 | Branch: `main`*
