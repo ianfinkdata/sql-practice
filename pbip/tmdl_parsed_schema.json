@@ -223,9 +223,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'datekey': 'Int64', 'year': 'Int64', 'month': 'Int64', 'is_weekend': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"datekey\", Int64.Type},\n{\"date\", type date},\n{\"year\", Int64.Type},\n{\"month\", Int64.Type},\n{\"month_name\", type text},\n{\"quarter\", type text},\n{\"day_name\", type text},\n{\"is_weekend\", Int64.Type}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'datekey': 'Int64', 'year': 'Int64', 'month': 'Int64', 'is_weekend': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"datekey\", Int64.Type},\n{\"date\", type date},\n{\"year\", Int64.Type},\n{\"month\", Int64.Type},\n{\"month_name\", type text},\n{\"quarter\", type text},\n{\"day_name\", type text},\n{\"is_weekend\", Int64.Type}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -292,9 +292,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    c.customer_id,\n    c.full_name,\n    c.email,\n    c.state,\n    c.customer_segment\nFROM dim_customer c\nWHERE c.customer_id IN (\n    SELECT customer_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'customer_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"customer_id\", Int64.Type},\n{\"full_name\", type text},\n{\"email\", type text},\n{\"state\", type text},\n{\"customer_segment\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    c.customer_id,\n    c.full_name,\n    c.email,\n    c.state,\n    c.customer_segment\nFROM dim_customer c\nWHERE c.customer_id IN (\n    SELECT customer_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'customer_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"customer_id\", Int64.Type},\n{\"full_name\", type text},\n{\"email\", type text},\n{\"state\", type text},\n{\"customer_segment\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -352,9 +352,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'employee_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"employee_id\", Int64.Type},\n{\"full_name\", type text},\n{\"department\", type text},\n{\"region\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'employee_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"employee_id\", Int64.Type},\n{\"full_name\", type text},\n{\"department\", type text},\n{\"region\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -493,9 +493,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'customer_id': 'Int64', 'product_id': 'Int64', 'employee_id': 'Int64', 'datekey': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"customer_id\", Int64.Type},\n{\"product_id\", Int64.Type},\n{\"employee_id\", Int64.Type},\n{\"datekey\", Int64.Type},\n{\"quantity\", Int64.Type},\n{\"unit_price\", type number},\n{\"discount_pct\", type number},\n{\"net_amount\", type number},\n{\"payment_method\", type text},\n{\"order_status\", type text},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'customer_id': 'Int64', 'product_id': 'Int64', 'employee_id': 'Int64', 'datekey': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"customer_id\", Int64.Type},\n{\"product_id\", Int64.Type},\n{\"employee_id\", Int64.Type},\n{\"datekey\", Int64.Type},\n{\"quantity\", Int64.Type},\n{\"unit_price\", type number},\n{\"discount_pct\", type number},\n{\"net_amount\", type number},\n{\"payment_method\", type text},\n{\"order_status\", type text},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -616,9 +616,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -739,9 +739,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    p.product_name,\n    p.category AS product_category,\n    f.quantity,\n    f.net_amount,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Completed'\nORDER BY f.order_date DESC\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    p.product_name,\n    p.category AS product_category,\n    f.quantity,\n    f.net_amount,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Completed'\nORDER BY f.order_date DESC\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1071,7 +1071,7 @@
       {
         "name": "oakhavendatabasepath",
         "type": "Text",
-        "defaultValue": "project/oakhaven.db",
+        "defaultValue": "C:\\Github\\sql-practice\\project\\oakhaven.db",
         "isParameter": true
       }
     ]
@@ -1291,9 +1291,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'datekey': 'Int64', 'year': 'Int64', 'month': 'Int64', 'is_weekend': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"datekey\", Int64.Type},\n{\"date\", type date},\n{\"year\", Int64.Type},\n{\"month\", Int64.Type},\n{\"month_name\", type text},\n{\"quarter\", type text},\n{\"day_name\", type text},\n{\"is_weekend\", Int64.Type}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'datekey': 'Int64', 'year': 'Int64', 'month': 'Int64', 'is_weekend': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"datekey\", Int64.Type},\n{\"date\", type date},\n{\"year\", Int64.Type},\n{\"month\", Int64.Type},\n{\"month_name\", type text},\n{\"quarter\", type text},\n{\"day_name\", type text},\n{\"is_weekend\", Int64.Type}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1351,9 +1351,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'employee_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"employee_id\", Int64.Type},\n{\"full_name\", type text},\n{\"department\", type text},\n{\"region\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'employee_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"employee_id\", Int64.Type},\n{\"full_name\", type text},\n{\"department\", type text},\n{\"region\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1492,9 +1492,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'customer_id': 'Int64', 'product_id': 'Int64', 'employee_id': 'Int64', 'datekey': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"customer_id\", Int64.Type},\n{\"product_id\", Int64.Type},\n{\"employee_id\", Int64.Type},\n{\"datekey\", Int64.Type},\n{\"quantity\", Int64.Type},\n{\"unit_price\", type number},\n{\"discount_pct\", type number},\n{\"net_amount\", type number},\n{\"payment_method\", type text},\n{\"order_status\", type text},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'customer_id': 'Int64', 'product_id': 'Int64', 'employee_id': 'Int64', 'datekey': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"customer_id\", Int64.Type},\n{\"product_id\", Int64.Type},\n{\"employee_id\", Int64.Type},\n{\"datekey\", Int64.Type},\n{\"quantity\", Int64.Type},\n{\"unit_price\", type number},\n{\"discount_pct\", type number},\n{\"net_amount\", type number},\n{\"payment_method\", type text},\n{\"order_status\", type text},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1615,9 +1615,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1689,7 +1689,7 @@
       {
         "name": "sqliteconnect",
         "type": "Text",
-        "defaultValue": "project/oakhaven.db",
+        "defaultValue": "C:\\Github\\sql-practice\\project\\oakhaven.db",
         "isParameter": true
       }
     ]
@@ -1887,9 +1887,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'datekey': 'Int64', 'year': 'Int64', 'month': 'Int64', 'is_weekend': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"datekey\", Int64.Type},\n{\"date\", type date},\n{\"year\", Int64.Type},\n{\"month\", Int64.Type},\n{\"month_name\", type text},\n{\"quarter\", type text},\n{\"day_name\", type text},\n{\"is_weekend\", Int64.Type}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'datekey': 'Int64', 'year': 'Int64', 'month': 'Int64', 'is_weekend': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"datekey\", Int64.Type},\n{\"date\", type date},\n{\"year\", Int64.Type},\n{\"month\", Int64.Type},\n{\"month_name\", type text},\n{\"quarter\", type text},\n{\"day_name\", type text},\n{\"is_weekend\", Int64.Type}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -1956,9 +1956,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    c.customer_id,\n    c.full_name,\n    c.email,\n    c.state,\n    c.customer_segment\nFROM dim_customer c\nWHERE c.customer_id IN (\n    SELECT customer_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'customer_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"customer_id\", Int64.Type},\n{\"full_name\", type text},\n{\"email\", type text},\n{\"state\", type text},\n{\"customer_segment\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    c.customer_id,\n    c.full_name,\n    c.email,\n    c.state,\n    c.customer_segment\nFROM dim_customer c\nWHERE c.customer_id IN (\n    SELECT customer_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'customer_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"customer_id\", Int64.Type},\n{\"full_name\", type text},\n{\"email\", type text},\n{\"state\", type text},\n{\"customer_segment\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -2061,9 +2061,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    p.product_name,\n    p.category AS product_category,\n    f.quantity,\n    f.net_amount,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Completed'\nORDER BY f.order_date DESC\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    p.product_name,\n    p.category AS product_category,\n    f.quantity,\n    f.net_amount,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Completed'\nORDER BY f.order_date DESC\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -2258,7 +2258,7 @@
       {
         "name": "oakhavendatabasepath",
         "type": "Text",
-        "defaultValue": "project/oakhaven.db",
+        "defaultValue": "C:\\Github\\sql-practice\\project\\oakhaven.db",
         "isParameter": true
       }
     ]
@@ -2478,9 +2478,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'datekey': 'Int64', 'year': 'Int64', 'month': 'Int64', 'is_weekend': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"datekey\", Int64.Type},\n{\"date\", type date},\n{\"year\", Int64.Type},\n{\"month\", Int64.Type},\n{\"month_name\", type text},\n{\"quarter\", type text},\n{\"day_name\", type text},\n{\"is_weekend\", Int64.Type}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    d.datekey,\n    d.date,\n    d.year,\n    d.month,\n    d.month_name,\n    d.quarter,\n    d.day_name,\n    d.is_weekend\nFROM dim_date d\nWHERE d.datekey IN (\n    SELECT datekey \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'datekey': 'Int64', 'year': 'Int64', 'month': 'Int64', 'is_weekend': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"datekey\", Int64.Type},\n{\"date\", type date},\n{\"year\", Int64.Type},\n{\"month\", Int64.Type},\n{\"month_name\", type text},\n{\"quarter\", type text},\n{\"day_name\", type text},\n{\"is_weekend\", Int64.Type}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -2547,9 +2547,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    c.customer_id,\n    c.full_name,\n    c.email,\n    c.state,\n    c.customer_segment\nFROM dim_customer c\nWHERE c.customer_id IN (\n    SELECT customer_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'customer_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"customer_id\", Int64.Type},\n{\"full_name\", type text},\n{\"email\", type text},\n{\"state\", type text},\n{\"customer_segment\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    c.customer_id,\n    c.full_name,\n    c.email,\n    c.state,\n    c.customer_segment\nFROM dim_customer c\nWHERE c.customer_id IN (\n    SELECT customer_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'customer_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"customer_id\", Int64.Type},\n{\"full_name\", type text},\n{\"email\", type text},\n{\"state\", type text},\n{\"customer_segment\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -2607,9 +2607,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'employee_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"employee_id\", Int64.Type},\n{\"full_name\", type text},\n{\"department\", type text},\n{\"region\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT DISTINCT \n    e.employee_id,\n    e.full_name,\n    e.department,\n    e.region\nFROM dim_employee e\nWHERE e.employee_id IN (\n    SELECT employee_id \n    FROM fact_sales \n    ORDER BY order_date DESC, order_id, order_line_id \n    LIMIT 100\n);\n\"\"\"\"\"\", conn, dtype={'employee_id': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"employee_id\", Int64.Type},\n{\"full_name\", type text},\n{\"department\", type text},\n{\"region\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -2748,9 +2748,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'customer_id': 'Int64', 'product_id': 'Int64', 'employee_id': 'Int64', 'datekey': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"customer_id\", Int64.Type},\n{\"product_id\", Int64.Type},\n{\"employee_id\", Int64.Type},\n{\"datekey\", Int64.Type},\n{\"quantity\", Int64.Type},\n{\"unit_price\", type number},\n{\"discount_pct\", type number},\n{\"net_amount\", type number},\n{\"payment_method\", type text},\n{\"order_status\", type text},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.customer_id,\n    f.product_id,\n    f.employee_id,\n    f.datekey,\n    f.quantity,\n    f.unit_price,\n    f.discount_pct,\n    f.net_amount,\n    f.payment_method,\n    f.order_status,\n    f.channel\nFROM fact_sales f\nORDER BY f.order_date DESC, f.order_id, f.order_line_id\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'customer_id': 'Int64', 'product_id': 'Int64', 'employee_id': 'Int64', 'datekey': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"customer_id\", Int64.Type},\n{\"product_id\", Int64.Type},\n{\"employee_id\", Int64.Type},\n{\"datekey\", Int64.Type},\n{\"quantity\", Int64.Type},\n{\"unit_price\", type number},\n{\"discount_pct\", type number},\n{\"net_amount\", type number},\n{\"payment_method\", type text},\n{\"order_status\", type text},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -2871,9 +2871,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -2994,9 +2994,9 @@
         "partitions": [],
         "dataSource": {
           "connector": "SQLite (Python Connector)",
-          "target": "\"project/oakhaven.db\"",
+          "target": "\"C:\\Github\\sql-practice\\project\\oakhaven.db\"",
           "query_type": "Native SQL Pushdown",
-          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"project/oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    p.product_name,\n    p.category AS product_category,\n    f.quantity,\n    f.net_amount,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Completed'\nORDER BY f.order_date DESC\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
+          "raw_m_code": "mode: import\nsource = ```\nlet\nSource = Python.Execute(\"import sqlite3\nimport pandas as pd\nimport matplotlib as mpl\n\nconn = sqlite3.connect(\"\"C:\\Github\\sql-practice\\project\\oakhaven.db\"\")\ndf = pd.read_sql_query(\"\"\"\"\"\"\nSELECT \n    f.order_id,\n    f.order_line_id,\n    f.order_date,\n    c.full_name AS customer_name,\n    p.product_name,\n    p.category AS product_category,\n    f.quantity,\n    f.net_amount,\n    f.channel\nFROM fact_sales f\nLEFT JOIN dim_customer c ON f.customer_id = c.customer_id\nLEFT JOIN dim_product p ON f.product_id = p.product_id\nWHERE f.order_status = 'Completed'\nORDER BY f.order_date DESC\nLIMIT 100;\n\"\"\"\"\"\", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})\nconn.close()\"),\nDataTable = Source{[Name=\"df\"]}[Value],\n#\"Changed Type\" = Table.TransformColumnTypes(DataTable,{\n{\"order_id\", Int64.Type},\n{\"order_line_id\", Int64.Type},\n{\"order_date\", type date},\n{\"customer_name\", type text},\n{\"product_name\", type text},\n{\"product_category\", type text},\n{\"quantity\", Int64.Type},\n{\"net_amount\", type number},\n{\"channel\", type text}\n})\nin\n#\"Changed Type\""
         },
         "mSteps": [
           {
@@ -3326,7 +3326,7 @@
       {
         "name": "oakhavendatabasepath",
         "type": "Text",
-        "defaultValue": "project/oakhaven.db",
+        "defaultValue": "C:\\Github\\sql-practice\\project\\oakhaven.db",
         "isParameter": true
       }
     ]

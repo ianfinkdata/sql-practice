@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS _tmdl_parameters (project_name TEXT, param_name TEXT,
 INSERT OR REPLACE INTO _tmdl_projects VALUES ('centralized', 0, 0, 0);
 -- PROJECT: duplicated oakhaven template
 INSERT OR REPLACE INTO _tmdl_projects VALUES ('duplicated oakhaven template', 14, 5, 1);
-INSERT INTO _tmdl_parameters VALUES ('duplicated oakhaven template', 'oakhavendatabasepath', 'Text', 'project/oakhaven.db');
+INSERT INTO _tmdl_parameters VALUES ('duplicated oakhaven template', 'oakhavendatabasepath', 'Text', 'C:\Github\sql-practice\project\oakhaven.db');
 INSERT INTO _tmdl_relationships VALUES ('duplicated oakhaven template', 'AutoDetected_1d28b393-7c5a-472e-8bdf-bbaefdfadc47', 'fact_sales', 'customer_id', 'dim_customer', 'customer_id', 'one');
 INSERT INTO _tmdl_relationships VALUES ('duplicated oakhaven template', 'AutoDetected_de8de45f-ebb1-4d1d-a6b4-e19e17d854ac', 'fact_sales', 'datekey', 'dim_calendar', 'datekey', 'one');
 INSERT INTO _tmdl_relationships VALUES ('duplicated oakhaven template', 'cdcabb57-8502-4d1c-1ca6-c29df34d8d3e', 'fact_sales', 'employee_id', 'dim_employee', 'employee_id', 'one');
@@ -52,14 +52,14 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template__measures (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'dim_calendar', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_calendar', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     d.datekey,
@@ -99,7 +99,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     d.datekey,
@@ -157,14 +157,14 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_dim_calendar (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'dim_customer', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_customer', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_customer', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     c.customer_id,
@@ -198,7 +198,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     c.customer_id,
@@ -244,14 +244,14 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_dim_customer (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'dim_employee', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_employee', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'dim_employee', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     e.employee_id,
@@ -283,7 +283,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     e.employee_id,
@@ -325,14 +325,14 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_dim_employee (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'fact_sales', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'fact_sales', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'fact_sales', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT 
     f.order_id,
@@ -378,7 +378,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT 
     f.order_id,
@@ -459,14 +459,14 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_fact_sales (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'flat_sales_all', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'flat_sales_all', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'flat_sales_all', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
@@ -490,7 +490,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
@@ -540,14 +540,14 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_flat_sales_all (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('duplicated oakhaven template', 'flat_sales_completed', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT 
     f.order_id,
@@ -588,7 +588,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT 
     f.order_id,
@@ -1065,7 +1065,7 @@ CREATE TABLE IF NOT EXISTS tmdl_duplicated_oakhaven_template_sql_flat_sales_comp
 
 -- PROJECT: flat_sales_all
 INSERT OR REPLACE INTO _tmdl_projects VALUES ('flat_sales_all', 5, 4, 1);
-INSERT INTO _tmdl_parameters VALUES ('flat_sales_all', 'sqliteconnect', 'Text', 'project/oakhaven.db');
+INSERT INTO _tmdl_parameters VALUES ('flat_sales_all', 'sqliteconnect', 'Text', 'C:\Github\sql-practice\project\oakhaven.db');
 INSERT INTO _tmdl_relationships VALUES ('flat_sales_all', 'AutoDetected_de8de45f-ebb1-4d1d-a6b4-e19e17d854ac', 'fact_sales', 'datekey', 'dim_calendar', 'datekey', 'one');
 INSERT INTO _tmdl_relationships VALUES ('flat_sales_all', 'cdcabb57-8502-4d1c-1ca6-c29df34d8d3e', 'fact_sales', 'employee_id', 'dim_employee', 'employee_id', 'one');
 INSERT INTO _tmdl_relationships VALUES ('flat_sales_all', 'dab805ef-d296-87a4-acb2-347f07dc4199', 'flat_sales_all', 'order_date', 'dim_calendar', 'date', 'one');
@@ -1090,14 +1090,14 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_all__measures (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_all', 'dim_calendar', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'dim_calendar', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     d.datekey,
@@ -1137,7 +1137,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     d.datekey,
@@ -1195,14 +1195,14 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_all_dim_calendar (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_all', 'dim_employee', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'dim_employee', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'dim_employee', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     e.employee_id,
@@ -1234,7 +1234,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     e.employee_id,
@@ -1276,14 +1276,14 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_all_dim_employee (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_all', 'fact_sales', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'fact_sales', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'fact_sales', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT 
     f.order_id,
@@ -1329,7 +1329,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT 
     f.order_id,
@@ -1410,14 +1410,14 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_all_fact_sales (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_all', 'flat_sales_all', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'flat_sales_all', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_all', 'flat_sales_all', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
@@ -1441,7 +1441,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
@@ -1492,7 +1492,7 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_all_flat_sales_all (
 
 -- PROJECT: flat_sales_completed
 INSERT OR REPLACE INTO _tmdl_projects VALUES ('flat_sales_completed', 8, 1, 1);
-INSERT INTO _tmdl_parameters VALUES ('flat_sales_completed', 'oakhavendatabasepath', 'Text', 'project/oakhaven.db');
+INSERT INTO _tmdl_parameters VALUES ('flat_sales_completed', 'oakhavendatabasepath', 'Text', 'C:\Github\sql-practice\project\oakhaven.db');
 INSERT INTO _tmdl_relationships VALUES ('flat_sales_completed', 'defc8ca4-33ee-19ab-d42b-240fcd45be3e', 'flat_sales_completed', 'order_date', 'dim_calendar', 'date', 'one');
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', '_measures', 'None');
 INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', '_measures', 'Power Query M Transformation', 'In-Memory', 'M Expression', 'mode: import
@@ -1512,14 +1512,14 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed__measures (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'dim_calendar', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'dim_calendar', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     d.datekey,
@@ -1559,7 +1559,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     d.datekey,
@@ -1617,14 +1617,14 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_dim_calendar (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'dim_customer', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'dim_customer', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'dim_customer', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     c.customer_id,
@@ -1658,7 +1658,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     c.customer_id,
@@ -1704,14 +1704,14 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_dim_customer (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('flat_sales_completed', 'flat_sales_completed', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'flat_sales_completed', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('flat_sales_completed', 'flat_sales_completed', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT 
     f.order_id,
@@ -1752,7 +1752,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT 
     f.order_id,
@@ -2079,7 +2079,7 @@ CREATE TABLE IF NOT EXISTS tmdl_flat_sales_completed_sql_flat_sales_completed (
 
 -- PROJECT: oakhaven template
 INSERT OR REPLACE INTO _tmdl_projects VALUES ('oakhaven template', 14, 5, 1);
-INSERT INTO _tmdl_parameters VALUES ('oakhaven template', 'oakhavendatabasepath', 'Text', 'project/oakhaven.db');
+INSERT INTO _tmdl_parameters VALUES ('oakhaven template', 'oakhavendatabasepath', 'Text', 'C:\Github\sql-practice\project\oakhaven.db');
 INSERT INTO _tmdl_relationships VALUES ('oakhaven template', 'AutoDetected_1d28b393-7c5a-472e-8bdf-bbaefdfadc47', 'fact_sales', 'customer_id', 'dim_customer', 'customer_id', 'one');
 INSERT INTO _tmdl_relationships VALUES ('oakhaven template', 'AutoDetected_de8de45f-ebb1-4d1d-a6b4-e19e17d854ac', 'fact_sales', 'datekey', 'dim_calendar', 'datekey', 'one');
 INSERT INTO _tmdl_relationships VALUES ('oakhaven template', 'cdcabb57-8502-4d1c-1ca6-c29df34d8d3e', 'fact_sales', 'employee_id', 'dim_employee', 'employee_id', 'one');
@@ -2105,14 +2105,14 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template__measures (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'dim_calendar', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_calendar', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_calendar', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     d.datekey,
@@ -2152,7 +2152,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     d.datekey,
@@ -2210,14 +2210,14 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_dim_calendar (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'dim_customer', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_customer', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_customer', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     c.customer_id,
@@ -2251,7 +2251,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     c.customer_id,
@@ -2297,14 +2297,14 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_dim_customer (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'dim_employee', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_employee', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'dim_employee', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     e.employee_id,
@@ -2336,7 +2336,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT DISTINCT 
     e.employee_id,
@@ -2378,14 +2378,14 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_dim_employee (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'fact_sales', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'fact_sales', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'fact_sales', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT 
     f.order_id,
@@ -2431,7 +2431,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT 
     f.order_id,
@@ -2512,14 +2512,14 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_fact_sales (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'flat_sales_all', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'flat_sales_all', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'flat_sales_all', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
@@ -2543,7 +2543,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = ''Completed'' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={''order_id'': ''Int64'', ''order_line_id'': ''Int64'', ''quantity'': ''Int64''})
 conn.close()"),
 DataTable = Source{[Name="df"]}[Value],
@@ -2593,14 +2593,14 @@ CREATE TABLE IF NOT EXISTS tmdl_oakhaven_template_flat_sales_all (
 );
 
 INSERT OR REPLACE INTO _tmdl_tables VALUES ('oakhaven template', 'flat_sales_completed', 'None');
-INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'flat_sales_completed', 'SQLite (Python Connector)', '"project/oakhaven.db"', 'Native SQL Pushdown', 'mode: import
+INSERT INTO _tmdl_data_sources VALUES ('oakhaven template', 'flat_sales_completed', 'SQLite (Python Connector)', '"C:\Github\sql-practice\project\oakhaven.db"', 'Native SQL Pushdown', 'mode: import
 source = ```
 let
 Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT 
     f.order_id,
@@ -2641,7 +2641,7 @@ Source = Python.Execute("import sqlite3
 import pandas as pd
 import matplotlib as mpl
 
-conn = sqlite3.connect(""project/oakhaven.db"")
+conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")
 df = pd.read_sql_query(""""""
 SELECT 
     f.order_id,
