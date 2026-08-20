@@ -12,3 +12,8 @@ legacy README.md
 
 # Claude Code local settings
 .claude/
+
+# Installer binaries & archives
+*.tar.gz
+pbip/tabular_editor/
+
