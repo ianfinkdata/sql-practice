@@ -181,9 +181,6 @@ sql-practice/
 - [SQL Zoo](https://www.sqlzoo.net/wiki/SQL_Tutorial)
 - [w3schools](https://www.w3schools.com/sql/)
 
-**Interactive**
-- [Gemini Notebook — Repository Mind Map](https://notebook.google.com/notebook/12d25d44-60f8-4e45-b0e0-d2ab86099874/artifact/00a8857a-ed6d-47ca-b539-ffef63fb9757) — interactive visual overview of the repository structure and curriculum.
-
 Have a resource that belongs here? Add it — this list is meant to grow.
 
 ---
