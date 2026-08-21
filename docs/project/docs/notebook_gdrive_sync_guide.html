@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Drive &amp; NotebookLM Sync Automation Guide | SQL Practice</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../../index.html" class="site-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SQL Practice</span>
+      </a>
+      <nav class="header-nav">
+        <a href="../../index.html">📖 Book Index</a>
+        <a href="../../curriculum/README.html">🎓 Curriculum</a>
+        <a href="../../exercises/README.html">💪 Exercises</a>
+        <a href="../../portfolio/README.html">💼 Portfolio</a>
+        <a href="../../project/docs/schema_ontology_mapping.html">🗺️ Schema & Ontology</a>
+        <a href="../../pbip/web_app/index.html">⚡ Pipeline Web App</a>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <h1 id="google-drive--notebooklm-sync-automation-guide">Google Drive & NotebookLM Sync Automation Guide</h1>
+
+<p>This guide documents the architecture, workflows, and scheduling options (both local and cloud-based) for syncing repository curriculum and documentation between <strong>sql-practice</strong>, <strong>Google Drive</strong>, and <strong>Google NotebookLM</strong>.</p>
+
+<hr class="divider">
+
+<h2 id="-architecture-overview">📌 Architecture Overview</h2>
+
+<p>Google Drive serves as the live cloud staging bridge between the local Git workspace and Google's AI ecosystem (NotebookLM):</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">┌───────────────────────────┐                           ┌───────────────────────────┐
+ │   Local sql-practice      │     rclone sync --push    │   Google Drive Staging    │
+ │ (curriculum, exercises,   │ ────────────────────────&gt; │ (gdrive:sql-practice/     │
+ │  project docs, portfolio) │                           │         sources/)         │
+ └───────────────────────────┘                           └─────────────┬─────────────┘
+               ▲                                                       │
+               │                                                 Add as Source
+               │                                                       ▼
+               │                                         ┌───────────────────────────┐
+               │                                         │   Google NotebookLM       │
+               │                                         │ (Mind maps, Study Guides, │
+               │                                         │  Briefing Docs, FAQs)     │
+               │                                         └─────────────┬─────────────┘
+               │                                                       │
+               │                                                 Export to Doc
+               │                                                       ▼
+ ┌─────────────┴─────────────┐                           ┌───────────────────────────┐
+ │   Local Markdown Notes    │     rclone copy --pull    │   Google Drive Notes      │
+ │    (docs/notebooks/*.md)  │ &lt;──────────────────────── │ (gdrive:sql-practice/     │
+ │                           │  --drive-export-formats   │          notes/)          │
+ └───────────────────────────┘                           └───────────────────────────┘</code></pre></div>
+
+<hr class="divider">
+
+<h2 id="-cli-script-reference">🛠️ CLI Script Reference</h2>
+
+<p>The repository provides <a href="../../scripts/sync-gdrive-notebooks.sh/README.html"><code class="inline-code">scripts/sync-gdrive-notebooks.sh</code></a>:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash"># 1. Push local markdown files up to Google Drive (for NotebookLM sources)
+./scripts/sync-gdrive-notebooks.sh --push
+
+<h1 id="2-pull-exported-notebooklm-google-docs-down-to-local-repo-as-markdown-md">2. Pull exported NotebookLM Google Docs down to local repo as Markdown (.md)</h1>
+./scripts/sync-gdrive-notebooks.sh --pull
+
+<h1 id="3-check-status-of-remote-drive-folders-and-local-notebooks">3. Check status of remote Drive folders and local notebooks</h1>
+./scripts/sync-gdrive-notebooks.sh --status</code></pre></div>
+
+<hr class="divider">
+
+<h2 id="-option-1-local-weekly-scheduling">⏰ Option 1: Local Weekly Scheduling</h2>
+
+<p>Because <code class="inline-code">rclone</code> uses your local authentication token stored at <code class="inline-code">~/.config/rclone/rclone.conf</code>, you can schedule automated weekly synchronizations directly on your machine.</p>
+
+<h3 id="a-user-cron-easiest">A. User <code class="inline-code">cron</code> (Easiest)</h3>
+Edit your user crontab:
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">crontab -e</code></pre></div>
+Add the following entry to sync every Monday morning at 8:00 AM:
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">CRON</span></div><pre><code class="language-cron"># Run weekly Google Drive push on Mondays at 8:00 AM
+0 8 * * 1 /home/ian/github/sql-practice/scripts/sync-gdrive-notebooks.sh --push &gt;&gt; /tmp/gdrive-sync.log 2&gt;&amp;1</code></pre></div>
+
+<h3 id="b-systemd-user-timer">B. Systemd User Timer</h3>
+Create a user service and timer under `~/.config/systemd/user/`:
+
+<p>1. <strong>Service File (<code class="inline-code">~/.config/systemd/user/sql-notebook-sync.service</code>)</strong>:
+   <div class="code-block-wrapper"><div class="code-header"><span class="code-lang">INI</span></div><pre><code class="language-ini">[Unit]
+   Description=Weekly sql-practice Google Drive Source Sync</p>
+
+<p>[Service]
+   Type=oneshot
+   WorkingDirectory=/home/ian/github/sql-practice
+   ExecStart=/home/ian/github/sql-practice/scripts/sync-gdrive-notebooks.sh --push</code></pre></div></p>
+
+<p>2. <strong>Timer File (<code class="inline-code">~/.config/systemd/user/sql-notebook-sync.timer</code>)</strong>:
+   <div class="code-block-wrapper"><div class="code-header"><span class="code-lang">INI</span></div><pre><code class="language-ini">[Unit]
+   Description=Run sql-notebook-sync weekly on Monday morning</p>
+
+<p>[Timer]
+   OnCalendar=Mon <em>-</em>-* 08:00:00
+   Persistent=true</p>
+
+<p>[Install]
+   WantedBy=timers.target</code></pre></div></p>
+
+<p>3. <strong>Enable and Start Timer</strong>:
+   <div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">systemctl --user daemon-reload
+   systemctl --user enable --now sql-notebook-sync.timer</code></pre></div></p>
+
+<h3 id="c-antigravity-cli-schedule">C. Antigravity CLI <code class="inline-code">/schedule</code></h3>
+Inside an active Antigravity CLI session, you can schedule recurring checks:
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">TEXT</span></div><pre><code class="language-text">/schedule CronExpression=&quot;0 8 * * 1&quot;, Prompt=&quot;Run ./scripts/sync-gdrive-notebooks.sh --push and verify sync state&quot;</code></pre></div>
+
+<hr class="divider">
+
+<h2 id="-option-2-cloud-scheduling-github-actions">☁️ Option 2: Cloud Scheduling (GitHub Actions)</h2>
+
+<p>To synchronize automatically in the cloud without requiring your local workstation to be running, use a scheduled GitHub Actions workflow with an on-demand button trigger.</p>
+
+<h3 id="1-configure-github-repository-secrets">1. Configure GitHub Repository Secrets</h3>
+Navigate to **GitHub Repo > Settings > Secrets and variables > Actions > New repository secret**:
+<ul class="styled-list"><li><code class="inline-code">GDRIVE_CLIENT_ID</code>: Your Google OAuth Client ID</li><li><code class="inline-code">GDRIVE_CLIENT_SECRET</code>: Your Google OAuth Client Secret</li><li><code class="inline-code">GDRIVE_TOKEN</code>: Your current OAuth JSON token string from <code class="inline-code">~/.config/rclone/rclone.conf</code></li></ul>
+<h3 id="2-workflow-definition-githubworkflowssync-notebooksyml">2. Workflow Definition (<code class="inline-code">.github/workflows/sync-notebooks.yml</code>)</h3>
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">YAML</span></div><pre><code class="language-yaml">name: Weekly Google Drive &amp; NotebookLM Sync
+
+<p>on:
+  schedule:
+<ul class="styled-list"><li>cron: &#x27;0 13 <em> </em> 1&#x27; # Runs every Monday at 1:00 PM UTC</li></ul>  workflow_dispatch:     # Enables manual &#x27;Run workflow&#x27; button in GitHub UI</p>
+
+<p>permissions:
+  contents: write</p>
+
+<p>jobs:
+  sync-sources:
+    runs-on: ubuntu-latest
+    steps:
+<ul class="styled-list"><li>name: Checkout repository</li></ul>        uses: actions/checkout@v4
+<ul class="styled-list"><li>name: Install rclone</li></ul>        run: sudo apt-get install -y rclone
+<ul class="styled-list"><li>name: Sync sources to Google Drive</li></ul>        env:
+          RCLONE_CONFIG_GDRIVE_TYPE: drive
+          RCLONE_CONFIG_GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          RCLONE_CONFIG_GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.GDRIVE_TOKEN }}
+        run: |
+          ./scripts/sync-gdrive-notebooks.sh --push</p>
+
+<p>pull-notes:
+    runs-on: ubuntu-latest
+    needs: sync-sources
+    steps:
+<ul class="styled-list"><li>name: Checkout repository</li></ul>        uses: actions/checkout@v4
+<ul class="styled-list"><li>name: Install rclone</li></ul>        run: sudo apt-get install -y rclone
+<ul class="styled-list"><li>name: Pull exported notes from Google Drive</li></ul>        env:
+          RCLONE_CONFIG_GDRIVE_TYPE: drive
+          RCLONE_CONFIG_GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          RCLONE_CONFIG_GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.GDRIVE_TOKEN }}
+        run: |
+          ./scripts/sync-gdrive-notebooks.sh --pull
+<ul class="styled-list"><li>name: Commit and push changes</li></ul>        run: |
+          git config user.name &quot;github-actions[bot]&quot;
+          git config user.email &quot;github-actions[bot]@users.noreply.github.com&quot;
+          git add docs/notebooks/
+          if git diff --staged --quiet; then
+            echo &quot;No new notes to commit.&quot;
+          else
+            git commit -m &quot;chore(notebooks): sync latest NotebookLM export notes from Google Drive&quot;
+            git push
+          fi</code></pre></div></p>
+
+<hr class="divider">
+
+<h2 id="-maintenance--token-refresh">🔧 Maintenance & Token Refresh</h2>
+
+<p>Google OAuth refresh tokens for personal test apps may expire periodically. If <code class="inline-code">rclone</code> returns <code class="inline-code">invalid_grant</code> or <code class="inline-code">token expired</code>, refresh the token locally with:</p>
+
+<div class="code-block-wrapper"><div class="code-header"><span class="code-lang">BASH</span></div><pre><code class="language-bash">rclone config reconnect gdrive:</code></pre></div>
+Follow the browser prompts to re-authorize, and if using GitHub Actions, update the `GDRIVE_TOKEN` secret with the refreshed JSON token block.
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>SQL Practice</strong> — Self-paced SQL Curriculum & Medallion Pipeline Architecture.</p>
+      <p class="footer-links">
+        <a href="../../index.html">Home</a> • 
+        <a href="../../pbip/web_app/index.html">⚡ Data Pipeline Web App</a> • 
+        <a href="https://github.com/ianfinkdata/sql-practice" target="_blank" rel="noopener">GitHub Repository</a> • 
+        <a href="../../project/docs/data_dictionary.html">Data Dictionary</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Simple theme switcher script
+    const toggleBtn = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    toggleBtn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+    toggleBtn.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    });
+  </script>
+</body>
+</html>
