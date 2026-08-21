@@ -42,6 +42,17 @@ Dedicated directory structure for Power BI `.pbip` models, TMDL metadata, and Gi
 - [x] **`pbip/projects/oakhaven template/`**: Explicit `Int64` dtypes across all partitions, scoped `_measures.tmdl`, aligned column types (`int64`, `double`, `dateTime`), verified working.
 - [x] **`pbip/projects/duplicated oakhaven template/`**: Explicit `Int64` dtypes across all partitions, scoped `_measures.tmdl`, aligned column types (`int64`, `double`, `dateTime`), verified working.
 
+### 4. Workflow Concepts & Architecture Patterns
+
+#### 💡 Drive Projects $\rightarrow$ Gemini Notebook (NotebookLM) Sandbox & Versioning
+- **Phase 1 (Sandbox & Refinement in Drive Projects)**:
+  - Use **Google Drive Projects** to organize folders and Google Docs as living scratchpads.
+  - Sandbox, iterate, and refine source documentation, query snippets, and agent findings directly in Docs/Drive.
+- **Phase 2 (Deep Synthesis in Gemini Notebook / NotebookLM)**:
+  - Ingest finalized Google Docs/files into **Gemini Notebook (NotebookLM)** to leverage grounded Q&A, synthesis, cross-document analysis, and audio overviews.
+- **Phase 3 (Version Control Lite for Assets)**:
+  - The notebook serves as a lightweight snapshot and version-control layer for generated assets and documentation revisions as newer iterations emerge.
+
 ---
 
 ## 🔮 Next Steps & Actionable Backlog
@@ -57,4 +68,5 @@ Dedicated directory structure for Power BI `.pbip` models, TMDL metadata, and Gi
 
 ---
 
-*Last Updated: 2026-08-18 | Branch: `main`*
+*Last Updated: 2026-08-20 | Branch: `main`*
+
