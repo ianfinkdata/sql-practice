@@ -1,0 +1,88 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "dcb2cf2200aa1623f1d4",
+  "position": {
+    "x": 96.714202724734363,
+    "y": 50.659820474860858,
+    "z": 1,
+    "height": 490.47917096115287,
+    "width": 1119.1214886719263,
+    "tabOrder": 1
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "PADatasetQueries"
+                    }
+                  },
+                  "Property": "Run A Query Against a Dataset"
+                }
+              },
+              "queryRef": "PADatasetQueries.Run A Query Against a Dataset",
+              "nativeQueryRef": "Run A Query Against a Dataset"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "PADatasetQueries"
+                  }
+                },
+                "Property": "Run A Query Against a Dataset"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ]
+      }
+    },
+    "objects": {
+      "values": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "18D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "8d289b23f21fbbdd9850",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "PADatasetQueries"
+              }
+            },
+            "Property": "Run A Query Against a Dataset"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
+  }
+}

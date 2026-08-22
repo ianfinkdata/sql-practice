@@ -1,0 +1,1 @@
+EVALUATE ROW("paexpression", "" & MIN(lastrefresh[PowerAutomateUTCNowFormatting]))

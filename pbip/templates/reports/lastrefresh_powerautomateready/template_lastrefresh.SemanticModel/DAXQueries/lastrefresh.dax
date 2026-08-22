@@ -1,0 +1,1 @@
+EVALUATE ROW("lastrefresh", "" & FORMAT(MIN(lastrefresh[LastRefreshDateValue]), "yyyy-MM-dd"))

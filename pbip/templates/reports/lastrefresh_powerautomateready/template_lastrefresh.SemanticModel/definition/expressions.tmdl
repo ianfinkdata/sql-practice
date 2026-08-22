@@ -1,0 +1,36 @@
+/// date only utc now equivalent for Power Automate Used in conditionlogic in power automate
+expression PowerAutomateDateVariable = "utcNow('yyyy-MM-dd')" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: b92b2363-cccd-4b17-93ab-c3bf2ada932a
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+
+expression PowerAutomateLastRefreshQuery =
+		let
+		    Source = "EVALUATE ROW(""lastrefresh"", """" & FORMAT(MIN(lastrefresh[LastRefreshDateValue]), ""yyyy-MM-dd""))",
+		    #"Converted to Table" = #table(1, {{Source}}),
+		    #"Renamed Columns" = Table.RenameColumns(#"Converted to Table",{{"Column1", "Run A Query Against a Dataset"}}),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Renamed Columns",{{"Run A Query Against a Dataset", type text}})
+		in
+		    #"Changed Type"
+	lineageTag: 08be6fe3-0188-4640-821b-02a55939d3c6
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression PowerAutomateExpressionQuery =
+		let
+		    Source = "EVALUATE ROW(""paexpression"", """" & MIN(lastrefresh[PowerAutomateUTCNowFormatting]))",
+		    #"Converted to Table" = #table(1, {{Source}}),
+		    #"Renamed Columns" = Table.RenameColumns(#"Converted to Table",{{"Column1", "Run A Query Against a Dataset"}}),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Renamed Columns",{{"Run A Query Against a Dataset", type text}})
+		in
+		    #"Changed Type"
+	lineageTag: 5c58f906-c382-4a40-ad94-e58fb93e45b7
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

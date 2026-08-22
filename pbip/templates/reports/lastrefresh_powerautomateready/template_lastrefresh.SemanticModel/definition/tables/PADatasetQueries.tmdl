@@ -1,0 +1,23 @@
+table PADatasetQueries
+	lineageTag: f8c70d10-3d6d-42f6-81d2-228e6c320cdd
+
+	column 'Run A Query Against a Dataset'
+		dataType: string
+		lineageTag: 9c95c9a8-23ed-4c86-bf65-c0116b277b5d
+		summarizeBy: none
+		sourceColumn: Run A Query Against a Dataset
+
+		annotation SummarizationSetBy = Automatic
+
+	partition PADatasetQueries = m
+		mode: import
+		source =
+				let
+				    Source = Table.Combine({PowerAutomateLastRefreshQuery, PowerAutomateExpressionQuery})
+				in
+				    Source
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

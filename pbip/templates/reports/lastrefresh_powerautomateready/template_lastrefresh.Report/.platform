@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "template_lastrefresh"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "383926d2-91bc-4de1-8cec-6945c2c788ec"
+  }
+}

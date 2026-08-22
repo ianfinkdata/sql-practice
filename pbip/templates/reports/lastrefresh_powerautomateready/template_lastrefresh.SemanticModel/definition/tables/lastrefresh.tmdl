@@ -1,0 +1,178 @@
+table lastrefresh
+	lineageTag: dd722cf6-78e3-4b6f-9ede-a57d84150855
+
+	column lastrefreshdateutc
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 41a900e4-673b-48c8-bbf9-e2e2841a22a5
+		summarizeBy: none
+		sourceColumn: lastrefreshdateutc
+
+		annotation SummarizationSetBy = User
+
+	column lastrefreshlocaltime
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 4523d21d-d4dd-47ce-8b2e-7f5b6d3fb9bb
+		summarizeBy: none
+		sourceColumn: lastrefreshlocaltime
+
+		annotation SummarizationSetBy = User
+
+	column lastrefreshdayofweek
+		dataType: int64
+		formatString: 0
+		lineageTag: 1e4e6de4-9de6-4593-8dd0-f5a942cc618b
+		summarizeBy: none
+		sourceColumn: lastrefreshdayofweek
+
+		annotation SummarizationSetBy = User
+
+	column Month
+		dataType: int64
+		formatString: 0
+		lineageTag: 13535043-f518-4b79-9141-b3144f01ff57
+		summarizeBy: none
+		sourceColumn: Month
+
+		annotation SummarizationSetBy = User
+
+	column MonthEndDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 46ae189b-2f58-41b4-8317-2dd39e3bfbe6
+		summarizeBy: none
+		sourceColumn: MonthEndDate
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column MonthEndDayOfWeek
+		dataType: int64
+		formatString: 0
+		lineageTag: 1b06d785-9cce-4b85-b920-1143b030c91a
+		summarizeBy: none
+		sourceColumn: MonthEndDayOfWeek
+
+		annotation SummarizationSetBy = User
+
+	column CalculatedMonthEndDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: add6ec8a-0023-4bb9-bb48-5d276d8a90f1
+		summarizeBy: none
+		sourceColumn: CalculatedMonthEndDate
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column CalculatedTrimesterEnd
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 631625cf-a355-4480-b756-6cea5a1a8b4f
+		summarizeBy: none
+		sourceColumn: CalculatedTrimesterEnd
+
+		annotation SummarizationSetBy = User
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column LastRefreshDateValue
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 9ba4017e-160b-400c-a999-8682f2fc7de0
+		summarizeBy: none
+		sourceColumn: LastRefreshDateValue
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column PowerAutomateUTCNowFormatting
+		dataType: string
+		lineageTag: e56b03a1-8bcc-408a-a442-e760dd9e1937
+		summarizeBy: none
+		sourceColumn: PowerAutomateUTCNowFormatting
+
+		annotation SummarizationSetBy = Automatic
+
+	partition lastrefresh = m
+		mode: import
+		source = ```
+				let
+				    // 1. Initialize table with typed UTC timestamp
+				    Source = #table(
+				        type table [lastrefreshdateutc = datetimezone], 
+				        {{DateTimeZone.FixedUtcNow()}}
+				    ),
+				
+				    // 2. Calculate Local Time with US DST adjustment
+				    lastrefreshlocaltime = Table.AddColumn(Source, "lastrefreshlocaltime", each 
+				        let
+				            UtcDateTime = DateTimeZone.From([lastrefreshdateutc]),
+				            Yr = Date.Year(UtcDateTime),
+				            DstStart = Date.AddDays(#date(Yr, 3, 1), Number.Mod(7 - Date.DayOfWeek(#date(Yr, 3, 1), Day.Sunday), 7) + 7),
+				            DstEnd = Date.AddDays(#date(Yr, 11, 1), Number.Mod(7 - Date.DayOfWeek(#date(Yr, 11, 1), Day.Sunday), 7)),
+				            IsDST = Date.From(UtcDateTime) >= DstStart and Date.From(UtcDateTime) < DstEnd,
+				            StandardOffset = -6, // Eastern = -5 | Central = -6 | Mountain = -7 | Pacific = -8
+				            ActiveOffset = if IsDST then StandardOffset + 1 else StandardOffset
+				        in
+				            #datetime(
+				                Date.Year(UtcDateTime), 
+				                Date.Month(UtcDateTime), 
+				                Date.Day(UtcDateTime), 
+				                Time.Hour(UtcDateTime), 
+				                Time.Minute(UtcDateTime), 
+				                Time.Second(UtcDateTime)
+				            ) + #duration(0, ActiveOffset, 0, 0), 
+				        type datetime
+				    ),
+				
+				    // 3. Calendar helper columns
+				    lastrefreshdayofweek = Table.AddColumn(lastrefreshlocaltime, "lastrefreshdayofweek", each Date.DayOfWeek([lastrefreshdateutc]), Int64.Type),
+				    InsertedMonth = Table.AddColumn(lastrefreshdayofweek, "Month", each Date.Month([lastrefreshdateutc]), Int64.Type),
+				    InsertedEndofMonth = Table.AddColumn(InsertedMonth, "MonthEndDate", each Date.EndOfMonth(Date.From([lastrefreshdateutc])), type date),
+				    MonthEndDayOfWeek = Table.AddColumn(InsertedEndofMonth, "MonthEndDayOfWeek", each Date.DayOfWeek(Date.EndOfMonth(Date.From([lastrefreshdateutc]))), Int64.Type),
+				
+				    // 4. Fiscal / Calculated Month End (Last Friday or Dec 31)
+				    AddedCalculatedMonthEndDate = Table.AddColumn(MonthEndDayOfWeek, "CalculatedMonthEndDate", each 
+				        let
+				            TargetDate = Date.From([lastrefreshdateutc]),
+				            EndOfMonth = Date.EndOfMonth(TargetDate)
+				        in
+				            if Date.Month(TargetDate) = 12 then
+				                EndOfMonth
+				            else
+				                Date.AddDays(EndOfMonth, -Date.DayOfWeek(EndOfMonth, Day.Friday)), 
+				        type date
+				    ),
+				
+				    // 5. Trimester End (April Last Fri, August Last Fri, Dec 31)
+				    CalculatedTrimesterEnd = Table.AddColumn(AddedCalculatedMonthEndDate, "CalculatedTrimesterEnd", each 
+				        let
+				            TargetDate = Date.From([lastrefreshdateutc]),
+				            Year = Date.Year(TargetDate),
+				            Month = Date.Month(TargetDate),
+				            TrimesterEndMonthNum = if Month <= 4 then 4 else if Month <= 8 then 8 else 12,
+				            EndOfTrimesterMonth = Date.EndOfMonth(#date(Year, TrimesterEndMonthNum, 1))
+				        in
+				            if TrimesterEndMonthNum = 12 then
+				                EndOfTrimesterMonth
+				            else
+				                Date.AddDays(EndOfTrimesterMonth, -Date.DayOfWeek(EndOfTrimesterMonth, Day.Friday)), 
+				        type date
+				    ),
+				    LastRefreshDateValue = Table.AddColumn(CalculatedTrimesterEnd, "LastRefreshDateValue", each DateTime.Date([lastrefreshdateutc]), type date),
+				    #"Added Custom" = Table.AddColumn(LastRefreshDateValue, "PowerAutomateUTCNowFormatting", each PowerAutomateDateVariable)
+				in
+				    #"Added Custom"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

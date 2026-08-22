@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "template_lastrefresh"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "a90a88b1-498f-4f04-a165-e29491c0642a"
+  }
+}
