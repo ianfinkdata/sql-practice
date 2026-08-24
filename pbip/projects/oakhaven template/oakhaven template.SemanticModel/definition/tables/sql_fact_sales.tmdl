@@ -27,4 +27,3 @@ table sql_fact_sales
 	annotation PBI_NavigationStepName = Navigation
 
 	annotation PBI_ResultType = Text
-

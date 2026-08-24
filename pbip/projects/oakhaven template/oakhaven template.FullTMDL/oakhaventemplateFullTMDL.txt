@@ -1,0 +1,32 @@
+createOrReplace
+
+	table sql_fact_sales
+		isHidden
+		lineageTag: 3aaa36e0-22c9-499d-8643-e01165b98cf4
+
+		column sql_fact_sales
+			dataType: string
+			isHidden
+			lineageTag: f81f494f-b6bc-4739-96ef-88192b7f835d
+			summarizeBy: none
+			sourceColumn: sql_fact_sales
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		partition sql_fact_sales = m
+			mode: import
+			queryGroup: 'sql queries'
+			source =
+					let
+					    Source = "SELECT #(cr)#(lf)    f.order_id,#(cr)#(lf)    f.order_line_id,#(cr)#(lf)    f.customer_id,#(cr)#(lf)    f.product_id,#(cr)#(lf)    f.employee_id,#(cr)#(lf)    f.datekey,#(cr)#(lf)    f.quantity,#(cr)#(lf)    f.unit_price,#(cr)#(lf)    f.discount_pct,#(cr)#(lf)    f.net_amount,#(cr)#(lf)    f.payment_method,#(cr)#(lf)    f.order_status,#(cr)#(lf)    f.channel#(cr)#(lf)FROM fact_sales f#(cr)#(lf)ORDER BY f.order_date DESC, f.order_id, f.order_line_id#(cr)#(lf)LIMIT 100;"
+					in
+					    Source
+
+		changedProperty = IsHidden
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Text
+
