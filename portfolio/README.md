@@ -89,6 +89,7 @@ Common reporting/BI query shapes on top of a built star schema.
 - [`cohort-analysis.sql`](05-analytical-query-patterns/cohort-analysis.sql) — signup-month cohorts and months-since-acquisition alignment.
 - [`customer-lifetime-value.sql`](05-analytical-query-patterns/customer-lifetime-value.sql) — a dimension-driven LTV rollup that keeps zero-activity entities visible.
 - [`top-n-per-group.sql`](05-analytical-query-patterns/top-n-per-group.sql) — `ROW_NUMBER() OVER (PARTITION BY ...)` for "top N per group" instead of a global top N.
+- [`lasagna-retail-fulfillment-margin-leakage.sql`](05-analytical-query-patterns/lasagna-retail-fulfillment-margin-leakage.sql) — a 6-layer legacy nested "lasagna query" modeling retail fulfillment friction, stockout opportunity loss, and carrying cost drag, paired with a modern CTE refactored companion.
 
 ### 06 — Portability notes
 
