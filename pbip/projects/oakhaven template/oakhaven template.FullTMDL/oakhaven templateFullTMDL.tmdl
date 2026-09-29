@@ -1,0 +1,959 @@
+createOrReplace
+
+	database
+		compatibilityLevel: 1606
+
+	model Model
+		culture: en-US
+		defaultPowerBIDataSourceVersion: powerBI_V3
+		sourceQueryCulture: en-US
+		valueFilterBehavior: independent
+		dataAccessOptions
+			legacyRedirects
+			returnErrorValuesAsNull
+
+	queryGroup 'sql queries'
+
+		annotation PBI_QueryGroupOrder = 0
+
+	annotation __PBI_TimeIntelligenceEnabled = 0
+
+	annotation PBI_QueryOrder = ["flat_sales_all","oakhavendatabasepath","sql_flat_sales_all","flat_sales_completed","sql_flat_sales_completed","fact_sales","sql_fact_sales","sql_dim_customer","sql_dim_product","sql_dim_employee","sql_dim_date","dim_customer","dim_employee","dim_calendar"]
+
+	annotation PBI_ProTooling = ["TMDLView_Desktop","DevMode"]
+
+	ref table flat_sales_all
+	ref table sql_flat_sales_all
+	ref table flat_sales_completed
+	ref table sql_flat_sales_completed
+	ref table fact_sales
+	ref table sql_fact_sales
+	ref table sql_dim_customer
+	ref table sql_dim_product
+	ref table sql_dim_employee
+	ref table sql_dim_date
+	ref table dim_customer
+	ref table dim_employee
+	ref table dim_calendar
+	ref table _measures
+
+	ref cultureInfo en-US
+
+	table flat_sales_all
+		lineageTag: 3ead40b5-967c-42a6-8b3a-70b6eed40bea
+
+		column order_id
+			dataType: int64
+			lineageTag: be470296-6f71-4f7b-bb5d-0189a854d716
+			summarizeBy: none
+			sourceColumn: order_id
+
+			annotation SummarizationSetBy = Automatic
+
+		column order_line_id
+			dataType: int64
+			lineageTag: 028bda80-3cbe-42f4-88c7-916728962954
+			summarizeBy: none
+			sourceColumn: order_line_id
+
+			annotation SummarizationSetBy = Automatic
+
+		column order_date
+			dataType: dateTime
+			formatString: yyyy-mm-dd
+			lineageTag: aa75dbc8-5c52-4994-bf4b-18a7964e0f0e
+			summarizeBy: none
+			sourceColumn: order_date
+
+			annotation SummarizationSetBy = Automatic
+
+			annotation UnderlyingDateTimeDataType = Date
+
+		column customer_name
+			dataType: string
+			lineageTag: 0919db62-8e7d-45e6-9a71-f8e1c08650c8
+			summarizeBy: none
+			sourceColumn: customer_name
+
+			annotation SummarizationSetBy = Automatic
+
+		column product_name
+			dataType: string
+			lineageTag: ea723a57-3bb6-43e1-9fdb-c01f94237584
+			summarizeBy: none
+			sourceColumn: product_name
+
+			annotation SummarizationSetBy = Automatic
+
+		column product_category
+			dataType: string
+			lineageTag: 718281e7-2887-4f38-82cc-5b7764ecf206
+			summarizeBy: none
+			sourceColumn: product_category
+
+			annotation SummarizationSetBy = Automatic
+
+		column quantity
+			dataType: int64
+			formatString: #,##0
+			lineageTag: 8d6d44d3-dcbf-4226-a5c8-bce5b6863dae
+			summarizeBy: sum
+			sourceColumn: quantity
+
+			annotation SummarizationSetBy = Automatic
+
+		column net_amount
+			dataType: double
+			formatString: \$#,##0.00
+			lineageTag: 2493ed31-0ec4-4a3f-bd81-54fb31f1a99b
+			summarizeBy: sum
+			sourceColumn: net_amount
+
+			annotation SummarizationSetBy = Automatic
+
+		column channel
+			dataType: string
+			lineageTag: 18965dea-86e8-45fb-b1ca-32e18c10f998
+			summarizeBy: none
+			sourceColumn: channel
+
+			annotation SummarizationSetBy = Automatic
+
+		partition flat_sales_all = m
+			mode: import
+			source = ```
+					let
+					    // 1. Execute the Python script and inject your parameters safely with explicit Int64 types
+					    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")#(lf)df = pd.read_sql_query(""SELECT f.order_id, f.order_line_id, f.order_date, c.full_name AS customer_name, p.product_name, p.category AS product_category,f.quantity, f.net_amount, f.channel FROM fact_sales f LEFT JOIN dim_customer c ON f.customer_id = c.customer_id LEFT JOIN dim_product p ON f.product_id = p.product_id WHERE f.order_status = 'Completed' ORDER BY f.order_date DESC LIMIT 100;"", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})#(lf)conn.close()"),
+
+					    // 2. Extract the dataframe 'df' that Python generated
+					    DataTable = Source{[Name="df"]}[Value],
+
+					    // 3. Transform column data types
+					    #"Changed Type" = Table.TransformColumnTypes(DataTable,{
+					        {"order_id", Int64.Type},
+					        {"order_line_id", Int64.Type},
+					        {"order_date", type date},
+					        {"customer_name", type text},
+					        {"product_name", type text},
+					        {"product_category", type text},
+					        {"quantity", Int64.Type},
+					        {"net_amount", type number},
+					        {"channel", type text}
+					    })
+					in
+					    #"Changed Type"
+					```
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Table
+
+	table sql_flat_sales_all
+		isHidden
+		lineageTag: efd15e42-7d83-4bca-b6a3-646d48ab884b
+
+		column sql_flat_sales_all
+			dataType: string
+			isHidden
+			lineageTag: 5012f4a0-c0d2-42cb-aefd-2da4dda8bc4e
+			summarizeBy: none
+			sourceColumn: sql_flat_sales_all
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		partition sql_flat_sales_all = m
+			mode: import
+			queryGroup: 'sql queries'
+			source =
+					let
+					    Source = "SELECT #(cr)#(lf)    f.order_id,#(cr)#(lf)    f.order_line_id,#(cr)#(lf)    f.order_date,#(cr)#(lf)    c.full_name AS customer_name,#(cr)#(lf)    c.customer_segment,#(cr)#(lf)    c.state AS customer_state,#(cr)#(lf)    p.product_name,#(cr)#(lf)    p.category AS product_category,#(cr)#(lf)    p.brand AS product_brand,#(cr)#(lf)    e.full_name AS sales_rep_name,#(cr)#(lf)    e.region AS sales_region,#(cr)#(lf)    f.quantity,#(cr)#(lf)    f.unit_price,#(cr)#(lf)    f.discount_pct,#(cr)#(lf)    -- Embedded Business Logic #1: Gross Revenue#(cr)#(lf)    ROUND(f.quantity * f.unit_price, 2) AS gross_amount,#(cr)#(lf)    -- Embedded Business Logic #2: Net Revenue#(cr)#(lf)    f.net_amount,#(cr)#(lf)    -- Embedded Business Logic #3: Categorical Bucketing#(cr)#(lf)    CASE #(cr)#(lf)        WHEN f.discount_pct >= 0.20 THEN 'High Discount (20%+)'#(cr)#(lf)        WHEN f.discount_pct > 0 THEN 'Standard Discount'#(cr)#(lf)        ELSE 'Full Price'#(cr)#(lf)    END AS discount_tier,#(cr)#(lf)    f.payment_method,#(cr)#(lf)    f.order_status,#(cr)#(lf)    f.channel#(cr)#(lf)FROM fact_sales f#(cr)#(lf)LEFT JOIN dim_customer c ON f.customer_id = c.customer_id#(cr)#(lf)LEFT JOIN dim_product p ON f.product_id = p.product_id#(cr)#(lf)LEFT JOIN dim_employee e ON f.employee_id = e.employee_id#(cr)#(lf)ORDER BY f.order_date DESC, f.order_id, f.order_line_id#(cr)#(lf)LIMIT 100;"
+					in
+					    Source
+
+		changedProperty = IsHidden
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Text
+
+	table flat_sales_completed
+		lineageTag: b6be6beb-29f1-48a5-81c0-625157189e89
+
+		column order_id
+			dataType: int64
+			lineageTag: c7d0eb31-325d-4c7a-83de-99b17198f141
+			summarizeBy: none
+			sourceColumn: order_id
+
+			annotation SummarizationSetBy = Automatic
+
+		column order_line_id
+			dataType: int64
+			lineageTag: 93dcebd5-75c5-4398-bc5f-3f1ecf321cef
+			summarizeBy: none
+			sourceColumn: order_line_id
+
+			annotation SummarizationSetBy = Automatic
+
+		column order_date
+			dataType: dateTime
+			formatString: yyyy-mm-dd
+			lineageTag: 7ba34804-995f-49d6-aa47-0712b4d6f8c5
+			summarizeBy: none
+			sourceColumn: order_date
+
+			annotation SummarizationSetBy = Automatic
+
+			annotation UnderlyingDateTimeDataType = Date
+
+		column customer_name
+			dataType: string
+			lineageTag: 222d09aa-1ec4-467b-86af-43b85b4a45fb
+			summarizeBy: none
+			sourceColumn: customer_name
+
+			annotation SummarizationSetBy = Automatic
+
+		column product_name
+			dataType: string
+			lineageTag: a7ff4a68-963d-4c4c-a3ae-51ce6bb2a0bf
+			summarizeBy: none
+			sourceColumn: product_name
+
+			annotation SummarizationSetBy = Automatic
+
+		column product_category
+			dataType: string
+			lineageTag: d0220677-494b-4c31-97b7-69b596fb6310
+			summarizeBy: none
+			sourceColumn: product_category
+
+			annotation SummarizationSetBy = Automatic
+
+		column quantity
+			dataType: int64
+			formatString: #,##0
+			lineageTag: 301c7b2f-7495-445b-adfb-46924ee0423a
+			summarizeBy: sum
+			sourceColumn: quantity
+
+			annotation SummarizationSetBy = Automatic
+
+		column net_amount
+			dataType: double
+			formatString: \$#,##0.00
+			lineageTag: 809d7d2f-3ead-40d2-a2ea-4d9a2ac5285c
+			summarizeBy: sum
+			sourceColumn: net_amount
+
+			annotation SummarizationSetBy = Automatic
+
+		column channel
+			dataType: string
+			lineageTag: 87693eb1-7662-430c-abfa-38f381c8ea3d
+			summarizeBy: none
+			sourceColumn: channel
+
+			annotation SummarizationSetBy = Automatic
+
+		partition flat_sales_completed = m
+			mode: import
+			source = ```
+					let
+					    // 1. Execute the Python script and inject your parameters safely with explicit Int64 types
+					    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT #(lf)    f.order_id,#(lf)    f.order_line_id,#(lf)    f.order_date,#(lf)    c.full_name AS customer_name,#(lf)    p.product_name,#(lf)    p.category AS product_category,#(lf)    f.quantity,#(lf)    f.net_amount,#(lf)    f.channel#(lf)FROM fact_sales f#(lf)LEFT JOIN dim_customer c ON f.customer_id = c.customer_id#(lf)LEFT JOIN dim_product p ON f.product_id = p.product_id#(lf)WHERE f.order_status = 'Completed'#(lf)ORDER BY f.order_date DESC#(lf)LIMIT 100;#(lf)"""""", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'quantity': 'Int64'})#(lf)conn.close()"),
+
+					    // 2. Extract the dataframe 'df' that Python generated
+					    DataTable = Source{[Name="df"]}[Value],
+
+					    // 3. Transform column data types
+					    #"Changed Type" = Table.TransformColumnTypes(DataTable,{
+					        {"order_id", Int64.Type},
+					        {"order_line_id", Int64.Type},
+					        {"order_date", type date},
+					        {"customer_name", type text},
+					        {"product_name", type text},
+					        {"product_category", type text},
+					        {"quantity", Int64.Type},
+					        {"net_amount", type number},
+					        {"channel", type text}
+					    })
+					in
+					    #"Changed Type"
+					```
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Table
+
+	table sql_flat_sales_completed
+		isHidden
+		lineageTag: 7751f11b-efde-485d-9bdc-b92557dcf54d
+
+		column sql_flat_sales_completed
+			dataType: string
+			isHidden
+			lineageTag: 5e987501-9ea4-48a1-9333-016b53137268
+			summarizeBy: none
+			sourceColumn: sql_flat_sales_completed
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		partition sql_flat_sales_completed = m
+			mode: import
+			queryGroup: 'sql queries'
+			source =
+					let
+					    Source = "SELECT #(cr)#(lf)    f.order_id,#(cr)#(lf)    f.order_line_id,#(cr)#(lf)    f.order_date,#(cr)#(lf)    c.full_name AS customer_name,#(cr)#(lf)    p.product_name,#(cr)#(lf)    p.category AS product_category,#(cr)#(lf)    f.quantity,#(cr)#(lf)    f.net_amount,#(cr)#(lf)    f.channel#(cr)#(lf)FROM fact_sales f#(cr)#(lf)LEFT JOIN dim_customer c ON f.customer_id = c.customer_id#(cr)#(lf)LEFT JOIN dim_product p ON f.product_id = p.product_id#(cr)#(lf)WHERE f.order_status = 'Completed'#(cr)#(lf)ORDER BY f.order_date DESC#(cr)#(lf)LIMIT 100;"
+					in
+					    Source
+
+		changedProperty = IsHidden
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Text
+
+	table fact_sales
+		lineageTag: a1840420-f3ab-469d-9219-ef364479ba4c
+
+		column order_id
+			dataType: int64
+			formatString: 0
+			lineageTag: e585b315-7ba8-425a-9f80-cc643e7bd532
+			summarizeBy: none
+			sourceColumn: order_id
+
+			annotation SummarizationSetBy = Automatic
+
+		column order_line_id
+			dataType: int64
+			formatString: 0
+			lineageTag: e8432609-9629-4009-8023-6f7b2dc6fa52
+			summarizeBy: none
+			sourceColumn: order_line_id
+
+			annotation SummarizationSetBy = Automatic
+
+		column customer_id
+			dataType: int64
+			formatString: 0
+			lineageTag: 3da835b0-23ea-4ca9-8545-f8123f311563
+			summarizeBy: none
+			sourceColumn: customer_id
+
+			annotation SummarizationSetBy = Automatic
+
+		column product_id
+			dataType: int64
+			formatString: 0
+			lineageTag: f35baa47-9b8d-476d-856a-c30ba0ecc190
+			summarizeBy: none
+			sourceColumn: product_id
+
+			annotation SummarizationSetBy = Automatic
+
+		column employee_id
+			dataType: int64
+			formatString: 0
+			lineageTag: 1b3a527d-2eac-4bb1-9b7e-048e1b900203
+			summarizeBy: none
+			sourceColumn: employee_id
+
+			annotation SummarizationSetBy = Automatic
+
+		column datekey
+			dataType: int64
+			formatString: 0
+			lineageTag: e493d4f4-1711-4de4-beb9-ab8fe0b55f0d
+			summarizeBy: none
+			sourceColumn: datekey
+
+			annotation SummarizationSetBy = Automatic
+
+		column quantity
+			dataType: int64
+			formatString: #,##0
+			lineageTag: feed673e-bf49-4bf0-a5e9-d21bd93e509a
+			summarizeBy: sum
+			sourceColumn: quantity
+
+			annotation SummarizationSetBy = Automatic
+
+		column unit_price
+			dataType: double
+			formatString: \$#,##0.00
+			lineageTag: cdd0e504-2ce6-4df6-811c-11bcf01820e5
+			summarizeBy: sum
+			sourceColumn: unit_price
+
+			annotation SummarizationSetBy = Automatic
+
+		column discount_pct
+			dataType: double
+			formatString: 0.0%
+			lineageTag: bbdd2011-c753-4721-9ae4-89e008f134a8
+			summarizeBy: sum
+			sourceColumn: discount_pct
+
+			annotation SummarizationSetBy = Automatic
+
+		column net_amount
+			dataType: double
+			formatString: \$#,##0.00
+			lineageTag: beec1224-b2f8-4dc0-ac6b-0819d90cafba
+			summarizeBy: sum
+			sourceColumn: net_amount
+
+			annotation SummarizationSetBy = Automatic
+
+		column payment_method
+			dataType: string
+			lineageTag: 08c0bb93-c91f-4427-bf21-49aac67daf0f
+			summarizeBy: none
+			sourceColumn: payment_method
+
+			annotation SummarizationSetBy = Automatic
+
+		column order_status
+			dataType: string
+			lineageTag: 195a7349-df3a-4f28-8dac-9440c7e391dc
+			summarizeBy: none
+			sourceColumn: order_status
+
+			annotation SummarizationSetBy = Automatic
+
+		column channel
+			dataType: string
+			lineageTag: 87847b9e-9070-4235-84b8-33a9f4c0517a
+			summarizeBy: none
+			sourceColumn: channel
+
+			annotation SummarizationSetBy = Automatic
+
+		partition fact_sales = m
+			mode: import
+			source = ```
+					let
+					    // 1. Execute the Python script and inject your parameters safely with explicit Int64 types
+					    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT #(lf)    f.order_id,#(lf)    f.order_line_id,#(lf)    f.customer_id,#(lf)    f.product_id,#(lf)    f.employee_id,#(lf)    f.datekey,#(lf)    f.quantity,#(lf)    f.unit_price,#(lf)    f.discount_pct,#(lf)    f.net_amount,#(lf)    f.payment_method,#(lf)    f.order_status,#(lf)    f.channel#(lf)FROM fact_sales f#(lf)ORDER BY f.order_date DESC, f.order_id, f.order_line_id#(lf)LIMIT 100;#(lf)"""""", conn, dtype={'order_id': 'Int64', 'order_line_id': 'Int64', 'customer_id': 'Int64', 'product_id': 'Int64', 'employee_id': 'Int64', 'datekey': 'Int64', 'quantity': 'Int64'})#(lf)conn.close()"),
+
+					    // 2. Extract the dataframe 'df' that Python generated
+					    DataTable = Source{[Name="df"]}[Value],
+
+					    // 3. Transform column data types
+					    #"Changed Type" = Table.TransformColumnTypes(DataTable,{
+					        {"order_id", Int64.Type},
+					        {"order_line_id", Int64.Type},
+					        {"customer_id", Int64.Type},
+					        {"product_id", Int64.Type},
+					        {"employee_id", Int64.Type},
+					        {"datekey", Int64.Type},
+					        {"quantity", Int64.Type},
+					        {"unit_price", type number},
+					        {"discount_pct", type number},
+					        {"net_amount", type number},
+					        {"payment_method", type text},
+					        {"order_status", type text},
+					        {"channel", type text}
+					    })
+					in
+					    #"Changed Type"
+					```
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Table
+
+	table sql_fact_sales
+		isHidden
+		lineageTag: 3aaa36e0-22c9-499d-8643-e01165b98cf4
+
+		column sql_fact_sales
+			dataType: string
+			isHidden
+			lineageTag: f81f494f-b6bc-4739-96ef-88192b7f835d
+			summarizeBy: none
+			sourceColumn: sql_fact_sales
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		partition sql_fact_sales = m
+			mode: import
+			queryGroup: 'sql queries'
+			source =
+					let
+					    Source = "SELECT #(cr)#(lf)    f.order_id,#(cr)#(lf)    f.order_line_id,#(cr)#(lf)    f.customer_id,#(cr)#(lf)    f.product_id,#(cr)#(lf)    f.employee_id,#(cr)#(lf)    f.datekey,#(cr)#(lf)    f.quantity,#(cr)#(lf)    f.unit_price,#(cr)#(lf)    f.discount_pct,#(cr)#(lf)    f.net_amount,#(cr)#(lf)    f.payment_method,#(cr)#(lf)    f.order_status,#(cr)#(lf)    f.channel#(cr)#(lf)FROM fact_sales f#(cr)#(lf)ORDER BY f.order_date DESC, f.order_id, f.order_line_id#(cr)#(lf)LIMIT 100;"
+					in
+					    Source
+
+		changedProperty = IsHidden
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Text
+
+	table sql_dim_customer
+		isHidden
+		lineageTag: 60157a56-9e5c-44e3-afe2-a1d8596c4810
+
+		column sql_dim_customer
+			dataType: string
+			isHidden
+			lineageTag: 4ceefc78-122a-4729-9da4-ff81d61dc8c3
+			summarizeBy: none
+			sourceColumn: sql_dim_customer
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		partition sql_dim_customer = m
+			mode: import
+			queryGroup: 'sql queries'
+			source =
+					let
+					    Source = "SELECT DISTINCT #(cr)#(lf)    c.customer_id,#(cr)#(lf)    c.full_name,#(cr)#(lf)    c.email,#(cr)#(lf)    c.state,#(cr)#(lf)    c.customer_segment#(cr)#(lf)FROM dim_customer c#(cr)#(lf)WHERE c.customer_id IN (#(cr)#(lf)    SELECT customer_id #(cr)#(lf)    FROM fact_sales #(cr)#(lf)    ORDER BY order_date DESC, order_id, order_line_id #(cr)#(lf)    LIMIT 100#(cr)#(lf));"
+					in
+					    Source
+
+		changedProperty = IsHidden
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Text
+
+	table sql_dim_product
+		isHidden
+		lineageTag: 5beec82b-4127-4513-be49-058477e6370a
+
+		column sql_dim_product
+			dataType: string
+			isHidden
+			lineageTag: 46bf498c-94ec-4ee5-bae9-4600e18c6ef6
+			summarizeBy: none
+			sourceColumn: sql_dim_product
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		partition sql_dim_product = m
+			mode: import
+			queryGroup: 'sql queries'
+			source =
+					let
+					    Source = "SELECT DISTINCT #(cr)#(lf)    p.product_id,#(cr)#(lf)    p.product_name,#(cr)#(lf)    p.category,#(cr)#(lf)    p.subcategory,#(cr)#(lf)    p.brand,#(cr)#(lf)    p.unit_cost,#(cr)#(lf)    p.unit_price#(cr)#(lf)FROM dim_product p#(cr)#(lf)WHERE p.product_id IN (#(cr)#(lf)    SELECT product_id #(cr)#(lf)    FROM fact_sales #(cr)#(lf)    ORDER BY order_date DESC, order_id, order_line_id #(cr)#(lf)    LIMIT 100#(cr)#(lf));"
+					in
+					    Source
+
+		changedProperty = IsHidden
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Text
+
+	table sql_dim_employee
+		isHidden
+		lineageTag: 40290057-dafc-4a1a-b105-70828199df3c
+
+		column sql_dim_employee
+			dataType: string
+			isHidden
+			lineageTag: 7b629e6f-4ccd-448a-b5f8-06d47d6dcf00
+			summarizeBy: none
+			sourceColumn: sql_dim_employee
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		partition sql_dim_employee = m
+			mode: import
+			queryGroup: 'sql queries'
+			source =
+					let
+					    Source = "SELECT DISTINCT #(cr)#(lf)    e.employee_id,#(cr)#(lf)    e.full_name,#(cr)#(lf)    e.department,#(cr)#(lf)    e.region#(cr)#(lf)FROM dim_employee e#(cr)#(lf)WHERE e.employee_id IN (#(cr)#(lf)    SELECT employee_id #(cr)#(lf)    FROM fact_sales #(cr)#(lf)    ORDER BY order_date DESC, order_id, order_line_id #(cr)#(lf)    LIMIT 100#(cr)#(lf));"
+					in
+					    Source
+
+		changedProperty = IsHidden
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Text
+
+	table sql_dim_date
+		isHidden
+		lineageTag: e90299e8-e196-4d64-af85-6922f6c9c57b
+
+		column sql_dim_date
+			dataType: string
+			isHidden
+			lineageTag: 5fada11d-4899-4291-abda-f4b4e14abc4d
+			summarizeBy: none
+			sourceColumn: sql_dim_date
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		partition sql_dim_date = m
+			mode: import
+			queryGroup: 'sql queries'
+			source =
+					let
+					    Source = "SELECT DISTINCT #(cr)#(lf)    d.datekey,#(cr)#(lf)    d.date,#(cr)#(lf)    d.year,#(cr)#(lf)    d.month,#(cr)#(lf)    d.month_name,#(cr)#(lf)    d.quarter,#(cr)#(lf)    d.day_name,#(cr)#(lf)    d.is_weekend#(cr)#(lf)FROM dim_date d#(cr)#(lf)WHERE d.datekey IN (#(cr)#(lf)    SELECT datekey #(cr)#(lf)    FROM fact_sales #(cr)#(lf)    ORDER BY order_date DESC, order_id, order_line_id #(cr)#(lf)    LIMIT 100#(cr)#(lf));"
+					in
+					    Source
+
+		changedProperty = IsHidden
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Text
+
+	table dim_customer
+		lineageTag: 1ace2605-f91c-4dba-a17c-16b7d1afa4b1
+
+		column customer_id
+			dataType: int64
+			formatString: 0
+			lineageTag: 2f58fa72-11f2-402b-89ee-aa2a92957236
+			summarizeBy: none
+			sourceColumn: customer_id
+
+			annotation SummarizationSetBy = Automatic
+
+		column full_name
+			dataType: string
+			lineageTag: a09e3943-fa6c-48ae-a3d8-e7c65fae3489
+			summarizeBy: none
+			sourceColumn: full_name
+
+			annotation SummarizationSetBy = Automatic
+
+		column email
+			dataType: string
+			lineageTag: a277e9fe-4ee8-4ff4-aeb1-b1e962b489be
+			summarizeBy: none
+			sourceColumn: email
+
+			annotation SummarizationSetBy = Automatic
+
+		column state
+			dataType: string
+			lineageTag: 04e38c9c-5e93-41bb-a5a4-94c03b0d2d34
+			summarizeBy: none
+			sourceColumn: state
+
+			annotation SummarizationSetBy = Automatic
+
+		column customer_segment
+			dataType: string
+			lineageTag: bb0e6212-70b5-4b06-a4c0-99436feeeaa7
+			summarizeBy: none
+			sourceColumn: customer_segment
+
+			annotation SummarizationSetBy = Automatic
+
+		partition dim_customer = m
+			mode: import
+			source = ```
+					let
+					    // 1. Execute the Python script and inject your parameters safely with explicit Int64 types
+					    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT DISTINCT #(lf)    c.customer_id,#(lf)    c.full_name,#(lf)    c.email,#(lf)    c.state,#(lf)    c.customer_segment#(lf)FROM dim_customer c#(lf)WHERE c.customer_id IN (#(lf)    SELECT customer_id #(lf)    FROM fact_sales #(lf)    ORDER BY order_date DESC, order_id, order_line_id #(lf)    LIMIT 100#(lf));#(lf)"""""", conn, dtype={'customer_id': 'Int64'})#(lf)conn.close()"),
+
+					    // 2. Extract the dataframe 'df' that Python generated
+					    DataTable = Source{[Name="df"]}[Value],
+
+					    // 3. Transform column data types
+					    #"Changed Type" = Table.TransformColumnTypes(DataTable,{
+					        {"customer_id", Int64.Type},
+					        {"full_name", type text},
+					        {"email", type text},
+					        {"state", type text},
+					        {"customer_segment", type text}
+					    })
+					in
+					    #"Changed Type"
+					```
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Table
+
+	table dim_employee
+		lineageTag: 43d7354d-c14a-4ab6-ac47-3e5506aec046
+
+		column employee_id
+			dataType: int64
+			formatString: 0
+			lineageTag: ae9c803e-b41e-47f0-bfe5-53dc70556787
+			summarizeBy: none
+			sourceColumn: employee_id
+
+			annotation SummarizationSetBy = Automatic
+
+		column full_name
+			dataType: string
+			lineageTag: 5537ce32-b016-44fc-b0a7-2d262f14b77a
+			summarizeBy: none
+			sourceColumn: full_name
+
+			annotation SummarizationSetBy = Automatic
+
+		column department
+			dataType: string
+			lineageTag: 00fa833f-3d0f-4760-bf3a-ce4b255e9c85
+			summarizeBy: none
+			sourceColumn: department
+
+			annotation SummarizationSetBy = Automatic
+
+		column region
+			dataType: string
+			lineageTag: 34575c7c-a358-4f56-8c6c-32ee08e3f032
+			summarizeBy: none
+			sourceColumn: region
+
+			annotation SummarizationSetBy = Automatic
+
+		partition dim_employee = m
+			mode: import
+			source = ```
+					let
+					    // 1. Execute the Python script and inject your parameters safely with explicit Int64 types
+					    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT DISTINCT #(lf)    e.employee_id,#(lf)    e.full_name,#(lf)    e.department,#(lf)    e.region#(lf)FROM dim_employee e#(lf)WHERE e.employee_id IN (#(lf)    SELECT employee_id #(lf)    FROM fact_sales #(lf)    ORDER BY order_date DESC, order_id, order_line_id #(lf)    LIMIT 100#(lf));#(lf)"""""", conn, dtype={'employee_id': 'Int64'})#(lf)conn.close()"),
+
+					    // 2. Extract the dataframe 'df' that Python generated
+					    DataTable = Source{[Name="df"]}[Value],
+
+					    // 3. Transform column data types
+					    #"Changed Type" = Table.TransformColumnTypes(DataTable,{
+					        {"employee_id", Int64.Type},
+					        {"full_name", type text},
+					        {"department", type text},
+					        {"region", type text}
+					    })
+					in
+					    #"Changed Type"
+					```
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Table
+
+	table dim_calendar
+		lineageTag: 79ef8b5a-6d15-45c7-b623-d5bc95056c91
+
+		column datekey
+			dataType: int64
+			formatString: 0
+			lineageTag: 9f795fc7-1acf-453e-a848-ee627b26583a
+			summarizeBy: none
+			sourceColumn: datekey
+
+			annotation SummarizationSetBy = Automatic
+
+		column date
+			dataType: dateTime
+			formatString: yyyy-mm-dd
+			lineageTag: e6673c74-1291-494f-a5fa-855f8aa4b37a
+			summarizeBy: none
+			sourceColumn: date
+
+			annotation SummarizationSetBy = Automatic
+
+			annotation UnderlyingDateTimeDataType = Date
+
+		column year
+			dataType: int64
+			formatString: 0
+			lineageTag: c4f8230d-cf10-4767-8424-bb094285970b
+			summarizeBy: none
+			sourceColumn: year
+
+			annotation SummarizationSetBy = Automatic
+
+		column month
+			dataType: int64
+			formatString: 0
+			lineageTag: d068670e-361f-4493-bf51-a6bfe6feaba5
+			summarizeBy: none
+			sourceColumn: month
+
+			annotation SummarizationSetBy = Automatic
+
+		column month_name
+			dataType: string
+			lineageTag: 0b8519f2-f604-425c-85c6-d39a8906129d
+			summarizeBy: none
+			sourceColumn: month_name
+
+			annotation SummarizationSetBy = Automatic
+
+		column quarter
+			dataType: string
+			lineageTag: bd07c297-97cd-4e70-978a-30781795221e
+			summarizeBy: none
+			sourceColumn: quarter
+
+			annotation SummarizationSetBy = Automatic
+
+		column day_name
+			dataType: string
+			lineageTag: 0fa83cdc-2174-4673-8074-2c1e862f49db
+			summarizeBy: none
+			sourceColumn: day_name
+
+			annotation SummarizationSetBy = Automatic
+
+		column is_weekend
+			dataType: int64
+			formatString: 0
+			lineageTag: a5fe93e3-f859-4ecf-8b67-77e450eab306
+			summarizeBy: none
+			sourceColumn: is_weekend
+
+			annotation SummarizationSetBy = Automatic
+
+		partition dim_calendar = m
+			mode: import
+			source = ```
+					let
+					    // 1. Execute the Python script and inject your parameters safely with explicit Int64 types
+					    Source = Python.Execute("import sqlite3#(lf)import pandas as pd#(lf)import matplotlib as mpl#(lf)#(lf)conn = sqlite3.connect(""C:\Github\sql-practice\project\oakhaven.db"")#(lf)df = pd.read_sql_query(""""""#(lf)SELECT DISTINCT #(lf)    d.datekey,#(lf)    d.date,#(lf)    d.year,#(lf)    d.month,#(lf)    d.month_name,#(lf)    d.quarter,#(lf)    d.day_name,#(lf)    d.is_weekend#(lf)FROM dim_date d#(lf)WHERE d.datekey IN (#(lf)    SELECT datekey #(lf)    FROM fact_sales #(lf)    ORDER BY order_date DESC, order_id, order_line_id #(lf)    LIMIT 100#(lf));#(lf)"""""", conn, dtype={'datekey': 'Int64', 'year': 'Int64', 'month': 'Int64', 'is_weekend': 'Int64'})#(lf)conn.close()"),
+
+					    // 2. Extract the dataframe 'df' that Python generated
+					    DataTable = Source{[Name="df"]}[Value],
+
+					    // 3. Transform column data types
+					    #"Changed Type" = Table.TransformColumnTypes(DataTable,{
+					        {"datekey", Int64.Type},
+					        {"date", type date},
+					        {"year", Int64.Type},
+					        {"month", Int64.Type},
+					        {"month_name", type text},
+					        {"quarter", type text},
+					        {"day_name", type text},
+					        {"is_weekend", Int64.Type}
+					    })
+					in
+					    #"Changed Type"
+					```
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Table
+
+	table _measures
+		lineageTag: a0000000-0000-4000-8000-000000000001
+
+		/// [Tables: fact_sales] Sum of pre-discount revenue across all sales lines.
+		measure 'Total Gross Revenue' = SUMX(fact_sales, fact_sales[quantity] * fact_sales[unit_price])
+			formatString: \$#,##0.00
+			displayFolder: 01 - Revenue & Volume
+			lineageTag: m0000001-0000-4000-8000-000000000001
+
+		/// [Tables: fact_sales] Sum of actual net sales revenue earned after discounts.
+		measure 'Total Net Revenue' = SUM(fact_sales[net_amount])
+			formatString: \$#,##0.00
+			displayFolder: 01 - Revenue & Volume
+			lineageTag: m0000002-0000-4000-8000-000000000002
+
+		/// [Tables: fact_sales] Total sum of merchandise item quantities sold.
+		measure 'Total Units Sold' = SUM(fact_sales[quantity])
+			formatString: #,##0
+			displayFolder: 01 - Revenue & Volume
+			lineageTag: m0000003-0000-4000-8000-000000000003
+
+		/// [Tables: fact_sales] Count of distinct sales order transaction IDs.
+		measure 'Total Orders' = DISTINCTCOUNT(fact_sales[order_id])
+			formatString: #,##0
+			displayFolder: 03 - Order Metrics
+			lineageTag: m0000004-0000-4000-8000-000000000004
+
+		/// [Tables: fact_sales] Mean net revenue earned per distinct sales order.
+		measure 'Average Order Value' = DIVIDE([Total Net Revenue], [Total Orders], 0)
+			formatString: \$#,##0.00
+			displayFolder: 03 - Order Metrics
+			lineageTag: m0000005-0000-4000-8000-000000000005
+
+		/// [Tables: fact_sales] Count of unique customers placing orders in selected period.
+		measure 'Active Customer Count' = DISTINCTCOUNT(fact_sales[customer_id])
+			formatString: #,##0
+			displayFolder: 04 - Customer Metrics
+			lineageTag: m0000006-0000-4000-8000-000000000006
+
+		/// [Tables: fact_sales] Weighted average discount percentage across all order lines.
+		measure 'Overall Discount Rate' = DIVIDE([Total Gross Revenue] - [Total Net Revenue], [Total Gross Revenue], 0)
+			formatString: 0.0%
+			displayFolder: 01 - Revenue & Volume
+			lineageTag: m0000007-0000-4000-8000-000000000007
+
+		/// [Tables: dim_calendar, fact_sales] Total net revenue for the prior year comparable calendar period.
+		measure 'Net Revenue PY' = CALCULATE([Total Net Revenue], SAMEPERIODLASTYEAR(dim_calendar[date]))
+			formatString: \$#,##0.00
+			displayFolder: 05 - Time Intelligence
+			lineageTag: m0000011-0000-4000-8000-000000000011
+
+		/// [Tables: dim_calendar, fact_sales] Year-over-year percentage growth in total net revenue.
+		measure 'Net Revenue YoY %' = DIVIDE([Total Net Revenue] - [Net Revenue PY], [Net Revenue PY], 0)
+			formatString: 0.0%
+			displayFolder: 05 - Time Intelligence
+			lineageTag: m0000012-0000-4000-8000-000000000012
+
+		column Value
+			dataType: int64
+			isHidden
+			lineageTag: c0000001-0000-4000-8000-000000000001
+			summarizeBy: none
+			isNameInferred
+			sourceColumn: [Value]
+
+			annotation SummarizationSetBy = Automatic
+
+		partition _measures = calculated
+			mode: import
+			source = Row("Value", 1)
+
+		annotation PBI_Id = t0000001-0000-4000-8000-000000000001
+
+	relationship AutoDetected_1d28b393-7c5a-472e-8bdf-bbaefdfadc47
+		fromColumn: fact_sales.customer_id
+		toColumn: dim_customer.customer_id
+
+	relationship AutoDetected_de8de45f-ebb1-4d1d-a6b4-e19e17d854ac
+		fromColumn: fact_sales.datekey
+		toColumn: dim_calendar.datekey
+
+	relationship cdcabb57-8502-4d1c-1ca6-c29df34d8d3e
+		fromColumn: fact_sales.employee_id
+		toColumn: dim_employee.employee_id
+
+	relationship dab805ef-d296-87a4-acb2-347f07dc4199
+		fromColumn: flat_sales_all.order_date
+		toColumn: dim_calendar.date
+
+	relationship defc8ca4-33ee-19ab-d42b-240fcd45be3e
+		fromColumn: flat_sales_completed.order_date
+		toColumn: dim_calendar.date
+
+	/// the path of any sqlite.db file
+	expression oakhavendatabasepath = "C:\Github\sql-practice\project\oakhaven.db" meta [IsParameterQuery=true, List={"C:\Github\sql-practice\project\oakhaven.db"}, DefaultValue="C:\Github\sql-practice\project\oakhaven.db", Type="Text", IsParameterQueryRequired=true]
+		lineageTag: 7e6d5862-1308-436e-b862-de1ddbd02f5d
+		queryGroup: 'sql queries'
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Text
+
+	cultureInfo en-US
